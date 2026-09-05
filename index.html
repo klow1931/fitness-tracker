@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fitness Tracker — Progress, PRs, Nutrition & AI Coach</title>
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="description" content="Track workouts, nutrition, PRs, and coach guidance offline-capable." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="FitTrack" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+  <div id="app-loader" class="app-loader">
+    <div class="app-loader-card">
+      <div class="app-loader-icon" aria-hidden="true"></div>
+      <p class="app-loader-title">Fitness Tracker</p>
+      <p class="app-loader-sub">Loading your data…</p>
+    </div>
+  </div>
+  <div id="toast-host" class="toast-host" aria-live="polite"></div>
+  <div id="backup-banner" class="hidden backup-banner">
+    <span id="backup-banner-text">You haven’t exported a backup recently.</span>
+    <div class="flex gap-2">
+      <button onclick="exportData()" class="btn-primary text-sm py-1 px-3">Export JSON</button>
+      <button onclick="dismissBackupBanner()" class="btn-secondary text-sm py-1 px-3">Dismiss</button>
+    </div>
+  </div>
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Fitness Tracker</h1>
+        <p class="text-slate-500 text-sm">Track workouts, PRs, nutrition, progress & AI Coach</p>
+      </div>
+      <div class="flex gap-2 flex-wrap items-center">
+        <button onclick="toggleDark()" id="dark-toggle" class="btn-secondary text-sm px-3 py-1.5" title="Toggle dark mode">🌙</button>
+        <div class="flex rounded-lg border border-slate-300 overflow-hidden text-sm font-medium">
+          <button id="unit-kg" onclick="setUnit('kg')" class="px-3 py-1.5 bg-indigo-600 text-white">kg</button>
+          <button id="unit-lb" onclick="setUnit('lb')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">lb</button>
+        </div>
+        <button onclick="toggleGymMode()" id="gym-mode-btn" class="btn-secondary text-sm px-3 py-1.5" title="Gym mode: larger controls">🏋️ Gym</button>
+        <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Dashboard</button>
+        <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
+        <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
+        <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition</button>
+        <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
+        <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
+        <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
+        <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="panel-dashboard" class="space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="card">
+          <p class="text-sm text-slate-500">Workouts (30d)</p>
+          <p class="text-2xl font-bold mt-1" id="stat-workouts">0</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">Volume (30d)</p>
+          <p class="text-2xl font-bold mt-1" id="stat-volume">0</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">Avg Protein (7d)</p>
+          <p class="text-2xl font-bold mt-1" id="stat-protein">0 g</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">PRs</p>
+          <p class="text-2xl font-bold mt-1" id="stat-prs">0</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">Streak</p>
+          <p class="text-2xl font-bold mt-1" id="stat-streak">0</p>
+        </div>
+        <div class="card">
+          <p class="text-sm text-slate-500">Bodyweight</p>
+          <p class="text-2xl font-bold mt-1" id="stat-bw">—</p>
+        </div>
+      </div>
+
+      <div class="card" id="weekly-summary-card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <h2 class="font-semibold">Weekly Training Report</h2>
+          <button onclick="copyWeeklyReport()" class="btn-secondary text-sm">Copy report</button>
+        </div>
+        <div id="weekly-summary" class="text-sm text-slate-600 space-y-1"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card">
+          <h2 class="font-semibold mb-4">Strength Progress</h2>
+          <div class="mb-3">
+            <select id="progress-exercise" class="input text-sm" onchange="renderProgressChart()">
+              <option value="">Select exercise…</option>
+            </select>
+          </div>
+          <canvas id="progressChart" height="220"></canvas>
+        </div>
+        <div class="card">
+          <h2 class="font-semibold mb-4">Nutrition (Last 14 days)</h2>
+          <canvas id="nutritionChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card">
+          <h2 class="font-semibold mb-4">Cardio Progress</h2>
+          <div class="mb-3 flex flex-wrap gap-2 items-center">
+            <select id="cardio-metric" class="input text-sm w-auto" onchange="renderCardioChart()">
+              <option value="duration">Duration (min)</option>
+              <option value="distance">Distance</option>
+            </select>
+            <select id="cardio-exercise" class="input text-sm w-auto" onchange="renderCardioChart()">
+              <option value="">All cardio</option>
+            </select>
+          </div>
+          <canvas id="cardioChart" height="180"></canvas>
+        </div>
+        <div class="card">
+          <h2 class="font-semibold mb-4">Bodyweight</h2>
+          <div class="flex gap-2 mb-3">
+            <input type="date" id="bw-date" class="input text-sm" />
+            <input type="number" id="bw-value" class="input text-sm" step="0.1" placeholder="Weight" />
+            <button onclick="saveBodyweight()" class="btn-primary text-sm whitespace-nowrap">Log</button>
+          </div>
+          <canvas id="bwChart" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-3">Recent Activity</h2>
+        <div id="recent-activity" class="space-y-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- PROGRESS PHOTOS -->
+    <section id="panel-photos" class="hidden space-y-6">
+      <div class="card">
+        <h2 class="font-semibold mb-2">Progress Photos</h2>
+        <p class="text-xs text-slate-500 mb-4">Stored only on this device (compressed). Not included in lightweight exports by default — use “Export photos backup” if you need a copy.</p>
+        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+          <div>
+            <label class="label">Date</label>
+            <input type="date" id="photo-date" class="input" />
+          </div>
+          <div>
+            <label class="label">Angle</label>
+            <select id="photo-tag" class="input">
+              <option value="front">Front</option>
+              <option value="side">Side</option>
+              <option value="back">Back</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">Note (optional)</label>
+            <input type="text" id="photo-note" class="input" placeholder="e.g. Week 8 check-in" />
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <label class="btn-primary text-sm cursor-pointer">
+            Add photo
+            <input type="file" id="photo-file" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoFile(event)" />
+          </label>
+          <button onclick="exportPhotosBackup()" class="btn-secondary text-sm">Export photos backup</button>
+        </div>
+        <div id="photo-compare" class="grid md:grid-cols-2 gap-4 mb-4 hidden">
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Compare A</p>
+            <select id="photo-compare-a" class="input text-sm mb-2" onchange="renderPhotoCompare()"></select>
+            <div id="photo-compare-a-view" class="photo-frame"></div>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Compare B</p>
+            <select id="photo-compare-b" class="input text-sm mb-2" onchange="renderPhotoCompare()"></select>
+            <div id="photo-compare-b-view" class="photo-frame"></div>
+          </div>
+        </div>
+        <div id="photos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section id="panel-calendar" class="hidden space-y-6">
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 class="font-semibold">Training Calendar</h2>
+          <div class="flex items-center gap-2">
+            <button onclick="shiftCalendar(-1)" class="btn-secondary text-sm">←</button>
+            <span id="cal-month-label" class="font-medium min-w-[140px] text-center"></span>
+            <button onclick="shiftCalendar(1)" class="btn-secondary text-sm">→</button>
+            <button onclick="goCalendarToday()" class="btn-secondary text-sm">Today</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 mb-1">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+        <div class="flex flex-wrap gap-3 mt-4 text-xs text-slate-500">
+          <span><span class="inline-block w-3 h-3 rounded bg-indigo-500 align-middle mr-1"></span> Workout</span>
+          <span><span class="inline-block w-3 h-3 rounded bg-emerald-400 align-middle mr-1"></span> Cardio only</span>
+          <span><span class="inline-block w-3 h-3 rounded bg-slate-200 align-middle mr-1"></span> Rest / empty</span>
+          <span><span class="inline-block w-3 h-3 rounded ring-2 ring-indigo-500 align-middle mr-1"></span> Today</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="font-semibold mb-2">Selected day</h2>
+        <p class="text-sm text-slate-500 mb-3" id="cal-day-label">Tap a day on the calendar</p>
+        <div id="cal-day-detail" class="space-y-2 text-sm"></div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          <button onclick="logWorkoutOnSelectedDay()" class="btn-primary text-sm">Log workout this day</button>
+          <button onclick="markRestDay()" class="btn-secondary text-sm">Mark rest day</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKOUTS -->
+    <section id="panel-workouts" class="hidden space-y-6">
+      <div class="card" id="workout-log-card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h2 class="font-semibold">Log Workout</h2>
+          <div class="flex flex-wrap gap-2 items-center">
+            <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+              <input type="checkbox" id="gym-checklist-toggle" onchange="toggleChecklistMode()" />
+              Set checklist
+            </label>
+            <button onclick="repeatLastWorkout()" class="btn-secondary text-sm">↻ Repeat Last</button>
+            <select id="template-select" class="input text-sm w-auto" onchange="loadTemplate(this.value)">
+              <option value="">Load template…</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="label">Date</label>
+            <input type="date" id="wo-date" class="input" />
+          </div>
+          <div>
+            <label class="label">Notes (optional)</label>
+            <input type="text" id="wo-notes" class="input" placeholder="Felt strong, good sleep…" />
+          </div>
+        </div>
+
+        <div id="exercise-rows" class="space-y-3 mb-4"></div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button onclick="addExerciseRow()" class="btn-secondary text-sm">+ Add Strength</button>
+          <button onclick="addExerciseRow({ name: '', type: 'cardio', duration: '', distance: '', distanceUnit: 'km', avgHr: '' })" class="btn-secondary text-sm">+ Add Cardio</button>
+        </div>
+
+        <div class="flex gap-3 flex-wrap items-center" id="workout-actions">
+          <button onclick="saveWorkout()" class="btn-primary">Save Workout</button>
+          <button onclick="clearWorkoutForm()" class="btn-secondary">Clear</button>
+          <button onclick="saveCurrentAsTemplate()" class="btn-secondary">Save as Template</button>
+          <div class="flex items-center gap-2 ml-auto border border-slate-200 rounded-lg px-3 py-1.5">
+            <span class="text-sm text-slate-500">Rest</span>
+            <button onclick="startRest(60)" class="text-xs btn-secondary py-1 px-2">1m</button>
+            <button onclick="startRest(90)" class="text-xs btn-secondary py-1 px-2">1.5m</button>
+            <button onclick="startRest(180)" class="text-xs btn-secondary py-1 px-2">3m</button>
+            <span id="rest-timer" class="text-sm font-mono font-medium w-12 text-center">—</span>
+            <button onclick="stopRest()" class="text-xs text-red-500">Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky save bar (Gym mode) -->
+      <div id="sticky-save-bar" class="sticky-save-bar hidden">
+        <button onclick="saveWorkout()" class="btn-primary flex-1">Save Workout</button>
+        <button onclick="startRest(90)" class="btn-secondary">Rest 1.5m</button>
+        <span id="rest-timer-sticky" class="text-sm font-mono font-medium w-12 text-center">—</span>
+      </div>
+
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h2 class="font-semibold">Workout History</h2>
+          <div class="flex flex-wrap gap-2">
+            <input type="text" id="history-search" class="input text-sm w-40" placeholder="Search exercise…" oninput="debouncedHistorySearch()" />
+            <button onclick="exportData()" class="btn-secondary text-sm">Export JSON</button>
+            <button onclick="exportCSV()" class="btn-secondary text-sm">Export CSV</button>
+            <button onclick="importData()" class="btn-secondary text-sm">Import</button>
+            <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)" />
+          </div>
+        </div>
+        <div id="workout-history" class="space-y-3"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-3">Saved Templates</h2>
+        <div id="templates-list" class="space-y-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- NUTRITION -->
+    <section id="panel-nutrition" class="hidden space-y-6">
+      <!-- Date + day totals -->
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 class="font-semibold">Daily Nutrition</h2>
+          <input type="date" id="nu-date" class="input w-auto text-sm" onchange="loadDayFoods()" />
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 text-center text-sm mb-3" id="nu-day-totals">
+          <div><p class="text-slate-500">Calories</p><p class="font-bold text-lg" id="tot-cal">0</p></div>
+          <div><p class="text-slate-500">Protein</p><p class="font-bold text-lg" id="tot-p">0g</p></div>
+          <div><p class="text-slate-500">Carbs</p><p class="font-bold text-lg" id="tot-c">0g</p></div>
+          <div><p class="text-slate-500">Fat</p><p class="font-bold text-lg" id="tot-f">0g</p></div>
+        </div>
+        <details class="mb-4" open>
+          <summary class="text-sm font-medium text-slate-600 cursor-pointer mb-2">Micronutrients</summary>
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-center text-sm" id="nu-micro-totals">
+            <div><p class="text-slate-500">Fiber</p><p class="font-bold" id="tot-fiber">0g</p></div>
+            <div><p class="text-slate-500">Sugar</p><p class="font-bold" id="tot-sugar">0g</p></div>
+            <div><p class="text-slate-500">Sat. Fat</p><p class="font-bold" id="tot-satFat">0g</p></div>
+            <div><p class="text-slate-500">Cholesterol</p><p class="font-bold" id="tot-cholesterol">0mg</p></div>
+            <div><p class="text-slate-500">Sodium</p><p class="font-bold" id="tot-sodium">0mg</p></div>
+            <div><p class="text-slate-500">Potassium</p><p class="font-bold" id="tot-potassium">0mg</p></div>
+            <div><p class="text-slate-500">Calcium</p><p class="font-bold" id="tot-calcium">0mg</p></div>
+            <div><p class="text-slate-500">Iron</p><p class="font-bold" id="tot-iron">0mg</p></div>
+            <div><p class="text-slate-500">Vitamin C</p><p class="font-bold" id="tot-vitaminC">0mg</p></div>
+            <div><p class="text-slate-500">Vitamin D</p><p class="font-bold" id="tot-vitaminD">0µg</p></div>
+            <div><p class="text-slate-500">Magnesium</p><p class="font-bold" id="tot-magnesium">0mg</p></div>
+            <div><p class="text-slate-500">Foods</p><p class="font-bold" id="tot-foods">0</p></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Micros fill in when foods include them (custom entry, barcode, or library). Missing values count as 0.</p>
+        </details>
+        <div id="day-foods-list" class="space-y-2 mb-4 text-sm"></div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="saveDayFromFoods()" class="btn-primary">Save Day Totals</button>
+          <button onclick="clearDayFoods()" class="btn-secondary">Clear Day Foods</button>
+        </div>
+      </div>
+
+      <!-- Add food -->
+      <div class="card">
+        <h2 class="font-semibold mb-3">Add Food</h2>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button onclick="showFoodMode('search')" id="mode-search" class="btn-primary text-sm">Search Library</button>
+          <button onclick="showFoodMode('barcode')" id="mode-barcode" class="btn-secondary text-sm">Barcode</button>
+          <button onclick="showFoodMode('manual')" id="mode-manual" class="btn-secondary text-sm">Quick Macros</button>
+          <button onclick="showFoodMode('custom')" id="mode-custom" class="btn-secondary text-sm">Add Custom Food</button>
+        </div>
+
+        <!-- Search library -->
+        <div id="food-mode-search">
+          <input type="text" id="food-search" class="input mb-2" placeholder="Search foods…" oninput="debouncedFoodSearch()" />
+          <div id="food-search-results" class="space-y-1 text-sm"></div>
+        </div>
+
+        <!-- Barcode -->
+        <div id="food-mode-barcode" class="hidden space-y-3">
+          <div class="flex gap-2">
+            <input type="text" id="barcode-input" class="input" placeholder="Enter barcode number" />
+            <button onclick="lookupBarcode()" class="btn-primary whitespace-nowrap">Lookup</button>
+          </div>
+          <p class="text-xs text-slate-500">Uses Open Food Facts (free database). Camera scan:</p>
+          <div id="barcode-reader" class="w-full max-w-sm mx-auto"></div>
+          <button onclick="toggleBarcodeScanner()" id="scan-btn" class="btn-secondary text-sm">Start Camera Scan</button>
+          <div id="barcode-result" class="text-sm"></div>
+        </div>
+
+        <!-- Quick macros (legacy style) -->
+        <div id="food-mode-manual" class="hidden">
+          <div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+            <div>
+              <label class="label">Protein (g)</label>
+              <input type="number" id="nu-protein" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Carbs (g)</label>
+              <input type="number" id="nu-carbs" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Fat (g)</label>
+              <input type="number" id="nu-fat" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Fiber (g)</label>
+              <input type="number" id="nu-fiber" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Calories</label>
+              <input type="number" id="nu-calories" class="input" min="0" step="10" placeholder="auto" />
+            </div>
+          </div>
+          <button onclick="addQuickMacros()" class="btn-primary">Add to Day</button>
+        </div>
+
+        <!-- Custom food -->
+        <div id="food-mode-custom" class="hidden">
+          <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="label">Name</label>
+              <input type="text" id="cf-name" class="input" placeholder="e.g. Homemade protein shake" />
+            </div>
+            <div>
+              <label class="label">Serving size</label>
+              <input type="text" id="cf-serving" class="input" placeholder="e.g. 1 scoop / 100g" />
+            </div>
+            <div>
+              <label class="label">Protein (g)</label>
+              <input type="number" id="cf-p" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Carbs (g)</label>
+              <input type="number" id="cf-c" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Fat (g)</label>
+              <input type="number" id="cf-f" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Calories</label>
+              <input type="number" id="cf-cal" class="input" min="0" step="1" placeholder="auto" />
+            </div>
+            <div>
+              <label class="label">Fiber (g)</label>
+              <input type="number" id="cf-fiber" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Sugar (g)</label>
+              <input type="number" id="cf-sugar" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Sodium (mg)</label>
+              <input type="number" id="cf-sodium" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Sat. Fat (g)</label>
+              <input type="number" id="cf-satFat" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Cholesterol (mg)</label>
+              <input type="number" id="cf-cholesterol" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Potassium (mg)</label>
+              <input type="number" id="cf-potassium" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Calcium (mg)</label>
+              <input type="number" id="cf-calcium" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Iron (mg)</label>
+              <input type="number" id="cf-iron" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Vitamin C (mg)</label>
+              <input type="number" id="cf-vitaminC" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Vitamin D (µg)</label>
+              <input type="number" id="cf-vitaminD" class="input" min="0" step="0.1" />
+            </div>
+            <div>
+              <label class="label">Magnesium (mg)</label>
+              <input type="number" id="cf-magnesium" class="input" min="0" step="1" />
+            </div>
+            <div>
+              <label class="label">Barcode (optional)</label>
+              <input type="text" id="cf-barcode" class="input" />
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="saveCustomFood(true)" class="btn-primary">Save & Add to Day</button>
+            <button onclick="saveCustomFood(false)" class="btn-secondary">Save to Library Only</button>
+          </div>
+        </div>
+
+        <!-- Serving picker (shown after selecting a food) -->
+        <div id="food-serving-picker" class="hidden mt-4 border-t border-slate-200 pt-4">
+          <p class="font-medium mb-2" id="picked-food-name"></p>
+          <div class="flex gap-2 items-end flex-wrap">
+            <div>
+              <label class="label">Servings</label>
+              <input type="number" id="picked-servings" class="input w-24" min="0.1" step="0.1" value="1" />
+            </div>
+            <button onclick="confirmAddFood()" class="btn-primary">Add to Day</button>
+            <button onclick="cancelPickedFood()" class="btn-secondary">Cancel</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-1" id="picked-food-info"></p>
+        </div>
+      </div>
+
+      <!-- Food library browser -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">Food Library</h2>
+          <span class="text-xs text-slate-500" id="library-count">0 foods</span>
+        </div>
+        <input type="text" id="library-filter" class="input mb-2 text-sm" placeholder="Filter library…" oninput="debouncedLibraryFilter()" />
+        <div id="food-library-list" class="space-y-1 text-sm"></div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <h2 class="font-semibold mb-4">Nutrition History</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-slate-500 border-b">
+                <th class="py-2">Date</th>
+                <th class="py-2">Cal</th>
+                <th class="py-2">P</th>
+                <th class="py-2">C</th>
+                <th class="py-2">F</th>
+                <th class="py-2">Fiber</th>
+                <th class="py-2">Sodium</th>
+                <th class="py-2"></th>
+              </tr>
+            </thead>
+            <tbody id="nutrition-history"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRs -->
+    <section id="panel-prs" class="hidden space-y-6">
+      <div class="card">
+        <h2 class="font-semibold mb-4">Add / Update Personal Record</h2>
+        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label class="label">Exercise</label>
+            <input type="text" id="pr-exercise" class="input" placeholder="Bench Press" list="exercise-list" />
+          </div>
+          <div>
+            <label class="label">Weight (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="pr-weight" class="input" min="0" step="0.5" />
+          </div>
+          <div>
+            <label class="label">Reps</label>
+            <input type="number" id="pr-reps" class="input" min="1" step="1" value="1" />
+          </div>
+          <div>
+            <label class="label">Date</label>
+            <input type="date" id="pr-date" class="input" />
+          </div>
+        </div>
+        <button onclick="savePR()" class="btn-primary">Save PR</button>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-4">All-Time Personal Records</h2>
+        <div id="pr-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- AI COACH -->
+    <section id="panel-coach" class="hidden space-y-6">
+      <!-- Advice Banner -->
+      <div class="card bg-indigo-50 border-indigo-100">
+        <h2 class="font-semibold text-indigo-900 mb-2">Coach Insights</h2>
+        <div id="coach-advice" class="text-sm text-indigo-800 space-y-1"></div>
+      </div>
+
+      <!-- Deload Helper -->
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 class="font-semibold">Deload Helper</h2>
+          <button onclick="refreshDeloadHelper()" class="btn-secondary text-sm">Recheck</button>
+        </div>
+        <div id="deload-status" class="text-sm space-y-2 mb-3"></div>
+        <div id="deload-plan" class="text-sm space-y-2 border border-slate-200 rounded-lg p-3 bg-slate-50 hidden"></div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          <button onclick="showDeloadPlan()" class="btn-primary text-sm">Suggest deload week</button>
+          <button onclick="applyDeloadRestDays()" class="btn-secondary text-sm">Mark next 7 days with extra rest</button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Uses your recent volume, frequency, and rest days. This is guidance — not medical advice.</p>
+      </div>
+
+      <!-- AI API settings (BYO key) -->
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 class="font-semibold">AI Coach API (optional)</h2>
+          <span id="api-status" class="text-xs text-slate-500">Offline rule-based coach</span>
+        </div>
+        <p class="text-xs text-slate-500 mb-3">Use <b>your own</b> API key. It is stored only in this browser and is never uploaded with JSON backups. Compatible with xAI (Grok) and OpenAI-style chat APIs.</p>
+        <div class="grid sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="label">Provider preset</label>
+            <select id="api-provider" class="input" onchange="applyApiProviderPreset()">
+              <option value="xai">xAI (Grok)</option>
+              <option value="openai">OpenAI</option>
+              <option value="custom">Custom base URL</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Model</label>
+            <input type="text" id="api-model" class="input" placeholder="grok-2-latest" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">API base URL</label>
+            <input type="text" id="api-base" class="input" placeholder="https://api.x.ai/v1" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label">API key</label>
+            <input type="password" id="api-key" class="input" placeholder="Paste your key — stays on this device" autocomplete="off" />
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" id="api-enabled" />
+            Use API for chat when key is set
+          </label>
+          <button onclick="saveApiSettings()" class="btn-primary text-sm">Save API settings</button>
+          <button onclick="clearApiKey()" class="btn-secondary text-sm">Clear key</button>
+          <button onclick="testApiConnection()" class="btn-secondary text-sm">Test connection</button>
+        </div>
+      </div>
+
+      <!-- Chat with Coach -->
+      <div class="card">
+        <h2 class="font-semibold mb-3">Chat with Coach</h2>
+        <p class="text-xs text-slate-500 mb-2" id="chat-mode-hint">Using built-in coach (no API key).</p>
+        <div id="chat-messages" class="h-64 overflow-y-auto border border-slate-200 rounded-lg p-3 mb-3 bg-slate-50 space-y-3 text-sm">
+          <div class="flex gap-2">
+            <div class="bg-indigo-100 text-indigo-900 rounded-lg px-3 py-2 max-w-[85%]">
+              Hi — I’m your coach. Ask about progression, protein, recovery, or form. Add your own API key above for full AI answers grounded in your logs.
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="chat-input" class="input flex-1" placeholder="e.g. How do I progress on squat? / Is 150g protein enough?" onkeydown="if(event.key==='Enter') sendChat()" />
+          <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
+          <button onclick="askSuggestion('How much protein do I need?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Protein</button>
+          <button onclick="askSuggestion('I feel sore, should I train?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Soreness</button>
+          <button onclick="askSuggestion('How do I know when to deload?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Deload</button>
+          <button onclick="askSuggestion('Give me form tips for squat')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Squat form</button>
+          <button onclick="askSuggestion('How do I build a good warm-up?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Warm-up</button>
+          <button onclick="askSuggestion('What about sleep and recovery?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Sleep</button>
+          <button onclick="askSuggestion('Should I train to failure?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Failure</button>
+          <button onclick="askSuggestion('Explain periodization and loading schemes')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Periodization</button>
+          <button onclick="askSuggestion('What is conjugate training?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Conjugate</button>
+          <button onclick="askSuggestion('What is daily undulating periodization?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">DUP</button>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Goals -->
+        <div class="card">
+          <h2 class="font-semibold mb-4">Set Goals</h2>
+          <div class="space-y-3 mb-4">
+            <div>
+              <label class="label">Goal Type</label>
+              <select id="goal-type" class="input" onchange="toggleGoalFields()">
+                <option value="strength">Strength (Exercise PR)</option>
+                <option value="protein">Daily Protein Target</option>
+                <option value="consistency">Training Consistency</option>
+              </select>
+            </div>
+            <div id="goal-strength-fields">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="label">Exercise</label>
+                  <input type="text" id="goal-exercise" class="input" list="exercise-list" placeholder="Back Squat" />
+                </div>
+                <div>
+                  <label class="label">Target Weight (<span class="unit-label">kg</span>)</label>
+                  <input type="number" id="goal-weight" class="input" min="0" step="2.5" placeholder="140" />
+                </div>
+              </div>
+            </div>
+            <div id="goal-protein-fields" class="hidden">
+              <label class="label">Daily Protein Target (g)</label>
+              <input type="number" id="goal-protein-target" class="input" min="50" step="5" placeholder="160" />
+            </div>
+            <div id="goal-consistency-fields" class="hidden">
+              <label class="label">Workouts per Week</label>
+              <input type="number" id="goal-workouts-week" class="input" min="1" max="7" step="1" placeholder="4" />
+            </div>
+            <div>
+              <label class="label">Target Date (optional)</label>
+              <input type="date" id="goal-deadline" class="input" />
+            </div>
+            <div>
+              <label class="label">Notes</label>
+              <input type="text" id="goal-notes" class="input" placeholder="Why this goal matters…" />
+            </div>
+          </div>
+          <button onclick="saveGoal()" class="btn-primary">Save Goal</button>
+        </div>
+
+        <!-- Program Generator -->
+        <div class="card">
+          <h2 class="font-semibold mb-4">Generate Program</h2>
+          <div class="space-y-3 mb-4">
+            <div>
+              <label class="label">Experience Level</label>
+              <select id="prog-level" class="input">
+                <option value="beginner">Beginner (0–12 months)</option>
+                <option value="intermediate">Intermediate (1–3 years)</option>
+                <option value="advanced">Advanced (3+ years)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Days per Week</label>
+              <select id="prog-days" class="input">
+                <option value="3">3 days</option>
+                <option value="4" selected>4 days</option>
+                <option value="5">5 days</option>
+                <option value="6">6 days</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Primary Focus</label>
+              <select id="prog-focus" class="input">
+                <option value="strength">Strength</option>
+                <option value="hypertrophy">Hypertrophy / Muscle</option>
+                <option value="balanced">Balanced</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Loading / Periodization</label>
+              <select id="prog-scheme" class="input">
+                <option value="linear">Linear progression</option>
+                <option value="step">Step loading</option>
+                <option value="flat">Flat loading</option>
+                <option value="dup">Daily undulating (DUP)</option>
+                <option value="wup">Weekly undulating</option>
+                <option value="block">Block periodization</option>
+                <option value="concurrent">Concurrent (strength + hypertrophy)</option>
+                <option value="conjugate">Conjugate / Westside-style</option>
+              </select>
+            </div>
+          </div>
+          <button onclick="generateProgram()" class="btn-primary">Generate Program</button>
+        </div>
+      </div>
+
+      <!-- Active Goals -->
+      <div class="card">
+        <h2 class="font-semibold mb-4">Your Goals</h2>
+        <div id="goals-list" class="space-y-3"></div>
+      </div>
+
+      <!-- Active Program + Library -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold">Active Program</h2>
+          <button onclick="deactivateProgram()" class="btn-secondary text-sm" id="clear-prog-btn" style="display:none">Deactivate</button>
+        </div>
+        <div id="program-display">
+          <p class="text-slate-500 text-sm">No active program. Generate one or activate from your library.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-3">Program Library</h2>
+        <div id="programs-list" class="space-y-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="panel-tools" class="hidden space-y-6">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card">
+          <h2 class="font-semibold mb-4">1RM Calculator</h2>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="label">Weight (<span class="unit-label">kg</span>)</label>
+              <input type="number" id="orm-weight" class="input" min="0" step="0.5" />
+            </div>
+            <div>
+              <label class="label">Reps</label>
+              <input type="number" id="orm-reps" class="input" min="1" max="20" value="5" />
+            </div>
+          </div>
+          <button onclick="calc1RM()" class="btn-primary mb-3">Calculate</button>
+          <p id="orm-result" class="text-lg font-semibold"></p>
+        </div>
+        <div class="card">
+          <h2 class="font-semibold mb-4">Plate Calculator</h2>
+          <div class="mb-3">
+            <label class="label">Target weight (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="plate-target" class="input" min="0" step="0.5" placeholder="e.g. 100" />
+          </div>
+          <div class="mb-3">
+            <label class="label">Bar weight (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="plate-bar" class="input" min="0" step="0.5" value="20" />
+          </div>
+          <button onclick="calcPlates()" class="btn-primary mb-3">Calculate plates</button>
+          <div id="plate-result" class="text-sm space-y-1"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="font-semibold mb-3">Data</h2>
+        <p class="text-sm text-slate-500 mb-2" id="storage-info">Storage: —</p>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="exportData()" class="btn-secondary">Export JSON backup</button>
+          <button onclick="exportCSV()" class="btn-secondary">Export CSV</button>
+          <button onclick="importData()" class="btn-secondary">Import JSON backup</button>
+          <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
+          <button onclick="loadDemoData()" class="btn-secondary">Load demo data</button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
+        <p class="text-xs text-slate-500 mt-2"><b>Privacy:</b> Workouts, nutrition, and photos stay in your browser on this device. Optional AI API keys are stored only here and are never included in JSON backups. Keys are only sent to the provider you choose when chat API mode is on.</p>
+      </div>
+    </section>
+
+    <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1">
+      <p id="app-version">FitTrack web v17 · local-first fitness tracker</p>
+      <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
+    </footer>
+  </div>
+
+  <datalist id="exercise-list">
+    <!-- Squat / Quad dominant -->
+    <option value="Back Squat">
+    <option value="Front Squat">
+    <option value="Pause Squat">
+    <option value="Box Squat">
+    <option value="Safety Bar Squat">
+    <option value="Safety Squat Bar (SSB) Squat">
+    <option value="Cambered Bar Squat">
+    <option value="Cambered Bar Box Squat">
+    <option value="Buffalo Bar Squat">
+    <option value="Spider Bar Squat">
+    <option value="Trap Bar Squat">
+    <option value="Zercher Squat">
+    <option value="Anderson Squat">
+    <option value="Pin Squat">
+    <option value="High-Bar Back Squat">
+    <option value="Low-Bar Back Squat">
+    <option value="Competition Back Squat">
+    <option value="Tempo Squat">
+    <option value="1¼ Squat">
+    <option value="Wide-Stance Squat">
+    <option value="Goblet Squat">
+    <option value="Bulgarian Split Squat">
+    <option value="Split Squat">
+    <option value="Reverse Lunge">
+    <option value="Walking Lunges">
+    <option value="Lunges">
+    <option value="Lateral Lunge">
+    <option value="Step-Up">
+    <option value="Leg Press">
+    <option value="Hack Squat">
+    <option value="Belt Squat">
+    <option value="Pendulum Squat">
+    <option value="Sissy Squat">
+    <!-- Hinge / Posterior chain -->
+    <option value="Deadlift">
+    <option value="Conventional Deadlift">
+    <option value="Sumo Deadlift">
+    <option value="Trap Bar Deadlift">
+    <option value="Trap Bar Deadlift (high handles)">
+    <option value="Trap Bar Deadlift (low handles)">
+    <option value="Romanian Deadlift">
+    <option value="Stiff-Leg Deadlift">
+    <option value="Deficit Deadlift">
+    <option value="Deficit Sumo Deadlift">
+    <option value="Block Pull">
+    <option value="Rack Pull">
+    <option value="Rack Pull (below knee)">
+    <option value="Rack Pull (above knee)">
+    <option value="Pause Deadlift">
+    <option value="Pause Deadlift (below knee)">
+    <option value="Tempo Deadlift">
+    <option value="Snatch-Grip Deadlift">
+    <option value="Snatch-Grip RDL">
+    <option value="Cambered Bar Deadlift">
+    <option value="Cambered Bar Good Morning">
+    <option value="Safety Bar Good Morning">
+    <option value="Buffalo Bar Good Morning">
+    <option value="Good Morning">
+    <option value="Seated Good Morning">
+    <option value="Hip Thrust">
+    <option value="Barbell Hip Thrust">
+    <option value="Glute Bridge">
+    <option value="Single-Leg RDL">
+    <option value="Cable Pull-Through">
+    <option value="Kettlebell Swing">
+    <option value="Nordic Curl">
+    <!-- Horizontal push (chest) -->
+    <option value="Bench Press">
+    <option value="Competition Bench Press">
+    <option value="Incline Bench Press">
+    <option value="Decline Bench Press">
+    <option value="Pause Bench Press">
+    <option value="Spoto Press">
+    <option value="Touch-and-Go Bench">
+    <option value="Tempo Bench Press">
+    <option value="Close-Grip Bench Press">
+    <option value="Wide-Grip Bench Press">
+    <option value="Feet-Up Bench Press">
+    <option value="Larsen Press">
+    <option value="Floor Press">
+    <option value="Pin Press">
+    <option value="Board Press">
+    <option value="2-Board Press">
+    <option value="3-Board Press">
+    <option value="Slingshot Bench">
+    <option value="Cambered Bar Bench">
+    <option value="Football Bar Bench">
+    <option value="Swiss Bar Bench">
+    <option value="Trap Bar Floor Press">
+    <option value="Dumbbell Bench Press">
+    <option value="Incline Dumbbell Press">
+    <option value="Decline Dumbbell Press">
+    <option value="Dumbbell Fly">
+    <option value="Incline Dumbbell Fly">
+    <option value="Cable Fly">
+    <option value="Pec Deck">
+    <option value="Machine Chest Press">
+    <option value="Push-Up">
+    <option value="Diamond Push-Up">
+    <option value="Dip">
+    <option value="Ring Dip">
+    <!-- Vertical push (shoulders) -->
+    <option value="Overhead Press">
+    <option value="Military Press">
+    <option value="Push Press">
+    <option value="Strict Press">
+    <option value="Seated Overhead Press">
+    <option value="Seated Dumbbell Press">
+    <option value="Arnold Press">
+    <option value="Dumbbell Shoulder Press">
+    <option value="Landmine Press">
+    <option value="Z Press">
+    <option value="Log Press">
+    <option value="Axle Press">
+    <option value="Swiss Bar Overhead Press">
+    <option value="Football Bar Press">
+    <option value="Lateral Raise">
+    <option value="Cable Lateral Raise">
+    <option value="Front Raise">
+    <option value="Rear Delt Fly">
+    <option value="Reverse Pec Deck">
+    <option value="Face Pull">
+    <option value="Upright Row">
+    <option value="Shrug">
+    <option value="Dumbbell Shrug">
+    <option value="Barbell Shrug">
+    <option value="Behind-the-Back Shrug">
+    <!-- Horizontal pull (back) -->
+    <option value="Barbell Row">
+    <option value="Pendlay Row">
+    <option value="Yates Row">
+    <option value="Dumbbell Row">
+    <option value="Single-Arm Dumbbell Row">
+    <option value="Chest-Supported Row">
+    <option value="Seal Row">
+    <option value="Seated Cable Row">
+    <option value="Chest-Supported Cable Row">
+    <option value="Meadows Row">
+    <option value="T-Bar Row">
+    <option value="Helms Row">
+    <option value="Inverted Row">
+    <option value="Machine Row">
+    <option value="Cambered Bar Row">
+    <option value="Safety Bar Row">
+    <option value="Chest-Supported SSB Row">
+    <option value="Kroc Row">
+    <!-- Powerlifting specialty / conjugate -->
+    <option value="Box Squat (Wide Stance)">
+    <option value="Box Squat (Close Stance)">
+    <option value="SSB Box Squat">
+    <option value="SSB Front Squat">
+    <option value="SSB Good Morning">
+    <option value="SSB Reverse Good Morning">
+    <option value="SSB Lunges">
+    <option value="SSB Split Squat">
+    <option value="Cambered Bar Box Squat">
+    <option value="Cambered Bar Good Morning">
+    <option value="Cambered Bar Row">
+    <option value="Duffalo Bar Squat">
+    <option value="Duffalo Bar Bench">
+    <option value="Duffalo Bar Good Morning">
+    <option value="Buffalo Bar Bench">
+    <option value="Trap Bar Shrug">
+    <option value="Trap Bar Romanian Deadlift">
+    <option value="Trap Bar Farmers Walk">
+    <option value="Axle Deadlift">
+    <option value="Axle Clean">
+    <option value="Circus Dumbbell Press">
+    <option value="Opposing Band Bench">
+    <option value="Banded Squat">
+    <option value="Banded Deadlift">
+    <option value="Banded Bench Press">
+    <option value="Chain Squat">
+    <option value="Chain Deadlift">
+    <option value="Chain Bench Press">
+    <option value="Accommodating Resistance Squat">
+    <option value="Accommodating Resistance Deadlift">
+    <option value="Accommodating Resistance Bench">
+    <option value="Speed Squat">
+    <option value="Speed Deadlift">
+    <option value="Speed Bench">
+    <option value="Dynamic Effort Squat">
+    <option value="Dynamic Effort Deadlift">
+    <option value="Dynamic Effort Bench">
+    <option value="Max Effort Squat Variation">
+    <option value="Max Effort Deadlift Variation">
+    <option value="Max Effort Bench Variation">
+    <option value="Competition Squat">
+    <option value="Competition Bench">
+    <option value="Competition Deadlift">
+    <option value="SBD Squat">
+    <option value="SBD Bench">
+    <option value="SBD Deadlift">
+    <option value="Paused Competition Bench">
+    <option value="Command Bench">
+    <option value="Walkout Hold">
+    <option value="Deadlift Hold">
+    <option value="Bench Press Hold">
+    <option value="Pin Squat (Anderson)">
+    <option value="Pin Deadlift">
+    <option value="Isometric Deadlift">
+    <option value="Belt Squat March">
+    <option value="Hatfield Squat">
+    <option value="Front Squat (clean grip)">
+    <option value="Front Squat (cross grip)">
+    <option value="Safety Squat Bar Hatfield">
+    <!-- Specialty bars (general) -->
+    <option value="Swiss Bar Row">
+    <option value="Swiss Bar Curl">
+    <option value="Football Bar Row">
+    <option value="Football Bar Overhead Press">
+    <option value="Multi-Grip Bar Bench">
+    <option value="Multi-Grip Bar Row">
+    <option value="Multi-Grip Bar Overhead Press">
+    <option value="Thick Bar Deadlift">
+    <option value="Thick Bar Row">
+    <option value="Fat Grip Bench">
+    <option value="Fat Grip Deadlift">
+    <!-- Vertical pull (lats) -->
+    <option value="Pull-Up">
+    <option value="Chin-Up">
+    <option value="Wide-Grip Pull-Up">
+    <option value="Neutral-Grip Pull-Up">
+    <option value="Lat Pulldown">
+    <option value="Wide-Grip Lat Pulldown">
+    <option value="Neutral-Grip Pulldown">
+    <option value="Close-Grip Pulldown">
+    <option value="Straight-Arm Pulldown">
+    <option value="Single-Arm Lat Pulldown">
+    <option value="Assisted Pull-Up">
+    <!-- Biceps -->
+    <option value="Barbell Curl">
+    <option value="EZ-Bar Curl">
+    <option value="Dumbbell Curl">
+    <option value="Hammer Curl">
+    <option value="Incline Dumbbell Curl">
+    <option value="Preacher Curl">
+    <option value="Spider Curl">
+    <option value="Cable Curl">
+    <option value="Concentration Curl">
+    <option value="Chin-Up (biceps focus)">
+    <!-- Triceps -->
+    <option value="Tricep Pushdown">
+    <option value="Rope Pushdown">
+    <option value="Tricep Extension">
+    <option value="Overhead Tricep Extension">
+    <option value="Skull Crusher">
+    <option value="JM Press">
+    <option value="Close-Grip Bench Press">
+    <option value="Diamond Push-Up">
+    <option value="Bench Dip">
+    <option value="Kickback">
+    <!-- Quads / isolation -->
+    <option value="Leg Extension">
+    <option value="Single-Leg Extension">
+    <option value="Spanish Squat">
+    <!-- Hamstrings -->
+    <option value="Lying Leg Curl">
+    <option value="Seated Leg Curl">
+    <option value="Standing Leg Curl">
+    <option value="Nordic Hamstring Curl">
+    <!-- Calves -->
+    <option value="Calf Raise">
+    <option value="Standing Calf Raise">
+    <option value="Seated Calf Raise">
+    <option value="Donkey Calf Raise">
+    <option value="Single-Leg Calf Raise">
+    <!-- Core -->
+    <option value="Plank">
+    <option value="Side Plank">
+    <option value="Hanging Leg Raise">
+    <option value="Hanging Knee Raise">
+    <option value="Cable Crunch">
+    <option value="Ab Wheel">
+    <option value="Dead Bug">
+    <option value="Bird Dog">
+    <option value="Pallof Press">
+    <option value="Russian Twist">
+    <option value="Back Extension">
+    <option value="Reverse Hyperextension">
+    <option value="Cable Woodchop">
+    <!-- Olympic / power -->
+    <option value="Power Clean">
+    <option value="Hang Clean">
+    <option value="Clean and Jerk">
+    <option value="Snatch">
+    <option value="Hang Snatch">
+    <option value="Push Jerk">
+    <option value="High Pull">
+    <!-- Carries / conditioning / misc -->
+    <option value="Farmer Carry">
+    <option value="Suitcase Carry">
+    <option value="Overhead Carry">
+    <option value="Sled Push">
+    <option value="Sled Drag">
+    <option value="Battle Ropes">
+    <option value="Box Jump">
+    <option value="Medicine Ball Slam">
+    <option value="Kettlebell Clean">
+    <option value="Kettlebell Snatch">
+    <option value="Turkish Get-Up">
+    <!-- Cardio -->
+    <option value="Running">
+    <option value="Jogging">
+    <option value="Sprint Intervals">
+    <option value="Treadmill Run">
+    <option value="Treadmill Walk">
+    <option value="Incline Walk">
+    <option value="Cycling">
+    <option value="Stationary Bike">
+    <option value="Spin Bike">
+    <option value="Rowing Machine">
+    <option value="Assault Bike">
+    <option value="Air Bike">
+    <option value="Elliptical">
+    <option value="Stair Climber">
+    <option value="Jump Rope">
+    <option value="Swimming">
+    <option value="Pool Walking">
+    <option value="Hiking">
+    <option value="Rucking">
+    <option value="Shadow Boxing">
+    <option value="Jumping Jacks">
+    <option value="Burpees">
+    <option value="Mountain Climbers">
+    <option value="High Knees">
+    <option value="Butt Kicks">
+    <option value="Skater Jumps">
+    <!-- Mobility -->
+    <option value="World's Greatest Stretch">
+    <option value="90/90 Hip Stretch">
+    <option value="Hip Flexor Stretch">
+    <option value="Couch Stretch">
+    <option value="Pigeon Stretch">
+    <option value="Figure-Four Stretch">
+    <option value="Cat-Cow">
+    <option value="Thread the Needle">
+    <option value="Thoracic Rotation">
+    <option value="Open Book Stretch">
+    <option value="Shoulder Dislocates">
+    <option value="Wall Angels">
+    <option value="Scapular Push-Up">
+    <option value="Dead Hang">
+    <option value="Active Hang">
+    <option value="Ankle Rocks">
+    <option value="Ankle Circles">
+    <option value="Knee Circles">
+    <option value="Hip Circles">
+    <option value="Arm Circles">
+    <option value="Deep Squat Hold">
+    <option value="Frog Stretch">
+    <option value="Butterfly Stretch">
+    <option value="Seated Forward Fold">
+    <option value="Standing Forward Fold">
+    <option value="Lat Stretch">
+    <option value="Pec Stretch">
+    <option value="Doorway Chest Stretch">
+    <option value="Tricep Stretch">
+    <option value="Cross-Body Shoulder Stretch">
+    <option value="Quad Stretch">
+    <option value="Standing Quad Stretch">
+    <option value="Hamstring Stretch">
+    <option value="Standing Hamstring Stretch">
+    <option value="Calf Stretch">
+    <option value="Wall Calf Stretch">
+    <option value="IT Band Stretch">
+    <option value="Piriformis Stretch">
+    <option value="Child's Pose">
+    <option value="Downward Dog">
+    <option value="Cobra Stretch">
+    <option value="Sphinx Pose">
+    <option value="Happy Baby Pose">
+    <option value="Supine Twist">
+    <option value="Foam Roll - Quads">
+    <option value="Foam Roll - IT Band">
+    <option value="Foam Roll - Upper Back">
+    <option value="Foam Roll - Calves">
+    <option value="Foam Roll - Lats">
+    <option value="Lacrosse Ball - Glutes">
+    <!-- Dynamic warm-up / activation -->
+    <option value="Leg Swings">
+    <option value="Inchworm">
+    <option value="Walking Knee Hugs">
+    <option value="Walking Quad Stretch">
+    <option value="A-Skips">
+    <option value="B-Skips">
+    <option value="Carioca">
+    <option value="Lateral Shuffles">
+    <option value="Glute Bridge March">
+    <option value="Clamshells">
+    <option value="Band Pull-Aparts">
+    <option value="Fire Hydrants">
+    <option value="Donkey Kicks">
+  </datalist>
+  <script src="app.js" defer></script>
+</body>
+</html>
