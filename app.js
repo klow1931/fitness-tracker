@@ -9,6 +9,7 @@
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],
       restDays: [], exerciseNotes: {}, unit: 'kg', dark: false, gymMode: false, checklistMode: false,
+      gymModeUserSet: false, onboardingDismissed: false,
       lastExportDate: null, backupBannerDismissed: null,
       progressPhotos: [],
       api: { enabled: false, provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' }
@@ -231,6 +232,16 @@
         if (panel) panel.classList.toggle('hidden', t !== name);
         if (tab) tab.classList.toggle('nav-active', t === name);
       });
+      // Mobile bottom nav active state
+      const primary = ['dashboard', 'workouts', 'nutrition', 'coach'];
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        const t = btn.getAttribute('data-tab');
+        if (t === 'more') {
+          btn.classList.toggle('nav-active', !primary.includes(name));
+        } else {
+          btn.classList.toggle('nav-active', t === name);
+        }
+      });
       if (name === 'dashboard') renderDashboard();
       if (name === 'calendar') renderCalendar();
       if (name === 'workouts') { renderWorkoutHistory(); renderTemplates(); }
@@ -247,6 +258,36 @@
       if (name === 'tools') updateStorageInfo();
       applyGymMode();
       updateBackupBanner();
+    }
+
+    function toggleMobileMore(force) {
+      const sheet = document.getElementById('mobile-more-sheet');
+      if (!sheet) return;
+      const open = force === false ? false : force === true ? true : sheet.classList.contains('hidden');
+      sheet.classList.toggle('hidden', !open);
+    }
+
+    function maybeAutoGymMode() {
+      // On narrow screens, enable Gym mode once unless the user has chosen manually
+      if (data.gymModeUserSet) return;
+      const narrow = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      if (narrow && !data.gymMode) {
+        data.gymMode = true;
+        saveData(data);
+      }
+    }
+
+    function updateOnboardingUI() {
+      const card = document.getElementById('onboarding-card');
+      if (!card) return;
+      card.classList.toggle('hidden', !!data.onboardingDismissed);
+    }
+
+    function dismissOnboarding() {
+      data.onboardingDismissed = true;
+      saveData(data);
+      updateOnboardingUI();
+      showToast('Quick-start tips dismissed', 'info');
     }
 
     function toggleDark() {
@@ -293,6 +334,7 @@
 
     function toggleGymMode() {
       data.gymMode = !data.gymMode;
+      data.gymModeUserSet = true; // don't auto-override after explicit choice
       saveData(data);
       applyGymMode();
       showToast(data.gymMode ? 'Gym mode on — larger controls + sticky save' : 'Gym mode off', 'info');
@@ -3742,7 +3784,9 @@ ${woLines}
       addExerciseRow();
       updateUnitToggle();
       applyDark();
+      maybeAutoGymMode();
       applyGymMode();
+      updateOnboardingUI();
       const checkToggle = document.getElementById('gym-checklist-toggle');
       if (checkToggle) checkToggle.checked = !!data.checklistMode;
       document.querySelectorAll('.unit-label').forEach(el => el.textContent = unitLabel());
@@ -3754,6 +3798,22 @@ ${woLines}
 
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+
+      // Keep gym-mode preference in sync if user resizes across breakpoint before choosing
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(max-width: 768px)');
+        const onChange = () => {
+          if (!data.gymModeUserSet) {
+            maybeAutoGymMode();
+            if (!mq.matches && !data.gymModeUserSet) {
+              // leaving mobile: don't force off; leave as-is
+            }
+            applyGymMode();
+          }
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else if (mq.addListener) mq.addListener(onChange);
       }
     }
 

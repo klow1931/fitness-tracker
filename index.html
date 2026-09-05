@@ -32,9 +32,9 @@
       <button onclick="dismissBackupBanner()" class="btn-secondary text-sm py-1 px-3">Dismiss</button>
     </div>
   </div>
-  <div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="max-w-6xl mx-auto px-4 py-6 app-shell">
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-900">Fitness Tracker</h1>
         <p class="text-slate-500 text-sm">Track workouts, PRs, nutrition, progress & AI Coach</p>
@@ -46,16 +46,43 @@
           <button id="unit-lb" onclick="setUnit('lb')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">lb</button>
         </div>
         <button onclick="toggleGymMode()" id="gym-mode-btn" class="btn-secondary text-sm px-3 py-1.5" title="Gym mode: larger controls">🏋️ Gym</button>
-        <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Dashboard</button>
-        <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
-        <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
-        <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition</button>
-        <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
-        <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
-        <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
-        <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
+        <div class="desktop-tabs flex gap-2 flex-wrap items-center">
+          <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Dashboard</button>
+          <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
+          <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
+          <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition</button>
+          <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
+          <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
+          <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
+          <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
+        </div>
       </div>
     </header>
+
+    <!-- First-run onboarding -->
+    <div id="onboarding-card" class="card onboarding-card hidden mb-4">
+      <div class="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <h2 class="font-semibold">Quick start</h2>
+          <p class="text-xs text-slate-500">A few tips for your first session — dismiss anytime.</p>
+        </div>
+        <button onclick="dismissOnboarding()" class="btn-secondary text-xs py-1 px-2">Dismiss</button>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-2 text-sm">
+        <button type="button" class="onboard-tip" onclick="showTab('workouts')">
+          <span class="onboard-num">1</span>
+          <span><b>Log a workout</b><br><span class="text-slate-500 text-xs">Add a lift, sets, then Save</span></span>
+        </button>
+        <button type="button" class="onboard-tip" onclick="toggleGymMode(); showToast('Gym mode toggled — larger controls', 'info')">
+          <span class="onboard-num">2</span>
+          <span><b>Try Gym mode</b><br><span class="text-slate-500 text-xs">Bigger buttons for the gym floor</span></span>
+        </button>
+        <button type="button" class="onboard-tip" onclick="showTab('tools'); setTimeout(() => document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}), 100)">
+          <span class="onboard-num">3</span>
+          <span><b>Load demo data</b><br><span class="text-slate-500 text-xs">Tools tab — explore charts fast</span></span>
+        </button>
+      </div>
+    </div>
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
@@ -800,17 +827,48 @@
           <button onclick="exportCSV()" class="btn-secondary">Export CSV</button>
           <button onclick="importData()" class="btn-secondary">Import JSON backup</button>
           <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
-          <button onclick="loadDemoData()" class="btn-secondary">Load demo data</button>
+          <button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button>
         </div>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
         <p class="text-xs text-slate-500 mt-2"><b>Privacy:</b> Workouts, nutrition, and photos stay in your browser on this device. Optional AI API keys are stored only here and are never included in JSON backups. Keys are only sent to the provider you choose when chat API mode is on.</p>
       </div>
     </section>
 
-    <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1">
-      <p id="app-version">FitTrack web v17 · local-first fitness tracker</p>
+    <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
+      <p id="app-version">FitTrack web v18 · local-first fitness tracker</p>
       <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
     </footer>
+  </div>
+
+  <!-- Mobile bottom navigation -->
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Main">
+    <button type="button" class="mobile-nav-btn nav-active" data-tab="dashboard" onclick="showTab('dashboard')">
+      <span class="mobile-nav-icon">🏠</span><span>Home</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" data-tab="workouts" onclick="showTab('workouts')">
+      <span class="mobile-nav-icon">💪</span><span>Train</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" data-tab="nutrition" onclick="showTab('nutrition')">
+      <span class="mobile-nav-icon">🍽️</span><span>Food</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" data-tab="coach" onclick="showTab('coach')">
+      <span class="mobile-nav-icon">🤖</span><span>Coach</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" data-tab="more" onclick="toggleMobileMore()">
+      <span class="mobile-nav-icon">⋯</span><span>More</span>
+    </button>
+  </nav>
+  <div id="mobile-more-sheet" class="mobile-more-sheet hidden">
+    <div class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
+    <div class="mobile-more-panel">
+      <p class="text-sm font-semibold mb-2">More</p>
+      <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)">📅 Calendar</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('prs'); toggleMobileMore(false)">🏆 PRs</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)">📷 Photos</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)">🛠️ Tools</button>
+      <button type="button" class="mobile-more-item" onclick="toggleGymMode(); toggleMobileMore(false)">🏋️ Toggle Gym mode</button>
+      <button type="button" class="btn-secondary w-full mt-2" onclick="toggleMobileMore(false)">Close</button>
+    </div>
   </div>
 
   <datalist id="exercise-list">

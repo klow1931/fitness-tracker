@@ -1,5 +1,5 @@
 /* Fitness Tracker — app-shell service worker */
-const CACHE = 'fitness-tracker-v17';
+const CACHE = 'fitness-tracker-v18';
 const ASSETS = [
   './',
   './index.html',
