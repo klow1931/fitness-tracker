@@ -52,6 +52,8 @@
           <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
           <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition</button>
           <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
+          <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measures</button>
+          <button onclick="showTab('form')" id="tab-form" class="tab-btn">Form</button>
           <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
           <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
           <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
@@ -86,6 +88,24 @@
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
+      <div class="card start-here-card">
+        <h2 class="font-semibold mb-1">Start here</h2>
+        <p class="text-xs text-slate-500 mb-3">You don’t need every feature. Pick one:</p>
+        <div class="grid sm:grid-cols-3 gap-2">
+          <button type="button" class="onboard-tip" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">
+            <span class="onboard-num">1</span>
+            <span><b>Log a workout</b><br><span class="text-slate-500 text-xs">Train tab → Log</span></span>
+          </button>
+          <button type="button" class="onboard-tip" onclick="showTab('nutrition'); showSubTab('nutrition','nu-today')">
+            <span class="onboard-num">2</span>
+            <span><b>Log food</b><br><span class="text-slate-500 text-xs">Food tab → Today</span></span>
+          </button>
+          <button type="button" class="onboard-tip" onclick="showTab('coach'); showSubTab('coach','co-chat')">
+            <span class="onboard-num">3</span>
+            <span><b>Ask the coach</b><br><span class="text-slate-500 text-xs">Coach → Chat</span></span>
+          </button>
+        </div>
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div class="card">
           <p class="text-sm text-slate-500">Workouts (30d)</p>
@@ -152,7 +172,10 @@
           <canvas id="cardioChart" height="180"></canvas>
         </div>
         <div class="card">
-          <h2 class="font-semibold mb-4">Bodyweight</h2>
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <h2 class="font-semibold">Bodyweight</h2>
+            <button onclick="showTab('measures')" class="btn-secondary text-xs">Body measures →</button>
+          </div>
           <div class="flex gap-2 mb-3">
             <input type="date" id="bw-date" class="input text-sm" />
             <input type="number" id="bw-value" class="input text-sm" step="0.1" placeholder="Weight" />
@@ -165,6 +188,194 @@
       <div class="card">
         <h2 class="font-semibold mb-3">Recent Activity</h2>
         <div id="recent-activity" class="space-y-2 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- BODY MEASUREMENTS -->
+    <section id="panel-measures" class="hidden space-y-6">
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div>
+            <h2 class="font-semibold">Body Measurements</h2>
+            <p class="text-xs text-slate-500">Tape-measure tracking for bodybuilding / physique progress. Leave blanks for sites you skip.</p>
+          </div>
+          <div class="flex rounded-lg border border-slate-300 overflow-hidden text-sm font-medium">
+            <button type="button" id="meas-unit-cm" onclick="setMeasureUnit('cm')" class="px-3 py-1.5 bg-indigo-600 text-white">cm</button>
+            <button type="button" id="meas-unit-in" onclick="setMeasureUnit('in')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">in</button>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+          <div>
+            <label class="label">Date</label>
+            <input type="date" id="meas-date" class="input" />
+          </div>
+          <div>
+            <label class="label">Neck (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-neck" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Shoulders (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-shoulders" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Chest (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-chest" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Left arm (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-leftArm" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Right arm (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-rightArm" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Waist (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-waist" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Hips (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-hips" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Left thigh (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-leftThigh" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Right thigh (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-rightThigh" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Left calf (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-leftCalf" class="input" min="0" step="0.1" />
+          </div>
+          <div>
+            <label class="label">Right calf (<span class="meas-unit-label">cm</span>)</label>
+            <input type="number" id="meas-rightCalf" class="input" min="0" step="0.1" />
+          </div>
+          <div class="sm:col-span-2 md:col-span-3">
+            <label class="label">Notes (optional)</label>
+            <input type="text" id="meas-notes" class="input" placeholder="e.g. morning, flexed arms, post-workout" />
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="saveMeasurements()" class="btn-primary">Save measurements</button>
+          <button onclick="clearMeasurementForm()" class="btn-secondary">Clear form</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h2 class="font-semibold">Trend</h2>
+          <select id="meas-chart-key" class="input text-sm w-auto" onchange="renderMeasuresChart()">
+            <option value="waist">Waist</option>
+            <option value="chest">Chest</option>
+            <option value="shoulders">Shoulders</option>
+            <option value="hips">Hips</option>
+            <option value="leftArm">Left arm</option>
+            <option value="rightArm">Right arm</option>
+            <option value="leftThigh">Left thigh</option>
+            <option value="rightThigh">Right thigh</option>
+            <option value="leftCalf">Left calf</option>
+            <option value="rightCalf">Right calf</option>
+            <option value="neck">Neck</option>
+          </select>
+        </div>
+        <canvas id="measuresChart" height="220"></canvas>
+        <div id="meas-delta" class="text-sm text-slate-500 mt-2"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-3">History</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-slate-500 border-b border-slate-200">
+                <th class="py-2 pr-2">Date</th>
+                <th class="py-2 pr-2">Waist</th>
+                <th class="py-2 pr-2">Chest</th>
+                <th class="py-2 pr-2">Shoulders</th>
+                <th class="py-2 pr-2">Arms L/R</th>
+                <th class="py-2 pr-2">Hips</th>
+                <th class="py-2 pr-2">Thighs L/R</th>
+                <th class="py-2 pr-2">Calves L/R</th>
+                <th class="py-2 pr-2"></th>
+              </tr>
+            </thead>
+            <tbody id="measures-history"></tbody>
+          </table>
+        </div>
+        <p id="measures-empty" class="text-sm text-slate-500 hidden">No measurements yet. Log your first check-in above.</p>
+      </div>
+    </section>
+
+    <!-- FORM / TECHNIQUE REVIEW (Level 1 — guided cues, not auto computer-vision) -->
+    <section id="panel-form" class="hidden space-y-6">
+      <div class="card border-amber-200 bg-amber-50">
+        <p class="text-sm text-amber-900 font-medium mb-1">Self-check checklist — not an automatic video breakdown</p>
+        <p class="text-xs text-amber-900/90">
+          This section does <b>not</b> analyze your video with AI or computer vision.
+          The video is only for <b>you</b> to play back while you mark a cue checklist.
+          It is not a full form diagnosis, coaching grade, or real-time technique score.
+        </p>
+      </div>
+      <div class="card">
+        <h2 class="font-semibold mb-1">Technique self-check</h2>
+        <p class="text-xs text-slate-500 mb-3">
+          Pick a lift, optionally play your set, then check off cues yourself (or with a coach).
+          Only the checklist answers and notes are saved — the video file is not stored in the app.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="label">Date</label>
+            <input type="date" id="form-date" class="input" />
+          </div>
+          <div>
+            <label class="label">Lift / exercise</label>
+            <select id="form-lift" class="input" onchange="onFormLiftChange()">
+              <option value="squat">Back Squat</option>
+              <option value="bench">Bench Press</option>
+              <option value="deadlift">Deadlift</option>
+              <option value="ohp">Overhead Press</option>
+              <option value="row">Barbell Row</option>
+              <option value="rdl">Romanian Deadlift</option>
+              <option value="generic">Other / General</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="label">Video for playback only (optional)</label>
+          <input type="file" id="form-video" class="input" accept="video/*" capture="environment" onchange="loadFormVideo(event)" />
+          <p class="text-xs text-slate-500 mt-1">Playback aid only — not analyzed. Tip: film from the <b>side</b>, full body in frame, 1–3 working reps.</p>
+        </div>
+        <div id="form-video-wrap" class="form-video-wrap hidden mb-3">
+          <video id="form-video-player" controls playsinline class="form-video-player"></video>
+          <button type="button" onclick="clearFormVideo()" class="btn-secondary text-xs mt-2">Remove video from player</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-2">How to film (tips)</h2>
+        <ul id="form-film-tips" class="text-sm text-slate-600 space-y-1 list-disc pl-5 mb-4"></ul>
+        <h2 class="font-semibold mb-2">Cue checklist (you mark these)</h2>
+        <p class="text-xs text-slate-500 mb-2">Watch your video and check what looks solid. Unchecked items are a focus list — not an AI score.</p>
+        <div id="form-cues" class="space-y-2 mb-4"></div>
+        <div class="mb-3">
+          <label class="label">Focus / notes</label>
+          <textarea id="form-notes" class="input" rows="3" placeholder="e.g. knees caved on rep 3; need more brace before descent"></textarea>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="saveFormReview()" class="btn-primary">Save checklist review</button>
+          <button onclick="resetFormReview()" class="btn-secondary">Reset checklist</button>
+        </div>
+        <div id="form-summary" class="text-sm mt-3 text-slate-600"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-1">Saved checklist reviews</h2>
+        <p class="text-xs text-slate-500 mb-3">These are your self-check results and notes — not automatic video grades.</p>
+        <div id="form-history" class="space-y-2 text-sm"></div>
+        <p id="form-history-empty" class="text-sm text-slate-500 hidden">No checklist reviews yet.</p>
       </div>
     </section>
 
@@ -251,6 +462,14 @@
 
     <!-- WORKOUTS -->
     <section id="panel-workouts" class="hidden space-y-6">
+      <div class="section-tabs" role="tablist" aria-label="Workouts sections">
+        <button type="button" class="section-tab active" data-sub="wo-log" onclick="showSubTab('workouts','wo-log')">1. Log</button>
+        <button type="button" class="section-tab" data-sub="wo-history" onclick="showSubTab('workouts','wo-history')">2. History</button>
+        <button type="button" class="section-tab" data-sub="wo-templates" onclick="showSubTab('workouts','wo-templates')">3. Templates</button>
+      </div>
+      <p class="text-xs text-slate-500 -mt-3">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
+
+      <div class="sub-panel" data-panel="workouts" data-sub="wo-log">
       <div class="card" id="workout-log-card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 class="font-semibold">Log Workout</h2>
@@ -303,7 +522,9 @@
         <button onclick="startRest(90)" class="btn-secondary">Rest 1.5m</button>
         <span id="rest-timer-sticky" class="text-sm font-mono font-medium w-12 text-center">—</span>
       </div>
+      </div><!-- /wo-log -->
 
+      <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-history">
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 class="font-semibold">Workout History</h2>
@@ -317,15 +538,28 @@
         </div>
         <div id="workout-history" class="space-y-3"></div>
       </div>
+      </div><!-- /wo-history -->
 
+      <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-templates">
       <div class="card">
         <h2 class="font-semibold mb-3">Saved Templates</h2>
+        <p class="text-xs text-slate-500 mb-3">Save a logged session as a template from the Log tab, then reuse it here.</p>
         <div id="templates-list" class="space-y-2 text-sm"></div>
       </div>
+      </div><!-- /wo-templates -->
     </section>
 
     <!-- NUTRITION -->
     <section id="panel-nutrition" class="hidden space-y-6">
+      <div class="section-tabs" role="tablist" aria-label="Nutrition sections">
+        <button type="button" class="section-tab active" data-sub="nu-today" onclick="showSubTab('nutrition','nu-today')">1. Today</button>
+        <button type="button" class="section-tab" data-sub="nu-add" onclick="showSubTab('nutrition','nu-add')">2. Add food</button>
+        <button type="button" class="section-tab" data-sub="nu-library" onclick="showSubTab('nutrition','nu-library')">3. Library</button>
+        <button type="button" class="section-tab" data-sub="nu-history" onclick="showSubTab('nutrition','nu-history')">4. History</button>
+      </div>
+      <p class="text-xs text-slate-500 -mt-3">Start with <b>Today</b> + <b>Add food</b>. Library and history are optional.</p>
+
+      <div class="sub-panel" data-panel="nutrition" data-sub="nu-today">
       <!-- Date + day totals -->
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -338,8 +572,8 @@
           <div><p class="text-slate-500">Carbs</p><p class="font-bold text-lg" id="tot-c">0g</p></div>
           <div><p class="text-slate-500">Fat</p><p class="font-bold text-lg" id="tot-f">0g</p></div>
         </div>
-        <details class="mb-4" open>
-          <summary class="text-sm font-medium text-slate-600 cursor-pointer mb-2">Micronutrients</summary>
+        <details class="mb-4">
+          <summary class="text-sm font-medium text-slate-600 cursor-pointer mb-2">Micronutrients (optional)</summary>
           <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-center text-sm" id="nu-micro-totals">
             <div><p class="text-slate-500">Fiber</p><p class="font-bold" id="tot-fiber">0g</p></div>
             <div><p class="text-slate-500">Sugar</p><p class="font-bold" id="tot-sugar">0g</p></div>
@@ -360,9 +594,12 @@
         <div class="flex flex-wrap gap-2">
           <button onclick="saveDayFromFoods()" class="btn-primary">Save Day Totals</button>
           <button onclick="clearDayFoods()" class="btn-secondary">Clear Day Foods</button>
+          <button onclick="showSubTab('nutrition','nu-add')" class="btn-secondary">Add food →</button>
         </div>
       </div>
+      </div><!-- /nu-today -->
 
+      <div class="sub-panel hidden" data-panel="nutrition" data-sub="nu-add">
       <!-- Add food -->
       <div class="card">
         <h2 class="font-semibold mb-3">Add Food</h2>
@@ -514,7 +751,9 @@
           <p class="text-xs text-slate-500 mt-1" id="picked-food-info"></p>
         </div>
       </div>
+      </div><!-- /nu-add -->
 
+      <div class="sub-panel hidden" data-panel="nutrition" data-sub="nu-library">
       <!-- Food library browser -->
       <div class="card">
         <div class="flex items-center justify-between mb-3">
@@ -524,7 +763,9 @@
         <input type="text" id="library-filter" class="input mb-2 text-sm" placeholder="Filter library…" oninput="debouncedLibraryFilter()" />
         <div id="food-library-list" class="space-y-1 text-sm"></div>
       </div>
+      </div><!-- /nu-library -->
 
+      <div class="sub-panel hidden" data-panel="nutrition" data-sub="nu-history">
       <!-- History -->
       <div class="card">
         <h2 class="font-semibold mb-4">Nutrition History</h2>
@@ -546,6 +787,7 @@
           </table>
         </div>
       </div>
+      </div><!-- /nu-history -->
     </section>
 
     <!-- PRs -->
@@ -581,6 +823,25 @@
 
     <!-- AI COACH -->
     <section id="panel-coach" class="hidden space-y-6">
+      <div class="section-tabs" role="tablist" aria-label="Coach sections">
+        <button type="button" class="section-tab active" data-sub="co-insights" onclick="showSubTab('coach','co-insights')">1. Insights</button>
+        <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">2. Chat</button>
+        <button type="button" class="section-tab" data-sub="co-goals" onclick="showSubTab('coach','co-goals')">3. Goals</button>
+        <button type="button" class="section-tab" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">4. Programs</button>
+        <button type="button" class="section-tab" data-sub="co-api" onclick="showSubTab('coach','co-api')">5. API</button>
+      </div>
+      <p class="text-xs text-slate-500 -mt-3">Most people only need <b>Insights</b> and <b>Chat</b>. Programs and API are optional.</p>
+
+      <div class="card border-slate-300 bg-slate-50">
+        <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
+        <p class="text-xs text-slate-600">
+          The AI Coach is <b>not a doctor, physical therapist, dietitian, or licensed medical professional</b>.
+          Insights, chat replies, deload suggestions, and programs are <b>general fitness recommendations only</b> — not medical advice, diagnosis, or treatment.
+          Always use your own judgment. Talk to a qualified professional before changing training or nutrition if you have an injury, illness, or health condition.
+        </p>
+      </div>
+
+      <div class="sub-panel" data-panel="coach" data-sub="co-insights">
       <!-- Advice Banner -->
       <div class="card bg-indigo-50 border-indigo-100">
         <h2 class="font-semibold text-indigo-900 mb-2">Coach Insights</h2>
@@ -601,7 +862,9 @@
         </div>
         <p class="text-xs text-slate-500 mt-2">Uses your recent volume, frequency, and rest days. This is guidance — not medical advice.</p>
       </div>
+      </div><!-- /co-insights -->
 
+      <div class="sub-panel hidden" data-panel="coach" data-sub="co-api">
       <!-- AI API settings (BYO key) -->
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -641,7 +904,9 @@
           <button onclick="testApiConnection()" class="btn-secondary text-sm">Test connection</button>
         </div>
       </div>
+      </div><!-- /co-api -->
 
+      <div class="sub-panel hidden" data-panel="coach" data-sub="co-chat">
       <!-- Chat with Coach -->
       <div class="card">
         <h2 class="font-semibold mb-3">Chat with Coach</h2>
@@ -649,7 +914,7 @@
         <div id="chat-messages" class="h-64 overflow-y-auto border border-slate-200 rounded-lg p-3 mb-3 bg-slate-50 space-y-3 text-sm">
           <div class="flex gap-2">
             <div class="bg-indigo-100 text-indigo-900 rounded-lg px-3 py-2 max-w-[85%]">
-              Hi — I’m your coach. Ask about progression, protein, recovery, or form. Add your own API key above for full AI answers grounded in your logs.
+              Hi — I’m your coach. Ask about progression, protein, recovery, or form. Add your own API key in the API tab for fuller answers grounded in your logs. Remember: I’m not a doctor — suggestions are general recommendations only, not medical advice.
             </div>
           </div>
         </div>
@@ -671,8 +936,10 @@
           <button onclick="askSuggestion('What is daily undulating periodization?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">DUP</button>
         </div>
       </div>
+      </div><!-- /co-chat -->
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="sub-panel hidden" data-panel="coach" data-sub="co-goals">
+      <div class="grid md:grid-cols-1 gap-6">
         <!-- Goals -->
         <div class="card">
           <h2 class="font-semibold mb-4">Set Goals</h2>
@@ -716,7 +983,17 @@
           </div>
           <button onclick="saveGoal()" class="btn-primary">Save Goal</button>
         </div>
+      </div>
 
+      <!-- Active Goals -->
+      <div class="card">
+        <h2 class="font-semibold mb-4">Your Goals</h2>
+        <div id="goals-list" class="space-y-3"></div>
+      </div>
+      </div><!-- /co-goals -->
+
+      <div class="sub-panel hidden" data-panel="coach" data-sub="co-programs">
+      <div class="grid md:grid-cols-1 gap-6">
         <!-- Program Generator -->
         <div class="card">
           <h2 class="font-semibold mb-4">Generate Program</h2>
@@ -764,12 +1041,6 @@
         </div>
       </div>
 
-      <!-- Active Goals -->
-      <div class="card">
-        <h2 class="font-semibold mb-4">Your Goals</h2>
-        <div id="goals-list" class="space-y-3"></div>
-      </div>
-
       <!-- Active Program + Library -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
@@ -785,6 +1056,7 @@
         <h2 class="font-semibold mb-3">Program Library</h2>
         <div id="programs-list" class="space-y-2 text-sm"></div>
       </div>
+      </div><!-- /co-programs -->
     </section>
 
     <!-- TOOLS -->
@@ -835,7 +1107,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">FitTrack web v18 · local-first fitness tracker</p>
+      <p id="app-version">FitTrack web v24 · local-first fitness tracker</p>
       <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
     </footer>
   </div>
@@ -864,6 +1136,8 @@
       <p class="text-sm font-semibold mb-2">More</p>
       <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)">📅 Calendar</button>
       <button type="button" class="mobile-more-item" onclick="showTab('prs'); toggleMobileMore(false)">🏆 PRs</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)">📏 Measures</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('form'); toggleMobileMore(false)">🎬 Form</button>
       <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)">📷 Photos</button>
       <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)">🛠️ Tools</button>
       <button type="button" class="mobile-more-item" onclick="toggleGymMode(); toggleMobileMore(false)">🏋️ Toggle Gym mode</button>

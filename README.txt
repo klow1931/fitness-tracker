@@ -1,6 +1,6 @@
 FitTrack (web) — quick start for testers
 ========================================
-Version: web v18
+Version: web v22
 
 What this is
 ------------
@@ -18,12 +18,11 @@ How to open
 
 First things to try
 -------------------
-• Tools → Load demo data (safe way to see charts & history)
-• Workouts → log a set → Save
-• Nutrition → search a food → Save Day Totals
-• Toggle Gym mode (header) for bigger controls
-• AI Coach → chat offline, or add your own API key (optional)
-• Tools → Export JSON backup (photos excluded; Photos tab has its own export)
+• Home → Start here (3 big buttons)
+• Train → Log only (History / Templates are separate tabs)
+• Food → Today + Add food (Library / History optional)
+• Coach → Insights or Chat first (Programs / API optional)
+• Tools → Load demo data (optional) or Export JSON backup
 
 Privacy
 -------

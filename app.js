@@ -8,12 +8,140 @@
     const DEFAULT_DATA = {
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],
-      restDays: [], exerciseNotes: {}, unit: 'kg', dark: false, gymMode: false, checklistMode: false,
+      restDays: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', dark: false, gymMode: false, checklistMode: false,
       gymModeUserSet: false, onboardingDismissed: false,
       lastExportDate: null, backupBannerDismissed: null,
-      progressPhotos: [],
+      progressPhotos: [], measurements: [], formReviews: [],
       api: { enabled: false, provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' }
     };
+
+    const TECHNIQUE_LIBRARY = {
+      squat: {
+        label: 'Back Squat',
+        film: [
+          'Film from the side (or slight 45°) so depth and torso angle are visible.',
+          'Full body in frame — bar, hips, knees, and feet.',
+          'Capture 1–3 working reps, not only warm-ups.'
+        ],
+        cues: [
+          'Brace before unrack; ribs down, big breath into the belt area',
+          'Bar sits stable (high- or low-bar) without sliding',
+          'Knees track roughly in line with toes (not collapsing hard inward)',
+          'Hip crease reaches at or below top of knee if mobility allows',
+          'Torso stays controlled — no excessive forward collapse or rounding',
+          'Feet stay planted; drive through mid-foot on the way up',
+          'Lockout is tall without hyperextending the lower back'
+        ]
+      },
+      bench: {
+        label: 'Bench Press',
+        film: [
+          'Film from the side or slight 45° to see bar path and arch.',
+          'Include upper back, elbows, and bar touch point.',
+          'Use a pause or controlled touch if that is your competition style.'
+        ],
+        cues: [
+          'Shoulder blades retracted and set before the first rep',
+          'Glutes stay on the bench; feet planted',
+          'Bar lowers under control to lower chest / nipple line',
+          'Elbows roughly 45–70° from torso (not flared straight out)',
+          'Wrists stacked over elbows at the bottom',
+          'Press up and slightly back toward the rack',
+          'Bar path is fairly consistent rep to rep'
+        ]
+      },
+      deadlift: {
+        label: 'Deadlift',
+        film: [
+          'Side view is best for bar path and back position.',
+          'Show the bar over mid-foot at the start.',
+          'Film the full lockout — not only the pull off the floor.'
+        ],
+        cues: [
+          'Bar starts over mid-foot',
+          'Hips hinge; shins relatively vertical before the pull',
+          'Spine stays neutral — no rounding under load',
+          'Push the floor away; bar stays close to the legs',
+          'Shoulders and hips rise together (no extreme butt-wink shoot-up)',
+          'Lockout is tall without leaning way back',
+          'Lower under control if you are practicing touch-and-go or controlled eccentrics'
+        ]
+      },
+      ohp: {
+        label: 'Overhead Press',
+        film: [
+          'Film from the side or front-45° to see lockout and rib position.',
+          'Include feet, hips, and full arm lockout.'
+        ],
+        cues: [
+          'Glutes and core braced; minimal excessive lean-back',
+          'Bar starts near shoulders / upper chest',
+          'Elbows not flared wildly; press in a smooth path',
+          'Head moves slightly back then through as bar passes face',
+          'Lockout is stacked — bar over mid-foot / shoulders',
+          'No soft elbows at the top'
+        ]
+      },
+      row: {
+        label: 'Barbell Row',
+        film: [
+          'Side view shows torso angle and bar path to the torso.',
+          'Film strict reps if that is the goal (less cheat-momentum).'
+        ],
+        cues: [
+          'Hinge position stays relatively fixed (not standing up each rep)',
+          'Bar pulled toward lower chest / upper abs depending on variation',
+          'Elbows track close enough to load the back, not only the arms',
+          'Controlled eccentric — no free-fall',
+          'Neck stays neutral'
+        ]
+      },
+      rdl: {
+        label: 'Romanian Deadlift',
+        film: [
+          'Side view for hip hinge and bar closeness.',
+          'Soft knees should stay consistent through the set.'
+        ],
+        cues: [
+          'Soft knee bend stays steady (not a squat)',
+          'Hips push back; feel stretch in hamstrings',
+          'Bar stays close to the legs',
+          'Spine neutral — no rounding to reach lower',
+          'Drive hips forward to stand tall without overextending'
+        ]
+      },
+      generic: {
+        label: 'General lift',
+        film: [
+          'Film from the side when possible.',
+          'Keep the full movement in frame.',
+          'Use the same angle next time so comparisons are fair.'
+        ],
+        cues: [
+          'Setup is stable before the first rep',
+          'Range of motion is consistent rep to rep',
+          'No sudden pain or joint pinching (stop if pain appears)',
+          'Control the weight — limited bouncing or uncontrolled drop',
+          'Breathing / bracing matches the effort of the set'
+        ]
+      }
+    };
+    let formVideoUrl = null;
+
+    const MEASURE_KEYS = [
+      { key: 'neck', label: 'Neck' },
+      { key: 'shoulders', label: 'Shoulders' },
+      { key: 'chest', label: 'Chest' },
+      { key: 'leftArm', label: 'Left arm' },
+      { key: 'rightArm', label: 'Right arm' },
+      { key: 'waist', label: 'Waist' },
+      { key: 'hips', label: 'Hips' },
+      { key: 'leftThigh', label: 'Left thigh' },
+      { key: 'rightThigh', label: 'Right thigh' },
+      { key: 'leftCalf', label: 'Left calf' },
+      { key: 'rightCalf', label: 'Right calf' }
+    ];
+    let measuresChart = null;
 
     const API_KEY_STORAGE = 'fitness-tracker-api-key';
     let chatHistory = []; // {role, content} for API multi-turn
@@ -226,7 +354,7 @@
 
     // ========== Tab Navigation ==========
     function showTab(name) {
-      ['dashboard', 'calendar', 'workouts', 'nutrition', 'prs', 'photos', 'coach', 'tools'].forEach(t => {
+      ['dashboard', 'calendar', 'workouts', 'nutrition', 'prs', 'measures', 'form', 'photos', 'coach', 'tools'].forEach(t => {
         const panel = document.getElementById('panel-' + t);
         const tab = document.getElementById('tab-' + t);
         if (panel) panel.classList.toggle('hidden', t !== name);
@@ -244,8 +372,13 @@
       });
       if (name === 'dashboard') renderDashboard();
       if (name === 'calendar') renderCalendar();
-      if (name === 'workouts') { renderWorkoutHistory(); renderTemplates(); }
+      if (name === 'workouts') {
+        showSubTab('workouts', 'wo-log');
+        renderWorkoutHistory();
+        renderTemplates();
+      }
       if (name === 'nutrition') {
+        showSubTab('nutrition', 'nu-today');
         ensureFoodLibrary();
         loadDayFoods();
         renderNutritionHistory();
@@ -253,11 +386,38 @@
         showFoodMode('search');
       }
       if (name === 'prs') renderPRs();
+      if (name === 'measures') renderMeasures();
+      if (name === 'form') renderFormReview();
       if (name === 'photos') renderPhotos();
-      if (name === 'coach') renderCoach();
+      if (name === 'coach') {
+        showSubTab('coach', 'co-insights');
+        renderCoach();
+      }
       if (name === 'tools') updateStorageInfo();
       applyGymMode();
       updateBackupBanner();
+    }
+
+    /** Show one sub-section inside a dense panel (workouts / nutrition / coach) */
+    function showSubTab(panel, sub) {
+      document.querySelectorAll('.sub-panel[data-panel="' + panel + '"]').forEach(el => {
+        el.classList.toggle('hidden', el.getAttribute('data-sub') !== sub);
+      });
+      const section = document.getElementById('panel-' + panel);
+      if (section) {
+        section.querySelectorAll('.section-tab').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-sub') === sub);
+        });
+      }
+      if (panel === 'workouts' && sub === 'wo-history') renderWorkoutHistory();
+      if (panel === 'workouts' && sub === 'wo-templates') renderTemplates();
+      if (panel === 'nutrition' && sub === 'nu-today') loadDayFoods();
+      if (panel === 'nutrition' && (sub === 'nu-library' || sub === 'nu-add')) {
+        ensureFoodLibrary();
+        renderFoodLibrary();
+      }
+      if (panel === 'nutrition' && sub === 'nu-history') renderNutritionHistory();
+      if (panel === 'coach') renderCoach();
     }
 
     function toggleMobileMore(force) {
@@ -305,6 +465,7 @@
         if (document.getElementById('nutritionChart')) renderNutritionChart();
         if (document.getElementById('bwChart')) renderBwChart();
         if (document.getElementById('cardioChart')) renderCardioChart();
+        if (document.getElementById('measuresChart')) renderMeasuresChart();
       } catch (e) { /* charts may not be ready yet */ }
     }
 
@@ -2017,6 +2178,364 @@
       renderDashboard();
     }
 
+    // ========== Body measurements (cm storage) ==========
+    function measureUnitLabel() {
+      return (data.measureUnit === 'in') ? 'in' : 'cm';
+    }
+    function toMeasureStorage(displayVal) {
+      const n = parseFloat(displayVal);
+      if (!n && n !== 0) return null;
+      if (data.measureUnit === 'in') return round1(n * 2.54);
+      return round1(n);
+    }
+    function toMeasureDisplay(cm) {
+      if (cm == null || cm === '') return '';
+      if (data.measureUnit === 'in') return round1(cm / 2.54);
+      return round1(cm);
+    }
+    function formatMeasure(cm) {
+      if (cm == null || cm === '') return '—';
+      return toMeasureDisplay(cm) + measureUnitLabel();
+    }
+
+    function setMeasureUnit(u) {
+      data.measureUnit = u === 'in' ? 'in' : 'cm';
+      saveData(data);
+      updateMeasureUnitUI();
+      renderMeasures();
+    }
+    function updateMeasureUnitUI() {
+      const u = measureUnitLabel();
+      document.querySelectorAll('.meas-unit-label').forEach(el => { el.textContent = u; });
+      const cmBtn = document.getElementById('meas-unit-cm');
+      const inBtn = document.getElementById('meas-unit-in');
+      if (cmBtn && inBtn) {
+        const isCm = data.measureUnit !== 'in';
+        cmBtn.className = 'px-3 py-1.5 ' + (isCm ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50');
+        inBtn.className = 'px-3 py-1.5 ' + (!isCm ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50');
+      }
+    }
+
+    function clearMeasurementForm() {
+      MEASURE_KEYS.forEach(({ key }) => {
+        const el = document.getElementById('meas-' + key);
+        if (el) el.value = '';
+      });
+      const notes = document.getElementById('meas-notes');
+      if (notes) notes.value = '';
+    }
+
+    function saveMeasurements() {
+      const date = document.getElementById('meas-date')?.value || today();
+      const entry = { id: Date.now() + Math.random(), date, notes: (document.getElementById('meas-notes')?.value || '').trim() };
+      let any = false;
+      MEASURE_KEYS.forEach(({ key }) => {
+        const raw = document.getElementById('meas-' + key)?.value;
+        const cm = toMeasureStorage(raw);
+        if (cm != null && cm > 0) {
+          entry[key] = cm;
+          any = true;
+        }
+      });
+      if (!any) return showToast('Enter at least one measurement', 'error');
+      data.measurements = data.measurements || [];
+      const idx = data.measurements.findIndex(m => m.date === date);
+      if (idx >= 0) {
+        // merge: new values overwrite, keep previous sites if blank this time
+        const prev = data.measurements[idx];
+        MEASURE_KEYS.forEach(({ key }) => {
+          if (entry[key] != null) prev[key] = entry[key];
+        });
+        if (entry.notes) prev.notes = entry.notes;
+        data.measurements[idx] = prev;
+      } else {
+        data.measurements.push(entry);
+      }
+      data.measurements.sort((a, b) => b.date.localeCompare(a.date));
+      saveData(data);
+      clearMeasurementForm();
+      renderMeasures();
+      showToast('Measurements saved', 'success');
+    }
+
+    function deleteMeasurement(id) {
+      if (!confirm('Delete this measurement entry?')) return;
+      data.measurements = (data.measurements || []).filter(m => String(m.id) !== String(id));
+      saveData(data);
+      renderMeasures();
+      showToast('Measurement deleted', 'info');
+    }
+
+    function loadMeasurementIntoForm(id) {
+      const m = (data.measurements || []).find(x => String(x.id) === String(id));
+      if (!m) return;
+      const dateEl = document.getElementById('meas-date');
+      if (dateEl) dateEl.value = m.date;
+      MEASURE_KEYS.forEach(({ key }) => {
+        const el = document.getElementById('meas-' + key);
+        if (el) el.value = m[key] != null ? toMeasureDisplay(m[key]) : '';
+      });
+      const notes = document.getElementById('meas-notes');
+      if (notes) notes.value = m.notes || '';
+      showToast('Loaded into form — edit and save to update', 'info');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderMeasuresHistory() {
+      const tbody = document.getElementById('measures-history');
+      const empty = document.getElementById('measures-empty');
+      if (!tbody) return;
+      const list = data.measurements || [];
+      if (empty) empty.classList.toggle('hidden', list.length > 0);
+      if (!list.length) {
+        tbody.innerHTML = '';
+        return;
+      }
+      tbody.innerHTML = list.map(m => `
+        <tr class="border-b border-slate-100">
+          <td class="py-2 pr-2 whitespace-nowrap font-medium">${formatDate(m.date)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.waist)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.chest)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.shoulders)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.leftArm)} / ${formatMeasure(m.rightArm)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.hips)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.leftThigh)} / ${formatMeasure(m.rightThigh)}</td>
+          <td class="py-2 pr-2">${formatMeasure(m.leftCalf)} / ${formatMeasure(m.rightCalf)}</td>
+          <td class="py-2 pr-2 whitespace-nowrap">
+            <button onclick="loadMeasurementIntoForm('${m.id}')" class="text-xs text-indigo-600 hover:underline mr-2">Edit</button>
+            <button onclick="deleteMeasurement('${m.id}')" class="text-xs text-red-500 hover:underline">Del</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderMeasuresChart() {
+      const canvas = document.getElementById('measuresChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      const key = document.getElementById('meas-chart-key')?.value || 'waist';
+      const sorted = [...(data.measurements || [])]
+        .filter(m => m[key] != null)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(-40);
+      const dark = !!data.dark;
+      if (measuresChart) measuresChart.destroy();
+      const label = (MEASURE_KEYS.find(k => k.key === key)?.label || key) + ' (' + measureUnitLabel() + ')';
+      measuresChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: sorted.map(m => formatDate(m.date)),
+          datasets: [{
+            label,
+            data: sorted.map(m => toMeasureDisplay(m[key])),
+            borderColor: dark ? '#a78bfa' : '#7c3aed',
+            backgroundColor: dark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: dark ? '#c4b5fd' : '#7c3aed'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: typeof chartPluginOptions === 'function' ? chartPluginOptions(false) : { legend: { display: true } },
+          scales: {
+            x: { ticks: { color: dark ? '#94a3b8' : '#64748b' }, grid: { color: dark ? '#334155' : '#e2e8f0' } },
+            y: { ticks: { color: dark ? '#94a3b8' : '#64748b' }, grid: { color: dark ? '#334155' : '#e2e8f0' } }
+          }
+        }
+      });
+      const deltaEl = document.getElementById('meas-delta');
+      if (deltaEl) {
+        if (sorted.length >= 2) {
+          const first = toMeasureDisplay(sorted[0][key]);
+          const last = toMeasureDisplay(sorted[sorted.length - 1][key]);
+          const d = round1(last - first);
+          const sign = d > 0 ? '+' : '';
+          deltaEl.textContent = `${label}: ${first}${measureUnitLabel()} → ${last}${measureUnitLabel()} (${sign}${d} ${measureUnitLabel()}) over ${sorted.length} check-ins`;
+        } else if (sorted.length === 1) {
+          deltaEl.textContent = `One data point for ${label}. Log again later to see change.`;
+        } else {
+          deltaEl.textContent = `No data yet for ${label}.`;
+        }
+      }
+    }
+
+    function renderMeasures() {
+      updateMeasureUnitUI();
+      const dateEl = document.getElementById('meas-date');
+      if (dateEl && !dateEl.value) dateEl.value = today();
+      renderMeasuresHistory();
+      renderMeasuresChart();
+    }
+
+    // ========== Technique review (Level 1 — guided cues) ==========
+    function getFormLiftKey() {
+      return document.getElementById('form-lift')?.value || 'squat';
+    }
+    function getFormLiftDef() {
+      return TECHNIQUE_LIBRARY[getFormLiftKey()] || TECHNIQUE_LIBRARY.generic;
+    }
+
+    function onFormLiftChange() {
+      renderFormCues();
+      updateFormSummary();
+    }
+
+    function loadFormVideo(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('video/')) {
+        showToast('Please choose a video file', 'error');
+        return;
+      }
+      if (formVideoUrl) URL.revokeObjectURL(formVideoUrl);
+      formVideoUrl = URL.createObjectURL(file);
+      const player = document.getElementById('form-video-player');
+      const wrap = document.getElementById('form-video-wrap');
+      if (player) {
+        player.src = formVideoUrl;
+        player.load();
+      }
+      if (wrap) wrap.classList.remove('hidden');
+      showToast('Video ready for playback only — not analyzed', 'success');
+    }
+
+    function clearFormVideo() {
+      const player = document.getElementById('form-video-player');
+      const input = document.getElementById('form-video');
+      const wrap = document.getElementById('form-video-wrap');
+      if (player) {
+        player.pause();
+        player.removeAttribute('src');
+        player.load();
+      }
+      if (formVideoUrl) {
+        URL.revokeObjectURL(formVideoUrl);
+        formVideoUrl = null;
+      }
+      if (input) input.value = '';
+      if (wrap) wrap.classList.add('hidden');
+    }
+
+    function renderFormCues() {
+      const def = getFormLiftDef();
+      const tips = document.getElementById('form-film-tips');
+      const host = document.getElementById('form-cues');
+      if (tips) tips.innerHTML = (def.film || []).map(t => `<li>${t}</li>`).join('');
+      if (!host) return;
+      host.innerHTML = (def.cues || []).map((cue, i) => `
+        <label class="form-cue-row">
+          <input type="checkbox" class="form-cue-check" data-idx="${i}" onchange="updateFormSummary()" />
+          <span>${cue}</span>
+        </label>
+      `).join('');
+      updateFormSummary();
+    }
+
+    function updateFormSummary() {
+      const def = getFormLiftDef();
+      const checks = [...document.querySelectorAll('.form-cue-check')];
+      const total = checks.length || (def.cues || []).length;
+      const ok = checks.filter(c => c.checked).length;
+      const missed = checks.filter(c => !c.checked).map(c => {
+        const i = parseInt(c.getAttribute('data-idx'), 10);
+        return def.cues[i];
+      });
+      const el = document.getElementById('form-summary');
+      if (!el) return;
+      if (!total) {
+        el.textContent = '';
+        return;
+      }
+      if (ok === total) {
+        el.innerHTML = `<span class="text-emerald-600 font-medium">All ${total} cues checked</span> for ${def.label}. Nice — still film next week from the same angle.`;
+      } else {
+        el.innerHTML = `<b>${ok}/${total}</b> cues checked for ${def.label}.` +
+          (missed.length ? `<br><span class="text-slate-500">Focus next time:</span> ${missed.slice(0, 3).map(m => `• ${m}`).join(' ')}` : '');
+      }
+    }
+
+    function resetFormReview() {
+      document.querySelectorAll('.form-cue-check').forEach(c => { c.checked = false; });
+      const notes = document.getElementById('form-notes');
+      if (notes) notes.value = '';
+      updateFormSummary();
+    }
+
+    function saveFormReview() {
+      const def = getFormLiftDef();
+      const key = getFormLiftKey();
+      const date = document.getElementById('form-date')?.value || today();
+      const notes = (document.getElementById('form-notes')?.value || '').trim();
+      const checks = [...document.querySelectorAll('.form-cue-check')];
+      const checked = [];
+      const missed = [];
+      checks.forEach(c => {
+        const i = parseInt(c.getAttribute('data-idx'), 10);
+        const text = def.cues[i];
+        if (c.checked) checked.push(text);
+        else missed.push(text);
+      });
+      if (!checked.length && !missed.length && !notes) {
+        return showToast('Check some cues or add a note first', 'error');
+      }
+      const entry = {
+        id: Date.now() + Math.random(),
+        date,
+        liftKey: key,
+        liftLabel: def.label,
+        checked,
+        missed,
+        notes,
+        score: checked.length + '/' + (checked.length + missed.length)
+      };
+      data.formReviews = data.formReviews || [];
+      data.formReviews.push(entry);
+      data.formReviews.sort((a, b) => b.date.localeCompare(a.date));
+      saveData(data);
+      renderFormHistory();
+      showToast('Checklist saved (not an AI video breakdown)', 'success');
+    }
+
+    function deleteFormReview(id) {
+      if (!confirm('Delete this technique review?')) return;
+      data.formReviews = (data.formReviews || []).filter(r => String(r.id) !== String(id));
+      saveData(data);
+      renderFormHistory();
+      showToast('Review deleted', 'info');
+    }
+
+    function renderFormHistory() {
+      const host = document.getElementById('form-history');
+      const empty = document.getElementById('form-history-empty');
+      if (!host) return;
+      const list = data.formReviews || [];
+      if (empty) empty.classList.toggle('hidden', list.length > 0);
+      if (!list.length) {
+        host.innerHTML = '';
+        return;
+      }
+      host.innerHTML = list.map(r => `
+        <div class="border border-slate-200 rounded-lg p-3">
+          <div class="flex justify-between gap-2 items-start">
+            <div>
+              <div class="font-medium">${formatDate(r.date)} · ${r.liftLabel}</div>
+              <div class="text-xs text-slate-500">Cues checked: ${r.score}${r.missed?.length ? ' · Focus: ' + r.missed.slice(0, 2).join('; ') : ''}</div>
+              ${r.notes ? `<div class="text-xs mt-1">${r.notes}</div>` : ''}
+            </div>
+            <button onclick="deleteFormReview('${r.id}')" class="btn-danger text-xs">Del</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderFormReview() {
+      const dateEl = document.getElementById('form-date');
+      if (dateEl && !dateEl.value) dateEl.value = today();
+      renderFormCues();
+      renderFormHistory();
+    }
+
     function renderBwChart() {
       const canvas = document.getElementById('bwChart');
       if (!canvas) return;
@@ -2530,6 +3049,22 @@
       const bwRows = ['date,weight_kg'];
       (data.bodyweight || []).forEach(b => bwRows.push(`${b.date},${b.weight}`));
       if (bwRows.length > 1) downloadText(`bodyweight-${today()}.csv`, bwRows.join('\n'));
+
+      // Measurements CSV (stored in cm)
+      const mHeaders = ['date', 'neck_cm', 'shoulders_cm', 'chest_cm', 'left_arm_cm', 'right_arm_cm', 'waist_cm', 'hips_cm', 'left_thigh_cm', 'right_thigh_cm', 'left_calf_cm', 'right_calf_cm', 'notes'];
+      const mRows = [mHeaders.join(',')];
+      (data.measurements || []).forEach(m => {
+        mRows.push([
+          m.date,
+          m.neck || '', m.shoulders || '', m.chest || '',
+          m.leftArm || '', m.rightArm || '',
+          m.waist || '', m.hips || '',
+          m.leftThigh || '', m.rightThigh || '',
+          m.leftCalf || '', m.rightCalf || '',
+          csvEscape(m.notes || '')
+        ].join(','));
+      });
+      if (mRows.length > 1) downloadText(`measurements-${today()}.csv`, mRows.join('\n'));
 
       showToast('CSV files downloaded', 'success');
     }
@@ -3334,7 +3869,8 @@
       return `You are a practical strength & nutrition coach inside a local fitness tracking app.
 Be concise, actionable, and evidence-informed. Use the user's units (${unit}).
 Do not invent specific lifts or numbers that contradict the log summary.
-If data is missing, say what to log. Not medical advice.
+If data is missing, say what to log.
+Important: You are not a doctor, physical therapist, dietitian, or licensed medical professional. Your suggestions are general fitness recommendations only — not medical advice, diagnosis, or treatment. If the user describes pain, injury, illness, or a medical condition, encourage them to consult a qualified professional.
 
 USER CONTEXT:
 - Weight unit: ${unit}
@@ -3742,8 +4278,9 @@ ${woLines}
     }
 
     function seedIfEmpty() {
-      if (data.workouts.length || data.nutrition.length || data.prs.length) return;
-      applyDemoData(false);
+      // No automatic sample data — new users start blank.
+      // Optional demo is available via Tools → Load demo data.
+      return;
     }
 
     function loadDemoData() {
@@ -3778,11 +4315,16 @@ ${woLines}
       ensureFoodLibrary();
       const bwDateEl = document.getElementById('bw-date');
       if (bwDateEl) bwDateEl.value = today();
+      const measDateEl = document.getElementById('meas-date');
+      if (measDateEl) measDateEl.value = today();
+      const formDateEl = document.getElementById('form-date');
+      if (formDateEl) formDateEl.value = today();
       seedIfEmpty();
       // Persist after seed / library ensure
       persistNow(data);
       addExerciseRow();
       updateUnitToggle();
+      updateMeasureUnitUI();
       applyDark();
       maybeAutoGymMode();
       applyGymMode();
