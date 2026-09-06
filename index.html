@@ -1091,6 +1091,102 @@
           <div id="plate-result" class="text-sm space-y-1"></div>
         </div>
       </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-1">RPE &amp; percentage calculator</h2>
+        <p class="text-xs text-slate-500 mb-4">Estimate set weights from a known 1RM, or reverse-estimate 1RM from a set at a given RPE. Charts are approximate — individual strength curves vary.</p>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-4">
+          <div>
+            <h3 class="text-sm font-semibold mb-2">A. Weight for target RPE / %</h3>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="label">Known 1RM (<span class="unit-label">kg</span>)</label>
+                <input type="number" id="rpe-1rm" class="input" min="0" step="0.5" placeholder="e.g. 140" />
+              </div>
+              <div>
+                <label class="label">Target reps</label>
+                <input type="number" id="rpe-target-reps" class="input" min="1" max="12" value="5" />
+              </div>
+              <div>
+                <label class="label">Target RPE</label>
+                <select id="rpe-target-rpe" class="input">
+                  <option value="10">10 (max)</option>
+                  <option value="9.5">9.5</option>
+                  <option value="9">9</option>
+                  <option value="8.5">8.5</option>
+                  <option value="8" selected>8</option>
+                  <option value="7.5">7.5</option>
+                  <option value="7">7</option>
+                  <option value="6.5">6.5</option>
+                  <option value="6">6</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Or fixed % of 1RM</label>
+                <input type="number" id="rpe-pct" class="input" min="1" max="100" step="0.5" placeholder="e.g. 75" />
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <button onclick="calcRpeTargetWeight()" class="btn-primary text-sm">Calc weight @ RPE</button>
+              <button onclick="calcPercentWeight()" class="btn-secondary text-sm">Calc weight @ %</button>
+            </div>
+            <p id="rpe-target-result" class="text-sm font-semibold"></p>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold mb-2">B. Estimate 1RM from a set</h3>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="label">Weight lifted (<span class="unit-label">kg</span>)</label>
+                <input type="number" id="rpe-set-weight" class="input" min="0" step="0.5" />
+              </div>
+              <div>
+                <label class="label">Reps completed</label>
+                <input type="number" id="rpe-set-reps" class="input" min="1" max="12" value="5" />
+              </div>
+              <div>
+                <label class="label">RPE of that set</label>
+                <select id="rpe-set-rpe" class="input">
+                  <option value="10">10</option>
+                  <option value="9.5">9.5</option>
+                  <option value="9" selected>9</option>
+                  <option value="8.5">8.5</option>
+                  <option value="8">8</option>
+                  <option value="7.5">7.5</option>
+                  <option value="7">7</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="calcRpe1RM()" class="btn-primary text-sm mb-2">Estimate 1RM</button>
+            <p id="rpe-1rm-result" class="text-sm font-semibold"></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h3 class="text-sm font-semibold">Percentage chart (from 1RM above)</h3>
+            <button onclick="renderPercentChart()" class="btn-secondary text-xs">Refresh table</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-slate-500 border-b">
+                  <th class="py-1 pr-2">%</th>
+                  <th class="py-1 pr-2">Weight</th>
+                  <th class="py-1 pr-2">Rough RPE @ 1–3</th>
+                  <th class="py-1 pr-2">Rough RPE @ 5–8</th>
+                </tr>
+              </thead>
+              <tbody id="pct-chart-body">
+                <tr><td class="py-2 text-slate-500" colspan="4">Enter a 1RM and click Refresh table.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">RPE mapping is a simplified training guide, not a lab measurement. Prefer stopping a set when form slows or breaks down.</p>
+        </div>
+      </div>
+
       <div class="card">
         <h2 class="font-semibold mb-3">Data</h2>
         <p class="text-sm text-slate-500 mb-2" id="storage-info">Storage: —</p>
@@ -1107,7 +1203,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">FitTrack web v24 · local-first fitness tracker</p>
+      <p id="app-version">FitTrack web v25 · local-first fitness tracker</p>
       <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
     </footer>
   </div>

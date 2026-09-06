@@ -2634,6 +2634,129 @@
         `Estimated 1RM: ${toDisplay(est)} ${unitLabel()} (Epley)`;
     }
 
+    /**
+     * Approximate % of 1RM for a given rep count at a given RPE.
+     * Based on common RPE/% charts (simplified). Returns null if out of range.
+     */
+    function rpePercentOf1RM(reps, rpe) {
+      reps = Math.max(1, Math.min(12, Math.round(reps)));
+      rpe = Math.round(parseFloat(rpe) * 2) / 2; // nearest 0.5
+      // Columns: RPE 10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6 for reps 1..12
+      const table = {
+        1:  { 10: 100, 9.5: 97.8, 9: 95.5, 8.5: 93.0, 8: 90.7, 7.5: 88.3, 7: 85.8, 6.5: 83.3, 6: 80.8 },
+        2:  { 10: 95.5, 9.5: 93.9, 9: 92.2, 8.5: 90.2, 8: 88.0, 7.5: 85.8, 7: 83.5, 6.5: 81.2, 6: 78.8 },
+        3:  { 10: 92.2, 9.5: 90.7, 9: 89.2, 8.5: 87.3, 8: 85.3, 7.5: 83.2, 7: 81.0, 6.5: 78.8, 6: 76.5 },
+        4:  { 10: 89.2, 9.5: 87.8, 9: 86.3, 8.5: 84.5, 8: 82.6, 7.5: 80.6, 7: 78.5, 6.5: 76.3, 6: 74.0 },
+        5:  { 10: 86.3, 9.5: 85.0, 9: 83.5, 8.5: 81.8, 8: 80.0, 7.5: 78.0, 7: 76.0, 6.5: 73.8, 6: 71.5 },
+        6:  { 10: 83.7, 9.5: 82.4, 9: 80.9, 8.5: 79.2, 8: 77.4, 7.5: 75.5, 7: 73.5, 6.5: 71.4, 6: 69.2 },
+        7:  { 10: 81.1, 9.5: 79.9, 9: 78.4, 8.5: 76.8, 8: 75.0, 7.5: 73.1, 7: 71.1, 6.5: 69.0, 6: 66.8 },
+        8:  { 10: 78.6, 9.5: 77.4, 9: 76.0, 8.5: 74.4, 8: 72.6, 7.5: 70.7, 7: 68.7, 6.5: 66.6, 6: 64.4 },
+        9:  { 10: 76.2, 9.5: 75.0, 9: 73.6, 8.5: 72.0, 8: 70.2, 7.5: 68.3, 7: 66.3, 6.5: 64.2, 6: 62.0 },
+        10: { 10: 73.9, 9.5: 72.7, 9: 71.3, 8.5: 69.7, 8: 67.9, 7.5: 66.0, 7: 64.0, 6.5: 61.9, 6: 59.7 },
+        11: { 10: 71.6, 9.5: 70.4, 9: 69.0, 8.5: 67.4, 8: 65.6, 7.5: 63.7, 7: 61.7, 6.5: 59.6, 6: 57.4 },
+        12: { 10: 69.4, 9.5: 68.2, 9: 66.8, 8.5: 65.2, 8: 63.4, 7.5: 61.5, 7: 59.5, 6.5: 57.4, 6: 55.2 }
+      };
+      const row = table[reps];
+      if (!row) return null;
+      if (row[rpe] != null) return row[rpe];
+      // nearest available RPE key
+      const keys = Object.keys(row).map(Number).sort((a, b) => a - b);
+      let best = keys[0];
+      let bestD = Math.abs(rpe - best);
+      keys.forEach(k => {
+        const d = Math.abs(rpe - k);
+        if (d < bestD) { best = k; bestD = d; }
+      });
+      return row[best];
+    }
+
+    function calcRpeTargetWeight() {
+      const ormDisp = parseFloat(document.getElementById('rpe-1rm')?.value);
+      const reps = parseInt(document.getElementById('rpe-target-reps')?.value, 10) || 5;
+      const rpe = parseFloat(document.getElementById('rpe-target-rpe')?.value) || 8;
+      const out = document.getElementById('rpe-target-result');
+      if (!out) return;
+      if (!ormDisp || ormDisp <= 0) {
+        out.textContent = 'Enter a known 1RM first.';
+        return;
+      }
+      const pct = rpePercentOf1RM(reps, rpe);
+      if (pct == null) {
+        out.textContent = 'Reps/RPE out of chart range.';
+        return;
+      }
+      const weightDisp = round1(ormDisp * (pct / 100));
+      out.innerHTML = `~<b>${weightDisp} ${unitLabel()}</b> for <b>${reps}</b> reps @ RPE <b>${rpe}</b> <span class="text-slate-500 font-normal">(~${pct}% of 1RM)</span>`;
+    }
+
+    function calcPercentWeight() {
+      const ormDisp = parseFloat(document.getElementById('rpe-1rm')?.value);
+      const pct = parseFloat(document.getElementById('rpe-pct')?.value);
+      const out = document.getElementById('rpe-target-result');
+      if (!out) return;
+      if (!ormDisp || ormDisp <= 0) {
+        out.textContent = 'Enter a known 1RM first.';
+        return;
+      }
+      if (!pct || pct <= 0) {
+        out.textContent = 'Enter a percentage (e.g. 75).';
+        return;
+      }
+      const weightDisp = round1(ormDisp * (pct / 100));
+      out.innerHTML = `<b>${pct}%</b> of ${ormDisp} ${unitLabel()} ≈ <b>${weightDisp} ${unitLabel()}</b>`;
+    }
+
+    function calcRpe1RM() {
+      const wDisp = parseFloat(document.getElementById('rpe-set-weight')?.value);
+      const reps = parseInt(document.getElementById('rpe-set-reps')?.value, 10) || 1;
+      const rpe = parseFloat(document.getElementById('rpe-set-rpe')?.value) || 9;
+      const out = document.getElementById('rpe-1rm-result');
+      if (!out) return;
+      if (!wDisp || wDisp <= 0) {
+        out.textContent = 'Enter the weight you lifted.';
+        return;
+      }
+      const pct = rpePercentOf1RM(reps, rpe);
+      if (!pct || pct <= 0) {
+        out.textContent = 'Could not map that set to the RPE chart.';
+        return;
+      }
+      const est1rm = round1(wDisp / (pct / 100));
+      out.innerHTML = `Estimated 1RM ≈ <b>${est1rm} ${unitLabel()}</b> <span class="text-slate-500 font-normal">(${wDisp} × ${reps} @ RPE ${rpe} ≈ ${pct}% 1RM)</span>`;
+      // Convenience: fill the 1RM field for chart / target calc
+      const ormField = document.getElementById('rpe-1rm');
+      if (ormField && !ormField.value) ormField.value = est1rm;
+    }
+
+    function renderPercentChart() {
+      const tbody = document.getElementById('pct-chart-body');
+      if (!tbody) return;
+      const ormDisp = parseFloat(document.getElementById('rpe-1rm')?.value);
+      if (!ormDisp || ormDisp <= 0) {
+        tbody.innerHTML = '<tr><td class="py-2 text-slate-500" colspan="4">Enter a 1RM above and click Refresh table.</td></tr>';
+        return;
+      }
+      const pcts = [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50];
+      tbody.innerHTML = pcts.map(p => {
+        const w = round1(ormDisp * (p / 100));
+        let rpeLow = '—';
+        let rpeHigh = '—';
+        if (p >= 95) { rpeLow = '9–10'; rpeHigh = 'too heavy'; }
+        else if (p >= 90) { rpeLow = '8–9'; rpeHigh = '9–10'; }
+        else if (p >= 85) { rpeLow = '7–8'; rpeHigh = '8–9'; }
+        else if (p >= 80) { rpeLow = '6–7'; rpeHigh = '7–8.5'; }
+        else if (p >= 75) { rpeLow = 'easy singles'; rpeHigh = '6–7.5'; }
+        else if (p >= 70) { rpeLow = 'warm-up'; rpeHigh = '6–7'; }
+        else { rpeLow = 'warm-up'; rpeHigh = 'easy volume'; }
+        return `<tr class="border-b border-slate-100">
+          <td class="py-1.5 pr-2 font-medium">${p}%</td>
+          <td class="py-1.5 pr-2">${w} ${unitLabel()}</td>
+          <td class="py-1.5 pr-2 text-slate-500">${rpeLow}</td>
+          <td class="py-1.5 pr-2 text-slate-500">${rpeHigh}</td>
+        </tr>`;
+      }).join('');
+    }
+
     function calcPlates() {
       const targetDisp = parseFloat(document.getElementById('plate-target').value);
       const barDisp = parseFloat(document.getElementById('plate-bar').value) || (currentUnit() === 'lb' ? 45 : 20);
