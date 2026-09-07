@@ -88,7 +88,48 @@
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
-      <div class="card start-here-card">
+      <!-- Shown when the user has no workouts/nutrition yet -->
+      <div id="home-empty" class="card home-empty-card hidden">
+        <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-1">Welcome to Loadnote</p>
+        <h2 class="text-xl font-bold text-slate-900 mb-2">Your log is empty — that’s normal.</h2>
+        <p class="text-sm text-slate-600 mb-4 max-w-xl">
+          Start with one thing. Charts and weekly reports fill in after you save a workout or a day of food.
+          Everything stays in this browser on this device.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-3 mb-4">
+          <button type="button" class="home-cta primary" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">
+            <span class="home-cta-icon">💪</span>
+            <span>
+              <b>Log your first workout</b>
+              <span class="block text-xs opacity-80">Add a lift, enter sets, tap Save</span>
+            </span>
+          </button>
+          <button type="button" class="home-cta" onclick="showTab('nutrition'); showSubTab('nutrition','nu-add')">
+            <span class="home-cta-icon">🍽️</span>
+            <span>
+              <b>Log food</b>
+              <span class="block text-xs opacity-80">Search, barcode, or quick macros</span>
+            </span>
+          </button>
+          <button type="button" class="home-cta" onclick="showTab('coach'); showSubTab('coach','co-chat')">
+            <span class="home-cta-icon">🤖</span>
+            <span>
+              <b>Ask the coach</b>
+              <span class="block text-xs opacity-80">Ideas for programs, protein, deloads</span>
+            </span>
+          </button>
+          <button type="button" class="home-cta" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}); }, 100)">
+            <span class="home-cta-icon">✨</span>
+            <span>
+              <b>Preview with demo data</b>
+              <span class="block text-xs opacity-80">Optional — Tools → Load demo data</span>
+            </span>
+          </button>
+        </div>
+        <p class="text-xs text-slate-500">Tip: turn on <b>Gym mode</b> (header) for bigger controls between sets.</p>
+      </div>
+
+      <div class="card start-here-card" id="start-here-card">
         <h2 class="font-semibold mb-1">Start here</h2>
         <p class="text-xs text-slate-500 mb-3">You don’t need every feature. Pick one:</p>
         <div class="grid sm:grid-cols-3 gap-2">
@@ -106,7 +147,7 @@
           </button>
         </div>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div id="home-stats-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div class="card">
           <p class="text-sm text-slate-500">Workouts (30d)</p>
           <p class="text-2xl font-bold mt-1" id="stat-workouts">0</p>
@@ -133,6 +174,7 @@
         </div>
       </div>
 
+      <div id="home-insights">
       <div class="card" id="weekly-summary-card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
           <h2 class="font-semibold">Weekly Training Report</h2>
@@ -189,6 +231,7 @@
         <h2 class="font-semibold mb-3">Recent Activity</h2>
         <div id="recent-activity" class="space-y-2 text-sm"></div>
       </div>
+      </div><!-- /home-insights -->
     </section>
 
     <!-- BODY MEASUREMENTS -->
@@ -1222,11 +1265,65 @@
         </ul>
         <p class="text-xs text-slate-500 mt-3">Exercise names and training concepts (e.g. RPE, Epley 1RM estimate) are general fitness knowledge, not affiliated with any third-party training brand. Coach guidance is not medical advice.</p>
       </div>
+
+      <div class="card" id="privacy-policy">
+        <h2 class="font-semibold mb-2">Privacy policy</h2>
+        <p class="text-xs text-slate-500 mb-3">Last updated: September 6, 2026 · Simple summary for Loadnote (web).</p>
+        <div class="text-sm text-slate-600 space-y-3">
+          <div>
+            <p class="font-medium text-slate-800">What Loadnote is</p>
+            <p>Loadnote is a local-first training log that runs in your browser. You do not need an account to use the core features.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Data we store on your device</p>
+            <p>Workout history, nutrition logs, body measurements, progress photos you add, goals, programs, templates, form self-check notes, and settings are stored in this browser on this device (IndexedDB / localStorage). This data is not uploaded to a Loadnote server — there is no Loadnote cloud account in this web build.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">What leaves your device</p>
+            <ul class="list-disc pl-5 space-y-1 mt-1">
+              <li><b>Optional AI Coach (API mode):</b> If you paste your own API key and send a chat message, the prompt and related context are sent to the AI provider you chose (for example xAI or OpenAI). Keys stay in this browser and are not included in JSON backups.</li>
+              <li><b>Barcode food lookup:</b> If you look up a barcode online, the barcode number is requested from Open Food Facts. Their privacy terms apply to that request.</li>
+              <li><b>Libraries / CDN:</b> The app may load scripts or styles from third-party CDNs (for example Chart.js, Tailwind, barcode scanner). Those providers may see standard network request data (IP, browser type) like any website.</li>
+              <li><b>Hosting:</b> If you open Loadnote on GitHub Pages or another host, that host delivers the app files. Your training log still stays in your browser unless you export it yourself.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">What we do not do (this web build)</p>
+            <ul class="list-disc pl-5 space-y-1 mt-1">
+              <li>No Loadnote user accounts or login</li>
+              <li>No sale of your workout or nutrition data</li>
+              <li>No advertising SDK in this build</li>
+              <li>Progress photos stay on-device unless you export them</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Backups &amp; deletion</p>
+            <p>Use <b>Tools → Export JSON backup</b> (or CSV) to copy your data. Clearing site data for this site in your browser deletes local Loadnote data on that device. Uninstalling or switching browsers/profiles does not move data automatically.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Children</p>
+            <p>Loadnote is not directed at children under 13. Do not use it to store data about children if applicable laws require parental consent you cannot provide.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Health disclaimer</p>
+            <p>Loadnote and the AI Coach are not medical care. Information is for general fitness tracking only — not diagnosis, treatment, or personalized medical advice.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Changes</p>
+            <p>If this policy changes in a future version, the date at the top will be updated. Continued use after an update means you see the new text in the app.</p>
+          </div>
+          <div>
+            <p class="font-medium text-slate-800">Contact</p>
+            <p>For questions about this app, contact the person who shared Loadnote with you (the project maintainer).</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v34 · local-first training log</p>
+      <p id="app-version">Loadnote web v36 · local-first training log</p>
       <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
+      <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
   </div>
 

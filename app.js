@@ -2008,22 +2008,36 @@
         document.getElementById('stat-bw').textContent = '—';
       }
 
-      // Weekly training report
-      renderWeeklyReport();
+      // Empty vs active home layout
+      const isEmptyHome = !(data.workouts || []).length && !(data.nutrition || []).length && !(data.prs || []).length;
+      const homeEmpty = document.getElementById('home-empty');
+      const startHere = document.getElementById('start-here-card');
+      const statsGrid = document.getElementById('home-stats-grid');
+      const insights = document.getElementById('home-insights');
+      if (homeEmpty) homeEmpty.classList.toggle('hidden', !isEmptyHome);
+      // Compact "start here" when empty hero is showing (avoid double walls of CTAs)
+      if (startHere) startHere.classList.toggle('hidden', isEmptyHome);
+      if (statsGrid) statsGrid.classList.toggle('hidden', isEmptyHome);
+      if (insights) insights.classList.toggle('hidden', isEmptyHome);
 
-      // Exercise selector
-      const sel = document.getElementById('progress-exercise');
-      const current = sel.value;
-      const exercises = getUniqueExercises();
-      sel.innerHTML = '<option value="">Select exercise…</option>' +
-        exercises.map(e => `<option value="${e}" ${e === current ? 'selected' : ''}>${e}</option>`).join('');
-      if (!current && exercises.length) sel.value = exercises[0];
-      renderProgressChart();
-      renderNutritionChart();
-      renderBwChart();
-      populateCardioSelectors();
-      renderCardioChart();
-      renderRecentActivity();
+      // Weekly training report + charts only when user has data
+      if (!isEmptyHome) {
+        renderWeeklyReport();
+        const sel = document.getElementById('progress-exercise');
+        if (sel) {
+          const current = sel.value;
+          const exercises = getUniqueExercises();
+          sel.innerHTML = '<option value="">Select exercise…</option>' +
+            exercises.map(e => `<option value="${e}" ${e === current ? 'selected' : ''}>${e}</option>`).join('');
+          if (!current && exercises.length) sel.value = exercises[0];
+        }
+        renderProgressChart();
+        renderNutritionChart();
+        renderBwChart();
+        populateCardioSelectors();
+        renderCardioChart();
+        renderRecentActivity();
+      }
       const bwDate = document.getElementById('bw-date');
       if (bwDate && !bwDate.value) bwDate.value = today();
     }

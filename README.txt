@@ -1,6 +1,6 @@
 Loadnote (web) — quick start for testers
 ==========================================
-Version: web v34
+Version: web v36
 
 What this is
 ------------
@@ -74,3 +74,9 @@ Credits (third-party)
 • Open Food Facts — barcode nutrition data (see their site/terms)
 • Tailwind CSS CDN — prototype styling
 • Capacitor (MIT) — optional native wrapper
+
+Privacy policy
+--------------
+In-app: Tools → Privacy policy (also linked in the footer).
+Summary: logs stay in your browser; optional AI keys and barcode
+lookups are the main cases where data leaves the device.

@@ -647,3 +647,46 @@ body.dark .form-cue-row {
 body.dark .bg-amber-50 { background: #422006 !important; }
 body.dark .border-amber-200 { border-color: #92400e !important; }
 body.dark .text-amber-900 { color: #fde68a !important; }
+
+/* Empty home welcome */
+.home-empty-card {
+  border-color: #a5b4fc;
+  background: linear-gradient(180deg, #eef2ff 0%, #fff 55%);
+}
+body.dark .home-empty-card {
+  border-color: #4338ca;
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 60%);
+}
+.home-cta {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.home-cta:hover {
+  border-color: #a5b4fc;
+  box-shadow: 0 1px 4px rgba(79, 70, 229, 0.12);
+}
+.home-cta.primary {
+  border-color: #818cf8;
+  background: #eef2ff;
+}
+.home-cta-icon {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+body.dark .home-cta {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+body.dark .home-cta.primary {
+  background: #312e81;
+  border-color: #6366f1;
+}
