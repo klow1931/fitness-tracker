@@ -1,18 +1,20 @@
 // ========== Data Layer (IndexedDB + localStorage migration) ==========
     const STORAGE_KEY = 'fitness-tracker-v1';
     const IDB_NAME = 'fitness-tracker-db';
-    const IDB_VERSION = 1;
+    const IDB_VERSION = 8;
     const IDB_STORE = 'app';
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
+      schemaVersion: 8,
+      athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],
       restDays: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', dark: false, gymMode: false, checklistMode: false,
       gymModeUserSet: false, onboardingDismissed: false,
       lastExportDate: null, backupBannerDismissed: null,
       progressPhotos: [], measurements: [], formReviews: [],
-      api: { enabled: false, provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' }
+      api: { enabled: false, backendEnabled: false, backendUrl: '/api/coach', provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' }
     };
 
     const TECHNIQUE_LIBRARY = {
@@ -145,6 +147,8 @@
 
     const API_KEY_STORAGE = 'fitness-tracker-api-key';
     let chatHistory = []; // {role, content} for API multi-turn
+    let lastCoachSnapshot = null;
+    let pendingProgramSession = null;
 
     let data = { ...DEFAULT_DATA };
     let idb = null;
@@ -340,6 +344,7 @@
     }
 
     function calcVolume(workout) {
+      if (window.LoadnoteCore?.calcVolume) return window.LoadnoteCore.calcVolume(workout);
       return (workout.exercises || []).reduce((sum, ex) => {
         if (ex.type === 'cardio' || !ex.sets) return sum;
         return sum + ex.sets.reduce((s, set) => {
@@ -350,7 +355,8 @@
       }, 0);
     }
 
-    function estimated1RM(weight, reps) {
+    function estimated1RM(weight, reps, rpe) {
+      if (window.LoadnoteCore?.estimated1RM) return window.LoadnoteCore.estimated1RM(weight, reps, rpe);
       const w = Number(weight) || 0;
       const r = Number(reps) || 0;
       if (r <= 1) return w;
@@ -898,7 +904,16 @@
 
       if (!exercises.length) return showToast('Add at least one strength set or cardio entry', 'error');
 
-      const workout = { id: Date.now(), date, notes, exercises };
+      const workout = { id: window.LoadnoteCore?.createId?.() || Date.now(), date, notes, exercises };
+      if (pendingProgramSession) {
+        workout.programId = pendingProgramSession.programId;
+        workout.programDayIndex = pendingProgramSession.dayIndex;
+        workout.programDayName = pendingProgramSession.dayName;
+        if (pendingProgramSession.week) workout.programWeek = pendingProgramSession.week;
+        if (pendingProgramSession.blockIndex) workout.programBlockIndex = pendingProgramSession.blockIndex;
+        if (pendingProgramSession.decision) workout.programDecision = pendingProgramSession.decision;
+        pendingProgramSession = null;
+      }
       data.workouts.push(workout);
       data.workouts.sort((a, b) => b.date.localeCompare(a.date));
       saveData(data);
@@ -918,7 +933,7 @@
               existing.estimated1RM = est;
             } else {
               data.prs.push({
-                id: Date.now() + Math.random(),
+                id: window.LoadnoteCore?.createId?.() || (Date.now() + Math.random()),
                 exercise: ex.name,
                 weight: set.weight,
                 reps: set.reps,
@@ -2008,6 +2023,9 @@
         document.getElementById('stat-bw').textContent = '—';
       }
 
+      // v0.3 Training Intelligence — deterministic analysis, no AI required.
+      try { renderTrainingIntelligence(); } catch (e) { console.warn('Training intelligence render failed', e); }
+
       // Empty vs active home layout
       const isEmptyHome = !(data.workouts || []).length && !(data.nutrition || []).length && !(data.prs || []).length;
       const homeEmpty = document.getElementById('home-empty');
@@ -2040,6 +2058,82 @@
       }
       const bwDate = document.getElementById('bw-date');
       if (bwDate && !bwDate.value) bwDate.value = today();
+    }
+
+    function renderTrainingIntelligence() {
+      const summaryEl = document.getElementById('training-intelligence-summary');
+      const liftsEl = document.getElementById('training-intelligence-lifts');
+      const statusEl = document.getElementById('training-status-value');
+      const statusHintEl = document.getElementById('training-status-hint');
+      const nextEl = document.getElementById('next-workout-recommendation');
+      const detailsEl = document.getElementById('adaptive-session-details');
+      if (!summaryEl && !liftsEl && !statusEl && !nextEl) return;
+
+      const analytics = window.LoadnoteAnalytics;
+      if (!analytics) return;
+      const summary = analytics.dashboardSummary(data.workouts || []);
+      const status = summary.status || {};
+      const statusMap = {
+        'normal': ['Normal', 'Training load looks manageable based on recent logged sessions.'],
+        'elevated-fatigue': ['Elevated fatigue', 'Recent logged RPE is high. Consider holding load or reducing volume if performance also drops.'],
+        'performance-watch': ['Performance watch', 'Volume has dropped while recent RPE is high. Review recovery and consider a lighter exposure.'],
+        'insufficient-data': ['Not enough data', 'Log a few sessions with RPE to unlock stronger training signals.']
+      };
+      const statusCopy = statusMap[status.status] || statusMap.normal;
+      if (statusEl) statusEl.textContent = statusCopy[0];
+      if (statusHintEl) statusHintEl.textContent = statusCopy[1];
+
+      const top = (summary.exerciseTrends || []).filter(Boolean).slice(0, 6);
+      if (liftsEl) {
+        liftsEl.innerHTML = top.length ? top.map(t => {
+          const pct = t.change?.percent;
+          const arrow = pct == null ? '→' : pct > 1 ? '↑' : pct < -1 ? '↓' : '→';
+          const cls = pct == null ? 'text-slate-500' : pct > 1 ? 'text-emerald-600' : pct < -1 ? 'text-rose-600' : 'text-slate-600';
+          const plateau = t.change?.percent != null && t.change.percent <= 1 ? ' · possible plateau' : '';
+          return `<div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0"><div class="min-w-0"><p class="font-medium truncate">${escapeHtml(t.exercise)}</p><p class="text-xs text-slate-500">${t.sessions} session${t.sessions === 1 ? '' : 's'} · e1RM ${toDisplay(t.latestEstimated1RM)} ${unitLabel()}${plateau}</p></div><span class="font-semibold ${cls}">${arrow} ${pct == null ? '—' : Math.abs(pct) + '%'}</span></div>`;
+        }).join('') : '<p class="text-sm text-slate-500">Log at least a few strength sessions to see lift trends.</p>';
+      }
+
+      const recent = (data.workouts || []).slice().sort((a,b) => String(b.date).localeCompare(String(a.date)))[0];
+      let nextText = 'Complete a few logged sessions to unlock a personalized next-workout recommendation.';
+      let detailText = '';
+      if (recent) {
+        const exs = (recent.exercises || []).filter(ex => ex.type !== 'cardio' && (ex.sets || []).some(s => Number(s.reps) > 0 && Number(s.weight) >= 0));
+        const fatigue = status.status === 'elevated-fatigue' || status.status === 'performance-watch' ? 'high' : 'normal';
+        const recommendations = exs.map(ex => {
+          const meta = window.LoadnoteExercises?.resolve?.(ex.name);
+          const parentName = meta?.parentLift ? window.LoadnoteExercises?.resolve(meta.parentLift)?.name : ex.name;
+          const trend = (summary.exerciseTrends || []).find(t => t.exercise === ex.name || t.exercise === parentName);
+          const rec = window.LoadnoteAdaptive?.recommendExercise?.(ex, {
+            targetRPE: 8, sets: ex.sets.filter(s => Number(s.reps) > 0).length || 3,
+            reps: Number(ex.sets.filter(s => Number(s.reps) > 0)[0]?.reps || 5), unit: currentUnit(), fatigue,
+            recentTrend: Number(trend?.change?.percent || 0)
+          });
+          if (!rec) return null;
+          return { name: ex.name, rec };
+        }).filter(Boolean).slice(0, 5);
+        if (recommendations.length) {
+          nextText = recommendations.map(({name, rec}) => {
+            const actionLabels = { increase: 'Increase', hold: 'Hold', reduce: 'Reduce', repeat: 'Repeat' };
+            const label = actionLabels[rec.action] || 'Repeat';
+            const next = rec.nextWeight == null ? '—' : `${toDisplay(rec.nextWeight)} ${unitLabel()}`;
+            const color = rec.action === 'increase' ? 'text-emerald-700' : rec.action === 'reduce' ? 'text-amber-700' : 'text-slate-700';
+            return `<div class="py-2 border-b border-slate-100 last:border-0"><div class="flex items-center justify-between gap-2"><b>${escapeHtml(name)}</b><span class="font-semibold ${color}">${label} · ${next}</span></div><p class="text-xs text-slate-500 mt-1">${escapeHtml(rec.reason)}</p></div>`;
+          }).join('');
+          detailText = `<p class="text-xs text-slate-500">Based on ${recommendations.length} exercise${recommendations.length === 1 ? '' : 's'} from your latest session. Recommendations are deterministic; AI can explain them later.</p>`;
+        }
+      }
+      if (nextEl) nextEl.innerHTML = nextText;
+      if (detailsEl) detailsEl.innerHTML = detailText;
+      if (summaryEl) {
+        const vol = summary.volume?.changePercent;
+        const volumeText = vol == null ? 'No prior period' : `${vol > 0 ? '+' : ''}${vol}% vs previous 7 days`;
+        summaryEl.innerHTML = `<div class="text-sm text-slate-600"><b>${statusCopy[0]}</b> · ${volumeText} · ${status.workouts14d || 0} workouts in 14 days.</div>`;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function getWeekBounds(refDate) {
@@ -3397,17 +3491,80 @@
       return { name: raw, type: 'strength', sets: [{ reps: '', weight: '' }] };
     }
 
-    function startProgramDay(dayIndex) {
+    function getProgramMesocycleState(prog) {
+      const engine = window.LoadnoteMesocycle;
+      if (!engine || !prog) return null;
+      data.programStates = data.programStates || {};
+      const state = engine.normalizeState(data.programStates[prog.id], prog.daysPerWeek);
+      const completed = (data.workouts || []).filter(w => w.programId === prog.id).length;
+      const sessionsPerWeek = Math.max(1, prog.daysPerWeek || prog.days?.length || 4);
+      const weeksCompleted = Math.floor(completed / sessionsPerWeek);
+      state.currentWeek = (weeksCompleted % state.lengthWeeks) + 1;
+      state.blockIndex = Math.floor(weeksCompleted / state.lengthWeeks) + 1;
+      data.programStates[prog.id] = state;
+      return state;
+    }
+
+    function getProgramWeekDecision(prog) {
+      const engine = window.LoadnoteMesocycle;
+      if (!engine || !prog) return { action: 'progress', confidence: 'medium', reason: 'A small planned progression is appropriate.' };
+      const state = getProgramMesocycleState(prog);
+      const assessmentWeek = state.currentWeek > 1 ? state.currentWeek - 1 : state.lengthWeeks;
+      const metrics = engine.programMetrics(prog, data.workouts || [], prog.daysPerWeek, assessmentWeek);
+      return engine.recommendDecision(metrics);
+    }
+
+    function startProgramDay(dayIndex, fromAdaptive = false) {
       const prog = getActiveProgram();
-      if (!prog || !prog.days || !prog.days[dayIndex]) {
-        return alert('Program day not found. Activate a program first.');
-      }
+      if (!prog || !prog.days || !prog.days[dayIndex]) return alert('Program day not found. Activate a program first.');
+      const meso = window.LoadnoteMesocycle;
+      const state = meso ? getProgramMesocycleState(prog) : null;
+      const decision = state && state.currentWeek > 1 ? getProgramWeekDecision(prog).action : 'progress';
+      const profile = window.LoadnoteAthlete ? window.LoadnoteAthlete.inferProfileFromData(data, window.LoadnoteCore) : (data.athleteProfile || {});
+      const session = meso
+        ? meso.buildSession(prog, data.workouts || [], profile, currentUnit(), state?.currentWeek || 1, decision, window.LoadnoteCore, window.LoadnoteAthlete, dayIndex)
+        : null;
       const day = prog.days[dayIndex];
-      const exercises = (day.exercises || []).map(parseProgramExerciseLine).filter(Boolean);
+      const exercises = session
+        ? session.exercises.map(ex => ({
+            name: ex.name,
+            type: ex.duration ? 'strength' : 'strength',
+            sets: Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || '', weight: ex.weight == null ? '' : toDisplay(ex.weight) }))
+          }))
+        : (day.exercises || []).map(parseProgramExerciseLine).filter(Boolean);
       if (!exercises.length) return alert('No exercises on this day.');
+      pendingProgramSession = { programId: prog.id, dayIndex, dayName: day.day, week: session?.week || state?.currentWeek || 1, blockIndex: session?.blockIndex || state?.blockIndex || 1, decision };
       showTab('workouts');
-      fillWorkoutForm(exercises, 'From program: ' + day.day);
-      alert('Loaded "' + day.day + '". Fill in weights / cardio details, then Save.');
+      fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : ''));
+      showToast(session ? `Week ${session.week} loaded — review targets before starting.` : 'Program workout loaded.', 'success');
+    }
+
+    function startNextProgramWorkout() {
+      const prog = getActiveProgram();
+      if (!prog) return alert('Activate a program first.');
+      const meso = window.LoadnoteMesocycle;
+      if (meso) {
+        const state = getProgramMesocycleState(prog);
+        const decision = state.currentWeek > 1 ? getProgramWeekDecision(prog).action : 'progress';
+        const profile = window.LoadnoteAthlete ? window.LoadnoteAthlete.inferProfileFromData(data, window.LoadnoteCore) : (data.athleteProfile || {});
+        const session = meso.buildSession(prog, data.workouts || [], profile, currentUnit(), state.currentWeek, decision, window.LoadnoteCore, window.LoadnoteAthlete);
+        if (session) return startProgramDay(session.dayIndex, true);
+      }
+      const adaptive = window.LoadnoteAdaptivePrograms;
+      if (!adaptive) return alert('Adaptive programming engine unavailable.');
+      const session = adaptive.buildNextSession(prog, data.workouts || [], currentUnit(), window.LoadnoteAdaptive);
+      if (!session) return alert('No next session is available.');
+      startProgramDay(session.dayIndex, true);
+    }
+
+    function explainProgramDecision() {
+      const prog = getActiveProgram();
+      const el = document.getElementById('program-decision-explanation');
+      if (!prog || !el || !window.LoadnoteMesocycle) return;
+      const state = getProgramMesocycleState(prog);
+      const decision = state.currentWeek > 1 ? getProgramWeekDecision(prog) : { action: 'progress', confidence: 'medium', reason: 'This is the first week, so Loadnote starts with the planned baseline.' };
+      el.innerHTML = `<div class="mt-2 rounded-lg bg-slate-50 border border-slate-200 p-3"><b>Why ${decision.action}?</b><p class="text-xs text-slate-600 mt-1">${escapeHtml(window.LoadnoteMesocycle.explain(decision.action, state.currentWeek, state.lengthWeeks))}</p><p class="text-xs text-slate-500 mt-1">${escapeHtml(decision.reason)} · ${decision.confidence} confidence.</p></div>`;
+      el.classList.remove('hidden');
     }
 
     // ========== AI Coach ==========
@@ -3502,6 +3659,81 @@
         }
       };
       return map[scheme] || map.linear;
+    }
+
+    // ========== v0.7 Athlete Profile + Personalized Programming ==========
+    function getAthleteProfile() {
+      const engine = window.LoadnoteAthlete;
+      if (!engine) return data.athleteProfile || null;
+      return engine.normalizeProfile(data.athleteProfile || {});
+    }
+
+    function saveAthleteProfile() {
+      const engine = window.LoadnoteAthlete;
+      if (!engine) return showToast('Athlete profile engine unavailable.', 'error');
+      const num = id => {
+        const v = parseFloat(document.getElementById(id)?.value);
+        return Number.isFinite(v) && v > 0 ? toStorage(v) : null;
+      };
+      const pct = parseFloat(document.getElementById('athlete-tm-percent')?.value);
+      data.athleteProfile = engine.normalizeProfile({
+        goal: document.getElementById('athlete-goal')?.value || 'strength',
+        experience: document.getElementById('athlete-experience')?.value || 'intermediate',
+        daysPerWeek: parseInt(document.getElementById('athlete-days')?.value || '4', 10),
+        programStyle: document.getElementById('athlete-style')?.value || 'auto',
+        squat: num('athlete-squat'),
+        bench: num('athlete-bench'),
+        deadlift: num('athlete-deadlift'),
+        overheadPress: num('athlete-ohp'),
+        trainingMaxPercent: Number.isFinite(pct) ? pct / 100 : 0.90,
+        targetDate: document.getElementById('athlete-target-date')?.value || null,
+        notes: document.getElementById('athlete-notes')?.value.trim() || ''
+      });
+      saveData(data);
+      renderCoach();
+      showToast('Athlete profile saved.', 'success');
+    }
+
+    function renderAthleteProfile() {
+      const engine = window.LoadnoteAthlete;
+      const root = document.getElementById('athlete-profile-card');
+      if (!root || !engine) return;
+      const p = engine.inferProfileFromData(data, window.LoadnoteCore);
+      const tms = engine.calculateTrainingMaxes(p, data.workouts || [], window.LoadnoteCore);
+      const set = (id, value) => { const el = document.getElementById(id); if (el && (document.activeElement !== el || !el.value)) el.value = value ?? ''; };
+      set('athlete-goal', p.goal); set('athlete-experience', p.experience); set('athlete-days', p.daysPerWeek); set('athlete-style', p.programStyle);
+      set('athlete-squat', p.squat != null ? toDisplay(p.squat) : ''); set('athlete-bench', p.bench != null ? toDisplay(p.bench) : '');
+      set('athlete-deadlift', p.deadlift != null ? toDisplay(p.deadlift) : ''); set('athlete-ohp', p.overheadPress != null ? toDisplay(p.overheadPress) : '');
+      set('athlete-tm-percent', Math.round(p.trainingMaxPercent * 100)); set('athlete-target-date', p.targetDate || ''); set('athlete-notes', p.notes || '');
+      const table = document.getElementById('athlete-tm-table');
+      if (table) table.innerHTML = engine.buildPersonalizedSummary(p, tms, currentUnit()).map(row => row.available
+        ? `<div class="flex items-center justify-between gap-3 py-2 border-t border-slate-200"><span class="font-medium">${escapeHtml(row.lift)}</span><span class="text-sm"><b>${escapeHtml(String(toDisplay(row.estimated1RM)))} ${unitLabel()}</b> e1RM · <b>${escapeHtml(String(toDisplay(row.trainingMax)))} ${unitLabel()}</b> TM</span></div>`
+        : `<div class="flex items-center justify-between gap-3 py-2 border-t border-slate-200"><span class="font-medium">${escapeHtml(row.lift)}</span><span class="text-xs text-slate-500">No data yet</span></div>`).join('');
+    }
+
+    function personalizeGeneratedProgram(prog) {
+      const engine = window.LoadnoteAthlete;
+      if (!engine) return prog;
+      const profile = engine.inferProfileFromData(data, window.LoadnoteCore);
+      const tms = engine.calculateTrainingMaxes(profile, data.workouts || [], window.LoadnoteCore);
+      prog.athleteProfileSnapshot = JSON.parse(JSON.stringify(profile));
+      prog.trainingMaxes = tms;
+      prog.personalized = true;
+      prog.personalizationNote = `Built for a ${profile.experience} ${profile.goal} trainee training ${profile.daysPerWeek} days/week using a ${Math.round(profile.trainingMaxPercent * 100)}% training max.`;
+      return prog;
+    }
+
+    function renderProgramProgressionStatus(active) {
+      const el = document.getElementById('program-progression-status');
+      if (!el) return;
+      if (!active || !window.LoadnoteMesocycle) { el.innerHTML = ''; return; }
+      const engine = window.LoadnoteMesocycle;
+      const state = getProgramMesocycleState(active);
+      const decision = state.currentWeek > 1 ? getProgramWeekDecision(active) : { action: 'progress', confidence: 'medium', reason: 'First week baseline.' };
+      const completed = (data.workouts || []).filter(w => w.programId === active.id).length;
+      const labels = { progress: 'Progress', maintain: 'Maintain', deload: 'Deload', pivot: 'Pivot' };
+      const cls = decision.action === 'progress' ? 'text-emerald-700' : decision.action === 'deload' ? 'text-amber-700' : decision.action === 'pivot' ? 'text-indigo-700' : 'text-slate-700';
+      el.innerHTML = `<div class="mt-3 rounded-lg border border-slate-200 bg-white p-3"><div class="flex items-center justify-between gap-2"><div><b>Adaptive mesocycle</b><div class="text-xs text-slate-500 mt-0.5">Week ${state.currentWeek} of ${state.lengthWeeks} · Block ${state.blockIndex} · ${completed} sessions logged</div></div><span class="font-semibold ${cls}">${labels[decision.action] || decision.action}</span></div><p class="text-xs text-slate-500 mt-1">${escapeHtml(decision.reason)} · ${decision.confidence} confidence.</p><button onclick="explainProgramDecision()" class="text-xs text-indigo-600 hover:underline mt-1">Why this decision?</button><div id="program-decision-explanation"></div></div>`;
     }
 
     function generateProgram() {
@@ -3620,9 +3852,12 @@
         progressionTip: schemeInfo.tip,
         generated: today()
       };
+      personalizeGeneratedProgram(newProg);
       data.programs = data.programs || [];
       data.programs.push(newProg);
       data.activeProgramId = newProg.id;
+      data.programStates = data.programStates || {};
+      data.programStates[newProg.id] = { lengthWeeks: 4, currentWeek: 1, blockIndex: 1, lastDecision: 'progress', decisionReason: 'New program baseline.' };
       // Migrate old single activeProgram if present
       if (data.activeProgram && !data.programs.find(p => p.name === data.activeProgram.name)) {
         data.programs.push({ ...data.activeProgram, id: Date.now() + 1 });
@@ -4103,6 +4338,8 @@
     function saveApiSettings() {
       data.api = data.api || {};
       data.api.enabled = !!document.getElementById('api-enabled')?.checked;
+      data.api.backendEnabled = document.getElementById('api-backend-enabled')?.checked !== false;
+      data.api.backendUrl = (document.getElementById('api-backend-url')?.value || '/api/coach').trim();
       data.api.provider = document.getElementById('api-provider')?.value || 'xai';
       data.api.baseUrl = (document.getElementById('api-base')?.value || '').trim().replace(/\/$/, '');
       data.api.model = (document.getElementById('api-model')?.value || '').trim();
@@ -4127,19 +4364,21 @@
 
     function updateApiStatusUI() {
       const key = getStoredApiKey();
+      const backendEnabled = !!(data.api && data.api.backendEnabled !== false);
       const enabled = !!(data.api && data.api.enabled && key);
+      const aiEnabled = backendEnabled || enabled;
       const status = document.getElementById('api-status');
       const hint = document.getElementById('chat-mode-hint');
       if (status) {
-        status.textContent = enabled
-          ? `API ready · ${(data.api.model || 'model')}`
-          : (key ? 'Key saved — enable “Use API for chat”' : 'Offline rule-based coach');
-        status.className = 'text-xs ' + (enabled ? 'text-emerald-600 font-medium' : 'text-slate-500');
+        status.textContent = backendEnabled
+          ? `Secure backend · ${data.api.backendUrl || '/api/coach'}`
+          : (enabled ? `Developer API · ${(data.api.model || 'model')}` : (key ? 'Key saved — enable developer API' : 'Offline rule-based coach'));
+        status.className = 'text-xs ' + (aiEnabled ? 'text-emerald-600 font-medium' : 'text-slate-500');
       }
       if (hint) {
-        hint.textContent = enabled
-          ? 'Using your API key — answers can use your recent training data.'
-          : 'Using built-in coach (no API). Add a key above for full AI.';
+        hint.textContent = backendEnabled
+          ? 'Using Loadnote Coach backend when available; deterministic insights remain available offline.'
+          : (enabled ? 'Using developer API mode — answers can use your recent training data.' : 'Using built-in coach (no API).');
       }
       // Populate form fields
       const api = data.api || {};
@@ -4148,11 +4387,15 @@
       const model = document.getElementById('api-model');
       const en = document.getElementById('api-enabled');
       const keyEl = document.getElementById('api-key');
+      const backendToggle = document.getElementById('api-backend-enabled');
+      const backendUrl = document.getElementById('api-backend-url');
       if (prov && api.provider) prov.value = api.provider;
       if (base) base.value = api.baseUrl || 'https://api.x.ai/v1';
       if (model) model.value = api.model || 'grok-2-latest';
       if (en) en.checked = !!api.enabled;
-      if (keyEl && key && keyEl.value !== '••••••••') keyEl.placeholder = 'Key saved on this device (enter new to replace)';
+      if (backendToggle) backendToggle.checked = api.backendEnabled !== false;
+      if (backendUrl) backendUrl.value = api.backendUrl || '/api/coach';
+      if (keyEl && key && keyEl.value !== '••••••••') keyEl.placeholder = 'Developer key saved on this device (local development only)';
     }
 
     function buildCoachSystemPrompt() {
@@ -4198,55 +4441,92 @@ ${woLines}
 - Last photo date: ${((data.progressPhotos || []).slice().sort((a,b)=>b.date.localeCompare(a.date))[0] || {}).date || 'none'}`;
     }
 
-    async function callCoachAPI(userMessage) {
-      const key = getStoredApiKey();
-      const api = data.api || {};
-      if (!key) throw new Error('No API key saved');
-      if (!api.baseUrl) throw new Error('No API base URL');
-      const url = api.baseUrl.replace(/\/$/, '') + '/chat/completions';
-      const messages = [
-        { role: 'system', content: buildCoachSystemPrompt() },
-        ...chatHistory.slice(-12),
+    function buildCoachContext() {
+      const engine = window.LoadnoteCoach;
+      const analytics = window.LoadnoteAnalytics;
+      const active = typeof getActiveProgram === 'function' ? getActiveProgram() : null;
+      if (!engine) return null;
+      return engine.buildContext({
+        data,
+        analytics,
+        adaptive: lastCoachSnapshot?.recommendation || null,
+        unit: unitLabel(),
+        activeProgram: active
+      });
+    }
+
+    function buildCoachMessages(userMessage) {
+      const engine = window.LoadnoteCoach;
+      const context = buildCoachContext();
+      const system = engine ? engine.buildSystemPrompt() : buildCoachSystemPrompt();
+      return [
+        { role: 'system', content: system + '\n\nATHLETE CONTEXT:\n' + JSON.stringify(context || {}, null, 2) },
+        ...chatHistory.slice(-10),
         { role: 'user', content: userMessage }
       ];
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + key
-        },
-        body: JSON.stringify({
-          model: api.model || 'grok-2-latest',
-          messages,
-          temperature: 0.6
-        })
-      });
+    }
+
+    async function callCoachAPI(userMessage) {
+      const api = data.api || {};
+      const backendEnabled = api.backendEnabled !== false;
+      const messages = buildCoachMessages(userMessage);
+      let url = '';
+      let headers = { 'Content-Type': 'application/json' };
+      let body = { messages };
+
+      if (backendEnabled) {
+        url = (api.backendUrl || '/api/coach').trim();
+      } else {
+        const key = getStoredApiKey();
+        if (!key) throw new Error('No API key saved');
+        if (!api.baseUrl) throw new Error('No API base URL');
+        url = api.baseUrl.replace(/\/$/, '') + '/chat/completions';
+        headers.Authorization = 'Bearer ' + key;
+        body = { model: api.model || 'grok-2-latest', messages, temperature: 0.4 };
+      }
+
+      const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
       if (!res.ok) {
         const errText = await res.text().catch(() => '');
-        let msg = 'API error ' + res.status;
-        try {
-          const j = JSON.parse(errText);
-          msg = j.error?.message || j.message || msg;
-        } catch { if (errText) msg += ': ' + errText.slice(0, 180); }
+        let msg = 'Coach API error ' + res.status;
+        try { const j = JSON.parse(errText); msg = j.error?.message || j.message || msg; }
+        catch { if (errText) msg += ': ' + errText.slice(0, 180); }
         throw new Error(msg);
       }
       const json = await res.json();
       const content = json.choices?.[0]?.message?.content;
-      if (!content) throw new Error('Empty response from API');
+      if (!content) throw new Error('Empty response from coach API');
       return content;
+    }
+
+    async function requestStructuredCoach(userMessage) {
+      const engine = window.LoadnoteCoach;
+      const raw = await callCoachAPI(userMessage);
+      if (!engine) return null;
+      const parsed = engine.parseStructuredResponse(raw);
+      lastCoachSnapshot = parsed;
+      return parsed;
     }
 
     async function testApiConnection() {
       saveApiSettings();
-      if (!getStoredApiKey()) return showToast('Save an API key first', 'error');
-      showToast('Testing API…', 'info');
+      const backend = (data.api || {}).backendEnabled !== false;
+      if (!backend && !getStoredApiKey()) return showToast('Save an API key first', 'error');
+      showToast('Testing coach connection…', 'info');
       try {
-        const reply = await callCoachAPI('Reply with exactly: OK connected');
-        showToast('API connected', 'success');
-        appendChatMessage('<i>Connection test:</i> ' + escapeChat(reply), false);
-      } catch (e) {
-        showToast('API test failed: ' + e.message, 'error');
-      }
+        if (backend) {
+          const healthUrl = ((data.api || {}).backendUrl || '/api/coach').replace(/\/coach\/?$/, '/health');
+          const res = await fetch(healthUrl);
+          if (!res.ok) throw new Error('Backend returned ' + res.status);
+          const j = await res.json();
+          if (!j.ok) throw new Error('Backend health check failed');
+          showToast(j.aiConfigured ? 'Secure coach backend connected' : 'Backend connected, but AI key is not configured', j.aiConfigured ? 'success' : 'error');
+        } else {
+          const reply = await callCoachAPI('Reply with exactly: OK connected');
+          showToast('API connected', 'success');
+          appendChatMessage('<i>Connection test:</i> ' + escapeChat(reply), false);
+        }
+      } catch (e) { showToast('Coach connection failed: ' + e.message, 'error'); }
     }
 
     function escapeChat(text) {
@@ -4263,17 +4543,23 @@ ${woLines}
       if (!text) return;
       appendChatMessage(escapeChat(text), true);
       input.value = '';
-      const useApi = !!(data.api && data.api.enabled && getStoredApiKey());
+      const useApi = !!(data.api && (data.api.enabled || data.api.backendEnabled));
       const btn = document.getElementById('chat-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = useApi ? '…' : 'Send'; }
 
       try {
         if (useApi) {
-          const reply = await callCoachAPI(text);
+          const structured = await requestStructuredCoach(text);
+          const reply = structured ? structured.summary : await callCoachAPI(text);
           chatHistory.push({ role: 'user', content: text });
           chatHistory.push({ role: 'assistant', content: reply });
           if (chatHistory.length > 24) chatHistory = chatHistory.slice(-24);
-          appendChatMessage(escapeChat(reply), false);
+          if (structured) {
+            appendChatMessage(escapeChat(structured.summary || 'Coach recommendation ready.'), false);
+            renderCoachSnapshot(structured);
+          } else {
+            appendChatMessage(escapeChat(reply), false);
+          }
         } else {
           await new Promise(r => setTimeout(r, 250));
           const reply = getChatResponse(text);
@@ -4289,11 +4575,48 @@ ${woLines}
       }
     }
 
+    function renderProactiveCoachPreview() {
+      const el = document.getElementById('coach-proactive');
+      if (!el || !window.LoadnoteCoach) return;
+      const context = buildCoachContext();
+      const insights = window.LoadnoteCoach.deterministicInsights(context);
+      const top = insights[0] || { title: 'Keep logging', body: 'Complete workouts with RPE so Loadnote can personalize your next-session recommendations.' };
+      el.innerHTML = `<div class="coach-snapshot-head"><div><span class="eyebrow">Proactive coach</span><h3>${escapeHtml(top.title)}</h3><p class="text-sm text-slate-600 mt-1">${escapeHtml(top.body)}</p></div><button class="btn-secondary text-sm" onclick="refreshCoachAnalysis(this)">Analyze</button></div><div class="text-xs text-slate-500 mt-2">Uses your local training analytics. AI is optional.</div>`;
+    }
+
+    async function refreshCoachAnalysis(btn) {
+      if (btn) { btn.disabled = true; btn.textContent = 'Analyzing…'; }
+      try {
+        const useApi = !!(data.api && (data.api.enabled || data.api.backendEnabled));
+        if (!useApi) { renderProactiveCoachPreview(); return; }
+        const snapshot = await requestStructuredCoach('Analyze my current training and give me the single most useful next-workout recommendation.');
+        if (snapshot) renderCoachSnapshot(snapshot);
+      } catch (e) {
+        showToast('AI analysis unavailable: ' + e.message, 'error');
+        renderProactiveCoachPreview();
+      } finally { if (btn) { btn.disabled = false; btn.textContent = 'Analyze'; } }
+    }
+
+    function renderCoachSnapshot(snapshot) {
+      const el = document.getElementById('coach-proactive');
+      if (!el || !snapshot) return;
+      const rec = snapshot.recommendation || {};
+      const actionLabels = { increase:'Increase', hold:'Hold', reduce:'Reduce', repeat:'Repeat', none:'No change' };
+      const insights = Array.isArray(snapshot.insights) ? snapshot.insights : [];
+      el.innerHTML = `
+        <div class="coach-snapshot-head"><div><span class="eyebrow">Coach analysis</span><h3>${escapeHtml(snapshot.summary || 'Your latest training snapshot is ready.')}</h3></div><span class="coach-confidence">${escapeHtml(snapshot.confidence || 'medium')} confidence</span></div>
+        ${insights.map(i => `<div class="coach-insight-row"><span class="coach-dot ${i.type === 'watch' ? 'watch' : i.type === 'positive' ? 'positive' : ''}"></span><div><b>${escapeHtml(i.title || 'Insight')}</b><p>${escapeHtml(i.body || '')}</p></div></div>`).join('')}
+        ${rec.action && rec.action !== 'none' ? `<div class="coach-recommendation"><div><span class="eyebrow">Next recommendation</span><b>${escapeHtml(actionLabels[rec.action] || rec.action)}${rec.exercise ? ' · ' + escapeHtml(rec.exercise) : ''}</b></div><div class="coach-rec-load">${rec.weight != null ? escapeHtml(toDisplay(rec.weight) + ' ' + unitLabel()) : '—'}${rec.sets && rec.reps ? ` · ${rec.sets} × ${rec.reps}` : ''}${rec.targetRPE ? ` · RPE ${rec.targetRPE}` : ''}</div><p>${escapeHtml(rec.reason || '')}</p></div>` : ''}
+      `;
+    }
+
     function renderCoach() {
+      try { renderAthleteProfile(); } catch (e) { console.warn('Athlete profile render failed', e); }
       // Advice
       const adviceEl = document.getElementById('coach-advice');
       const tips = getCoachAdvice();
       if (adviceEl) adviceEl.innerHTML = (tips || []).map(t => `<p>• ${t}</p>`).join('');
+      try { if (lastCoachSnapshot) renderCoachSnapshot(lastCoachSnapshot); else renderProactiveCoachPreview(); } catch (e) { console.warn(e); }
       try { refreshDeloadHelper(); } catch (e) { console.warn(e); }
       try { updateApiStatusUI(); } catch (e) { console.warn(e); }
 
@@ -4361,6 +4684,32 @@ ${woLines}
           <p class="text-xs text-slate-500 mt-3"><b>Loading scheme (${p.schemeLabel || 'Linear'}):</b> ${p.progressionTip || 'Add weight when you complete all sets/reps with good form.'}</p>
         `;
       }
+
+      // v0.6 Adaptive Programs — preview the next session from the active program.
+      const adaptiveEl = document.getElementById('adaptive-program-next');
+      if (adaptiveEl) {
+        if (!active || !window.LoadnoteAdaptivePrograms) {
+          adaptiveEl.innerHTML = '';
+        } else {
+          const session = window.LoadnoteAdaptivePrograms.buildNextSession(active, data.workouts || [], currentUnit(), window.LoadnoteAdaptive);
+          if (!session || !session.exercises.length) {
+            adaptiveEl.innerHTML = '';
+          } else {
+            adaptiveEl.innerHTML = `
+              <div class="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div><span class="eyebrow">Adaptive next session</span><h3 class="font-semibold text-lg mt-1">${escapeHtml(session.dayName)}</h3><p class="text-xs text-slate-600 mt-1">Targets are based on your most recent logged performance for each matching exercise. Review before starting.</p></div>
+                  <button onclick="startNextProgramWorkout()" class="btn-primary text-sm shrink-0">Start next workout</button>
+                </div>
+                <div class="mt-3 space-y-1">
+                  ${session.exercises.map(ex => `<div class="flex items-center justify-between gap-3 py-2 border-t border-indigo-100"><span class="font-medium">${escapeHtml(ex.name)}</span><span class="text-sm font-semibold">${ex.weight == null ? 'New movement' : escapeHtml(toDisplay(ex.weight) + ' ' + unitLabel())}${ex.sets && ex.reps ? ` · ${ex.sets} × ${ex.reps}` : ''}${ex.targetRPE ? ` · RPE ${ex.targetRPE}` : ''}</span></div>`).join('')}
+                </div>
+              </div>`;
+          }
+        }
+      }
+
+      try { renderProgramProgressionStatus(active); } catch (e) { console.warn('Program progression status failed', e); }
 
       // Program library list
       const libEl = document.getElementById('programs-list');
@@ -4619,12 +4968,14 @@ ${woLines}
     // ========== Init ==========
     
     function normalizeDataShape(d) {
+      if (window.LoadnoteCore?.normalizeState) return window.LoadnoteCore.normalizeState(d, DEFAULT_DATA);
       const base = { ...DEFAULT_DATA, ...(d || {}) };
       ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews'].forEach(k => {
         if (!Array.isArray(base[k])) base[k] = [];
       });
       if (!base.exerciseNotes || typeof base.exerciseNotes !== 'object') base.exerciseNotes = {};
       if (!base.api || typeof base.api !== 'object') base.api = { ...DEFAULT_DATA.api };
+      base.api = { ...DEFAULT_DATA.api, ...base.api };
       return base;
     }
 

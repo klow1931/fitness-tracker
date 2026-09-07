@@ -690,3 +690,24 @@ body.dark .home-cta.primary {
   background: #312e81;
   border-color: #6366f1;
 }
+
+/* Loadnote v0.3 Training Intelligence */
+.badge { display:inline-flex; align-items:center; border-radius:9999px; padding:.25rem .6rem; font-size:.72rem; font-weight:600; background:#eef2ff; color:#4338ca; }
+
+
+/* v0.5 Proactive Coach */
+.coach-proactive-card { border-color: #c7d2fe; background: linear-gradient(135deg, #eef2ff, #fff); }
+.coach-snapshot-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.coach-snapshot-head h3 { font-size:1.05rem; font-weight:700; color:#1e1b4b; margin-top:.2rem; }
+.eyebrow { display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; color:#6366f1; }
+.coach-confidence { font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; white-space:nowrap; }
+.coach-insight-row { display:flex; gap:.65rem; padding:.65rem 0; border-top:1px solid rgba(148,163,184,.22); }
+.coach-insight-row p { margin-top:.15rem; color:#475569; font-size:.8rem; }
+.coach-dot { width:.5rem; height:.5rem; border-radius:999px; background:#94a3b8; margin-top:.4rem; flex:none; }
+.coach-dot.positive { background:#10b981; }.coach-dot.watch { background:#f59e0b; }
+.coach-recommendation { margin-top:.7rem; padding:.8rem; border-radius:.65rem; background:#fff; border:1px solid #cbd5e1; }
+.coach-rec-load { font-weight:700; margin-top:.2rem; color:#312e81; }
+.coach-recommendation p { font-size:.78rem; color:#64748b; margin-top:.35rem; }
+body.dark .coach-proactive-card { background:#1e293b; border-color:#4338ca; }
+body.dark .coach-snapshot-head h3 { color:#e0e7ff; }
+body.dark .coach-recommendation { background:#0f172a; border-color:#475569; }

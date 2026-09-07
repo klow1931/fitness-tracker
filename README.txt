@@ -80,3 +80,7 @@ Privacy policy
 In-app: Tools → Privacy policy (also linked in the footer).
 Summary: logs stay in your browser; optional AI keys and barcode
 lookups are the main cases where data leaves the device.
+
+
+## v0.3 Training Intelligence
+The dashboard now includes deterministic strength trends, training status, and a conservative next-workout recommendation. The recommendation engine does not require an AI provider.
