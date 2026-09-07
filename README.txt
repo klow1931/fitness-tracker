@@ -1,13 +1,15 @@
-FitTrack (web) — quick start for testers
-========================================
-Version: web v25
+Loadnote (web) — quick start for testers
+==========================================
+Version: web v34
 
 What this is
 ------------
-A local-first fitness tracker in your browser:
+Loadnote is a local-first training log in your browser:
 workouts (strength + cardio), nutrition, PRs, calendar,
 body measurements, progress photos, technique self-check (checklist),
 and AI coach (built-in + optional your own API key).
+
+Tagline: What you lifted. What comes next.
 
 How to open
 -----------
@@ -24,7 +26,7 @@ First things to try
 • Train → Log only (History / Templates are separate tabs)
 • Food → Today + Add food (Library / History optional)
 • Coach → Insights or Chat first (Programs / API optional)
-• More → Measures, Form (self-check checklist), Photos, Tools
+• More → Measurements, Form (self-check checklist), Photos, Tools
 • Tools → Load demo data (optional) or Export JSON backup
 
 Form tab (technique)
@@ -63,4 +65,12 @@ Tell the person who shared this:
 - What you wish it did next?
 Screenshots help.
 
-Thank you for testing!
+Thank you for testing Loadnote!
+
+Credits (third-party)
+---------------------
+• Chart.js (MIT) — charts
+• html5-qrcode (Apache-2.0) — barcode camera
+• Open Food Facts — barcode nutrition data (see their site/terms)
+• Tailwind CSS CDN — prototype styling
+• Capacitor (MIT) — optional native wrapper

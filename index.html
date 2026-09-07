@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fitness Tracker — Progress, PRs, Nutrition & AI Coach</title>
+  <title>Loadnote — What you lifted. What comes next.</title>
   <meta name="theme-color" content="#4f46e5" />
   <meta name="description" content="Track workouts, nutrition, PRs, and coach guidance offline-capable." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="FitTrack" />
+  <meta name="apple-mobile-web-app-title" content="Loadnote" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -20,7 +20,7 @@
   <div id="app-loader" class="app-loader">
     <div class="app-loader-card">
       <div class="app-loader-icon" aria-hidden="true"></div>
-      <p class="app-loader-title">Fitness Tracker</p>
+      <p class="app-loader-title">Loadnote</p>
       <p class="app-loader-sub">Loading your data…</p>
     </div>
   </div>
@@ -36,8 +36,8 @@
     <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900">Fitness Tracker</h1>
-        <p class="text-slate-500 text-sm">Track workouts, PRs, nutrition, progress & AI Coach</p>
+        <h1 class="text-2xl font-bold text-slate-900">Loadnote</h1>
+        <p class="text-slate-500 text-sm">What you lifted. What comes next. — workouts, nutrition, PRs & coach</p>
       </div>
       <div class="flex gap-2 flex-wrap items-center">
         <button onclick="toggleDark()" id="dark-toggle" class="btn-secondary text-sm px-3 py-1.5" title="Toggle dark mode">🌙</button>
@@ -52,7 +52,7 @@
           <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
           <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition</button>
           <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
-          <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measures</button>
+          <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measurements</button>
           <button onclick="showTab('form')" id="tab-form" class="tab-btn">Form</button>
           <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
           <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
@@ -174,7 +174,7 @@
         <div class="card">
           <div class="flex items-center justify-between gap-2 mb-4">
             <h2 class="font-semibold">Bodyweight</h2>
-            <button onclick="showTab('measures')" class="btn-secondary text-xs">Body measures →</button>
+            <button onclick="showTab('measures')" class="btn-secondary text-xs">Measurements →</button>
           </div>
           <div class="flex gap-2 mb-3">
             <input type="date" id="bw-date" class="input text-sm" />
@@ -618,11 +618,20 @@
 
         <!-- Barcode -->
         <div id="food-mode-barcode" class="hidden space-y-3">
+          <div class="card border-slate-200 bg-slate-50 !p-3 mb-1">
+            <p class="text-sm font-medium text-slate-800 mb-1">Food database lookup</p>
+            <p class="text-xs text-slate-600">
+              1) Checks your <b>local library</b> (saved foods on this device).<br>
+              2) If not found, calls the free <b>Open Food Facts</b> database online
+              (<a href="https://world.openfoodfacts.org" target="_blank" rel="noopener" class="text-indigo-600 underline">openfoodfacts.org</a>).
+              Needs internet for online lookup. Results can be saved to your library for offline reuse.
+            </p>
+          </div>
           <div class="flex gap-2">
-            <input type="text" id="barcode-input" class="input" placeholder="Enter barcode number" />
+            <input type="text" id="barcode-input" class="input" placeholder="Enter barcode number (UPC / EAN)" inputmode="numeric" />
             <button onclick="lookupBarcode()" class="btn-primary whitespace-nowrap">Lookup</button>
           </div>
-          <p class="text-xs text-slate-500">Uses Open Food Facts (free database). Camera scan:</p>
+          <p class="text-xs text-slate-500">Camera scan (works best on HTTPS / phone):</p>
           <div id="barcode-reader" class="w-full max-w-sm mx-auto"></div>
           <button onclick="toggleBarcodeScanner()" id="scan-btn" class="btn-secondary text-sm">Start Camera Scan</button>
           <div id="barcode-result" class="text-sm"></div>
@@ -1200,10 +1209,23 @@
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
         <p class="text-xs text-slate-500 mt-2"><b>Privacy:</b> Workouts, nutrition, and photos stay in your browser on this device. Optional AI API keys are stored only here and are never included in JSON backups. Keys are only sent to the provider you choose when chat API mode is on.</p>
       </div>
+
+      <div class="card">
+        <h2 class="font-semibold mb-2">Credits &amp; open source</h2>
+        <p class="text-xs text-slate-500 mb-3">Third-party libraries and data sources used by this app. Their licenses apply to those components.</p>
+        <ul class="text-sm text-slate-600 space-y-2 list-disc pl-5">
+          <li><b>Chart.js</b> — charts (MIT License). <a href="https://www.chartjs.org/" target="_blank" rel="noopener" class="text-indigo-600 underline">chartjs.org</a></li>
+          <li><b>html5-qrcode</b> — camera barcode scanning (Apache License 2.0). Loaded from unpkg when you use barcode scan.</li>
+          <li><b>Open Food Facts</b> — barcode product nutrition database (community data; see their terms / attribution). <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener" class="text-indigo-600 underline">openfoodfacts.org</a></li>
+          <li><b>Tailwind CSS</b> — utility CSS via CDN for this web prototype (see Tailwind’s terms for production use).</li>
+          <li><b>Capacitor</b> (optional native wrapper) — MIT License, Ionic / Drifty Co.</li>
+        </ul>
+        <p class="text-xs text-slate-500 mt-3">Exercise names and training concepts (e.g. RPE, Epley 1RM estimate) are general fitness knowledge, not affiliated with any third-party training brand. Coach guidance is not medical advice.</p>
+      </div>
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">FitTrack web v25 · local-first fitness tracker</p>
+      <p id="app-version">Loadnote web v34 · local-first training log</p>
       <p>Data stays in your browser. Optional API keys never leave this device except to your chosen AI provider.</p>
     </footer>
   </div>
@@ -1232,7 +1254,7 @@
       <p class="text-sm font-semibold mb-2">More</p>
       <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)">📅 Calendar</button>
       <button type="button" class="mobile-more-item" onclick="showTab('prs'); toggleMobileMore(false)">🏆 PRs</button>
-      <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)">📏 Measures</button>
+      <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)">📏 Measurements</button>
       <button type="button" class="mobile-more-item" onclick="showTab('form'); toggleMobileMore(false)">🎬 Form</button>
       <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)">📷 Photos</button>
       <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)">🛠️ Tools</button>
@@ -1544,6 +1566,109 @@
     <option value="Kettlebell Clean">
     <option value="Kettlebell Snatch">
     <option value="Turkish Get-Up">
+    <!-- Tempo & Pause strength -->
+    <option value="Pause Squat">
+    <option value="Pause Squat (1 sec)">
+    <option value="Pause Squat (2 sec)">
+    <option value="Pause Squat (3 sec)">
+    <option value="Pause Front Squat">
+    <option value="Pause High-Bar Squat">
+    <option value="Pause Low-Bar Squat">
+    <option value="Pause Box Squat">
+    <option value="Tempo Squat">
+    <option value="Tempo Squat (3-0-1-0)">
+    <option value="Tempo Squat (3-1-1-0)">
+    <option value="Tempo Squat (4-0-1-0)">
+    <option value="Tempo Squat (5-0-1-0)">
+    <option value="Eccentric Squat">
+    <option value="Slow Eccentric Squat">
+    <option value="1.5 Rep Squat">
+    <option value="Pin Squat">
+    <option value="Pin Squat (Anderson)">
+    <option value="Anderson Squat">
+    <option value="Dead Stop Squat">
+    <option value="Isometric Squat Hold">
+    <option value="Bottom Squat Hold">
+    <option value="Pause Bench Press">
+    <option value="Pause Bench (1 sec)">
+    <option value="Pause Bench (2 sec)">
+    <option value="Pause Bench (3 sec)">
+    <option value="Long Pause Bench">
+    <option value="Paused Competition Bench">
+    <option value="Tempo Bench Press">
+    <option value="Tempo Bench (3-1-1-0)">
+    <option value="Tempo Bench (4-0-1-0)">
+    <option value="Tempo Bench (3-0-1-0)">
+    <option value="Eccentric Bench Press">
+    <option value="Slow Eccentric Bench">
+    <option value="Pin Press">
+    <option value="Pin Bench Press">
+    <option value="Dead Stop Bench">
+    <option value="Spoto Press">
+    <option value="Spoto Press (pause off chest)">
+    <option value="Isometric Bench Hold">
+    <option value="Pause Overhead Press">
+    <option value="Tempo Overhead Press">
+    <option value="Tempo OHP (3-0-1-0)">
+    <option value="Pause Deadlift">
+    <option value="Pause Deadlift (below knee)">
+    <option value="Pause Deadlift (above knee)">
+    <option value="Pause Deadlift (mid-shin)">
+    <option value="Tempo Deadlift">
+    <option value="Tempo Deadlift (3-0-1-0)">
+    <option value="Tempo Deadlift (3-1-1-0)">
+    <option value="Eccentric Deadlift">
+    <option value="Slow Eccentric Deadlift">
+    <option value="Pin Deadlift">
+    <option value="Deficit Pause Deadlift">
+    <option value="Isometric Deadlift Pull">
+    <option value="Pause Romanian Deadlift">
+    <option value="Tempo Romanian Deadlift">
+    <option value="Tempo RDL (3-0-1-0)">
+    <option value="Pause Good Morning">
+    <option value="Tempo Good Morning">
+    <option value="Pause Barbell Row">
+    <option value="Tempo Barbell Row">
+    <option value="Pause Pendlay Row">
+    <option value="Dead Stop Row">
+    <option value="Pause Pull-Up">
+    <option value="Tempo Pull-Up">
+    <option value="Pause Chin-Up">
+    <option value="Tempo Chin-Up">
+    <option value="Isometric Pull-Up Hold">
+    <option value="Pause Dip">
+    <option value="Tempo Dip">
+    <option value="Pause Lunge">
+    <option value="Tempo Lunge">
+    <option value="Pause Bulgarian Split Squat">
+    <option value="Tempo Bulgarian Split Squat">
+    <option value="Pause Hip Thrust">
+    <option value="Tempo Hip Thrust">
+    <option value="Pause Leg Press">
+    <option value="Tempo Leg Press">
+    <option value="Pause Leg Curl">
+    <option value="Tempo Leg Curl">
+    <option value="Pause Leg Extension">
+    <option value="Tempo Leg Extension">
+    <option value="Pause Calf Raise">
+    <option value="Tempo Calf Raise">
+    <option value="Isometric Calf Hold">
+    <option value="Pause Lateral Raise">
+    <option value="Tempo Lateral Raise">
+    <option value="Pause Curl">
+    <option value="Tempo Curl">
+    <option value="Pause Tricep Extension">
+    <option value="Tempo Tricep Extension">
+    <option value="Prone Y-Raise Hold">
+    <option value="Prone T-Raise Hold">
+    <option value="Prone W-Raise Hold">
+    <option value="Wall Sit Hold">
+    <option value="Plank Hold">
+    <option value="Side Plank Hold">
+    <option value="Dead Hang Hold">
+    <option value="Hollow Body Hold">
+    <option value="Glute Bridge Hold">
+    <option value="Split Squat Iso Hold">
     <!-- Cardio -->
     <option value="Running">
     <option value="Jogging">

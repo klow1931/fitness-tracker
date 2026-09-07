@@ -342,14 +342,20 @@
     function calcVolume(workout) {
       return (workout.exercises || []).reduce((sum, ex) => {
         if (ex.type === 'cardio' || !ex.sets) return sum;
-        return sum + ex.sets.reduce((s, set) => s + (set.reps * set.weight), 0);
+        return sum + ex.sets.reduce((s, set) => {
+          if (set.reps > 0) return s + (set.reps * (set.weight || 0));
+          // Timed holds don't use classic volume; skip or count weight only once
+          return s;
+        }, 0);
       }, 0);
     }
 
     function estimated1RM(weight, reps) {
-      if (reps <= 1) return weight;
+      const w = Number(weight) || 0;
+      const r = Number(reps) || 0;
+      if (r <= 1) return w;
       // Epley formula
-      return Math.round(weight * (1 + reps / 30) * 10) / 10;
+      return Math.round(w * (1 + r / 30) * 10) / 10;
     }
 
     // ========== Tab Navigation ==========
@@ -579,7 +585,7 @@
     }
 
     // ========== Workout Form ==========
-    function addExerciseRow(ex = { name: '', sets: [{ reps: '', weight: '' }], type: 'strength' }) {
+    function addExerciseRow(ex = { name: '', sets: [{ reps: '', weight: '' }], type: 'strength', trackBy: 'reps' }) {
       const container = document.getElementById('exercise-rows');
       if (!container) return;
       const idx = container.children.length;
@@ -625,11 +631,22 @@
         return;
       }
       const note = (data.exerciseNotes && ex.name) ? (data.exerciseNotes[ex.name] || '') : '';
+      // Infer trackBy from existing sets (duration holds) or explicit field
+      let trackBy = ex.trackBy === 'duration' ? 'duration' : 'reps';
+      if (!ex.trackBy && (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0))) trackBy = 'duration';
+      div.dataset.trackBy = trackBy;
       div.innerHTML = `
         <div class="flex gap-2 mb-2 items-end flex-wrap">
           <div class="flex-1 min-w-[160px]">
             <label class="label">Exercise</label>
-            <input type="text" class="input ex-name" list="exercise-list" value="${ex.name || ''}" placeholder="e.g. Bench Press" />
+            <input type="text" class="input ex-name" list="exercise-list" value="${ex.name || ''}" placeholder="e.g. Bench Press, Prone Y-Raise" />
+          </div>
+          <div>
+            <label class="label">Track sets by</label>
+            <div class="flex rounded-lg border border-slate-300 overflow-hidden text-sm font-medium">
+              <button type="button" class="track-by-btn px-2 py-1.5 ${trackBy === 'reps' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600'}" data-track="reps" onclick="setExerciseTrackBy(this, 'reps')">Reps</button>
+              <button type="button" class="track-by-btn px-2 py-1.5 ${trackBy === 'duration' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600'}" data-track="duration" onclick="setExerciseTrackBy(this, 'duration')">Hold (sec)</button>
+            </div>
           </div>
           <button type="button" class="btn-secondary text-sm whitespace-nowrap" onclick="fillLastWeights(this)" title="Load last session sets">Last weights</button>
           <button type="button" class="btn-secondary text-sm whitespace-nowrap" onclick="fillLastWeights(this, true)" title="Last weights + small jump">+ Jump</button>
@@ -653,7 +670,33 @@
         if (n && !hasWeight) fillLastWeights(nameInput, false, true);
       });
       const setsContainer = div.querySelector('.sets-container');
-      (ex.sets || [{ reps: '', weight: '' }]).forEach(s => addSetToContainer(setsContainer, s));
+      (ex.sets || [{ reps: '', weight: '', duration: '' }]).forEach(s => addSetToContainer(setsContainer, s, trackBy));
+    }
+
+    function setExerciseTrackBy(btn, mode) {
+      if (!btn || typeof btn.closest !== 'function') return;
+      const row = btn.closest('[data-idx]');
+      if (!row || row.dataset.type === 'cardio') return;
+      row.dataset.trackBy = mode === 'duration' ? 'duration' : 'reps';
+      row.querySelectorAll('.track-by-btn').forEach(b => {
+        const active = b.getAttribute('data-track') === row.dataset.trackBy;
+        b.className = 'track-by-btn px-2 py-1.5 ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600');
+      });
+      const setsContainer = row.querySelector('.sets-container');
+      if (!setsContainer) return;
+      // Rebuild set rows keeping whatever values we can
+      const prev = [...setsContainer.querySelectorAll(':scope > div')].map(s => ({
+        reps: s.querySelector('.set-reps')?.value || '',
+        duration: s.querySelector('.set-duration')?.value || '',
+        weight: s.querySelector('.set-weight')?.value !== '' && s.querySelector('.set-weight')?.value != null
+          ? toStorage(parseFloat(s.querySelector('.set-weight').value) || 0)
+          : '',
+        rpe: s.querySelector('.set-rpe')?.value || ''
+      }));
+      setsContainer.innerHTML = '';
+      (prev.length ? prev : [{ reps: '', duration: '', weight: '', rpe: '' }]).forEach(s => {
+        addSetToContainer(setsContainer, s, row.dataset.trackBy);
+      });
     }
 
     function getLastExercisePerformance(name) {
@@ -663,7 +706,7 @@
         for (const ex of (w.exercises || [])) {
           if (ex.type === 'cardio') continue;
           if ((ex.name || '').toLowerCase() === key && ex.sets && ex.sets.length) {
-            return { date: w.date, sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight, rpe: s.rpe })) };
+            return { date: w.date, sets: ex.sets.map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: s.rpe })), trackBy: ex.trackBy };
           }
         }
       }
@@ -690,13 +733,24 @@
       }
       const jump = withJump ? smallJumpKg() : 0;
       const setsContainer = row.querySelector('.sets-container');
+      // Prefer duration mode if last sets were timed holds
+      const lastWasDuration = last.sets.some(s => s.duration > 0 && !(s.reps > 0));
+      if (lastWasDuration) {
+        row.dataset.trackBy = 'duration';
+        row.querySelectorAll('.track-by-btn').forEach(b => {
+          const active = b.getAttribute('data-track') === 'duration';
+          b.className = 'track-by-btn px-2 py-1.5 ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600');
+        });
+      }
+      const trackBy = row.dataset.trackBy || (lastWasDuration ? 'duration' : 'reps');
       setsContainer.innerHTML = '';
       last.sets.forEach(s => {
         addSetToContainer(setsContainer, {
           reps: s.reps,
+          duration: s.duration,
           weight: (s.weight || 0) + jump,
           rpe: s.rpe
-        });
+        }, trackBy);
       });
       if (!quiet) {
         const tip = withJump
@@ -718,18 +772,27 @@
       saveData(data);
     }
 
-    function addSetToContainer(container, set = { reps: '', weight: '', rpe: '' }) {
+    function addSetToContainer(container, set = { reps: '', weight: '', rpe: '', duration: '' }, trackBy) {
       const row = document.createElement('div');
       row.className = 'flex gap-2 items-center flex-wrap';
       const displayWeight = set.weight !== '' && set.weight != null ? toDisplay(set.weight) : '';
       const checkHtml = data.checklistMode
         ? `<input type="checkbox" class="set-done-check" title="Mark set done" />`
         : '';
+      // Infer mode from parent exercise row if not passed
+      if (!trackBy) {
+        const exRow = container.closest('[data-idx]');
+        trackBy = exRow?.dataset?.trackBy === 'duration' ? 'duration' : 'reps';
+      }
+      const isDuration = trackBy === 'duration';
+      const measureInput = isDuration
+        ? `<input type="number" class="input set-duration w-24" placeholder="Sec" min="1" step="1" value="${set.duration || ''}" title="Hold duration in seconds" />`
+        : `<input type="number" class="input set-reps w-20" placeholder="Reps" min="1" value="${set.reps || ''}" />`;
       row.innerHTML = `
         ${checkHtml}
-        <input type="number" class="input set-reps w-20" placeholder="Reps" min="1" value="${set.reps || ''}" />
-        <span class="text-slate-400">×</span>
-        <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" />
+        ${measureInput}
+        <span class="text-slate-400">${isDuration ? 'sec ×' : '×'}</span>
+        <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" title="Load (0 for bodyweight holds)" />
         <input type="number" class="input set-rpe w-16" placeholder="RPE" min="1" max="10" step="0.5" value="${set.rpe || ''}" title="RPE 1-10" />
         <button onclick="this.parentElement.remove()" class="text-red-500 text-sm">✕</button>
       `;
@@ -744,8 +807,21 @@
     }
 
     function addSetRow(btn) {
+      const exRow = btn.closest('[data-idx]');
       const container = btn.previousElementSibling;
-      addSetToContainer(container);
+      const trackBy = exRow?.dataset?.trackBy === 'duration' ? 'duration' : 'reps';
+      addSetToContainer(container, { reps: '', weight: '', rpe: '', duration: '' }, trackBy);
+    }
+
+    function formatStrengthSet(s) {
+      if (!s) return '—';
+      const w = toDisplay(s.weight || 0);
+      const u = unitLabel();
+      const rpe = s.rpe ? ` @RPE${s.rpe}` : '';
+      if (s.duration > 0 && !(s.reps > 0)) {
+        return `${s.duration}s × ${w}${u}${rpe}`;
+      }
+      return `${s.reps || 0}×${w}${u}${rpe}`;
     }
 
     function clearWorkoutForm(force) {
@@ -754,7 +830,7 @@
       rows.forEach(row => {
         const name = row.querySelector('.ex-name')?.value.trim();
         if (name) hasData = true;
-        row.querySelectorAll('.set-reps, .set-weight').forEach(inp => {
+        row.querySelectorAll('.set-reps, .set-duration, .set-weight').forEach(inp => {
           if (inp.value) hasData = true;
         });
       });
@@ -787,18 +863,37 @@
           exercises.push(entry);
           return;
         }
+        const trackBy = row.dataset.trackBy === 'duration' ? 'duration' : 'reps';
         const sets = [];
         row.querySelectorAll('.sets-container > div').forEach(s => {
-          const reps = parseFloat(s.querySelector('.set-reps').value);
           const weightRaw = parseFloat(s.querySelector('.set-weight').value);
           const rpeRaw = parseFloat(s.querySelector('.set-rpe')?.value);
-          if (reps > 0 && weightRaw >= 0) {
-            const setObj = { reps, weight: toStorage(weightRaw) };
-            if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
-            sets.push(setObj);
+          if (trackBy === 'duration') {
+            const duration = parseFloat(s.querySelector('.set-duration')?.value);
+            if (duration > 0 && !isNaN(weightRaw) && weightRaw >= 0) {
+              const setObj = { duration, weight: toStorage(weightRaw) };
+              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
+              sets.push(setObj);
+            } else if (duration > 0 && (isNaN(weightRaw) || s.querySelector('.set-weight').value === '')) {
+              // bodyweight hold — allow empty weight as 0
+              const setObj = { duration, weight: 0 };
+              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
+              sets.push(setObj);
+            }
+          } else {
+            const reps = parseFloat(s.querySelector('.set-reps')?.value);
+            if (reps > 0 && !isNaN(weightRaw) && weightRaw >= 0) {
+              const setObj = { reps, weight: toStorage(weightRaw) };
+              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
+              sets.push(setObj);
+            } else if (reps > 0 && (isNaN(weightRaw) || s.querySelector('.set-weight').value === '')) {
+              const setObj = { reps, weight: 0 };
+              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
+              sets.push(setObj);
+            }
           }
         });
-        if (sets.length) exercises.push({ name, type: 'strength', sets });
+        if (sets.length) exercises.push({ name, type: 'strength', trackBy, sets });
       });
 
       if (!exercises.length) return showToast('Add at least one strength set or cardio entry', 'error');
@@ -808,10 +903,11 @@
       data.workouts.sort((a, b) => b.date.localeCompare(a.date));
       saveData(data);
 
-      // Auto-update PRs if better (strength only)
+      // Auto-update PRs if better (strength only — skip timed holds)
       exercises.forEach(ex => {
         if (ex.type === 'cardio' || !ex.sets) return;
         ex.sets.forEach(set => {
+          if (!(set.reps > 0)) return;
           const est = estimated1RM(set.weight, set.reps);
           const existing = data.prs.find(p => p.exercise.toLowerCase() === ex.name.toLowerCase());
           if (!existing || est > estimated1RM(existing.weight, existing.reps)) {
@@ -852,7 +948,7 @@
 
     function deleteWorkout(id) {
       if (!confirm('Delete this workout?')) return;
-      data.workouts = data.workouts.filter(w => w.id !== id);
+      data.workouts = data.workouts.filter(w => String(w.id) !== String(id));
       saveData(data);
       renderWorkoutHistory();
       renderDashboard();
@@ -875,12 +971,10 @@
           if (ex.avgHr) parts.push(`HR ${ex.avgHr}`);
           return `<div class="text-slate-600"><span class="font-medium text-slate-800">${ex.name}</span> <span class="text-xs text-indigo-600">cardio</span>: ${parts.join(' · ') || '—'}</div>`;
         }
-        const setsStr = (ex.sets || []).map(s => {
-          let t = `${s.reps}×${toDisplay(s.weight)}${unitLabel()}`;
-          if (s.rpe) t += ` @${s.rpe}`;
-          return t;
-        }).join(', ');
-        return `<div class="text-slate-600"><span class="font-medium text-slate-800">${ex.name}</span>: ${setsStr}</div>`;
+        const setsStr = (ex.sets || []).map(s => formatStrengthSet(s)).join(', ');
+        const modeTag = ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0))
+          ? ' <span class="text-xs text-slate-400">hold</span>' : '';
+        return `<div class="text-slate-600"><span class="font-medium text-slate-800">${ex.name}</span>${modeTag}: ${setsStr}</div>`;
       }).join('');
       return `
         <div class="border border-slate-200 rounded-lg p-3 mb-3" data-hist-id="${w.id}">
@@ -1207,7 +1301,7 @@
             <span class="font-medium">${f.name}</span>
             <span class="text-xs text-slate-500 ml-1">${f.serving || ''} · ${f.calories}kcal</span>
           </div>
-          ${f.source === 'custom' || f.source === 'barcode' ? `<button onclick="deleteLibraryFood('${id}')" class="btn-danger text-xs">✕</button>` : ''}
+          ${f.source === 'custom' || f.source === 'barcode' || f.source === 'openfoodfacts' ? `<button onclick="deleteLibraryFood('${id}')" class="btn-danger text-xs">✕</button>` : ''}
         </div>`;
     }
 
@@ -1525,93 +1619,165 @@
       renderFoodLibrary();
     }
 
-    async function lookupBarcode(code) {
-      const barcode = code || document.getElementById('barcode-input').value.trim();
-      if (!barcode) return alert('Enter a barcode');
+    function findLocalFoodByBarcode(barcode) {
+      ensureFoodLibrary();
+      const code = String(barcode || '').trim();
+      if (!code) return null;
+      return (data.foodLibrary || []).find(f => f.barcode && String(f.barcode) === code) || null;
+    }
+
+    function foodFromOpenFoodFactsProduct(p, barcode) {
+      const n = p.nutriments || {};
+      const perServing = (servKey, g100Key) => {
+        if (n[servKey] != null && n[servKey] !== '') return +n[servKey];
+        if (n[g100Key] != null && n[g100Key] !== '') return +n[g100Key];
+        return 0;
+      };
+      let calories = perServing('energy-kcal_serving', 'energy-kcal_100g');
+      if (!calories) {
+        // fallback: kJ → kcal
+        const kj = perServing('energy-kj_serving', 'energy-kj_100g') || perServing('energy_serving', 'energy_100g');
+        if (kj) calories = kj / 4.184;
+      }
+      const food = {
+        id: 'bc-' + barcode,
+        name: p.product_name || p.generic_name || 'Unknown product',
+        brand: p.brands || '',
+        barcode: String(barcode),
+        serving: p.serving_size || '100g',
+        protein: perServing('proteins_serving', 'proteins_100g'),
+        carbs: perServing('carbohydrates_serving', 'carbohydrates_100g'),
+        fat: perServing('fat_serving', 'fat_100g'),
+        calories,
+        fiber: perServing('fiber_serving', 'fiber_100g'),
+        sugar: perServing('sugars_serving', 'sugars_100g'),
+        satFat: perServing('saturated-fat_serving', 'saturated-fat_100g'),
+        cholesterol: perServing('cholesterol_serving', 'cholesterol_100g'),
+        potassium: perServing('potassium_serving', 'potassium_100g'),
+        calcium: perServing('calcium_serving', 'calcium_100g'),
+        iron: perServing('iron_serving', 'iron_100g'),
+        vitaminC: perServing('vitamin-c_serving', 'vitamin-c_100g'),
+        vitaminD: perServing('vitamin-d_serving', 'vitamin-d_100g'),
+        magnesium: perServing('magnesium_serving', 'magnesium_100g'),
+        sodium: 0,
+        source: 'openfoodfacts'
+      };
+      if (n.sodium_serving != null) food.sodium = Math.round(+n.sodium_serving * (+n.sodium_serving < 1 ? 1000 : 1));
+      else if (n.sodium_100g != null) food.sodium = Math.round(+n.sodium_100g * (+n.sodium_100g < 1 ? 1000 : 1));
+      else if (n.salt_100g != null) food.sodium = Math.round(+n.salt_100g * 400); // salt g → approx sodium mg
+      ['potassium', 'calcium', 'magnesium', 'cholesterol'].forEach(k => {
+        if (food[k] > 0 && food[k] < 1) food[k] = Math.round(food[k] * 1000);
+      });
+      food.protein = round1(+food.protein || 0);
+      food.carbs = round1(+food.carbs || 0);
+      food.fat = round1(+food.fat || 0);
+      food.calories = Math.round(+food.calories || 0);
+      food.fiber = round1(+food.fiber || 0);
+      food.sugar = round1(+food.sugar || 0);
+      food.satFat = round1(+food.satFat || 0);
+      food.iron = round1(+food.iron || 0);
+      food.vitaminC = round1(+food.vitaminC || 0);
+      food.vitaminD = round1(+food.vitaminD || 0);
+      food.magnesium = round1(+food.magnesium || 0);
+      return food;
+    }
+
+    function showBarcodeFoodResult(food, sourceLabel) {
       const resultEl = document.getElementById('barcode-result');
-      resultEl.innerHTML = '<p class="text-slate-500">Looking up…</p>';
+      if (!resultEl || !food) return;
+      window._lastBarcodeFood = food;
+      const safeName = String(food.name || '').replace(/</g, '&lt;');
+      const safeBrand = String(food.brand || '').replace(/</g, '&lt;');
+      resultEl.innerHTML = `
+        <div class="border border-slate-200 rounded-lg p-3">
+          <p class="text-xs text-emerald-600 mb-1">${sourceLabel}</p>
+          <p class="font-medium">${safeName}</p>
+          <p class="text-xs text-slate-500">${safeBrand}${safeBrand && food.serving ? ' · ' : ''}${food.serving || ''}</p>
+          <p class="text-sm mt-1">${food.calories || 0} kcal · P${food.protein || 0} C${food.carbs || 0} F${food.fat || 0}</p>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button class="btn-primary text-sm" onclick="pickFood(window._lastBarcodeFood)">Add to Day</button>
+            <button class="btn-secondary text-sm" onclick="saveBarcodeToLibrary(window._lastBarcodeFood)">Save to Library</button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function fetchOpenFoodFacts(barcode) {
+      // Try API v2 first, then v0
+      const urls = [
+        'https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(barcode) + '?fields=product_name,generic_name,brands,serving_size,nutriments,code',
+        'https://world.openfoodfacts.org/api/v0/product/' + encodeURIComponent(barcode) + '.json'
+      ];
+      let lastErr = null;
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const json = await res.json();
+          // v2 uses status === 'success' or product present; v0 uses status === 1
+          const product = json.product;
+          const ok = product && (json.status === 1 || json.status === 'success' || json.status_verbose === 'product found' || !!product.product_name || !!product.nutriments);
+          if (ok && product) return product;
+          if (json.status === 0 || json.status === 'failure') return null;
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      if (lastErr) throw lastErr;
+      return null;
+    }
+
+    async function lookupBarcode(code) {
+      const barcode = String(code || document.getElementById('barcode-input')?.value || '').trim();
+      if (!barcode) return showToast('Enter a barcode', 'error');
+      const resultEl = document.getElementById('barcode-result');
+      if (resultEl) resultEl.innerHTML = '<p class="text-slate-500">Checking local library…</p>';
+
+      // 1) Local library database (offline)
+      const local = findLocalFoodByBarcode(barcode);
+      if (local) {
+        showBarcodeFoodResult(local, 'Found in your local food library');
+        showToast('Matched local library', 'success');
+        return;
+      }
+
+      if (resultEl) resultEl.innerHTML = '<p class="text-slate-500">Looking up Open Food Facts database…</p>';
       try {
-        const res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + encodeURIComponent(barcode) + '.json');
-        const json = await res.json();
-        if (json.status !== 1 || !json.product) {
-          resultEl.innerHTML = '<p class="text-red-500">Product not found in Open Food Facts.</p>';
+        const product = await fetchOpenFoodFacts(barcode);
+        if (!product) {
+          if (resultEl) {
+            resultEl.innerHTML = `
+              <p class="text-red-500">Product not found online.</p>
+              <p class="text-xs text-slate-500 mt-1">Try another barcode, add the food under <b>Add Custom Food</b>, or search the library.</p>
+            `;
+          }
           return;
         }
-        const p = json.product;
-        const n = p.nutriments || {};
-        // Prefer per serving if available, else per 100g
-        const perServing = (servKey, g100Key) => {
-          if (n[servKey] != null) return +n[servKey];
-          if (n[g100Key] != null) return +n[g100Key];
-          return 0;
-        };
-        const food = {
-          id: 'bc-' + barcode,
-          name: p.product_name || p.generic_name || 'Unknown product',
-          brand: p.brands || '',
-          barcode,
-          serving: p.serving_size || '100g',
-          protein: perServing('proteins_serving', 'proteins_100g'),
-          carbs: perServing('carbohydrates_serving', 'carbohydrates_100g'),
-          fat: perServing('fat_serving', 'fat_100g'),
-          calories: perServing('energy-kcal_serving', 'energy-kcal_100g'),
-          fiber: perServing('fiber_serving', 'fiber_100g'),
-          sugar: perServing('sugars_serving', 'sugars_100g'),
-          satFat: perServing('saturated-fat_serving', 'saturated-fat_100g'),
-          cholesterol: perServing('cholesterol_serving', 'cholesterol_100g'),
-          potassium: perServing('potassium_serving', 'potassium_100g'),
-          calcium: perServing('calcium_serving', 'calcium_100g'),
-          iron: perServing('iron_serving', 'iron_100g'),
-          vitaminC: perServing('vitamin-c_serving', 'vitamin-c_100g'),
-          vitaminD: perServing('vitamin-d_serving', 'vitamin-d_100g'),
-          magnesium: perServing('magnesium_serving', 'magnesium_100g'),
-          sodium: 0,
-          source: 'barcode'
-        };
-        // sodium often stored in grams
-        if (n.sodium_serving != null) food.sodium = Math.round(+n.sodium_serving * (+n.sodium_serving < 1 ? 1000 : 1));
-        else if (n.sodium_100g != null) food.sodium = Math.round(+n.sodium_100g * 1000);
-        // convert common mg minerals if OFF reported in grams (< 1)
-        ['potassium', 'calcium', 'magnesium', 'cholesterol'].forEach(k => {
-          if (food[k] > 0 && food[k] < 1) food[k] = Math.round(food[k] * 1000);
-        });
-        food.protein = round1(+food.protein);
-        food.carbs = round1(+food.carbs);
-        food.fat = round1(+food.fat);
-        food.calories = Math.round(+food.calories);
-        food.fiber = round1(+food.fiber);
-        food.sugar = round1(+food.sugar);
-        food.satFat = round1(+food.satFat);
-        food.iron = round1(+food.iron);
-        food.vitaminC = round1(+food.vitaminC);
-        food.vitaminD = round1(+food.vitaminD);
-
-        window._lastBarcodeFood = food;
-        resultEl.innerHTML = `
-          <div class="border border-slate-200 rounded-lg p-3">
-            <p class="font-medium">${food.name.replace(/</g,'&lt;')}</p>
-            <p class="text-xs text-slate-500">${(food.brand||'').replace(/</g,'&lt;')} · ${food.serving}</p>
-            <p class="text-sm mt-1">${food.calories} kcal · P${food.protein} C${food.carbs} F${food.fat}</p>
-            <div class="flex gap-2 mt-2">
-              <button class="btn-primary text-sm" onclick="pickFood(window._lastBarcodeFood)">Add to Day</button>
-              <button class="btn-secondary text-sm" onclick="saveBarcodeToLibrary(window._lastBarcodeFood)">Save to Library</button>
-            </div>
-          </div>
-        `;
+        const food = foodFromOpenFoodFactsProduct(product, barcode);
+        showBarcodeFoodResult(food, 'From Open Food Facts (online database)');
       } catch (e) {
-        resultEl.innerHTML = '<p class="text-red-500">Lookup failed. Check internet connection.</p>';
+        if (resultEl) {
+          resultEl.innerHTML = `
+            <p class="text-red-500">Online lookup failed.</p>
+            <p class="text-xs text-slate-500 mt-1">Check your internet connection. You can still add foods manually or from the library.</p>
+          `;
+        }
+        console.warn(e);
       }
     }
 
     function saveBarcodeToLibrary(food) {
       if (!food) return;
       ensureFoodLibrary();
-      if (!data.foodLibrary.find(f => f.barcode && f.barcode === food.barcode)) {
-        data.foodLibrary.push(food);
-        saveData(data);
-        renderFoodLibrary();
+      const existing = data.foodLibrary.findIndex(f => f.barcode && String(f.barcode) === String(food.barcode));
+      if (existing >= 0) {
+        data.foodLibrary[existing] = { ...data.foodLibrary[existing], ...food };
+      } else {
+        data.foodLibrary.push({ ...food });
       }
-      alert('Saved to library!');
+      saveData(data);
+      renderFoodLibrary();
+      showToast('Saved to local food library', 'success');
     }
 
     function toggleBarcodeScanner() {
@@ -2131,7 +2297,7 @@
           if (ex.type === 'cardio') {
             return `• ${ex.name}: ${ex.duration || '—'} min` + (ex.distance ? `, ${ex.distance} ${ex.distanceUnit || 'km'}` : '');
           }
-          const sets = (ex.sets || []).map(s => `${s.reps}×${toDisplay(s.weight)}${unitLabel()}`).join(', ');
+          const sets = (ex.sets || []).map(s => formatStrengthSet(s)).join(', ');
           return `• ${ex.name}: ${sets}`;
         }).join('<br>');
         html += `<div class="border border-slate-200 rounded-lg p-2 mb-2">
@@ -2866,7 +3032,9 @@
       data.workouts.forEach(w => {
         w.exercises.filter(e => e.name === exercise && e.type !== 'cardio').forEach(ex => {
           if (!ex.sets || !ex.sets.length) return;
-          const best = Math.max(...ex.sets.map(s => estimated1RM(s.weight, s.reps)));
+          const repSets = (ex.sets || []).filter(s => s.reps > 0);
+          if (!repSets.length) return;
+          const best = Math.max(...repSets.map(s => estimated1RM(s.weight, s.reps)));
           if (!byDate[w.date] || best > byDate[w.date]) byDate[w.date] = best;
         });
       });
@@ -2961,7 +3129,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `fitness-tracker-${today()}.json`;
+      a.download = `loadnote-${today()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       data.lastExportDate = today();
@@ -3105,7 +3273,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `fitness-photos-${today()}.json`;
+      a.download = `loadnote-photos-${today()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('Photos backup downloaded', 'success');
@@ -3129,19 +3297,20 @@
 
     function exportCSV() {
       // Workouts CSV (one row per set / cardio line)
-      const woHeaders = ['date', 'workout_id', 'exercise', 'type', 'set_index', 'reps', 'weight_kg', 'rpe', 'duration_min', 'distance', 'distance_unit', 'avg_hr', 'notes'];
+      const woHeaders = ['date', 'workout_id', 'exercise', 'type', 'set_index', 'reps', 'hold_sec', 'weight_kg', 'rpe', 'duration_min', 'distance', 'distance_unit', 'avg_hr', 'notes'];
       const woRows = [woHeaders.join(',')];
       (data.workouts || []).forEach(w => {
         (w.exercises || []).forEach(ex => {
           if (ex.type === 'cardio') {
             woRows.push([
-              w.date, w.id, csvEscape(ex.name), 'cardio', '', '', '', '',
+              w.date, w.id, csvEscape(ex.name), 'cardio', '', '', '', '', '',
               ex.duration || '', ex.distance || '', ex.distanceUnit || '', ex.avgHr || '', csvEscape(w.notes || '')
             ].join(','));
           } else {
             (ex.sets || []).forEach((s, i) => {
               woRows.push([
-                w.date, w.id, csvEscape(ex.name), 'strength', i + 1, s.reps, s.weight, s.rpe || '',
+                w.date, w.id, csvEscape(ex.name), 'strength', i + 1,
+                s.reps || '', s.duration || '', s.weight, s.rpe || '',
                 '', '', '', '', csvEscape(w.notes || '')
               ].join(','));
             });
@@ -3484,7 +3653,9 @@
       (data.workouts || []).filter(w => w.date >= sinceStr).forEach(w => {
         (w.exercises || []).forEach(ex => {
           if (ex.type === 'cardio' || (ex.name || '').toLowerCase() !== key || !ex.sets?.length) return;
-          const best = Math.max(...ex.sets.map(s => estimated1RM(s.weight, s.reps)));
+          const repSets = (ex.sets || []).filter(s => s.reps > 0);
+          if (!repSets.length) return;
+          const best = Math.max(...repSets.map(s => estimated1RM(s.weight, s.reps)));
           points.push({ date: w.date, est: best });
         });
       });
@@ -3976,7 +4147,10 @@
       const woLines = recentWo.map(w => {
         const parts = (w.exercises || []).map(ex => {
           if (ex.type === 'cardio') return `${ex.name} ${ex.duration || 0}min`;
-          const sets = (ex.sets || []).map(s => `${s.reps}x${toDisplay(s.weight)}${unit}`).join(', ');
+          const sets = (ex.sets || []).map(s => {
+            if (s.duration > 0 && !(s.reps > 0)) return `${s.duration}s x ${toDisplay(s.weight)}${unit}`;
+            return `${s.reps}x${toDisplay(s.weight)}${unit}`;
+          }).join(', ');
           return `${ex.name}: ${sets}`;
         }).join('; ');
         return `${w.date}: ${parts}`;
@@ -4105,12 +4279,13 @@ ${woLines}
       // Advice
       const adviceEl = document.getElementById('coach-advice');
       const tips = getCoachAdvice();
-      adviceEl.innerHTML = tips.map(t => `<p>• ${t}</p>`).join('');
-      refreshDeloadHelper();
-      updateApiStatusUI();
+      if (adviceEl) adviceEl.innerHTML = (tips || []).map(t => `<p>• ${t}</p>`).join('');
+      try { refreshDeloadHelper(); } catch (e) { console.warn(e); }
+      try { updateApiStatusUI(); } catch (e) { console.warn(e); }
 
       // Goals list
       const goalsEl = document.getElementById('goals-list');
+      if (!goalsEl) return;
       const goals = data.goals || [];
       if (!goals.length) {
         goalsEl.innerHTML = '<p class="text-slate-500 text-sm">No goals set yet. Add one above.</p>';
@@ -4217,7 +4392,8 @@ ${woLines}
           addExerciseRow({
             name: ex.name,
             type: 'strength',
-            sets: (ex.sets || []).map(s => ({ reps: s.reps, weight: s.weight, rpe: s.rpe }))
+            trackBy: ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0)) ? 'duration' : 'reps',
+            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: s.rpe }))
           });
         }
       });
@@ -4228,7 +4404,7 @@ ${woLines}
       if (!data.workouts.length) return alert('No previous workouts found.');
       const last = data.workouts[0]; // already sorted newest first
       fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '');
-      alert('Loaded last workout. Adjust weights/reps as needed, then Save.');
+      alert('Loaded last workout. Adjust weights/reps or hold times as needed, then Save.');
     }
 
     function saveCurrentAsTemplate() {
@@ -4248,14 +4424,20 @@ ${woLines}
           });
           return;
         }
+        const trackBy = row.dataset.trackBy === 'duration' ? 'duration' : 'reps';
         const sets = [];
         row.querySelectorAll('.sets-container > div').forEach(s => {
-          const reps = parseFloat(s.querySelector('.set-reps').value) || 0;
           const weightRaw = parseFloat(s.querySelector('.set-weight').value);
           const weight = isNaN(weightRaw) ? 0 : toStorage(weightRaw);
-          if (reps > 0) sets.push({ reps, weight });
+          if (trackBy === 'duration') {
+            const duration = parseFloat(s.querySelector('.set-duration')?.value) || 0;
+            if (duration > 0) sets.push({ duration, weight });
+          } else {
+            const reps = parseFloat(s.querySelector('.set-reps')?.value) || 0;
+            if (reps > 0) sets.push({ reps, weight });
+          }
         });
-        if (sets.length) exercises.push({ name, type: 'strength', sets });
+        if (sets.length) exercises.push({ name, type: 'strength', trackBy, sets });
       });
       if (!exercises.length) return alert('Add at least one exercise first.');
       const name = prompt('Template name:', exercises.map(e => e.name).slice(0, 3).join(' / '));
@@ -4377,14 +4559,15 @@ ${woLines}
       }
       data.workouts.sort((a, b) => b.date.localeCompare(a.date));
       data.nutrition.sort((a, b) => b.date.localeCompare(a.date));
-      // Rebuild PRs from all strength work
+      // Rebuild PRs from all strength work (reps-based only)
       (data.workouts || []).forEach(w => {
         (w.exercises || []).forEach(ex => {
           if (ex.type === 'cardio' || !ex.sets) return;
           ex.sets.forEach(set => {
+            if (!(set.reps > 0)) return;
             const est = estimated1RM(set.weight, set.reps);
             const existing = data.prs.find(p => p.exercise === ex.name);
-            if (!existing || est > existing.estimated1RM) {
+            if (!existing || est > (existing.estimated1RM || 0)) {
               if (existing) {
                 existing.weight = set.weight;
                 existing.reps = set.reps;
@@ -4420,12 +4603,23 @@ ${woLines}
     }
 
     // ========== Init ==========
-    async function initApp() {
+    
+    function normalizeDataShape(d) {
+      const base = { ...DEFAULT_DATA, ...(d || {}) };
+      ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews'].forEach(k => {
+        if (!Array.isArray(base[k])) base[k] = [];
+      });
+      if (!base.exerciseNotes || typeof base.exerciseNotes !== 'object') base.exerciseNotes = {};
+      if (!base.api || typeof base.api !== 'object') base.api = { ...DEFAULT_DATA.api };
+      return base;
+    }
+
+async function initApp() {
       try {
-        data = await loadDataAsync();
+        data = normalizeDataShape(await loadDataAsync());
       } catch (e) {
         console.warn(e);
-        data = loadFromLocalStorage() || { ...DEFAULT_DATA };
+        data = normalizeDataShape(loadFromLocalStorage() || { ...DEFAULT_DATA });
         storageBackend = 'localStorage';
       }
 

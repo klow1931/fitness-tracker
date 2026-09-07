@@ -137,33 +137,65 @@ body.dark .text-indigo-800,
 body.dark .text-indigo-900 { color: #c7d2fe !important; }
 body.dark #chat-messages { background-color: #1e293b; }
 
-/* Gym mode — larger touch targets */
+/* Gym mode — larger type + touch targets */
+body.gym-mode #panel-workouts,
+body.gym-mode #panel-workouts .card {
+  font-size: 1.125rem;
+}
+body.gym-mode #panel-workouts .label {
+  font-size: 0.95rem;
+}
+body.gym-mode #panel-workouts h2 {
+  font-size: 1.35rem;
+}
 body.gym-mode .btn-primary,
 body.gym-mode .btn-secondary {
-  padding: 0.85rem 1.25rem;
-  font-size: 1.05rem;
+  padding: 1rem 1.35rem;
+  font-size: 1.2rem;
 }
 body.gym-mode .input {
-  padding: 0.75rem 0.9rem;
-  font-size: 1.1rem;
+  padding: 0.9rem 1rem;
+  font-size: 1.25rem;
 }
 body.gym-mode .set-reps,
+body.gym-mode .set-duration,
 body.gym-mode .set-weight,
 body.gym-mode .set-rpe {
-  min-width: 4.5rem;
-  min-height: 2.75rem;
+  min-width: 5rem;
+  min-height: 3.25rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+body.gym-mode .ex-name {
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 body.gym-mode .tab-btn {
-  padding: 0.65rem 1rem;
-  font-size: 1rem;
+  padding: 0.75rem 1.1rem;
+  font-size: 1.1rem;
 }
-body.gym-mode #rest-timer {
-  font-size: 1.4rem;
-  min-width: 3.5rem;
+body.gym-mode .section-tab {
+  font-size: 1rem;
+  padding: 0.55rem 0.9rem;
+}
+body.gym-mode #rest-timer,
+body.gym-mode #rest-timer-sticky {
+  font-size: 1.75rem;
+  min-width: 4rem;
+  font-weight: 700;
 }
 body.gym-mode .set-done-check {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+body.gym-mode .sticky-save-bar .btn-primary,
+body.gym-mode .sticky-save-bar .btn-secondary {
+  font-size: 1.25rem;
+  padding: 1rem 1.25rem;
+}
+body.gym-mode .track-by-btn {
+  font-size: 1.05rem;
+  padding: 0.65rem 0.85rem;
 }
 
 /* Calendar cells */

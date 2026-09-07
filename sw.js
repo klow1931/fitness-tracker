@@ -1,5 +1,5 @@
-/* Fitness Tracker — app-shell service worker */
-const CACHE = 'fitness-tracker-v25';
+/* Loadnote — app-shell service worker */
+const CACHE = 'loadnote-v34';
 const ASSETS = [
   './',
   './index.html',

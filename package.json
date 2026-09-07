@@ -1,0 +1,22 @@
+{
+  "name": "fitness-tracker",
+  "version": "1.0.0",
+  "description": "Loadnote — workouts, nutrition, PRs, AI coach (Capacitor native wrapper)",
+  "private": true,
+  "scripts": {
+    "sync": "node scripts/sync-www.js && npx cap sync",
+    "sync:web": "node scripts/sync-www.js",
+    "android": "npm run sync && npx cap open android",
+    "ios": "npm run sync && npx cap open ios",
+    "add:android": "npx cap add android",
+    "add:ios": "npx cap add ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

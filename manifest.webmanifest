@@ -1,7 +1,7 @@
 {
-  "name": "Fitness Tracker",
-  "short_name": "FitTrack",
-  "description": "Workouts, nutrition, PRs, programs, and AI coach guidance",
+  "name": "Loadnote",
+  "short_name": "Loadnote",
+  "description": "Local-first training log: workouts, nutrition, PRs, measurements, and coach guidance",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
