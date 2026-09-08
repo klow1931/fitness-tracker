@@ -739,18 +739,3 @@ body.dark .coach-recommendation { background:#0f172a; border-color:#475569; }
 }
 .loadnote-focus-message strong { white-space: nowrap; }
 .loadnote-focus-message span { opacity: 0.8; }
-
-
-/* v1.1.1 clean foundation */
-.loadnote-first-run { position:fixed; inset:0; display:grid; place-items:center; padding:1rem; background:rgba(0,0,0,.4); z-index:9999; }
-.loadnote-first-run[hidden] { display:none; }
-.loadnote-first-run-card { max-width:32rem; width:100%; padding:1.5rem; border-radius:18px; background:Canvas; color:CanvasText; box-shadow:0 16px 50px rgba(0,0,0,.2); }
-
-/* v1.2: workout logger controls */
-#workout-log-card .logger-set { display:grid; grid-template-columns:20px 26px minmax(50px,1fr) 14px minmax(65px,1fr) minmax(52px,.8fr) 34px; gap:6px; align-items:center; }
-#workout-log-card .logger-set input.input { width:100%; min-width:0; min-height:44px; }
-#workout-log-card .logger-set:not(:has(.set-done-check)) { grid-template-columns:20px minmax(50px,1fr) 14px minmax(65px,1fr) minmax(52px,.8fr) 34px; }
-#workout-log-card .logger-set button { min-height:44px; }
-#workout-log-card .set-number { font-size:12px; color:#64748b; }
-#workout-log-card .set-done-check { width:22px; height:22px; accent-color:#4f46e5; }
-#logger-draft-status { color:#4f46e5; }
