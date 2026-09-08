@@ -49,71 +49,8 @@
     }
 
     // ========== Tab Navigation ==========
-    function showTab(name) {
-      ['dashboard', 'calendar', 'workouts', 'nutrition', 'prs', 'measures', 'photos', 'coach', 'tools'].forEach(t => {
-        const panel = document.getElementById('panel-' + t);
-        const tab = document.getElementById('tab-' + t);
-        if (panel) panel.classList.toggle('hidden', t !== name);
-        if (tab) tab.classList.toggle('nav-active', t === name);
-      });
-      // Mobile bottom nav active state
-      const primary = ['dashboard', 'workouts', 'nutrition', 'coach'];
-      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        const t = btn.getAttribute('data-tab');
-        if (t === 'more') {
-          btn.classList.toggle('nav-active', !primary.includes(name));
-        } else {
-          btn.classList.toggle('nav-active', t === name);
-        }
-      });
-      if (name === 'dashboard') renderDashboard();
-      if (name === 'calendar') renderCalendar();
-      if (name === 'workouts') {
-        showSubTab('workouts', 'wo-log');
-        renderWorkoutHistory();
-        renderTemplates();
-      }
-      if (name === 'nutrition') {
-        showSubTab('nutrition', 'nu-today');
-        ensureFoodLibrary();
-        loadDayFoods();
-        renderNutritionHistory();
-        renderFoodLibrary();
-        showFoodMode('search');
-      }
-      if (name === 'prs') renderPRs();
-      if (name === 'measures') renderMeasures();
-      if (name === 'photos') renderPhotos();
-      if (name === 'coach') {
-        showSubTab('coach', 'co-insights');
-        renderCoach();
-      }
-      if (name === 'tools') updateStorageInfo();
-      applyGymMode();
-      updateBackupBanner();
-    }
-
-    /** Show one sub-section inside a dense panel (workouts / nutrition / coach) */
-    function showSubTab(panel, sub) {
-      document.querySelectorAll('.sub-panel[data-panel="' + panel + '"]').forEach(el => {
-        el.classList.toggle('hidden', el.getAttribute('data-sub') !== sub);
-      });
-      const section = document.getElementById('panel-' + panel);
-      if (section) {
-        section.querySelectorAll('.section-tab').forEach(btn => {
-          btn.classList.toggle('active', btn.getAttribute('data-sub') === sub);
-        });
-      }
-      if (panel === 'workouts' && sub === 'wo-history') renderWorkoutHistory();
-      if (panel === 'workouts' && sub === 'wo-templates') renderTemplates();
-      if (panel === 'nutrition' && sub === 'nu-today') loadDayFoods();
-      if (panel === 'nutrition' && (sub === 'nu-library' || sub === 'nu-add')) {
-        ensureFoodLibrary();
-        renderFoodLibrary();
-      }
-      if (panel === 'nutrition' && sub === 'nu-history') renderNutritionHistory();
-      if (panel === 'coach') renderCoach();
-    }
+    function showTab(name) { navigateTab(name); }
+    function showSubTab(panel, sub) { navigateSubTab(panel, sub); }
 
     function toggleMobileMore(force) {
       const sheet = document.getElementById('mobile-more-sheet');
@@ -835,7 +772,7 @@
 
     function logWorkoutOnSelectedDay() {
       if (!calSelectedDate) return alert('Select a day first');
-      showTab('workouts');
+      showTab('workouts'); showSubTab('workouts','wo-log');
       const el = document.getElementById('wo-date');
       if (el) el.value = calSelectedDate;
     }
@@ -1611,7 +1548,7 @@
         : (day.exercises || []).map(parseProgramExerciseLine).filter(Boolean);
       if (!exercises.length) return alert('No exercises on this day.');
       const programContext = { programId: prog.id, dayIndex, dayName: day.day, week: session?.week || state?.currentWeek || 1, blockIndex: session?.blockIndex || state?.blockIndex || 1, decision };
-      showTab('workouts');
+      showTab('workouts'); showSubTab('workouts','wo-log');
       if (fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : '')) === false) return;
       pendingProgramSession = programContext;
       saveLoggerDraft();

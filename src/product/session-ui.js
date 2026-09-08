@@ -21,7 +21,7 @@ function editWorkout(id){
   workoutEdit={id:original.id,original:JSON.parse(JSON.stringify(original))};
   pendingProgramSession=null;
   document.getElementById('wo-date').value=original.date;
-  showTab('workouts');refreshSessionMode();saveLoggerDraft();
+  showTab('workouts');showSubTab('workouts','wo-log');refreshSessionMode();saveLoggerDraft();
   document.getElementById('workout-mode-title').scrollIntoView({block:'start'});
 }
 function reviewWorkout(){

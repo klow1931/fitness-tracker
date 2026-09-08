@@ -56,7 +56,7 @@
           <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Dashboard</button>
           <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
           <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
-          <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Nutrition &amp; Tools</button>
+          <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Food</button>
           <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
           <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measurements</button>
           <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
@@ -482,7 +482,7 @@
         <button type="button" class="section-tab" data-sub="nu-library" onclick="showSubTab('nutrition','nu-library')">3. Library</button>
         <button type="button" class="section-tab" data-sub="nu-history" onclick="showSubTab('nutrition','nu-history')">4. History</button>
       </div>
-      <p class="text-xs text-slate-500 -mt-3">Start with <b>Today</b> + <b>Add food</b>. Library and history are optional.</p>
+      <p class="text-xs text-slate-500 -mt-3">Add foods, check your totals, then mark the day complete. Changes save automatically.</p>
 
       <div class="sub-panel" data-panel="nutrition" data-sub="nu-today">
       <!-- Date + day totals -->
@@ -517,10 +517,11 @@
         </details>
         <div id="day-foods-list" class="space-y-2 mb-4 text-sm"></div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="saveDayFromFoods()" class="btn-primary">Save Day Totals</button>
+          <button onclick="showSubTab('nutrition','nu-add')" class="btn-primary">Add food →</button>
           <button onclick="repeatRecentFood()" class="btn-secondary">Repeat recent food</button>
-          <button onclick="clearDayFoods()" class="btn-secondary">Clear Day Foods</button>
-          <button onclick="showSubTab('nutrition','nu-add')" class="btn-secondary">Add food →</button>
+          <details class="day-options"><summary>Day options</summary>
+          <button onclick="saveDayFromFoods()" class="btn-secondary">Save Day Totals</button>
+          <button onclick="clearDayFoods()" class="btn-secondary">Clear Day Foods</button></details>
         </div>
         <p id="nutrition-save-status" role="status" class="text-sm mt-2">Food changes save automatically on this device.</p>
         <label><input type="checkbox" id="nutrition-day-complete" onchange="setNutritionDayComplete(this.checked)" /> Finished logging this day</label>
@@ -537,6 +538,10 @@
       </div><!-- /nu-today -->
 
       <div class="sub-panel hidden" data-panel="nutrition" data-sub="nu-add">
+      <div class="food-entry-header">
+        <p id="food-entry-summary" role="status" aria-live="polite"></p>
+        <button type="button" class="btn-secondary" onclick="showSubTab('nutrition','nu-today')">Done adding</button>
+      </div>
       <!-- Add food -->
       <div class="card">
         <h2 class="font-semibold mb-3">Add Food</h2>
@@ -1297,7 +1302,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.4.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.5.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1847,6 +1852,7 @@
   <script src="src/product/nutrition-model.js" defer></script>
   <script src="src/coach/coach-engine.js" defer></script>
   <script src="src/core/ui-utils.js" defer></script>
+  <script src="src/product/navigation.js" defer></script>
   <script src="src/product/nutrition-ui.js" defer></script>
   <script src="src/product/nutrition-forms.js" defer></script>
   <script src="src/product/state-store.js" defer></script>

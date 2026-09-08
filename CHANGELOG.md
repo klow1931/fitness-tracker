@@ -43,3 +43,10 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Direct g/ml portions with explicit serving basis; mobile food and recent-entry dialogs replace prompts.
 - Correct names/nutrients in entries or library; review barcode refresh against package labels before replacing library values.
 - Preserve historical meals and unconfirmed legacy days. Scanner implementation unchanged.
+# v1.5.0 — Navigation and daily flow
+
+- Remember subsection, scroll position and food mode during tab switches.
+- Render only selected views and refresh on saved-data changes.
+- Keep food totals visible while adding foods; emphasize Add food and group day maintenance actions.
+- Mobile action placement, 44px buttons, input sizing, destination focus and reduced-motion support.
+- Add navigation regression tests and a render-count benchmark. No saved-data migration.
