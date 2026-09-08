@@ -37,3 +37,9 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Isolate nutrition calculations and UI from app.js. Use one barcode nutrient basis, explicit gram conversions and unknown values for missing nutrients.
 - Validate entries and escape food text/IDs. Add nutrition model and desktop/mobile browser regressions.
 - Existing stored zero values cannot be distinguished from historically missing nutrients. Existing barcode foods should be checked against their labels or looked up again after removing the old library copy.
+# v1.4.1 — Nutrition summaries and editing
+
+- Complete-day summaries with nutrient-specific coverage across dashboard, weekly report and coach.
+- Direct g/ml portions with explicit serving basis; mobile food and recent-entry dialogs replace prompts.
+- Correct names/nutrients in entries or library; review barcode refresh against package labels before replacing library values.
+- Preserve historical meals and unconfirmed legacy days. Scanner implementation unchanged.

@@ -1,4 +1,46 @@
 const {test,expect}=require('playwright/test');
+test('complete days drive summaries and editing reopens the day',async({page})=>{
+ await quick(page);
+ expect(await page.evaluate(()=>nutritionSummary7('protein').average)).toBeNull();
+ await page.locator('#nutrition-day-complete').check();
+ await expect(page.locator('#nutrition-save-status')).toHaveText('Saved on this device');
+ expect(await page.evaluate(()=>nutritionSummary7('protein').average)).toBe(30);
+ expect(await page.evaluate(()=>LoadnoteCoach.buildContext({data}).nutrition.proteinDays7d)).toBe(1);
+ await page.getByRole('button',{name:'Edit food',exact:true}).click();
+ await page.locator('#nutrition-edit-name').fill('Corrected entry');await page.locator('#nutrition-edit-protein').fill('40');
+ await page.getByRole('button',{name:'Save food',exact:true}).click();
+ await expect(page.locator('#nutrition-day-complete')).not.toBeChecked();
+ await expect(page.locator('#tot-p')).toHaveText('40g');
+ await page.locator('#nutrition-day-complete').check();
+ await expect(page.locator('#nutrition-save-status')).toHaveText('Saved on this device');
+ await page.evaluate(()=>showTab('dashboard'));await expect(page.locator('#stat-protein')).toContainText('40 g');
+ await expect(page.locator('#stat-protein')).toContainText('1 complete days');
+});
+test('direct grams and mobile editing preserve serving basis',async({page})=>{
+ await page.evaluate(()=>{showSubTab('nutrition','nu-add');pickFood({name:'Rice',serving:'100g',calories:130,protein:3});});
+ await page.locator('#picked-unit').selectOption('g');await page.locator('#picked-servings').fill('150');
+ await page.locator('#food-serving-picker').getByRole('button',{name:'Add to Day',exact:true}).click();
+ await page.evaluate(()=>showSubTab('nutrition','nu-today'));await expect(page.locator('#tot-cal')).toHaveText('195');
+ await page.getByRole('button',{name:'Edit food',exact:true}).click();
+ await page.locator('#nutrition-edit-amount').fill('200');await page.locator('#nutrition-edit-unit').selectOption('ml');
+ await page.getByRole('button',{name:'Save food',exact:true}).click();await expect(page.locator('#nutrition-dialog-error')).toContainText('cannot be interchanged');
+ await page.locator('#nutrition-edit-unit').selectOption('g');await page.getByRole('button',{name:'Save food',exact:true}).click();
+ await expect(page.locator('#tot-cal')).toHaveText('260');
+});
+test('barcode refresh requires review and preserves history',async({page})=>{
+ await page.evaluate(()=>{data.foodLibrary=[{id:'legacy',barcode:'123456',name:'Saved food',serving:'30g',calories:400,source:'barcode'}];data.nutrition=[{date:today(),calories:400,foods:[{id:'meal',name:'Saved food',serving:'30g',servings:1,calories:400}]}];showSubTab('nutrition','nu-library');});
+ await page.route('https://world.openfoodfacts.org/**',r=>r.fulfill({json:{status:1,product:{product_name:'Fresh food',serving_size:'30g',nutriments:{'energy-kcal_100g':400,proteins_100g:20}}}}));
+ await page.getByRole('button',{name:'Refresh / compare label',exact:true}).click();
+ await expect(page.locator('#nutrition-dialog')).toContainText('Fresh food');
+ await expect(page.getByRole('button',{name:'Replace library values'})).toBeDisabled();
+ await page.locator('#nutrition-dialog-cancel').click();expect(await page.evaluate(()=>data.foodLibrary[0].name)).toBe('Saved food');
+ await page.getByRole('button',{name:'Refresh / compare label',exact:true}).click();
+ await page.locator('#nutrition-label-confirm').check();await page.getByRole('button',{name:'Replace library values'}).click();
+ await expect(page.locator('#nutrition-dialog')).not.toBeVisible();
+ expect(await page.evaluate(()=>data.foodLibrary[0].name)).toBe('Fresh food');
+ expect(await page.evaluate(()=>data.nutrition[0].foods[0].calories)).toBe(400);
+ expect(await page.evaluate(()=>data.nutrition[0].foods[0].serving)).toBe('30g');
+});
 test.beforeEach(async({page})=>{
  await page.route(/https:\/\/(cdn\.tailwindcss\.com|cdn\.jsdelivr\.net)(\/|$)/,route=>route.fulfill({contentType:'text/javascript',body:''}));
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
@@ -19,7 +61,8 @@ test('food persists across navigation, refresh, editing and clearing',async({pag
  await page.reload();await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await page.evaluate(()=>showTab('nutrition'));
  await page.addStyleTag({content:'.hidden{display:none!important}'});
  await expect(page.locator('#tot-cal')).toHaveText('300');
- page.once('dialog',d=>d.accept('2'));await page.getByRole('button',{name:'Edit portions'}).click();
+ await page.getByRole('button',{name:'Edit food',exact:true}).click();
+ await page.locator('#nutrition-edit-amount').fill('2');await page.getByRole('button',{name:'Save food',exact:true}).click();
  await expect(page.locator('#tot-cal')).toHaveText('600');
  await expect(page.locator('#nutrition-save-status')).toHaveText('Saved on this device');
  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Clear Day Foods'}).click();
@@ -44,7 +87,8 @@ test('legacy totals, recent food, targets and date isolation',async({page})=>{
  await expect(page.locator('#tot-cal')).toHaveText('500');
  await page.evaluate(()=>commitNutritionDay());
  await page.evaluate(()=>openNutritionDate('2026-01-02'));await expect(page.locator('#tot-cal')).toHaveText('0');
- page.once('dialog',d=>d.accept('1'));await page.getByRole('button',{name:'Repeat recent food'}).click();
+ await page.getByRole('button',{name:'Repeat recent food',exact:true}).click();
+ await page.locator('#nutrition-dialog [data-recent="0"]').click();
  await expect(page.locator('#tot-cal')).toHaveText('500');
  await page.getByText('My nutrition targets (optional)',{exact:true}).click();
  await page.locator('#nutrition-target-calories').fill('2500');await page.locator('#nutrition-target-protein').fill('160');

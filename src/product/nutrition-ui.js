@@ -233,6 +233,8 @@
             <span class="font-medium">${f.name}</span>
             <span class="text-xs text-slate-500 ml-1">${f.serving || ''} · ${f.calories}kcal</span>
           </div>
+          <button data-id="${id}" onclick="editLibraryFood(this.dataset.id)" class="btn-secondary text-xs">Edit</button>
+          ${f.barcode ? `<button data-id="${id}" onclick="refreshBarcodeFood(this.dataset.id)" class="btn-secondary text-xs">Refresh / compare label</button>` : ''}
           ${f.source === 'custom' || f.source === 'barcode' || f.source === 'openfoodfacts' ? `<button data-id="${id}" onclick="deleteLibraryFood(this.dataset.id)" class="btn-danger text-xs">✕</button>` : ''}
         </div>`;
     }
@@ -316,6 +318,8 @@
       document.getElementById('food-serving-picker').classList.remove('hidden');
       document.getElementById('picked-food-name').textContent = f.name + (f.brand ? ' (' + f.brand + ')' : '');
       document.getElementById('picked-servings').value = 1;
+      const basis=LoadnoteNutrition.basis(f);
+      document.getElementById('picked-unit').innerHTML='<option value="servings">Servings</option>'+(basis.servingUnit?'<option value="'+basis.servingUnit+'">'+basis.servingUnit+'</option>':'');
       const microBits = MICRO_FIELDS
         .filter(({ key }) => f[key])
         .map(({ key, unit }) => `${key === 'satFat' ? 'Sat' : key}: ${f[key]}${unit}`)
@@ -358,7 +362,8 @@
     function confirmAddFood() {
       if (!pickedFood) return;
       try {
-        dayFoods.push(scaleFoodEntry(pickedFood, document.getElementById('picked-servings').value));
+        const quantity=LoadnoteNutrition.portion(pickedFood,document.getElementById('picked-servings').value,document.getElementById('picked-unit').value);
+        dayFoods.push(scaleFoodEntry(pickedFood,quantity));
         cancelPickedFood();
         commitNutritionDay();
       } catch (error) { showToast(error.message, 'error'); }
@@ -371,10 +376,7 @@
     function editDayFood(id) {
       const entry=dayFoods.find(f=>String(f.id)===String(id));
       if(!entry) return;
-      const quantity=prompt('Number of servings ('+(entry.serving || '1 serving')+')',entry.servings);
-      if(quantity===null) return;
-      try { dayFoods=dayFoods.map(f=>f===entry?LoadnoteNutrition.resize(entry,quantity):f); commitNutritionDay(); }
-      catch(error) { showToast(error.message,'error'); }
+      openNutritionEditor(entry,'day');
     }
     function nutritionValue(value, unit='') {
       return LoadnoteNutrition.number(value)===null ? 'Unknown' : escapeHtml(round1(Number(value))+unit);
@@ -388,7 +390,7 @@
           <span class="font-medium">${escapeHtml(f.name)}</span>
           <span> ×${escapeHtml(f.servings)} (${escapeHtml(f.serving || '1 serving')})</span>
           <div>${nutritionValue(f.calories)} kcal · P ${nutritionValue(f.protein,'g')} · C ${nutritionValue(f.carbs,'g')} · F ${nutritionValue(f.fat,'g')}</div>
-          <button data-nutrition-action="edit" data-id="${escapeHtml(f.id)}" class="btn-secondary text-xs">Edit portions</button>
+          <button data-nutrition-action="edit" data-id="${escapeHtml(f.id)}" class="btn-secondary text-xs">Edit food</button>
           <button data-nutrition-action="remove" data-id="${escapeHtml(f.id)}" class="btn-danger text-xs">Remove</button>
         </div>`).join('') : '<p>No foods added for this day yet.</p>';
       list.onclick=event=>{
@@ -403,6 +405,9 @@
       }
       document.getElementById('tot-foods').textContent=dayFoods.length;
       renderNutritionTargets(t);
+      const complete=data.nutrition.find(n=>n.date===(document.getElementById('nu-date').value || today()))?.complete===true;
+      document.getElementById('nutrition-day-complete').checked=complete;
+      document.getElementById('nutrition-completeness-status').textContent=complete?'Complete. Known nutrient totals contribute to averages.':'Partial / unconfirmed. Excluded from averages; mark complete when finished.';
     }
 
     function loadDayFoods() {
@@ -415,10 +420,10 @@
     }
 
     let nutritionSaveSequence=0;
-    function commitNutritionDay() {
+    function commitNutritionDay(completion=false) {
       const date=document.getElementById('nu-date').value || today();
       const existing=data.nutrition.find(n=>n.date===date);
-      const entry={...(existing || {}),date,...sumDayFoods(dayFoods),foods:JSON.parse(JSON.stringify(dayFoods))};
+      const entry={...(existing || {}),date,complete:completion===true,...sumDayFoods(dayFoods),foods:JSON.parse(JSON.stringify(dayFoods))};
       const idx=data.nutrition.findIndex(n=>n.date===date);
       if(idx>=0) data.nutrition[idx]=entry; else data.nutrition.push(entry);
       data.nutrition.sort((a,b)=>b.date.localeCompare(a.date));
@@ -433,7 +438,8 @@
         reportStorageFailure(error);
       });
     }
-    function saveDayFromFoods() { return commitNutritionDay(); }
+    function saveDayFromFoods() { return commitNutritionDay(document.getElementById('nutrition-day-complete').checked); }
+    function setNutritionDayComplete(value) { return commitNutritionDay(value); }
 
     function clearDayFoods() {
       if (dayFoods.length && !confirm('Clear all foods for this day?')) return;
@@ -520,6 +526,7 @@
           <div class="flex flex-wrap gap-2 mt-2">
             <button class="btn-primary text-sm" onclick="pickFood(window._lastBarcodeFood)">Add to Day</button>
             <button class="btn-secondary text-sm" onclick="saveBarcodeToLibrary(window._lastBarcodeFood)">Save to Library</button>
+            ${findLocalFoodByBarcode(food.barcode) ? `<button data-id="${escapeHtml(findLocalFoodByBarcode(food.barcode).id)}" class="btn-secondary" onclick="refreshBarcodeFood(this.dataset.id)">Refresh / compare label</button>` : ''}
           </div>
         </div>
       `;
@@ -700,17 +707,7 @@
       document.getElementById('nu-date').value=date;
       showSubTab('nutrition','nu-today');
     }
-    function repeatRecentFood() {
-      const recent=(data.nutrition || []).flatMap(day=>day.foods || []).slice(0,30);
-      const options=[...new Map(recent.map(f=>[f.name+'|'+f.serving,f])).values()].slice(0,10);
-      if(!options.length)return showToast('Log a food first to reuse it here.','error');
-      const answer=prompt(options.map((f,i)=>(i+1)+'. '+f.name+' ×'+f.servings).join('\n')+'\nEnter a food number:','1');
-      if(answer===null)return;
-      const index=Number(answer)-1;
-      if(!Number.isInteger(index)||!options[index])return showToast('Choose a number from the list.','error');
-      const entry={...options[index],id:crypto.randomUUID()};
-      dayFoods.push(entry);commitNutritionDay();
-    }
+    function repeatRecentFood() { openRecentNutritionFoods(); }
     function saveNutritionTargets() {
       try {
         data.nutritionTargets={calories:readNutritionInput('nutrition-target-calories'),protein:readNutritionInput('nutrition-target-protein')};

@@ -523,6 +523,8 @@
           <button onclick="showSubTab('nutrition','nu-add')" class="btn-secondary">Add food →</button>
         </div>
         <p id="nutrition-save-status" role="status" class="text-sm mt-2">Food changes save automatically on this device.</p>
+        <label><input type="checkbox" id="nutrition-day-complete" onchange="setNutritionDayComplete(this.checked)" /> Finished logging this day</label>
+        <p id="nutrition-completeness-status" class="text-sm">Only complete days contribute to averages. Editing foods reopens the day.</p>
         <details class="mt-3">
           <summary>My nutrition targets (optional)</summary>
           <p class="text-sm">Set your own targets; Loadnote does not prescribe a diet. Leave blank to remove a target.</p>
@@ -692,8 +694,10 @@
           <p class="font-medium mb-2" id="picked-food-name"></p>
           <div class="flex gap-2 items-end flex-wrap">
             <div>
-              <label class="label">Servings</label>
-              <input type="number" id="picked-servings" class="input w-24" min="0.1" step="0.1" value="1" />
+              <label class="label" for="picked-servings">Amount</label>
+              <input type="number" id="picked-servings" class="input w-24" min="0.001" step="any" value="1" />
+              <label for="picked-unit">Unit</label><select id="picked-unit" class="input"><option value="servings">Servings</option></select>
+              <button type="button" onclick="editPickedFood()" class="btn-secondary">Edit food / serving basis</button>
             </div>
             <button onclick="confirmAddFood()" class="btn-primary">Add to Day</button>
             <button onclick="cancelPickedFood()" class="btn-secondary">Cancel</button>
@@ -1293,7 +1297,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.4.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.4.1 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1840,10 +1844,11 @@
   <script src="src/programming-adaptive.js" defer></script>
   <script src="src/programming-athlete.js" defer></script>
   <script src="src/programming-mesocycle.js" defer></script>
+  <script src="src/product/nutrition-model.js" defer></script>
   <script src="src/coach/coach-engine.js" defer></script>
   <script src="src/core/ui-utils.js" defer></script>
-  <script src="src/product/nutrition-model.js" defer></script>
   <script src="src/product/nutrition-ui.js" defer></script>
+  <script src="src/product/nutrition-forms.js" defer></script>
   <script src="src/product/state-store.js" defer></script>
   <script src="src/product/units.js" defer></script>
   <script src="src/product/workout-form.js" defer></script>
