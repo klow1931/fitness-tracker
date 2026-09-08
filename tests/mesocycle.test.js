@@ -1,0 +1,15 @@
+const assert = require('assert');
+const m = require('../src/programming-mesocycle');
+const athlete = require('../src/programming-athlete');
+const core = require('../src/core/loadnote-core');
+assert.strictEqual(m.parseLine('Bench Press 4×5').sets, 4);
+assert.strictEqual(m.liftKey('Deadlift'), 'deadlift');
+assert.strictEqual(m.recommendDecision({completed:4,planned:4,avgRPE:7}).action, 'progress');
+const p = {id:'p1', daysPerWeek:4, days:[{day:'Upper', exercises:['Bench Press 4×5','Barbell Row 3×8']}]};
+const profile = athlete.normalizeProfile({bench:140});
+const session = m.buildSession(p, [], profile, 'lb', 2, 'progress', core, athlete);
+assert.strictEqual(session.week,2);
+assert(session.exercises[0].weight > 0);
+assert.strictEqual(m.recommendDecision({completed:2,planned:4}).action, 'maintain');
+assert.strictEqual(m.recommendDecision({completed:4,planned:4,avgRPE:9.5,strengthTrendPercent:-3}).action, 'deload');
+console.log('Mesocycle tests passed');

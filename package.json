@@ -1,18 +1,20 @@
 {
-  "name": "fitness-tracker",
-  "version": "0.8.0",
-  "description": "Loadnote \u2014 workouts, nutrition, PRs, AI coach (Capacitor native wrapper)",
+  "name": "loadnote",
+  "version": "1.2.1",
+  "description": "An adaptive strength-training log that learns how you train.",
   "private": true,
   "scripts": {
-    "test": "node tests/core.test.js && node tests/training.test.js && node tests/adaptive.test.js && node tests/coach.test.js && node tests/adaptive-program.test.js && node tests/athlete.test.js && node tests/mesocycle.test.js",
-    "check": "node --check app.js && node --check src/core/loadnote-core.js && node --check src/training/analytics.js && node --check src/training/exercises.js && node --check src/training/progression.js && node --check src/training/adaptive.js && node --check src/coach/coach-engine.js && node --check backend/server.js && node --check src/programming-adaptive.js && node --check src/programming-athlete.js && node --check src/programming-mesocycle.js",
+    "test": "node scripts/test.js",
+    "check": "node scripts/check.js",
     "sync": "node scripts/sync-www.js && npx cap sync",
     "sync:web": "node scripts/sync-www.js",
     "android": "npm run sync && npx cap open android",
     "ios": "npm run sync && npx cap open ios",
     "add:android": "npx cap add android",
     "add:ios": "npx cap add ios",
-    "start:coach": "node backend/server.js"
+    "start:coach": "node backend/server.js",
+    "test:browser": "playwright test",
+    "serve": "node scripts/serve.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -20,6 +22,7 @@
     "@capacitor/ios": "^7.4.3"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3"
+    "@capacitor/cli": "^7.4.3",
+    "playwright": "1.62.1"
   }
 }

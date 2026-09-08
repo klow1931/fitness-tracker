@@ -10,7 +10,7 @@
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],
-      restDays: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', dark: false, gymMode: false, checklistMode: true,
+      restDays: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', dark: false, gymMode: false, checklistMode: false,
       gymModeUserSet: false, onboardingDismissed: false,
       lastExportDate: null, backupBannerDismissed: null,
       progressPhotos: [], measurements: [], formReviews: [],
@@ -202,17 +202,15 @@
         const tx = db.transaction(IDB_STORE, 'readwrite');
         const store = tx.objectStore(IDB_STORE);
         const req = store.put(value, IDB_KEY);
-        tx.oncomplete = () => resolve();
-        tx.onabort = () => reject(tx.error || new Error('Storage transaction aborted'));
-        tx.onerror = () => reject(tx.error || new Error('Storage transaction failed'));
+        req.onsuccess = () => resolve();
         req.onerror = () => reject(req.error);
       }));
     }
 
     function loadFromLocalStorage() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
         return { ...DEFAULT_DATA, ...JSON.parse(raw) };
       } catch {
         return null;
@@ -220,11 +218,6 @@
     }
 
     async function loadDataAsync() {
-      const fallback = loadFromLocalStorage();
-      if (fallback?._loadnoteFallback) {
-        storageBackend = 'localStorage';
-        return fallback;
-      }
       // Prefer IndexedDB; migrate from localStorage once if needed
       try {
         const fromIdb = await idbGet();
@@ -249,22 +242,25 @@
       }
     }
 
-    let persistenceWriter;
     function persistNow(state) {
-      if (!persistenceWriter) persistenceWriter = LoadnotePersistence.createWriter({backend:()=>storageBackend,setBackend:value=>{storageBackend=value;},idbSet,local:localStorage,key:STORAGE_KEY});
-      return persistenceWriter(state || data).then(() => {
-        document.getElementById('storage-error-banner')?.remove();
-      });
-    }
-    function reportStorageFailure(error) {
-      console.warn('Loadnote could not persist changes', error);
-      if (!document.getElementById('storage-error-banner')) {
-        const banner=document.createElement('div');
-        banner.id='storage-error-banner'; banner.setAttribute('role','alert');
-        banner.className='card';
-        banner.textContent='Changes could not be saved on this device. Keep this page open and export a JSON backup from Tools before closing.';
-        document.body.prepend(banner);
+      const payload = state || data;
+      if (storageBackend === 'indexedDB') {
+        return idbSet(payload).catch((err) => {
+          console.warn('IDB save failed, trying localStorage', err);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            storageBackend = 'localStorage';
+          } catch (e2) {
+            alert('Could not save (storage full?). Export a JSON backup.');
+          }
+        });
       }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        alert('Could not save (storage full?). Export a JSON backup and clear old history.');
+      }
+      return Promise.resolve();
     }
 
     function saveData(state) {
@@ -272,7 +268,7 @@
       // Debounce rapid saves (typing / bulk updates)
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
-        persistNow(data).catch(reportStorageFailure);
+        persistNow(data);
       }, 120);
     }
 
@@ -318,11 +314,7 @@
 
     function setUnit(u) {
       if (u !== 'kg' && u !== 'lb') return;
-      const oldUnit = currentUnit();
-      document.querySelectorAll('#exercise-rows .set-weight').forEach(input => { if (input.value !== '') input.value = Math.round(Number(input.value) * (oldUnit === u ? 1 : u === 'lb' ? KG_TO_LB : 1 / KG_TO_LB) * 100) / 100; });
       data.unit = u;
-      document.querySelectorAll('#exercise-rows .set-weight').forEach(input => { input.placeholder = u; input.setAttribute('aria-label', u); });
-      saveLoggerDraft();
       saveData(data);
       updateUnitToggle();
       document.querySelectorAll('.unit-label').forEach(el => el.textContent = unitLabel());
@@ -613,7 +605,7 @@
           <div class="flex gap-2 mb-2 items-end flex-wrap">
             <div class="flex-1 min-w-[140px]">
               <label class="label">Cardio</label>
-              <input type="text" class="input ex-name" list="exercise-list" value="${escapeHtml(ex.name || '')}" placeholder="e.g. Running, Cycling" />
+              <input type="text" class="input ex-name" list="exercise-list" value="${ex.name || ''}" placeholder="e.g. Running, Cycling" />
             </div>
             <span class="text-xs text-indigo-600 font-medium mb-2">Cardio</span>
             <button onclick="this.closest('[data-idx]').remove()" class="btn-danger">Remove</button>
@@ -653,7 +645,7 @@
         <div class="flex gap-2 mb-2 items-end flex-wrap">
           <div class="flex-1 min-w-[160px]">
             <label class="label">Exercise</label>
-            <input type="text" class="input ex-name" list="exercise-list" value="${escapeHtml(ex.name || '')}" placeholder="e.g. Bench Press, Prone Y-Raise" />
+            <input type="text" class="input ex-name" list="exercise-list" value="${ex.name || ''}" placeholder="e.g. Bench Press, Prone Y-Raise" />
           </div>
           <div>
             <label class="label">Track sets by</label>
@@ -668,7 +660,7 @@
         </div>
         <div class="mb-2">
           <label class="label">Personal notes / form cues</label>
-          <input type="text" class="input ex-note text-sm" value="${escapeHtml(note)}" placeholder="e.g. brace hard, eyes forward…" onchange="saveExerciseNoteFromRow(this)" />
+          <input type="text" class="input ex-note text-sm" value="${String(note).replace(/"/g, '&quot;')}" placeholder="e.g. brace hard, eyes forward…" onchange="saveExerciseNoteFromRow(this)" />
         </div>
         <div class="sets-container space-y-2"></div>
         <button onclick="addSetRow(this)" class="text-sm text-indigo-600 hover:underline mt-2">+ Add Set</button>
@@ -705,8 +697,7 @@
         weight: s.querySelector('.set-weight')?.value !== '' && s.querySelector('.set-weight')?.value != null
           ? toStorage(parseFloat(s.querySelector('.set-weight').value) || 0)
           : '',
-        rpe: s.querySelector('.set-rpe')?.value || '',
-        done: !!s.querySelector('.set-done-check')?.checked
+        rpe: s.querySelector('.set-rpe')?.value || ''
       }));
       setsContainer.innerHTML = '';
       (prev.length ? prev : [{ reps: '', duration: '', weight: '', rpe: '' }]).forEach(s => {
@@ -748,15 +739,12 @@
       }
       const jump = withJump ? smallJumpKg() : 0;
       const setsContainer = row.querySelector('.sets-container');
-      const hasEntries = [...setsContainer.querySelectorAll('input[type=number]')].some(input => input.value !== '');
-      if (hasEntries && quiet) return;
-      if (hasEntries && !confirm('Replace the entered sets for this exercise with the previous session?')) return;
       // Prefer duration mode if last sets were timed holds
       const lastWasDuration = last.sets.some(s => s.duration > 0 && !(s.reps > 0));
-      {
-        row.dataset.trackBy = lastWasDuration ? 'duration' : 'reps';
+      if (lastWasDuration) {
+        row.dataset.trackBy = 'duration';
         row.querySelectorAll('.track-by-btn').forEach(b => {
-          const active = b.getAttribute('data-track') === row.dataset.trackBy;
+          const active = b.getAttribute('data-track') === 'duration';
           b.className = 'track-by-btn px-2 py-1.5 ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600');
         });
       }
@@ -767,7 +755,7 @@
           reps: s.reps,
           duration: s.duration,
           weight: (s.weight || 0) + jump,
-          rpe: ''
+          rpe: s.rpe
         }, trackBy);
       });
       if (!quiet) {
@@ -792,10 +780,10 @@
 
     function addSetToContainer(container, set = { reps: '', weight: '', rpe: '', duration: '' }, trackBy) {
       const row = document.createElement('div');
-      row.className = 'logger-set flex gap-2 items-center flex-wrap';
+      row.className = 'flex gap-2 items-center flex-wrap';
       const displayWeight = set.weight !== '' && set.weight != null ? toDisplay(set.weight) : '';
-      const checkHtml = (data.checklistMode || set.showCompletion)
-        ? `<input type="checkbox" class="set-done-check" aria-label="Mark set done" title="Mark set done" ${set.done ? 'checked' : ''} />`
+      const checkHtml = data.checklistMode
+        ? `<input type="checkbox" class="set-done-check" title="Mark set done" />`
         : '';
       // Infer mode from parent exercise row if not passed
       if (!trackBy) {
@@ -807,12 +795,12 @@
         ? `<input type="number" class="input set-duration w-24" placeholder="Sec" min="1" step="1" value="${set.duration || ''}" title="Hold duration in seconds" />`
         : `<input type="number" class="input set-reps w-20" placeholder="Reps" min="1" value="${set.reps || ''}" />`;
       row.innerHTML = `
-        <span class="set-number" aria-label="Set number"></span>${checkHtml}
+        ${checkHtml}
         ${measureInput}
         <span class="text-slate-400">${isDuration ? 'sec ×' : '×'}</span>
         <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" title="Load (0 for bodyweight holds)" />
         <input type="number" class="input set-rpe w-16" placeholder="RPE" min="1" max="10" step="0.5" value="${set.rpe || ''}" title="RPE 1-10" />
-        <button type="button" aria-label="Remove set" onclick="this.parentElement.remove()" class="text-red-500 text-sm">✕</button>
+        <button onclick="this.parentElement.remove()" class="text-red-500 text-sm">✕</button>
       `;
       const check = row.querySelector('.set-done-check');
       if (check) {
@@ -821,8 +809,6 @@
           if (check.checked && data.gymMode) startRest(90);
         });
       }
-      row.classList.toggle('set-row-done', !!set.done);
-      row.querySelectorAll('input[type=number]').forEach(input => { input.setAttribute('aria-label', input.placeholder); input.inputMode = 'decimal'; });
       container.appendChild(row);
     }
 
@@ -830,8 +816,7 @@
       const exRow = btn.closest('[data-idx]');
       const container = btn.previousElementSibling;
       const trackBy = exRow?.dataset?.trackBy === 'duration' ? 'duration' : 'reps';
-      const previous = container.lastElementChild;
-      addSetToContainer(container, previous ? { reps: previous.querySelector('.set-reps')?.value || '', duration: previous.querySelector('.set-duration')?.value || '', weight: previous.querySelector('.set-weight')?.value === '' ? '' : toStorage(Number(previous.querySelector('.set-weight')?.value)), rpe: '' } : {}, trackBy);
+      addSetToContainer(container, { reps: '', weight: '', rpe: '', duration: '' }, trackBy);
     }
 
     function formatStrengthSet(s) {
@@ -855,20 +840,16 @@
           if (inp.value) hasData = true;
         });
       });
-      if ((hasData || loggerHasContent()) && !force) {
+      if (hasData && !force) {
         if (!confirm('Clear the workout form? Unsaved sets will be lost.')) return;
       }
-      pendingProgramSession = null;
-      stopRest();
       document.getElementById('wo-date').value = today();
       document.getElementById('wo-notes').value = '';
       document.getElementById('exercise-rows').innerHTML = '';
       addExerciseRow();
     }
 
-    async function saveWorkout() {
-      if (window.loggerSaving) return;
-      if (!validateWorkoutForm()) return;
+    function saveWorkout() {
       const date = document.getElementById('wo-date').value;
       const notes = document.getElementById('wo-notes').value.trim();
       if (!date) return showToast('Please select a date', 'error');
@@ -933,8 +914,6 @@
         if (pendingProgramSession.decision) workout.programDecision = pendingProgramSession.decision;
         pendingProgramSession = null;
       }
-      const previousState = JSON.parse(JSON.stringify(data));
-      window.loggerSaving = true;
       data.workouts.push(workout);
       data.workouts.sort((a, b) => b.date.localeCompare(a.date));
       saveData(data);
@@ -976,19 +955,7 @@
       });
       saveData(data);
 
-      try {
-        clearTimeout(saveTimer);
-        await persistNow(data);
-      } catch (error) {
-        data = previousState;
-        pendingProgramSession = readLoggerDraft()?.program || null;
-        window.loggerSaving = false;
-        showToast('Workout could not be saved. Your draft is still available.', 'error');
-        return;
-      }
-      window.loggerSaving = false;
       clearWorkoutForm(true);
-      saveLoggerDraft();
       renderWorkoutHistory();
       showToast('Workout saved', 'success');
       updateBackupBanner();
@@ -1008,6 +975,39 @@
     const HIST_ROW_EST = 96; // px estimate per card
     const HIST_OVERSCAN = 6;
     const HIST_VIEWPORT = 420;
+
+    function workoutHistoryCardHtml(w) {
+      const vol = calcVolume(w);
+      const exercisesHtml = w.exercises.map(ex => {
+        if (ex.type === 'cardio') {
+          const parts = [];
+          if (ex.duration) parts.push(`${ex.duration} min`);
+          if (ex.distance) parts.push(`${ex.distance} ${ex.distanceUnit || 'km'}`);
+          if (ex.avgHr) parts.push(`HR ${ex.avgHr}`);
+          return `<div class="text-slate-600"><span class="font-medium text-slate-800">${ex.name}</span> <span class="text-xs text-indigo-600">cardio</span>: ${parts.join(' · ') || '—'}</div>`;
+        }
+        const setsStr = (ex.sets || []).map(s => formatStrengthSet(s)).join(', ');
+        const modeTag = ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0))
+          ? ' <span class="text-xs text-slate-400">hold</span>' : '';
+        return `<div class="text-slate-600"><span class="font-medium text-slate-800">${ex.name}</span>${modeTag}: ${setsStr}</div>`;
+      }).join('');
+      return `
+        <div class="border border-slate-200 rounded-lg p-3 mb-3" data-hist-id="${w.id}">
+          <div class="flex justify-between items-start mb-1 gap-2">
+            <div>
+              <span class="font-medium">${formatDate(w.date)}</span>
+              <span class="text-slate-500 text-sm ml-2">Vol: ${Math.round(toDisplay(vol))} ${unitLabel()}</span>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button onclick="saveWorkoutAsTemplate(${w.id})" class="text-xs text-indigo-600 hover:underline">Template</button>
+              <button onclick="deleteWorkout(${w.id})" class="btn-danger">Delete</button>
+            </div>
+          </div>
+          ${exercisesHtml}
+          ${w.notes ? `<p class="text-slate-500 text-sm mt-1 italic">${w.notes}</p>` : ''}
+        </div>
+      `;
+    }
 
     function paintVirtualHistory() {
       if (!_histScrollEl) return;
@@ -1927,7 +1927,7 @@
 
     function deletePR(id) {
       if (!confirm('Delete this PR?')) return;
-      data.prs = data.prs.filter(p => String(p.id) !== String(id));
+      data.prs = data.prs.filter(p => p.id !== id);
       saveData(data);
       renderPRs();
     }
@@ -1941,12 +1941,12 @@
       el.innerHTML = data.prs.map(p => `
         <div class="flex justify-between items-center border border-slate-200 rounded-lg px-4 py-3">
           <div>
-            <span class="font-medium">${escapeHtml(p.exercise)}</span>
+            <span class="font-medium">${p.exercise}</span>
             <span class="text-slate-600 ml-2">${toDisplay(p.weight)} ${unitLabel()} × ${p.reps}</span>
             <span class="text-slate-400 text-sm ml-2">(est. 1RM: ${toDisplay(p.estimated1RM)} ${unitLabel()})</span>
             <div class="text-xs text-slate-500">${formatDate(p.date)}</div>
           </div>
-          <button data-pr-id="${escapeHtml(p.id)}" onclick="deletePR(this.dataset.prId)" class="btn-danger">Delete</button>
+          <button onclick="deletePR(${p.id})" class="btn-danger">Delete</button>
         </div>
       `).join('');
     }
@@ -2047,7 +2047,7 @@
           const current = sel.value;
           const exercises = getUniqueExercises();
           sel.innerHTML = '<option value="">Select exercise…</option>' +
-            exercises.map(e => `<option value="${escapeHtml(e)}" ${e === current ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('');
+            exercises.map(e => `<option value="${e}" ${e === current ? 'selected' : ''}>${e}</option>`).join('');
           if (!current && exercises.length) sel.value = exercises[0];
         }
         renderProgressChart();
@@ -2242,7 +2242,7 @@
         <p>• <b>${r.uniqueLifts.size}</b> different lifts · <b>${r.restCount}</b> marked rest day(s)</p>
         <p>• Cardio: <b>${r.cardioSessions}</b> bout(s) · <b>${Math.round(r.cardioMin)}</b> total minutes</p>
         <p>• Nutrition: avg protein <b>${r.avgProtein || '—'} g</b> · avg calories <b>${r.avgCal || '—'}</b> (${r.weekNu.length} days logged)</p>
-        <p>• PRs this week: <b>${r.prsWeek.length}</b>${r.prsWeek.length ? ' — ' + escapeHtml(r.prsWeek.map(p => p.exercise).slice(0, 4).join(', ')) : ''}</p>
+        <p>• PRs this week: <b>${r.prsWeek.length}</b>${r.prsWeek.length ? ' — ' + r.prsWeek.map(p => p.exercise).slice(0, 4).join(', ') : ''}</p>
         <p>• Current streak: <b>${streak} day${streak === 1 ? '' : 's'}</b></p>
       `;
     }
@@ -2299,7 +2299,7 @@
       const current = sel.value;
       const names = [...new Set(getCardioEntries().map(e => e.name))].sort();
       sel.innerHTML = '<option value="">All cardio</option>' +
-        names.map(n => `<option value="${escapeHtml(n)}" ${n === current ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('');
+        names.map(n => `<option value="${n}" ${n === current ? 'selected' : ''}>${n}</option>`).join('');
     }
 
     function renderCardioChart() {
@@ -2458,13 +2458,13 @@
       sessions.forEach(w => {
         const lines = (w.exercises || []).map(ex => {
           if (ex.type === 'cardio') {
-            return `• ${escapeHtml(ex.name)}: ${ex.duration || '—'} min` + (ex.distance ? `, ${ex.distance} ${ex.distanceUnit || 'km'}` : '');
+            return `• ${ex.name}: ${ex.duration || '—'} min` + (ex.distance ? `, ${ex.distance} ${ex.distanceUnit || 'km'}` : '');
           }
           const sets = (ex.sets || []).map(s => formatStrengthSet(s)).join(', ');
-          return `• ${escapeHtml(ex.name)}: ${escapeHtml(sets)}`;
+          return `• ${ex.name}: ${sets}`;
         }).join('<br>');
         html += `<div class="border border-slate-200 rounded-lg p-2 mb-2">
-          <div class="font-medium">Session${w.notes ? ' — ' + escapeHtml(w.notes) : ''}</div>
+          <div class="font-medium">Session${w.notes ? ' — ' + w.notes : ''}</div>
           <div class="text-slate-600 mt-1">${lines || 'No exercises'}</div>
         </div>`;
       });
@@ -2905,11 +2905,10 @@
     }
     function startRest(seconds) {
       stopRest();
-      const deadline = Date.now() + seconds * 1000;
       let left = seconds;
       setRestLabels(left + 's');
       restInterval = setInterval(() => {
-        left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        left--;
         setRestLabels(left + 's');
         if (left <= 0) {
           stopRest();
@@ -2935,21 +2934,18 @@
       const file = ev.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async () => {
-        const previousState = data;
+      reader.onload = () => {
         try {
           const parsed = JSON.parse(reader.result);
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
           if (!confirm('This will replace your current data. Continue?')) return;
-          data = normalizeDataShape(parsed);
-          clearTimeout(saveTimer);
-          await persistNow(data).catch(error => { reportStorageFailure(error); throw error; });
+          data = { ...DEFAULT_DATA, ...parsed };
+          persistNow(data);
           applyDark();
           updateUnitToggle();
           showTab('dashboard');
           showToast('Import successful', 'success');
         } catch (e) {
-          data = previousState;
           alert('Import failed: ' + e.message);
         }
         ev.target.value = '';
@@ -3282,7 +3278,7 @@
       el.innerHTML = top.map(i => `
         <div class="flex gap-3 items-center">
           <span class="text-xs font-medium w-20 text-slate-500">${formatDate(i.date)}</span>
-          <span class="text-slate-700">${escapeHtml(i.text)}</span>
+          <span class="text-slate-700">${i.text}</span>
         </div>
       `).join('');
     }
@@ -3588,15 +3584,13 @@
         ? session.exercises.map(ex => ({
             name: ex.name,
             type: ex.duration ? 'strength' : 'strength',
-            sets: Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || '', weight: ex.weight == null ? '' : ex.weight }))
+            sets: Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || '', weight: ex.weight == null ? '' : toDisplay(ex.weight) }))
           }))
         : (day.exercises || []).map(parseProgramExerciseLine).filter(Boolean);
       if (!exercises.length) return alert('No exercises on this day.');
-      const programContext = { programId: prog.id, dayIndex, dayName: day.day, week: session?.week || state?.currentWeek || 1, blockIndex: session?.blockIndex || state?.blockIndex || 1, decision };
+      pendingProgramSession = { programId: prog.id, dayIndex, dayName: day.day, week: session?.week || state?.currentWeek || 1, blockIndex: session?.blockIndex || state?.blockIndex || 1, decision };
       showTab('workouts');
-      if (fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : '')) === false) return;
-      pendingProgramSession = programContext;
-      saveLoggerDraft();
+      fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : ''));
       showToast(session ? `Week ${session.week} loaded — review targets before starting.` : 'Program workout loaded.', 'success');
     }
 
@@ -4464,12 +4458,12 @@
       const recentWo = (data.workouts || []).slice(0, 8);
       const woLines = recentWo.map(w => {
         const parts = (w.exercises || []).map(ex => {
-          if (ex.type === 'cardio') return `${escapeHtml(ex.name)} ${ex.duration || 0}min`;
+          if (ex.type === 'cardio') return `${ex.name} ${ex.duration || 0}min`;
           const sets = (ex.sets || []).map(s => {
             if (s.duration > 0 && !(s.reps > 0)) return `${s.duration}s x ${toDisplay(s.weight)}${unit}`;
             return `${s.reps}x${toDisplay(s.weight)}${unit}`;
           }).join(', ');
-          return `${escapeHtml(ex.name)}: ${sets}`;
+          return `${ex.name}: ${sets}`;
         }).join('; ');
         return `${w.date}: ${parts}`;
       }).join('\n') || 'No workouts logged yet.';
@@ -4799,8 +4793,6 @@ ${woLines}
 
     // ========== Templates & Repeat Last ==========
     function fillWorkoutForm(exercises, notes) {
-      if (loggerHasContent() && !confirm('Replace the current workout draft?')) return false;
-      pendingProgramSession = null;
       document.getElementById('wo-date').value = today();
       document.getElementById('wo-notes').value = notes || '';
       document.getElementById('exercise-rows').innerHTML = '';
@@ -4819,7 +4811,7 @@ ${woLines}
             name: ex.name,
             type: 'strength',
             trackBy: ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0)) ? 'duration' : 'reps',
-            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: '' }))
+            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: s.rpe }))
           });
         }
       });
@@ -4829,7 +4821,7 @@ ${woLines}
     function repeatLastWorkout() {
       if (!data.workouts.length) return alert('No previous workouts found.');
       const last = data.workouts[0]; // already sorted newest first
-      if (fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '') === false) return;
+      fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '');
       alert('Loaded last workout. Adjust weights/reps or hold times as needed, then Save.');
     }
 
@@ -4877,22 +4869,22 @@ ${woLines}
 
     function loadTemplate(id) {
       if (!id) return;
-      const t = (data.templates || []).find(x => String(x.id) === String(id));
+      const t = (data.templates || []).find(x => x.id === parseInt(id));
       if (!t) return;
-      if (fillWorkoutForm(t.exercises, '') === false) return;
+      fillWorkoutForm(t.exercises, '');
       document.getElementById('template-select').value = '';
       alert('Template loaded. Adjust and Save when ready.');
     }
 
     function deleteTemplate(id) {
       if (!confirm('Delete this template?')) return;
-      data.templates = (data.templates || []).filter(t => String(t.id) !== String(id));
+      data.templates = (data.templates || []).filter(t => t.id !== id);
       saveData(data);
       renderTemplates();
     }
 
     function saveWorkoutAsTemplate(workoutId) {
-      const w = data.workouts.find(x => String(x.id) === String(workoutId));
+      const w = data.workouts.find(x => x.id === workoutId);
       if (!w) return;
       const name = prompt('Template name:', w.exercises.map(e => e.name).slice(0, 3).join(' / '));
       if (!name) return;
@@ -4909,7 +4901,7 @@ ${woLines}
       const templates = data.templates || [];
       if (sel) {
         sel.innerHTML = '<option value="">Load template…</option>' +
-          templates.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join('');
+          templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
       }
       if (!listEl) return;
       if (!templates.length) {
@@ -4919,12 +4911,12 @@ ${woLines}
       listEl.innerHTML = templates.slice().reverse().map(t => `
         <div class="border border-slate-200 rounded-lg p-2 flex justify-between items-center">
           <div>
-            <span class="font-medium">${escapeHtml(t.name)}</span>
+            <span class="font-medium">${t.name}</span>
             <span class="text-slate-500 text-xs ml-2">${t.exercises.length} exercises · ${formatDate(t.created)}</span>
           </div>
           <div class="flex gap-2">
-            <button data-template-id="${escapeHtml(t.id)}" onclick="loadTemplate(this.dataset.templateId)" class="text-xs text-indigo-600 hover:underline">Load</button>
-            <button data-template-id="${escapeHtml(t.id)}" onclick="deleteTemplate(this.dataset.templateId)" class="btn-danger text-xs">Delete</button>
+            <button onclick="loadTemplate(${t.id})" class="text-xs text-indigo-600 hover:underline">Load</button>
+            <button onclick="deleteTemplate(${t.id})" class="btn-danger text-xs">Delete</button>
           </div>
         </div>
       `).join('');
@@ -5066,7 +5058,7 @@ async function initApp() {
       if (formDateEl) formDateEl.value = today();
       seedIfEmpty();
       // Persist after seed / library ensure
-      persistNow(data).catch(reportStorageFailure);
+      persistNow(data);
       addExerciseRow();
       updateUnitToggle();
       updateMeasureUnitUI();
@@ -5081,7 +5073,6 @@ async function initApp() {
       if (plateBar) plateBar.value = currentUnit() === 'lb' ? 45 : 20;
       showTab('dashboard');
       updateBackupBanner();
-      initWorkoutLogger();
       hideAppLoader();
 
       if ('serviceWorker' in navigator) {

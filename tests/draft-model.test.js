@@ -1,0 +1,16 @@
+const assert=require('assert');
+const {normalize}=require('../src/product/draft-model');
+const fields=values=>values.map(value=>({value,checked:false}));
+const legacy={version:1,date:'2026-09-07',notes:'draft',unit:'lb',program:{programId:'uuid'},rows:[{type:'strength',trackBy:'reps',setCount:1,fields:fields(['Bench','cue','on','5','225','8'])}]};
+legacy.rows[0].fields[2].checked=true;
+const migrated=normalize(legacy);
+assert.equal(migrated.version,2);assert.equal(migrated.rows[0].sets[0].weight,'225');assert(migrated.rows[0].sets[0].done);assert.equal(migrated.program.programId,'uuid');
+assert.deepEqual(normalize(JSON.parse(JSON.stringify(migrated))),migrated);
+const noCheck=normalize({version:1,rows:[{type:'strength',trackBy:'duration',setCount:1,fields:fields(['Plank','','30','',''])}]});
+assert.equal(noCheck.rows[0].sets[0].duration,'30');assert.equal(noCheck.rows[0].sets[0].weight,'');
+const cardio=normalize({version:1,rows:[{type:'cardio',fields:fields(['Bike','20','5','mi','120'])}]});
+assert.equal(cardio.rows[0].distanceUnit,'mi');assert.equal(cardio.rows[0].avgHr,'120');
+assert.equal(normalize({version:1,rows:[{type:'strength'}]}),null);
+assert.equal(normalize({version:99,rows:[]}),null);
+assert.equal(normalize({version:2,rows:[{type:'strength',sets:Array(201).fill({})}]}),null);
+console.log('Draft migration and named-field tests passed');
