@@ -22,9 +22,9 @@
               <span class="text-slate-500 text-sm ml-2">Vol: ${Math.round(toDisplay(vol))} ${unitLabel()}</span>
             </div>
             <div class="flex gap-2 shrink-0">
-              <button data-workout-id="${escapeHtml(w.id)}" onclick="editWorkout(this.dataset.workoutId)" class="btn-secondary">Edit</button>
-              <button data-workout-id="${escapeHtml(w.id)}" onclick="saveWorkoutAsTemplate(this.dataset.workoutId)" class="text-xs text-indigo-600 hover:underline">Template</button>
-              <button data-workout-id="${escapeHtml(w.id)}" onclick="deleteWorkout(this.dataset.workoutId)" class="btn-danger">Delete</button>
+              <button data-workout-id="${escapeHtml(w.id)}" data-workout-action="edit" class="btn-secondary">Edit</button>
+              <button data-workout-id="${escapeHtml(w.id)}" data-workout-action="history-template" class="text-xs text-indigo-600 hover:underline">Template</button>
+              <button data-workout-id="${escapeHtml(w.id)}" data-workout-action="delete" class="btn-danger">Delete</button>
             </div>
           </div>
           ${exercisesHtml}
@@ -32,3 +32,89 @@
         </div>
       `;
     }
+    function deleteWorkout(id) {
+      if (!confirm('Delete this workout?')) return;
+      data.workouts = data.workouts.filter(w => String(w.id) !== String(id));
+      saveData(data);
+      renderWorkoutHistory();
+      renderDashboard();
+    }
+
+    // Virtualized workout history
+    let _histList = [];
+    let _histScrollEl = null;
+    const HIST_ROW_EST = 96; // px estimate per card
+    const HIST_OVERSCAN = 6;
+    const HIST_VIEWPORT = 420;
+
+    function paintVirtualHistory() {
+      if (!_histScrollEl) return;
+      const scrollTop = _histScrollEl.scrollTop;
+      const viewH = _histScrollEl.clientHeight || HIST_VIEWPORT;
+      const total = _histList.length;
+      if (!total) return;
+
+      let start = Math.floor(scrollTop / HIST_ROW_EST) - HIST_OVERSCAN;
+      if (start < 0) start = 0;
+      let end = Math.ceil((scrollTop + viewH) / HIST_ROW_EST) + HIST_OVERSCAN;
+      if (end > total) end = total;
+
+      const topPad = start * HIST_ROW_EST;
+      const bottomPad = (total - end) * HIST_ROW_EST;
+      const slice = _histList.slice(start, end);
+
+      const inner = _histScrollEl.querySelector('[data-virt-inner]');
+      if (!inner) return;
+      inner.innerHTML =
+        `<div style="height:${topPad}px"></div>` +
+        slice.map(workoutHistoryCardHtml).join('') +
+        `<div style="height:${bottomPad}px"></div>`;
+    }
+
+    const onHistScroll = debounce(() => paintVirtualHistory(), 16);
+
+    function renderWorkoutHistory() {
+      const el = document.getElementById('workout-history');
+      if (!el) return;
+      const q = (document.getElementById('history-search')?.value || '').toLowerCase().trim();
+      let list = data.workouts;
+      if (q) list = list.filter(w => w.exercises.some(e => e.name.toLowerCase().includes(q)));
+      _histList = list;
+
+      if (!list.length) {
+        el.innerHTML = q
+          ? '<div class="empty-state"><p class="empty-title">No matches</p><p>Try a different exercise name.</p></div>'
+          : `<div class="empty-state">
+              <p class="empty-title">No workouts yet</p>
+              <p>Log your first session above — strength, cardio, or both.</p>
+              <button data-workout-action="focus-date" class="btn-primary text-sm mt-3">Start logging</button>
+            </div>`;
+        _histScrollEl = null;
+        renderTemplates();
+        return;
+      }
+
+      // Small lists: render fully (no virtualization overhead)
+      if (list.length <= 25) {
+        el.innerHTML = list.map(workoutHistoryCardHtml).join('');
+        _histScrollEl = null;
+        renderTemplates();
+        return;
+      }
+
+      el.innerHTML = `
+        <p class="text-xs text-slate-500 mb-2">${list.length} workouts · scroll to load more (virtualized)</p>
+        <div id="hist-virt-scroll" style="max-height:${HIST_VIEWPORT}px;overflow-y:auto;position:relative;">
+          <div data-virt-inner></div>
+        </div>
+      `;
+      _histScrollEl = document.getElementById('hist-virt-scroll');
+      if (_histScrollEl) {
+        _histScrollEl.removeEventListener('scroll', onHistScroll);
+        _histScrollEl.addEventListener('scroll', onHistScroll, { passive: true });
+        paintVirtualHistory();
+      }
+      renderTemplates();
+    }
+
+    const debouncedHistorySearch = debounce(() => renderWorkoutHistory(), 150);

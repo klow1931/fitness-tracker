@@ -1,0 +1,13 @@
+const assert=require('assert'),fs=require('fs'),path=require('path'),vm=require('vm');
+const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const scripts=[...html.matchAll(/<script src="([^":]+)"/g)].map(m=>m[1]);
+const context={console,setTimeout,clearTimeout,document:{readyState:'loading',addEventListener(){}},navigator:{}};context.window=context;
+vm.createContext(context);
+for(const file of scripts)vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
+assert.equal(vm.runInContext('DEFAULT_DATA.schemaVersion',context),10);
+for(const name of ['addExerciseRow','saveCurrentAsTemplate','persistNow','handleImport','exportCSV','initWorkoutEvents','getLastExercisePerformance'])assert.equal(typeof context[name],'function',name);
+assert.equal(typeof context.renderFormReview,'undefined');assert.equal(typeof context.loadFormVideo,'undefined');
+const panel=html.slice(html.indexOf('<section id="panel-workouts"'),html.indexOf('</section>',html.indexOf('<section id="panel-workouts"')));
+assert(!/\bon(?:click|change|input)=/.test(panel));
+for(const name of ['workout-form.js','workout-history.js','workout-templates.js'])assert(!/\bon(?:click|change|input)=/.test(fs.readFileSync(path.join(root,'src/product',name),'utf8')),name);
+console.log('Production script order, compatibility APIs, retired-code and event-boundary tests passed');

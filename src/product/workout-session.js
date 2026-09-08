@@ -6,29 +6,32 @@
   const key=value=>String(value || '').trim().toLowerCase();
   const same=(a,b)=>String(a)===String(b);
   const clone=value=>JSON.parse(JSON.stringify(value));
-  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps') {
-    const candidates=(workouts || []).map((w,index)=>({w,index})).filter(({w})=>!same(w.id,excludeId) && w.date<=date)
-      .sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
-    for(const {w} of candidates){
-      const exercise=(w.exercises || []).find(e=>key(e.name)===key(name) && (e.type || 'strength')===type &&
-        (type==='cardio' || (e.trackBy || ((e.sets || []).some(s=>s.duration>0 && !(s.reps>0))?'duration':'reps'))===trackBy));
-      if(exercise) return {date:w.date,exercise};
+  function findPerformance(workouts,name,eligible=()=>true){
+    for(const w of workouts || [])for(const exercise of w.exercises || []){
+      if(key(exercise.name)===key(name) && eligible(exercise,w))return {date:w.date,exercise};
     }
     return null;
   }
-  function fromDraft(draft,id){
+  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps') {
+    const candidates=(workouts || []).map((w,index)=>({w,index})).filter(({w})=>!same(w.id,excludeId) && w.date<=date)
+      .sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
+    return findPerformance(candidates.map(c=>c.w),name,e=>(e.type || 'strength')===type &&
+      (type==='cardio' || (e.trackBy || ((e.sets || []).some(s=>s.duration>0 && !(s.reps>0))?'duration':'reps'))===trackBy));
+  }
+  function fromDraft(draft,id,options={}){
     const factor=draft.unit==='lb'?1/2.2046226218:1;
     const exercises=[];
     for(const row of draft.rows){
       const name=String(row.name || '').trim();if(!name)continue;
       if(row.type==='cardio'){
         const duration=Number(row.duration)||0,distance=Number(row.distance)||0;
-        if(duration>0 || distance>0){const e={name,type:'cardio',duration,distance,distanceUnit:row.distanceUnit || 'km',sets:[]};if(Number(row.avgHr)>0)e.avgHr=Number(row.avgHr);exercises.push(e);}
+        if(options.template || duration>0 || distance>0){const e={name,type:'cardio',duration,distance,distanceUnit:row.distanceUnit || 'km',sets:[]};if(Number(row.avgHr)>0)e.avgHr=Number(row.avgHr);exercises.push(e);}
       }else{
         const trackBy=row.trackBy==='duration'?'duration':'reps',measure=trackBy==='duration'?'duration':'reps';
         const sets=(row.sets || []).filter(s=>Number(s[measure])>0).map(s=>{
-          const set={[measure]:Number(s[measure]),weight:Math.round((Number(s.weight)||0)*factor*100)/100};
-          if(s.rpe!=='' && Number(s.rpe)>=1 && Number(s.rpe)<=10)set.rpe=Number(s.rpe);
+          const weight=(Number(s.weight)||0)*factor;
+          const set={[measure]:Number(s[measure]),weight:options.template && draft.unit!=='lb'?weight:Math.round(weight*100)/100};
+          if(!options.template && s.rpe!=='' && Number(s.rpe)>=1 && Number(s.rpe)<=10)set.rpe=Number(s.rpe);
           return set;
         });
         if(sets.length)exercises.push({name,type:'strength',trackBy,sets});
@@ -78,5 +81,5 @@
     next.prs=reconcilePRs(next.prs,list,estimate,createId);
     return next;
   }
-  return {previous,fromDraft,apply,reconcilePRs};
+  return {previous,findPerformance,fromDraft,apply,reconcilePRs};
 });

@@ -1,5 +1,5 @@
 const assert=require('assert'),fs=require('fs'),path=require('path'),vm=require('vm');
-const app=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+const app=fs.readFileSync(path.join(__dirname,'../src/product/workout-form.js'),'utf8');
 const source=app.slice(app.indexOf('    function fillLastWeights'),app.indexOf('    function saveExerciseNoteFromRow'));
 function fixture(accept){
  let loaded=[],prompts=0;

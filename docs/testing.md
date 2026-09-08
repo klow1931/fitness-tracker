@@ -1,4 +1,10 @@
-# v1.3 verification
+# v1.3.1 verification
+
+New regressions execute all production scripts in HTML order, verify compatibility APIs and removal of retired technique functions, exercise state loading/fallback/migration and template conversion, and check workout-scoped event handling. Browser additions cover repeated initialization, dynamic set/cardio buttons, templates, and history JSON export/import.
+
+Require the full Node and browser workflow before merging. iOS visual checks and service-worker upgrades still need manual verification; no interface or data-format changes are intended.
+
+## v1.3 verification
 
 The v1.2.1 core logging flow was manually confirmed by the user, and its GitHub workflow completed successfully. v1.3 adds review/cancel, comparison-table, edit/reload, program-link preservation, managed-PR correction, and failed-edit-save cases to the browser suite. The Node suite adds immutable-edit, deleted/stale-record, independent-PR-baseline, and draft-edit identity checks.
 

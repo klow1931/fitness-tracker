@@ -12,6 +12,27 @@ async function enter(page,name='Bench Press'){
  await page.locator('#exercise-rows .ex-name').fill(name);
  await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('100');await page.locator('.set-rpe').fill('8');
 }
+test('delegated dynamic controls and templates bind once',async({page})=>{
+ await page.evaluate(()=>{initWorkoutEvents();initWorkoutEvents();});
+ await enter(page);await page.getByRole('button',{name:'+ Add Set',exact:true}).click();await expect(page.locator('.set-reps')).toHaveCount(2);
+ await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);
+ const dialogs=[];page.on('dialog',d=>{dialogs.push(d.type());return d.accept(d.type()==='prompt'?'Upper body':undefined);});
+ await page.getByRole('button',{name:'Save as Template',exact:true}).click();expect(await page.evaluate(()=>data.templates.length)).toBe(1);expect(dialogs.filter(d=>d==='prompt')).toHaveLength(1);
+ await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
+ await page.getByRole('button',{name:'+ Add Cardio',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(1);
+ await page.locator('#exercise-rows > div').last().getByRole('button',{name:'Remove',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(0);
+});
+test('delegated history export and import preserve workout identity',async({page})=>{
+ await enter(page);await page.locator('#workout-actions .btn-primary').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
+ const original=await page.evaluate(()=>JSON.stringify(data));
+ await page.locator('[data-workout-action="tab-history"]').click();
+ const download=page.waitForEvent('download');await page.locator('#panel-workouts [data-workout-action="export-json"]').click();expect((await download).suggestedFilename()).toMatch(/\.json$/);
+ page.once('dialog',d=>d.accept());await page.locator('#import-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(original)});
+ await expect(page.locator('#panel-dashboard')).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
+ await page.evaluate(()=>showTab('workouts'));await page.locator('[data-workout-action="tab-history"]').click();await expect(page.locator('#workout-history [data-hist-id]')).toHaveCount(1);
+ expect(await page.evaluate(()=>data.workouts[0].id)).toBe(JSON.parse(original).workouts[0].id);
+});
 test('draft values and checkmarks survive refresh',async({page})=>{
  await enter(page);await page.locator('.set-done-check').check();await page.locator('#wo-notes').fill('Keep my notes');
  await page.reload();await expect(page.locator('.set-weight')).toHaveValue('100');await page.evaluate(()=>showTab('workouts'));
