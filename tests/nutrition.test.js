@@ -1,0 +1,18 @@
+const assert=require('assert');
+const n=require('../src/product/nutrition-model');
+const product=n.fromProduct({serving_size:'30g',nutriments:{'energy-kcal_100g':400,proteins_100g:20,sodium_100g:1.2,'vitamin-d_100g':0.000005,iron_100g:0.002}},'123');
+assert.equal(product.nutritionBasis,'100g');
+assert.equal(n.scale(product,0.3).calories,120);
+assert.equal(product.sodium,1200);assert.equal(product.vitaminD,5);assert.equal(product.iron,2);
+assert.equal(product.carbs,null);
+assert.equal(n.totals([product,{protein:10}]).protein,30);
+assert.equal(n.totals([product,{protein:10}]).calories,null);
+for(const value of [-2,0,Infinity,'junk','',null])assert.throws(()=>n.scale(product,value));
+const zero=n.scale({calories:0,protein:2,carbs:0,fat:0,sodium:0},1);
+assert.equal(zero.calories,0);assert.equal(zero.sodium,0);assert.equal(zero.iron,null);
+const resized=n.resize(n.scale(product,0.3),0.6);assert.equal(resized.calories,240);
+assert.equal(n.fromProduct({nutriments:{'energy-kj_serving':418.4,proteins_serving:1}},'x').calories,100);
+assert.equal(n.fromProduct({nutriments:{proteins_100g:1,salt_100g:2.5}},'x').sodium,1000);
+assert.throws(()=>n.fromProduct({},'x'));
+assert.equal(n.fromProduct({nutriments:{proteins_100g:10,carbohydrates_serving:5}},'x').carbs,null);
+console.log('Nutrition basis, units, unknown values, portions and validation passed');
