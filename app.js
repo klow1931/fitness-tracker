@@ -368,12 +368,11 @@
       const weekVol = weekWorkouts.reduce((s, w) => s + calcVolume(w), 0);
       const recentNu = data.nutrition.filter(n => n.date >= d7Str);
       const weekNu = data.nutrition.filter(n => n.date >= weekStr);
-      const avgProtein = recentNu.length ? Math.round(recentNu.reduce((s, n) => s + n.protein, 0) / recentNu.length) : 0;
-      const weekProtein = weekNu.length ? Math.round(weekNu.reduce((s, n) => s + n.protein, 0) / weekNu.length) : 0;
+      const proteinSummary = nutritionSummary7('protein');
 
       document.getElementById('stat-workouts').textContent = recentWorkouts.length;
       document.getElementById('stat-volume').textContent = Math.round(toDisplay(totalVol)) + ' ' + unitLabel();
-      document.getElementById('stat-protein').textContent = avgProtein + ' g';
+      document.getElementById('stat-protein').textContent = nutritionSummaryLabel(proteinSummary,'g');
       document.getElementById('stat-prs').textContent = data.prs.length;
       document.getElementById('stat-streak').textContent = calcStreak() + 'd';
 
@@ -570,8 +569,9 @@
       const weekWorkouts = (data.workouts || []).filter(w => w.date >= start && w.date <= end);
       const weekVol = weekWorkouts.reduce((s, w) => s + calcVolume(w), 0);
       const weekNu = (data.nutrition || []).filter(n => n.date >= start && n.date <= end);
-      const avgProtein = weekNu.length ? Math.round(weekNu.reduce((s, n) => s + (n.protein || 0), 0) / weekNu.length) : 0;
-      const avgCal = weekNu.length ? Math.round(weekNu.reduce((s, n) => s + (n.calories || 0), 0) / weekNu.length) : 0;
+      const proteinSummary=LoadnoteNutrition.summary(weekNu,'protein',start,today());
+      const calorieSummary=LoadnoteNutrition.summary(weekNu,'calories',start,today());
+      const avgProtein=proteinSummary.average, avgCal=calorieSummary.average;
       let cardioMin = 0;
       let cardioSessions = 0;
       weekWorkouts.forEach(w => (w.exercises || []).forEach(ex => {
@@ -588,7 +588,7 @@
       }));
 
       return {
-        start, end, weekWorkouts, weekVol, weekNu, avgProtein, avgCal,
+        start, end, weekWorkouts, weekVol, weekNu, avgProtein, avgCal, proteinSummary, calorieSummary,
         cardioMin, cardioSessions, prsWeek, restCount, uniqueLifts
       };
     }
@@ -603,7 +603,7 @@
         <p>• <b>${r.weekWorkouts.length}</b> workouts · strength volume <b>${Math.round(toDisplay(r.weekVol))} ${unitLabel()}</b></p>
         <p>• <b>${r.uniqueLifts.size}</b> different lifts · <b>${r.restCount}</b> marked rest day(s)</p>
         <p>• Cardio: <b>${r.cardioSessions}</b> bout(s) · <b>${Math.round(r.cardioMin)}</b> total minutes</p>
-        <p>• Nutrition: avg protein <b>${r.avgProtein || '—'} g</b> · avg calories <b>${r.avgCal || '—'}</b> (${r.weekNu.length} days logged)</p>
+        <p>• Nutrition: protein <b>${nutritionSummaryLabel(r.proteinSummary,'g')}</b> · calories <b>${nutritionSummaryLabel(r.calorieSummary,'kcal')}</b></p>
         <p>• PRs this week: <b>${r.prsWeek.length}</b>${r.prsWeek.length ? ' — ' + escapeHtml(r.prsWeek.map(p => p.exercise).slice(0, 4).join(', ')) : ''}</p>
         <p>• Current streak: <b>${streak} day${streak === 1 ? '' : 's'}</b></p>
       `;
@@ -619,8 +619,8 @@
         `Lifts trained: ${r.uniqueLifts.size}`,
         `Rest days marked: ${r.restCount}`,
         `Cardio sessions: ${r.cardioSessions} (${Math.round(r.cardioMin)} min)`,
-        `Avg protein: ${r.avgProtein || '—'} g across ${r.weekNu.length} days`,
-        `Avg calories: ${r.avgCal || '—'}`,
+        `Protein: ${nutritionSummaryLabel(r.proteinSummary,'g')}`,
+        `Calories: ${nutritionSummaryLabel(r.calorieSummary,'kcal')}`,
         `PRs this week: ${r.prsWeek.length}${r.prsWeek.length ? ' (' + r.prsWeek.map(p => p.exercise).join(', ') + ')' : ''}`,
         `Streak: ${streak} day(s)`
       ].join('\n');
@@ -1372,7 +1372,7 @@
       if (nutritionChart) nutritionChart.destroy();
 
       const sorted = [...data.nutrition].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
-      const labels = sorted.map(n => formatDate(n.date));
+      const labels = sorted.map(n => formatDate(n.date)+(n.complete===true?' (complete)':' (partial / unconfirmed)'));
       const dark = !!data.dark;
 
       nutritionChart = new Chart(ctx, {
@@ -1401,7 +1401,7 @@
         items.push({ date: w.date, text: `Workout: ${w.exercises.map(e => e.name).join(', ')}`, type: 'wo' });
       });
       data.nutrition.slice(0, 5).forEach(n => {
-        items.push({ date: n.date, text: `Nutrition: P${n.protein} / C${n.carbs} / F${n.fat}`, type: 'nu' });
+        items.push({ date: n.date, text: `Nutrition: P${n.protein ?? 'unknown'} / C${n.carbs ?? 'unknown'} / F${n.fat ?? 'unknown'}`, type: 'nu' });
       });
 
       items.sort((a, b) => b.date.localeCompare(a.date));
@@ -2033,17 +2033,8 @@
         }
       });
 
-      // Protein + sodium micro if present
-      const nu7 = data.nutrition.filter(n => n.date >= d7Str);
-      if (nu7.length) {
-        const avgP = Math.round(nu7.reduce((s, n) => s + n.protein, 0) / nu7.length);
-        const avgNa = Math.round(nu7.reduce((s, n) => s + (n.sodium || 0), 0) / nu7.length);
-        if (avgP < 120) tips.push(`Average protein is ${avgP}g/day. Most lifters benefit from 1.6–2.2g per kg of bodyweight.`);
-        else if (avgP >= 150) tips.push(`Solid protein intake (avg ${avgP}g). This supports recovery and muscle growth.`);
-        if (avgNa > 3500) tips.push(`Average sodium is high (~${avgNa}mg/day on logged days). Useful around hard training, but worth watching if blood pressure is a concern.`);
-      } else {
-        tips.push('No recent nutrition logs. Tracking protein for even a few days can reveal easy wins.');
-      }
+      const proteinSummary=nutritionSummary7('protein');
+      tips.push(proteinSummary.validDays ? 'Protein: '+nutritionSummaryLabel(proteinSummary,'g')+'. Partial days are excluded.' : 'Mark finished nutrition days complete to enable intake summaries. Partial or unknown days are not treated as zero.');
 
       // Cardio balance
       let cardioMin = 0;
@@ -2277,15 +2268,8 @@
 
       // --- Protein ---
       if (q.includes('protein') || q.includes('how much protein')) {
-        const nu7 = (data.nutrition || []).filter(n => {
-          const d7 = new Date(); d7.setDate(d7.getDate() - 7);
-          return n.date >= d7.toISOString().slice(0, 10);
-        });
-        let extra = '';
-        if (nu7.length) {
-          const avg = Math.round(nu7.reduce((s, n) => s + n.protein, 0) / nu7.length);
-          extra = ` Your recent 7-day average is <b>${avg}g/day</b>.`;
-        }
+        const summary=nutritionSummary7('protein');
+        const extra=' Your log: '+nutritionSummaryLabel(summary,'g')+'. Partial days are excluded.';
         return `For lifters, the evidence-based range is <b>1.6–2.2 g of protein per kg of bodyweight</b>. Many people land in the practical zone of 150–180 g per day.<br><br>Spread intake across 3–5 meals so each feeding has ~30–50 g. Higher protein also helps during a cut by preserving muscle and increasing satiety.${extra}<br><br>You can set a daily protein goal using the Goal form on this page.`;
       }
 
@@ -2491,8 +2475,7 @@
         }).join('; ');
         return `${w.date}: ${parts}`;
       }).join('\n') || 'No workouts logged yet.';
-      const nu7 = (data.nutrition || []).slice(0, 7);
-      const avgP = nu7.length ? Math.round(nu7.reduce((s, n) => s + (n.protein || 0), 0) / nu7.length) : null;
+      const proteinSummary = nutritionSummary7('protein');
       const prs = (data.prs || []).slice(0, 8).map(p =>
         `${p.exercise}: ${toDisplay(p.weight)}${unit} x ${p.reps}`
       ).join('; ') || 'None';
@@ -2511,7 +2494,7 @@ USER CONTEXT:
 - Streak: ${typeof calcStreak === 'function' ? calcStreak() : 0} days
 - Recent workouts:
 ${woLines}
-- Recent avg protein (logged days): ${avgP != null ? avgP + 'g' : 'n/a'}
+- Recent protein: ${nutritionSummaryLabel(proteinSummary,'g')}. Only complete days with known values contribute. Do not infer full-week intake or deficiencies from partial coverage.
 - Top PRs: ${prs}
 - Deload signal: ${dl ? dl.level + ' — ' + dl.summary : 'n/a'}
 - Active program: ${active ? active.name : 'none'}

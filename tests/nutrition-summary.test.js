@@ -1,0 +1,15 @@
+const assert=require('assert');
+const n=require('../src/product/nutrition-model');
+const days=[{date:'2026-01-01',complete:true,protein:100},{date:'2026-01-02',complete:true,protein:0},{date:'2026-01-03',complete:true,protein:null},{date:'2026-01-04',protein:20},{date:'2026-01-05',complete:false,protein:30},{date:'2026-01-09',complete:true,protein:999}];
+assert.deepStrictEqual(n.summary(days,'protein','2026-01-01','2026-01-07'),{average:50,validDays:2,completeDays:3,loggedDays:5,incompleteDays:2,unknownDays:1});
+assert.equal(n.summary([], 'protein').average,null);
+assert.deepStrictEqual(n.window7('2026-01-03'),{start:'2025-12-28',end:'2026-01-03'});
+assert.equal(n.portion({serving:'100g'},150,'g'),1.5);
+assert.equal(n.portion({serving:'240ml'},120,'ml'),0.5);
+assert.throws(()=>n.portion({serving:'100g'},150,'ml'));
+assert.throws(()=>n.portion({serving:'1 cup'},150,'g'));
+assert.throws(()=>n.portion({serving:'100g / 100ml (match package label)'},150,'g'));
+const food={serving:'1 cup',servingQuantity:240,servingUnit:'ml',protein:10};
+const scaled=n.scale(food,n.portion(food,120,'ml'));
+assert.equal(scaled.protein,5);assert.equal(scaled.servingUnit,'ml');
+console.log('Nutrition completeness, date windows and explicit portion units passed');

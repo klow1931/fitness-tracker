@@ -1,8 +1,8 @@
 /* Loadnote Coach Engine v0.5 — deterministic context + structured coach response helpers. */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('../core/loadnote-core'));
-  else root.LoadnoteCoach = factory(root.LoadnoteCore);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../core/loadnote-core'),require('../product/nutrition-model'));
+  else root.LoadnoteCoach = factory(root.LoadnoteCore,root.LoadnoteNutrition);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Core, Nutrition) {
   'use strict';
 
   function isoDaysAgo(days) {
@@ -49,8 +49,9 @@
         sets: (ex.sets || []).filter(s => Number(s.reps) > 0).map(s => ({ reps: Number(s.reps), weight: Number(s.weight) || 0, rpe: Number(s.rpe) || null })).slice(0, 8)
       }))
     }));
-    const nutrition = (data.nutrition || []).filter(n => n.date >= isoDaysAgo(7));
-    const avgProtein = nutrition.length ? Core.round(nutrition.reduce((s,n)=>s+Number(n.protein||0),0)/nutrition.length,0) : null;
+    const window=Nutrition.window7(new Date().toLocaleDateString('en-CA'));
+    const nutrition=Nutrition.summary(data.nutrition,'protein',window.start,window.end);
+    const avgProtein=nutrition.average===null?null:Core.round(nutrition.average,0);
     const lastBodyweight = (data.bodyweight || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0] || null;
     return {
       version: '0.5',
@@ -70,7 +71,7 @@
         trends: topTrends,
         recentWorkouts: recent
       },
-      nutrition: { loggedDays7d: nutrition.length, averageProteinGrams: avgProtein },
+      nutrition: { loggedDays7d: nutrition.loggedDays, completeDays7d:nutrition.completeDays, proteinDays7d:nutrition.validDays, incompleteDays7d:nutrition.incompleteDays, unknownProteinDays7d:nutrition.unknownDays, averageProteinGrams: avgProtein },
       bodyweight: lastBodyweight ? { value: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
       prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weight: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RM: Number(p.estimated1RM)||null })),
       adaptive: adaptive || null
@@ -87,7 +88,7 @@
     if (improving) insights.push({ type: 'positive', title: `${improving.exercise} is trending up`, body: `Estimated strength is up ${improving.changePercent}% over the recent analysis window.` });
     const plateau = (t.trends || []).find(x => x.plateau);
     if (plateau) insights.push({ type: 'watch', title: `${plateau.exercise} may be plateauing`, body: 'Recent estimated strength is relatively flat. Review fatigue, volume, technique, and exercise selection before forcing heavier loads.' });
-    if (context.nutrition?.averageProteinGrams != null && context.nutrition.averageProteinGrams < 120) insights.push({ type: 'info', title: 'Protein is worth watching', body: `Your logged average is ${context.nutrition.averageProteinGrams} g/day over the last 7 days.` });
+    if (context.nutrition?.averageProteinGrams != null) insights.push({ type: 'info', title: 'Nutrition log coverage', body: `Average protein: ${context.nutrition.averageProteinGrams} g across ${context.nutrition.proteinDays7d} complete days with known protein in the last 7 days. Partial days are excluded; this is not a full-week intake estimate.` });
     return insights.slice(0, 4);
   }
 

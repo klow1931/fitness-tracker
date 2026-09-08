@@ -1,4 +1,14 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+.nutrition-dialog { box-sizing:border-box; width:min(42rem,calc(100vw - 2rem)); max-height:85dvh; overflow:auto; padding:1.2rem; border:1px solid #94a3b8; border-radius:1rem; }
+.nutrition-dialog::backdrop { background:rgba(0,0,0,.5); }
+.nutrition-dialog label { display:block; margin-block:.65rem; }
+.nutrition-dialog input:not([type=checkbox]), .nutrition-dialog select { box-sizing:border-box; width:100%; min-height:44px; }
+.nutrition-dialog button { min-height:44px; margin:.4rem .4rem .4rem 0; }
+.nutrition-editor-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; }
+.nutrition-table-scroll { overflow:auto; }
+.nutrition-table-scroll th,.nutrition-table-scroll td { padding:.4rem; text-align:left; border-bottom:1px solid #cbd5e1; }
+#nutrition-dialog-error { color:#b91c1c; }
+body.dark .nutrition-dialog { background:#0f172a; color:#e2e8f0; }
 /* Keep nutrition controls clear of the fixed mobile navigation when focused/scrolled. */
 #panel-nutrition :is(summary, input, button) { scroll-margin-block: 6rem; }
 @media (max-width: 768px) {

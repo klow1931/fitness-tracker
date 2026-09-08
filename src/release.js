@@ -15,7 +15,7 @@
       { id:'fatigue', label:'Performance & fatigue signals', ok:Number(d.schemaVersion || 0) >= 9 },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 10 }
     ];
-    return { version:'1.4.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'1.4.1', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });
