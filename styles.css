@@ -1,4 +1,49 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+.more-page { --measure-surface:#fff; --measure-line:#dbe4ef; --measure-muted:#64748b; display:grid; gap:1.25rem; color:#17233b; }
+.more-page.hidden { display:none; }
+.more-page .card { border:1px solid var(--measure-line); border-radius:1rem; padding:1.3rem; min-width:0; background:var(--measure-surface); box-shadow:none; }
+.more-page h2 { font-size:1.2rem; letter-spacing:-.02em; margin:0 0 1rem; }
+.more-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.25rem; align-items:start; }
+.more-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin:1rem 0; }
+.more-page .input { box-sizing:border-box; width:100%; min-height:44px; }
+.more-page label,.more-page .label { display:block; margin-bottom:.35rem; }
+.more-page .btn-primary,.more-page .btn-secondary { min-height:44px; }
+.more-hint { color:var(--measure-muted); font-size:.82rem; line-height:1.6; }
+.calendar-month-controls { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
+.calendar-weekdays,.calendar-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.25rem; }
+.calendar-weekdays { text-align:center; font-size:.75rem; color:var(--measure-muted); margin:1rem 0 .6rem; }
+.calendar-days .cal-cell { min-width:0; min-height:52px; padding:.35rem .1rem; font-size:.8rem; }
+.calendar-days .cal-num,.calendar-days .cal-dot { display:block; }
+.calendar-days .cal-dot { font-size:.58rem; overflow-wrap:anywhere; }
+.photo-journal > .empty-state { grid-column:1/-1; }
+.record-list { display:grid; gap:.8rem; }
+.record-list > div { display:flex; justify-content:space-between; gap:.75rem; align-items:start; padding:1rem; border:1px solid var(--measure-line); border-radius:.8rem; }
+.record-list > div > div { min-width:0; }
+.record-list > div span { display:block; margin:0 0 .35rem; overflow-wrap:anywhere; }
+.record-list > div span:first-child { font-size:1.05rem; font-weight:700; }
+.photo-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.photo-comparison.hidden { display:none; }
+.photo-comparison h2 { grid-column:1/-1; }
+.photo-journal { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+.photo-journal > p { grid-column:1/-1; padding:1rem; border:1px dashed var(--measure-line); border-radius:.7rem; }
+.photo-journal img { width:100%; object-fit:contain; border-radius:.6rem; }
+.photo-journal > div { min-width:0; overflow-wrap:anywhere; }
+.more-jump-links { display:flex; flex-wrap:wrap; gap:.6rem; }
+.more-jump-links a { padding:.65rem 1rem; background:#eef2ff; color:#4338ca; border-radius:2rem; text-decoration:none; }
+.more-details > summary { cursor:pointer; font-weight:700; font-size:1.1rem; min-height:32px; }
+.more-details-body { margin-top:1.2rem; }
+.more-demo { width:100%; border-top:1px solid var(--measure-line); margin-top:.7rem; padding-top:.7rem; }
+.more-demo summary { cursor:pointer; min-height:32px; }
+.more-page :is(input,select,button,summary) { scroll-margin-block:6rem; }
+body.dark .more-page { --measure-surface:#0f172a; --measure-line:#334155; --measure-muted:#a1b0c5; color:#e2e8f0; }
+body.dark .more-jump-links a { background:#312e81; color:#e0e7ff; }
+@media(max-width:768px) {
+ .more-columns { grid-template-columns:minmax(0,1fr); }
+ .more-page { padding-bottom:6rem; }
+ .more-page .card { padding:1rem; }
+ .photo-journal { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; }
+ .photo-comparison { grid-template-columns:minmax(0,1fr); }
+}
 .measurements-page { --measure-surface:#fff; --measure-line:#dbe4ef; --measure-muted:#64748b; display:grid; gap:1.25rem; color:#17233b; }
 .measurements-page.hidden { display:none; }
 .measure-hero { display:flex; justify-content:space-between; align-items:center; gap:1.5rem; padding:1.75rem; border-radius:1.2rem; background:linear-gradient(120deg,#eef2ff,#f0fdfa); border:1px solid var(--measure-line); }

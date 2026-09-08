@@ -84,7 +84,7 @@
           <span class="onboard-num">2</span>
           <span><b>Try Gym mode</b><br><span class="text-slate-500 text-xs">Bigger buttons for the gym floor</span></span>
         </button>
-        <button type="button" class="onboard-tip" onclick="showTab('tools'); setTimeout(() => document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}), 100)">
+        <button type="button" class="onboard-tip" onclick="showTab('tools'); setTimeout(() => { document.querySelector('.more-demo')?.setAttribute('open',''); document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}); }, 100)">
           <span class="onboard-num">3</span>
           <span><b>Load demo data</b><br><span class="text-slate-500 text-xs">Tools tab — explore charts fast</span></span>
         </button>
@@ -123,7 +123,7 @@
               <span class="block text-xs opacity-80">Ideas for programs, protein, deloads</span>
             </span>
           </button>
-          <button type="button" class="home-cta" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}); }, 100)">
+          <button type="button" class="home-cta" onclick="showTab('tools'); setTimeout(function(){ document.querySelector('.more-demo')?.setAttribute('open',''); document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}); }, 100)">
             <span class="home-cta-icon">✨</span>
             <span>
               <b>Preview with demo data</b>
@@ -302,11 +302,11 @@
         </div>
         <div class="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="label">Date</label>
+            <label class="label" for="wo-date">Date</label>
             <input type="date" id="wo-date" class="input" />
           </div>
           <div>
-            <label class="label">Notes (optional)</label>
+            <label class="label" for="wo-notes">Notes (optional)</label>
             <input type="text" id="wo-notes" class="input" placeholder="Felt strong, good sleep…" />
           </div>
         </div>
@@ -366,21 +366,23 @@
       </div><!-- /wo-templates -->
     </section>
 
-    <section id="panel-calendar" class="hidden space-y-6">
+    <section id="panel-calendar" class="hidden more-page">
+<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING CALENDAR</p><h1>Make every session count.</h1><p>Review your training days, plan a workout, or mark time to recover.</p></div></header>
+<div class="more-columns">
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 class="font-semibold">Training Calendar</h2>
-          <div class="flex items-center gap-2">
-            <button onclick="shiftCalendar(-1)" class="btn-secondary text-sm">←</button>
+          <div class="calendar-month-controls">
+            <button aria-label="Previous month" onclick="shiftCalendar(-1)" class="btn-secondary text-sm">←</button>
             <span id="cal-month-label" class="font-medium min-w-[140px] text-center"></span>
-            <button onclick="shiftCalendar(1)" class="btn-secondary text-sm">→</button>
+            <button aria-label="Next month" onclick="shiftCalendar(1)" class="btn-secondary text-sm">→</button>
             <button onclick="goCalendarToday()" class="btn-secondary text-sm">Today</button>
           </div>
         </div>
-        <div class="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 mb-1">
+        <div class="calendar-weekdays">
           <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
         </div>
-        <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+        <div id="calendar-grid" class="calendar-days"></div>
         <div class="flex flex-wrap gap-3 mt-4 text-xs text-slate-500">
           <span><span class="inline-block w-3 h-3 rounded bg-indigo-500 align-middle mr-1"></span> Workout</span>
           <span><span class="inline-block w-3 h-3 rounded bg-emerald-400 align-middle mr-1"></span> Cardio only</span>
@@ -397,49 +399,54 @@
           <button onclick="markRestDay()" class="btn-secondary text-sm">Mark rest day</button>
         </div>
       </div>
+</div>
     </section>
 
-    <section id="panel-prs" class="hidden space-y-6">
+    <section id="panel-prs" class="hidden more-page">
+<header class="measure-hero"><div><p class="measure-eyebrow">PERSONAL RECORDS</p><h1>Your strongest moments.</h1><p>Keep your best lifts in one place, with dates and estimated strength.</p></div></header>
+<div class="more-columns">
       <div class="card">
-        <h2 class="font-semibold mb-4">Add / Update Personal Record</h2>
-        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <h2 class="font-semibold mb-4">Record a new best</h2>
+        <div class="more-form-grid">
           <div>
-            <label class="label">Exercise</label>
+            <label class="label" for="pr-exercise">Exercise</label>
             <input type="text" id="pr-exercise" class="input" placeholder="Bench Press" list="exercise-list" />
           </div>
           <div>
-            <label class="label">Weight (<span class="unit-label">kg</span>)</label>
+            <label class="label" for="pr-weight">Weight (<span class="unit-label">kg</span>)</label>
             <input type="number" id="pr-weight" class="input" min="0" step="0.5" />
           </div>
           <div>
-            <label class="label">Reps</label>
+            <label class="label" for="pr-reps">Reps</label>
             <input type="number" id="pr-reps" class="input" min="1" step="1" value="1" />
           </div>
           <div>
-            <label class="label">Date</label>
+            <label class="label" for="pr-date">Date</label>
             <input type="date" id="pr-date" class="input" />
           </div>
         </div>
-        <button onclick="savePR()" class="btn-primary">Save PR</button>
+        <p class="more-hint">Use the units shown next to Weight. Estimated 1RM is a calculation, not a tested maximum.</p><button onclick="savePR()" class="btn-primary">Save PR</button>
       </div>
 
       <div class="card">
-        <h2 class="font-semibold mb-4">All-Time Personal Records</h2>
-        <div id="pr-list" class="space-y-2"></div>
+        <h2 class="font-semibold mb-4">Your record book</h2>
+        <div id="pr-list" class="record-list"></div>
       </div>
+</div>
     </section>
 
-    <section id="panel-photos" class="hidden space-y-6">
+    <section id="panel-photos" class="hidden more-page">
+<header class="measure-hero"><div><p class="measure-eyebrow">PROGRESS PHOTOS</p><h1>See your progress over time.</h1><p>Keep check-ins consistent and compare photos at your own pace.</p></div></header>
       <div class="card">
-        <h2 class="font-semibold mb-2">Progress Photos</h2>
+        <h2 class="font-semibold mb-2">Add a check-in</h2>
         <p class="text-xs text-slate-500 mb-4">Stored only on this device (compressed). Not included in lightweight exports by default — use “Export photos backup” if you need a copy.</p>
-        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div class="more-form-grid">
           <div>
-            <label class="label">Date</label>
+            <label class="label" for="photo-date">Date</label>
             <input type="date" id="photo-date" class="input" />
           </div>
           <div>
-            <label class="label">Angle</label>
+            <label class="label" for="photo-tag">Angle</label>
             <select id="photo-tag" class="input">
               <option value="front">Front</option>
               <option value="side">Side</option>
@@ -448,18 +455,17 @@
             </select>
           </div>
           <div class="sm:col-span-2">
-            <label class="label">Note (optional)</label>
+            <label class="label" for="photo-note">Note (optional)</label>
             <input type="text" id="photo-note" class="input" placeholder="e.g. Week 8 check-in" />
           </div>
         </div>
         <div class="flex flex-wrap gap-2 mb-4">
-          <label class="btn-primary text-sm cursor-pointer">
-            Add photo
-            <input type="file" id="photo-file" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoFile(event)" />
-          </label>
+          <button type="button" onclick="document.getElementById('photo-file').click()" class="btn-primary">Add photo</button>
+          <input type="file" id="photo-file" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoFile(event)" />
           <button onclick="exportPhotosBackup()" class="btn-secondary text-sm">Export photos backup</button>
         </div>
-        <div id="photo-compare" class="grid md:grid-cols-2 gap-4 mb-4 hidden">
+        </div>
+<div id="photo-compare" class="card photo-comparison hidden"><h2>Compare check-ins</h2>
           <div>
             <p class="text-xs text-slate-500 mb-1">Compare A</p>
             <select id="photo-compare-a" class="input text-sm mb-2" onchange="renderPhotoCompare()"></select>
@@ -471,7 +477,7 @@
             <div id="photo-compare-b-view" class="photo-frame"></div>
           </div>
         </div>
-        <div id="photos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+        <div class="card"><h2>Your photo journal</h2><p class="more-hint">Choose a similar angle and lighting for easier comparison.</p><div id="photos-grid" class="photo-journal"></div>
       </div>
     </section>
 
@@ -583,24 +589,24 @@
         <div id="food-mode-manual" class="hidden">
           <div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3 mb-3">
             <div>
-              <label class="label">Protein (g)</label>
-              <input type="number" id="nu-protein" class="input" min="0" step="1" />
+              <label class="label" for="nu-protein">Protein (g)</label>
+            <input type="number" id="nu-protein" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Carbs (g)</label>
-              <input type="number" id="nu-carbs" class="input" min="0" step="1" />
+              <label class="label" for="nu-carbs">Carbs (g)</label>
+            <input type="number" id="nu-carbs" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Fat (g)</label>
-              <input type="number" id="nu-fat" class="input" min="0" step="1" />
+              <label class="label" for="nu-fat">Fat (g)</label>
+            <input type="number" id="nu-fat" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Fiber (g)</label>
-              <input type="number" id="nu-fiber" class="input" min="0" step="1" />
+              <label class="label" for="nu-fiber">Fiber (g)</label>
+            <input type="number" id="nu-fiber" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Calories</label>
-              <input type="number" id="nu-calories" class="input" min="0" step="10" placeholder="auto" />
+              <label class="label" for="nu-calories">Calories</label>
+            <input type="number" id="nu-calories" class="input" min="0" step="10" placeholder="auto" />
             </div>
           </div>
           <button onclick="addQuickMacros()" class="btn-primary">Add to Day</button>
@@ -616,76 +622,76 @@
         </div>
         <div class="grid sm:grid-cols-2 gap-3 mb-3">
             <div>
-              <label class="label">Name</label>
-              <input type="text" id="cf-name" class="input" placeholder="e.g. Homemade protein shake" />
+              <label class="label" for="cf-name">Name</label>
+            <input type="text" id="cf-name" class="input" placeholder="e.g. Homemade protein shake" />
             </div>
             <div>
-              <label class="label">Serving size</label>
-              <input type="text" id="cf-serving" class="input" placeholder="e.g. 1 scoop / 100g" />
+              <label class="label" for="cf-serving">Serving size</label>
+            <input type="text" id="cf-serving" class="input" placeholder="e.g. 1 scoop / 100g" />
             </div>
             <div>
-              <label class="label">Protein (g)</label>
-              <input type="number" id="cf-p" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-p">Protein (g)</label>
+            <input type="number" id="cf-p" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Carbs (g)</label>
-              <input type="number" id="cf-c" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-c">Carbs (g)</label>
+            <input type="number" id="cf-c" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Fat (g)</label>
-              <input type="number" id="cf-f" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-f">Fat (g)</label>
+            <input type="number" id="cf-f" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Calories</label>
-              <input type="number" id="cf-cal" class="input" min="0" step="1" placeholder="auto" />
+              <label class="label" for="cf-cal">Calories</label>
+            <input type="number" id="cf-cal" class="input" min="0" step="1" placeholder="auto" />
             </div>
             <div>
-              <label class="label">Fiber (g)</label>
-              <input type="number" id="cf-fiber" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-fiber">Fiber (g)</label>
+            <input type="number" id="cf-fiber" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Sugar (g)</label>
-              <input type="number" id="cf-sugar" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-sugar">Sugar (g)</label>
+            <input type="number" id="cf-sugar" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Sodium (mg)</label>
-              <input type="number" id="cf-sodium" class="input" min="0" step="1" />
+              <label class="label" for="cf-sodium">Sodium (mg)</label>
+            <input type="number" id="cf-sodium" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Sat. Fat (g)</label>
-              <input type="number" id="cf-satFat" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-satFat">Sat. Fat (g)</label>
+            <input type="number" id="cf-satFat" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Cholesterol (mg)</label>
-              <input type="number" id="cf-cholesterol" class="input" min="0" step="1" />
+              <label class="label" for="cf-cholesterol">Cholesterol (mg)</label>
+            <input type="number" id="cf-cholesterol" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Potassium (mg)</label>
-              <input type="number" id="cf-potassium" class="input" min="0" step="1" />
+              <label class="label" for="cf-potassium">Potassium (mg)</label>
+            <input type="number" id="cf-potassium" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Calcium (mg)</label>
-              <input type="number" id="cf-calcium" class="input" min="0" step="1" />
+              <label class="label" for="cf-calcium">Calcium (mg)</label>
+            <input type="number" id="cf-calcium" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Iron (mg)</label>
-              <input type="number" id="cf-iron" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-iron">Iron (mg)</label>
+            <input type="number" id="cf-iron" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Vitamin C (mg)</label>
-              <input type="number" id="cf-vitaminC" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-vitaminC">Vitamin C (mg)</label>
+            <input type="number" id="cf-vitaminC" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Vitamin D (µg)</label>
-              <input type="number" id="cf-vitaminD" class="input" min="0" step="0.1" />
+              <label class="label" for="cf-vitaminD">Vitamin D (µg)</label>
+            <input type="number" id="cf-vitaminD" class="input" min="0" step="0.1" />
             </div>
             <div>
-              <label class="label">Magnesium (mg)</label>
-              <input type="number" id="cf-magnesium" class="input" min="0" step="1" />
+              <label class="label" for="cf-magnesium">Magnesium (mg)</label>
+            <input type="number" id="cf-magnesium" class="input" min="0" step="1" />
             </div>
             <div>
-              <label class="label">Barcode (optional)</label>
-              <input type="text" id="cf-barcode" class="input" />
+              <label class="label" for="cf-barcode">Barcode (optional)</label>
+            <input type="text" id="cf-barcode" class="input" />
             </div>
           </div>
           <div class="flex gap-2">
@@ -863,8 +869,8 @@
           <h2 class="font-semibold mb-4">Set Goals</h2>
           <div class="space-y-3 mb-4">
             <div>
-              <label class="label">Goal Type</label>
-              <select id="goal-type" class="input" onchange="toggleGoalFields()">
+              <label class="label" for="goal-type">Goal Type</label>
+            <select id="goal-type" class="input" onchange="toggleGoalFields()">
                 <option value="strength">Strength (Exercise PR)</option>
                 <option value="protein">Daily Protein Target</option>
                 <option value="consistency">Training Consistency</option>
@@ -873,30 +879,30 @@
             <div id="goal-strength-fields">
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="label">Exercise</label>
-                  <input type="text" id="goal-exercise" class="input" list="exercise-list" placeholder="Back Squat" />
+                  <label class="label" for="goal-exercise">Exercise</label>
+            <input type="text" id="goal-exercise" class="input" list="exercise-list" placeholder="Back Squat" />
                 </div>
                 <div>
-                  <label class="label">Target Weight (<span class="unit-label">kg</span>)</label>
-                  <input type="number" id="goal-weight" class="input" min="0" step="2.5" placeholder="140" />
+                  <label class="label" for="goal-weight">Target Weight (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="goal-weight" class="input" min="0" step="2.5" placeholder="140" />
                 </div>
               </div>
             </div>
             <div id="goal-protein-fields" class="hidden">
-              <label class="label">Daily Protein Target (g)</label>
-              <input type="number" id="goal-protein-target" class="input" min="50" step="5" placeholder="160" />
+              <label class="label" for="goal-protein-target">Daily Protein Target (g)</label>
+            <input type="number" id="goal-protein-target" class="input" min="50" step="5" placeholder="160" />
             </div>
             <div id="goal-consistency-fields" class="hidden">
-              <label class="label">Workouts per Week</label>
-              <input type="number" id="goal-workouts-week" class="input" min="1" max="7" step="1" placeholder="4" />
+              <label class="label" for="goal-workouts-week">Workouts per Week</label>
+            <input type="number" id="goal-workouts-week" class="input" min="1" max="7" step="1" placeholder="4" />
             </div>
             <div>
-              <label class="label">Target Date (optional)</label>
-              <input type="date" id="goal-deadline" class="input" />
+              <label class="label" for="goal-deadline">Target Date (optional)</label>
+            <input type="date" id="goal-deadline" class="input" />
             </div>
             <div>
-              <label class="label">Notes</label>
-              <input type="text" id="goal-notes" class="input" placeholder="Why this goal matters…" />
+              <label class="label" for="goal-notes">Notes</label>
+            <input type="text" id="goal-notes" class="input" placeholder="Why this goal matters…" />
             </div>
           </div>
           <button onclick="saveGoal()" class="btn-primary">Save Goal</button>
@@ -918,21 +924,32 @@
             <div><span class="eyebrow">v0.7 Athlete Profile</span><h2 class="font-semibold text-lg mt-1">Personalize your programming</h2><p class="text-xs text-slate-500 mt-1">Set your goals and current strength. Loadnote can also infer missing maxes from your logged training.</p></div>
           </div>
           <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div><label class="label">Goal</label><select id="athlete-goal" class="input"><option value="strength">Strength</option><option value="powerlifting">Powerlifting</option><option value="hypertrophy">Hypertrophy</option><option value="general">General fitness</option></select></div>
-            <div><label class="label">Experience</label><select id="athlete-experience" class="input"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-            <div><label class="label">Days / week</label><select id="athlete-days" class="input"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
-            <div><label class="label">Programming style</label><select id="athlete-style" class="input"><option value="auto">Auto</option><option value="linear">Linear</option><option value="dup">DUP</option><option value="block">Block</option><option value="conjugate">Conjugate</option></select></div>
+            <div><label class="label" for="athlete-goal">Goal</label>
+            <select id="athlete-goal" class="input"><option value="strength">Strength</option><option value="powerlifting">Powerlifting</option><option value="hypertrophy">Hypertrophy</option><option value="general">General fitness</option></select></div>
+            <div><label class="label" for="athlete-experience">Experience</label>
+            <select id="athlete-experience" class="input"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
+            <div><label class="label" for="athlete-days">Days / week</label>
+            <select id="athlete-days" class="input"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+            <div><label class="label" for="athlete-style">Programming style</label>
+            <select id="athlete-style" class="input"><option value="auto">Auto</option><option value="linear">Linear</option><option value="dup">DUP</option><option value="block">Block</option><option value="conjugate">Conjugate</option></select></div>
           </div>
           <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div><label class="label">Squat (<span class="unit-label">kg</span>)</label><input id="athlete-squat" type="number" class="input" step="0.5" placeholder="Auto" /></div>
-            <div><label class="label">Bench (<span class="unit-label">kg</span>)</label><input id="athlete-bench" type="number" class="input" step="0.5" placeholder="Auto" /></div>
-            <div><label class="label">Deadlift (<span class="unit-label">kg</span>)</label><input id="athlete-deadlift" type="number" class="input" step="0.5" placeholder="Auto" /></div>
-            <div><label class="label">Overhead press (<span class="unit-label">kg</span>)</label><input id="athlete-ohp" type="number" class="input" step="0.5" placeholder="Auto" /></div>
+            <div><label class="label" for="athlete-squat">Squat (<span class="unit-label">kg</span>)</label>
+            <input id="athlete-squat" type="number" class="input" step="0.5" placeholder="Auto" /></div>
+            <div><label class="label" for="athlete-bench">Bench (<span class="unit-label">kg</span>)</label>
+            <input id="athlete-bench" type="number" class="input" step="0.5" placeholder="Auto" /></div>
+            <div><label class="label" for="athlete-deadlift">Deadlift (<span class="unit-label">kg</span>)</label>
+            <input id="athlete-deadlift" type="number" class="input" step="0.5" placeholder="Auto" /></div>
+            <div><label class="label" for="athlete-ohp">Overhead press (<span class="unit-label">kg</span>)</label>
+            <input id="athlete-ohp" type="number" class="input" step="0.5" placeholder="Auto" /></div>
           </div>
           <div class="grid sm:grid-cols-3 gap-3 mb-4">
-            <div><label class="label">Training max %</label><input id="athlete-tm-percent" type="number" class="input" min="75" max="100" step="1" value="90" /><p class="text-xs text-slate-500 mt-1">90% is a conservative default.</p></div>
-            <div><label class="label">Target date (optional)</label><input id="athlete-target-date" type="date" class="input" /></div>
-            <div><label class="label">Notes</label><input id="athlete-notes" type="text" class="input" placeholder="Equipment, preferences, meet, etc." /></div>
+            <div><label class="label" for="athlete-tm-percent">Training max %</label>
+            <input id="athlete-tm-percent" type="number" class="input" min="75" max="100" step="1" value="90" /><p class="text-xs text-slate-500 mt-1">90% is a conservative default.</p></div>
+            <div><label class="label" for="athlete-target-date">Target date (optional)</label>
+            <input id="athlete-target-date" type="date" class="input" /></div>
+            <div><label class="label" for="athlete-notes">Notes</label>
+            <input id="athlete-notes" type="text" class="input" placeholder="Equipment, preferences, meet, etc." /></div>
           </div>
           <button onclick="saveAthleteProfile()" class="btn-primary">Save Athlete Profile</button>
           <div class="mt-5"><div class="flex items-center justify-between"><h3 class="font-semibold">Current training maxes</h3><span class="text-xs text-slate-500">Based on profile or best logged performance</span></div><div id="athlete-tm-table" class="mt-2"></div></div>
@@ -943,16 +960,16 @@
           <h2 class="font-semibold mb-4">Generate Program</h2>
           <div class="space-y-3 mb-4">
             <div>
-              <label class="label">Experience Level</label>
-              <select id="prog-level" class="input">
+              <label class="label" for="prog-level">Experience Level</label>
+            <select id="prog-level" class="input">
                 <option value="beginner">Beginner (0–12 months)</option>
                 <option value="intermediate">Intermediate (1–3 years)</option>
                 <option value="advanced">Advanced (3+ years)</option>
               </select>
             </div>
             <div>
-              <label class="label">Days per Week</label>
-              <select id="prog-days" class="input">
+              <label class="label" for="prog-days">Days per Week</label>
+            <select id="prog-days" class="input">
                 <option value="3">3 days</option>
                 <option value="4" selected>4 days</option>
                 <option value="5">5 days</option>
@@ -960,16 +977,16 @@
               </select>
             </div>
             <div>
-              <label class="label">Primary Focus</label>
-              <select id="prog-focus" class="input">
+              <label class="label" for="prog-focus">Primary Focus</label>
+            <select id="prog-focus" class="input">
                 <option value="strength">Strength</option>
                 <option value="hypertrophy">Hypertrophy / Muscle</option>
                 <option value="balanced">Balanced</option>
               </select>
             </div>
             <div>
-              <label class="label">Loading / Periodization</label>
-              <select id="prog-scheme" class="input">
+              <label class="label" for="prog-scheme">Loading / Periodization</label>
+            <select id="prog-scheme" class="input">
                 <option value="linear">Linear progression</option>
                 <option value="step">Step loading</option>
                 <option value="flat">Flat loading</option>
@@ -1006,18 +1023,19 @@
     </section>
 
     <!-- TOOLS -->
-    <section id="panel-tools" class="hidden space-y-6">
-      <div class="grid md:grid-cols-2 gap-6">
+    <section id="panel-tools" class="hidden more-page">
+<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING TOOLS</p><h1>Useful tools, when you need them.</h1><p>Calculate your next lift, manage backups, or find app information.</p></div></header><nav class="more-jump-links" aria-label="Tools sections"><a href="#tools-calculators">Calculators</a><a href="#tools-data">Backups & data</a><a href="#tools-about">About & privacy</a></nav>
+      <div class="more-columns" id="tools-calculators">
         <div class="card">
           <h2 class="font-semibold mb-4">1RM Calculator</h2>
           <div class="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label class="label">Weight (<span class="unit-label">kg</span>)</label>
-              <input type="number" id="orm-weight" class="input" min="0" step="0.5" />
+              <label class="label" for="orm-weight">Weight (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="orm-weight" class="input" min="0" step="0.5" />
             </div>
             <div>
-              <label class="label">Reps</label>
-              <input type="number" id="orm-reps" class="input" min="1" max="20" value="5" />
+              <label class="label" for="orm-reps">Reps</label>
+            <input type="number" id="orm-reps" class="input" min="1" max="20" value="5" />
             </div>
           </div>
           <button onclick="calc1RM()" class="btn-primary mb-3">Calculate</button>
@@ -1026,11 +1044,11 @@
         <div class="card">
           <h2 class="font-semibold mb-4">Plate Calculator</h2>
           <div class="mb-3">
-            <label class="label">Target weight (<span class="unit-label">kg</span>)</label>
+            <label class="label" for="plate-target">Target weight (<span class="unit-label">kg</span>)</label>
             <input type="number" id="plate-target" class="input" min="0" step="0.5" placeholder="e.g. 100" />
           </div>
           <div class="mb-3">
-            <label class="label">Bar weight (<span class="unit-label">kg</span>)</label>
+            <label class="label" for="plate-bar">Bar weight (<span class="unit-label">kg</span>)</label>
             <input type="number" id="plate-bar" class="input" min="0" step="0.5" value="20" />
           </div>
           <button onclick="calcPlates()" class="btn-primary mb-3">Calculate plates</button>
@@ -1038,8 +1056,8 @@
         </div>
       </div>
 
-      <div class="card">
-        <h2 class="font-semibold mb-1">RPE &amp; percentage calculator</h2>
+      <details class="card more-details" id="tools-rpe"><summary>RPE &amp; percentage calculator</summary><div class="more-details-body">
+
         <p class="text-xs text-slate-500 mb-4">Estimate set weights from a known 1RM, or reverse-estimate 1RM from a set at a given RPE. Charts are approximate — individual strength curves vary.</p>
 
         <div class="grid md:grid-cols-2 gap-6 mb-4">
@@ -1047,16 +1065,16 @@
             <h3 class="text-sm font-semibold mb-2">A. Weight for target RPE / %</h3>
             <div class="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <label class="label">Known 1RM (<span class="unit-label">kg</span>)</label>
-                <input type="number" id="rpe-1rm" class="input" min="0" step="0.5" placeholder="e.g. 140" />
+                <label class="label" for="rpe-1rm">Known 1RM (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="rpe-1rm" class="input" min="0" step="0.5" placeholder="e.g. 140" />
               </div>
               <div>
-                <label class="label">Target reps</label>
-                <input type="number" id="rpe-target-reps" class="input" min="1" max="12" value="5" />
+                <label class="label" for="rpe-target-reps">Target reps</label>
+            <input type="number" id="rpe-target-reps" class="input" min="1" max="12" value="5" />
               </div>
               <div>
-                <label class="label">Target RPE</label>
-                <select id="rpe-target-rpe" class="input">
+                <label class="label" for="rpe-target-rpe">Target RPE</label>
+            <select id="rpe-target-rpe" class="input">
                   <option value="10">10 (max)</option>
                   <option value="9.5">9.5</option>
                   <option value="9">9</option>
@@ -1069,8 +1087,8 @@
                 </select>
               </div>
               <div>
-                <label class="label">Or fixed % of 1RM</label>
-                <input type="number" id="rpe-pct" class="input" min="1" max="100" step="0.5" placeholder="e.g. 75" />
+                <label class="label" for="rpe-pct">Or fixed % of 1RM</label>
+            <input type="number" id="rpe-pct" class="input" min="1" max="100" step="0.5" placeholder="e.g. 75" />
               </div>
             </div>
             <div class="flex flex-wrap gap-2 mb-2">
@@ -1084,16 +1102,16 @@
             <h3 class="text-sm font-semibold mb-2">B. Estimate 1RM from a set</h3>
             <div class="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <label class="label">Weight lifted (<span class="unit-label">kg</span>)</label>
-                <input type="number" id="rpe-set-weight" class="input" min="0" step="0.5" />
+                <label class="label" for="rpe-set-weight">Weight lifted (<span class="unit-label">kg</span>)</label>
+            <input type="number" id="rpe-set-weight" class="input" min="0" step="0.5" />
               </div>
               <div>
-                <label class="label">Reps completed</label>
-                <input type="number" id="rpe-set-reps" class="input" min="1" max="12" value="5" />
+                <label class="label" for="rpe-set-reps">Reps completed</label>
+            <input type="number" id="rpe-set-reps" class="input" min="1" max="12" value="5" />
               </div>
               <div>
-                <label class="label">RPE of that set</label>
-                <select id="rpe-set-rpe" class="input">
+                <label class="label" for="rpe-set-rpe">RPE of that set</label>
+            <select id="rpe-set-rpe" class="input">
                   <option value="10">10</option>
                   <option value="9.5">9.5</option>
                   <option value="9" selected>9</option>
@@ -1131,24 +1149,24 @@
           </div>
           <p class="text-xs text-slate-500 mt-2">RPE mapping is a simplified training guide, not a lab measurement. Prefer stopping a set when form slows or breaks down.</p>
         </div>
-      </div>
+      </div></details>
 
-      <div class="card">
-        <h2 class="font-semibold mb-3">Data</h2>
+      <div class="card" id="tools-data">
+        <h2 class="font-semibold mb-3">Backups & data</h2>
         <p class="text-sm text-slate-500 mb-2" id="storage-info">Storage: —</p>
         <div class="flex flex-wrap gap-2">
-          <button onclick="exportData()" class="btn-secondary">Export JSON backup</button>
+          <button onclick="exportData()" class="btn-primary">Export JSON backup</button>
           <button onclick="exportCSV()" class="btn-secondary">Export CSV</button>
           <button onclick="importData()" class="btn-secondary">Import JSON backup</button>
           <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
-          <button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button>
+          <details class="more-demo"><summary>Demo data</summary><p class="more-hint">Use the sample dataset to explore the app. Review the confirmation before replacing existing records.</p><button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button></details>
         </div>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
-        <p class="text-xs text-slate-500 mt-2"><b>Privacy:
+        <p class="more-hint">Your records stay in this browser. Export a backup before changing devices.</p>
       </div>
 
-      <div class="card">
-        <h2 class="font-semibold mb-2">Credits &amp; open source</h2>
+      <details class="card more-details" id="tools-about"><summary>Credits &amp; open source</summary><div class="more-details-body">
+
         <p class="text-xs text-slate-500 mb-3">Third-party libraries and data sources used by this app. Their licenses apply to those components.</p>
         <ul class="text-sm text-slate-600 space-y-2 list-disc pl-5">
           <li><b>Chart.js</b> — charts (MIT License). <a href="https://www.chartjs.org/" target="_blank" rel="noopener" class="text-indigo-600 underline">chartjs.org</a></li>
@@ -1158,7 +1176,7 @@
           <li><b>Capacitor</b> (optional native wrapper) — MIT License, Ionic / Drifty Co.</li>
         </ul>
         <p class="text-xs text-slate-500 mt-3">Exercise names and training concepts (e.g. RPE, Epley 1RM estimate) are general fitness knowledge, not affiliated with any third-party training brand. Coach guidance is not medical advice.</p>
-      </div>
+      </div></details>
 
       <div class="card" id="privacy-policy">
         <h2 class="font-semibold mb-2">Privacy policy</h2>
@@ -1215,7 +1233,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.5.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.5.2 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
