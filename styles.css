@@ -742,6 +742,24 @@ body.dark .coach-recommendation { background:#0f172a; border-color:#475569; }
 
 
 /* v1.1.1 clean foundation */
+.session-edit-banner { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:12px; margin-bottom:16px; background:#eef2ff; color:#3730a3; border-radius:10px; }
+.session-edit-banner[hidden] { display:none; }
+.previous-performance { margin-top:12px; font-size:13px; }
+.previous-performance:empty { display:none; }
+.previous-performance p { color:#64748b; margin-bottom:6px; }
+.previous-performance table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.previous-performance th, .previous-performance td { padding:7px 4px; text-align:left; border-bottom:1px solid #cbd5e1; overflow-wrap:anywhere; }
+.previous-performance th:first-child { width:32px; }
+.session-review { width:min(620px,calc(100% - 24px)); max-height:85dvh; padding:24px; border:1px solid #cbd5e1; border-radius:16px; overflow:auto; background:#fff; color:#0f172a; }
+.session-review::backdrop { background:rgba(15,23,42,.6); }
+.session-review h2 { font-size:22px; font-weight:700; margin-bottom:12px; }
+.session-review h3 { font-weight:700; margin-top:16px; }
+.session-review p { margin:8px 0; overflow-wrap:anywhere; }
+.session-review-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.session-review button { min-height:44px; }
+body.dark .session-review { background:#0f172a; color:#f1f5f9; }
+body.dark .session-edit-banner { background:#1e293b; color:#c7d2fe; }
+body.dark .previous-performance p { color:#cbd5e1; }
 .loadnote-first-run { position:fixed; inset:0; display:grid; place-items:center; padding:1rem; background:rgba(0,0,0,.4); z-index:9999; }
 .loadnote-first-run[hidden] { display:none; }
 .loadnote-first-run-card { max-width:32rem; width:100%; padding:1.5rem; border-radius:18px; background:Canvas; color:CanvasText; box-shadow:0 16px 50px rgba(0,0,0,.2); }

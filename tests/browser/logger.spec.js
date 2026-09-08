@@ -20,6 +20,8 @@ test('draft values and checkmarks survive refresh',async({page})=>{
 });
 test('UUID history template and delete buttons work; text stays text',async({page})=>{
  await enter(page,'<img src=x onerror="window.injected=true">');await page.locator('#workout-actions .btn-primary').click();
+ await page.locator('#confirm-workout-save').click();
+ await expect(page.locator('#workout-review')).not.toBeVisible();
  await page.evaluate(()=>showSubTab('workouts','wo-history'));
  await expect(page.locator('#workout-history [data-hist-id]')).toHaveCount(1);
  expect(await page.evaluate(()=>window.injected)).toBeUndefined();await expect(page.locator('#workout-history img')).toHaveCount(0);
@@ -29,6 +31,33 @@ test('UUID history template and delete buttons work; text stays text',async({pag
  expect(await page.evaluate(()=>data.templates.length)).toBe(1);
  await page.locator('#workout-history button').filter({hasText:'Delete'}).click();
  await expect(page.locator('#workout-history [data-hist-id]')).toHaveCount(0);
+});
+test('review can be cancelled without saving and comparisons show prior sets',async({page})=>{
+ await page.evaluate(()=>{data.workouts=[{id:'old',date:'2026-09-01',exercises:[{name:'Bench Press',type:'strength',sets:[{reps:5,weight:80,rpe:9}]}]}];});
+ await page.locator('.set-weight').fill('100');await page.locator('.set-reps').fill('5');await page.locator('.ex-name').fill('Bench Press');
+ await expect(page.locator('.previous-performance table')).toContainText('80kg');
+ await expect(page.locator('.previous-performance table')).toContainText('100kg');
+ await page.locator('#workout-actions .btn-primary').click();await expect(page.locator('#workout-review')).toBeVisible();
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(1);
+ await page.locator('#back-to-workout').click();await expect(page.locator('.set-weight')).toHaveValue('100');
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(1);
+});
+test('edit survives refresh and replaces a session while preserving program metadata',async({page})=>{
+ await enter(page);await page.evaluate(()=>{pendingProgramSession={programId:'plan',dayIndex:0,week:2};});
+ await page.locator('#workout-actions .btn-primary').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
+ const originalId=await page.evaluate(()=>data.workouts[0].id);
+ await page.evaluate(()=>showSubTab('workouts','wo-history'));await page.locator('#workout-history button').filter({hasText:'Edit'}).click();
+ await expect(page.locator('#workout-edit-banner')).toBeVisible();await expect(page.locator('.set-rpe')).toHaveValue('8');
+ await page.locator('.set-weight').fill('90');await page.reload();await expect(page.locator('.set-weight')).toHaveValue('90');await page.evaluate(()=>showTab('workouts'));
+ await expect(page.locator('#workout-edit-banner')).toBeVisible();await page.locator('#workout-actions .btn-primary').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
+ const workouts=await page.evaluate(()=>data.workouts);expect(workouts).toHaveLength(1);expect(workouts[0].id).toBe(originalId);expect(workouts[0].programId).toBe('plan');expect(workouts[0].programWeek).toBe(2);expect(workouts[0].exercises[0].sets[0].weight).toBe(90);
+ expect(await page.evaluate(()=>data.prs[0].weight)).toBe(90);
+});
+test('failed edit save preserves history and keeps review available',async({page})=>{
+ await enter(page);await page.locator('#workout-actions .btn-primary').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
+ await page.evaluate(()=>editWorkout(data.workouts[0].id));await page.locator('.set-weight').fill('95');await page.locator('#workout-actions .btn-primary').click();
+ await page.evaluate(()=>{persistNow=async()=>{throw Error('simulated quota failure');};});await page.locator('#confirm-workout-save').click();
+ await expect(page.locator('#workout-review')).toBeVisible();await expect(page.locator('#confirm-workout-save')).toBeEnabled();expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
 });
 test('last weights protects entered sets and clears historical RPE',async({page})=>{
  await page.evaluate(()=>{data.workouts=[{id:'old',date:'2026-09-01',exercises:[{name:'Bench Press',sets:[{reps:5,weight:80,rpe:9}]}]}];});

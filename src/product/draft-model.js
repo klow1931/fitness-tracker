@@ -28,7 +28,9 @@
         if (!Array.isArray(r.sets) || r.sets.length > 200) throw Error('Invalid sets');
         return {type:'strength', name:string(r.name),note:string(r.note),trackBy:r.trackBy === 'duration'?'duration':'reps',sets:r.sets.map(s=>({reps:string(s.reps),duration:string(s.duration),weight:string(s.weight),rpe:string(s.rpe),done:!!s.done,showCompletion:!!s.showCompletion}))};
       });
-      return {version:2, date:string(input.date),notes:string(input.notes),unit:input.unit === 'lb'?'lb':'kg',program:input.program && typeof input.program === 'object'?input.program:null,updatedAt:input.updatedAt,rows};
+      const edit=input.edit && input.edit.id!=null && input.edit.original && String(input.edit.id)===String(input.edit.original.id) && Array.isArray(input.edit.original.exercises)
+        ? {id:input.edit.id,original:input.edit.original}:null;
+      return {version:2, date:string(input.date),notes:string(input.notes),unit:input.unit === 'lb'?'lb':'kg',program:input.program && typeof input.program === 'object'?input.program:null,edit,updatedAt:input.updatedAt,rows};
     } catch (_) { return null; }
   }
   return {normalize};

@@ -1,6 +1,12 @@
 # Loadnote
 
-**v1.2.1 · Development build.** An adaptive strength-training log that learns how you train.
+**v1.3.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## Workout flow
+
+Enter today's sets and compare them with the previous session for the same exercise and tracking mode. Select **Review workout**, check the date, exercises, sets, and notes, then confirm **Save workout**. Back to workout leaves the draft intact.
+
+In History, select **Edit** to correct a saved session. Review and **Save changes** replaces that session while preserving its ID and program linkage. **Cancel edit** leaves the saved workout unchanged. Unfinished edits recover after refresh. Unchecked entered sets remain included; the review states this explicitly.
 
 ## Run locally
 

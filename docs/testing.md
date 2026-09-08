@@ -1,4 +1,10 @@
-# v1.2.1 verification
+# v1.3 verification
+
+The v1.2.1 core logging flow was manually confirmed by the user, and its GitHub workflow completed successfully. v1.3 adds review/cancel, comparison-table, edit/reload, program-link preservation, managed-PR correction, and failed-edit-save cases to the browser suite. The Node suite adds immutable-edit, deleted/stale-record, independent-PR-baseline, and draft-edit identity checks.
+
+Manual v1.3 acceptance: compare a new session against an older one; go back from review without saving; save a new workout; edit its load/RPE/date; refresh during editing; verify exactly one history entry with its original program linkage; cancel another edit and verify the saved record is untouched. Test the review dialog in iOS Safari with Gym mode and dark mode. Older unclassified PRs are preserved; v1.3-managed workout PRs follow corrected sets.
+
+## Previous release verification
 
 ## Automated checks
 
