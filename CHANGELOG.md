@@ -30,3 +30,10 @@
 - Update app/package version and service-worker cache to v1.2.1; include new modules in the offline asset list.
 
 Automated browser execution and visual/iOS checks remain pending in the authoring environment. See `docs/testing.md` for exact coverage and remaining checks.
+# v1.4.0 — Nutrition reliability
+
+- Save food additions, removals, portion edits and cleared days immediately with visible save status.
+- Preserve historical totals-only days; add recent-food reuse and optional user-set calorie/protein targets.
+- Isolate nutrition calculations and UI from app.js. Use one barcode nutrient basis, explicit gram conversions and unknown values for missing nutrients.
+- Validate entries and escape food text/IDs. Add nutrition model and desktop/mobile browser regressions.
+- Existing stored zero values cannot be distinguished from historically missing nutrients. Existing barcode foods should be checked against their labels or looked up again after removing the old library copy.

@@ -513,14 +513,24 @@
             <div><p class="text-slate-500">Magnesium</p><p class="font-bold" id="tot-magnesium">0mg</p></div>
             <div><p class="text-slate-500">Foods</p><p class="font-bold" id="tot-foods">0</p></div>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Micros fill in when foods include them (custom entry, barcode, or library). Missing values count as 0.</p>
+          <p class="text-xs text-slate-500 mt-2">Unknown means at least one food has no value for that nutrient. Older entries may have stored missing values as zero; verify against the package. Built-in foods are estimates.</p>
         </details>
         <div id="day-foods-list" class="space-y-2 mb-4 text-sm"></div>
         <div class="flex flex-wrap gap-2">
           <button onclick="saveDayFromFoods()" class="btn-primary">Save Day Totals</button>
+          <button onclick="repeatRecentFood()" class="btn-secondary">Repeat recent food</button>
           <button onclick="clearDayFoods()" class="btn-secondary">Clear Day Foods</button>
           <button onclick="showSubTab('nutrition','nu-add')" class="btn-secondary">Add food →</button>
         </div>
+        <p id="nutrition-save-status" role="status" class="text-sm mt-2">Food changes save automatically on this device.</p>
+        <details class="mt-3">
+          <summary>My nutrition targets (optional)</summary>
+          <p class="text-sm">Set your own targets; Loadnote does not prescribe a diet. Leave blank to remove a target.</p>
+          <label>Calories (kcal)<input id="nutrition-target-calories" type="number" min="0" max="100000" class="input" /></label>
+          <label>Protein (g)<input id="nutrition-target-protein" type="number" min="0" max="100000" class="input" /></label>
+          <button onclick="saveNutritionTargets()" class="btn-secondary">Save targets</button>
+        </details>
+        <p id="nutrition-target-summary" class="text-sm mt-2"></p>
       </div>
       </div><!-- /nu-today -->
 
@@ -1283,7 +1293,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.3.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.4.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1832,6 +1842,8 @@
   <script src="src/programming-mesocycle.js" defer></script>
   <script src="src/coach/coach-engine.js" defer></script>
   <script src="src/core/ui-utils.js" defer></script>
+  <script src="src/product/nutrition-model.js" defer></script>
+  <script src="src/product/nutrition-ui.js" defer></script>
   <script src="src/product/state-store.js" defer></script>
   <script src="src/product/units.js" defer></script>
   <script src="src/product/workout-form.js" defer></script>
