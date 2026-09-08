@@ -1,10 +1,19 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.3.0';
+const CACHE = 'loadnote-v1.3.1';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './src/core/ui-utils.js',
+  './src/product/state-store.js',
+  './src/product/units.js',
+  './src/product/workout-form.js',
+  './src/product/workout-templates.js',
+  './src/product/rest-timer.js',
+  './src/product/data-transfer.js',
+  './src/product/workout-events.js',
+
   './src/product/workout-session.js',
   './src/product/session-ui.js',
   './src/product/workout-history.js',

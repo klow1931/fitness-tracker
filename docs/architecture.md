@@ -1,5 +1,21 @@
 # Incremental module boundaries
 
+## v1.3.1 ownership
+
+| File | Responsibility |
+| --- | --- |
+| `state-store.js` | State defaults, normalization, IndexedDB adapter, fallback loading, scheduled saves and errors |
+| `persistence.js` | Ordered snapshot writes |
+| `data-transfer.js` | Existing JSON/CSV and photo-backup import/export |
+| `workout-form.js` | Exercise/set controls and last-weight actions |
+| `workout-templates.js` | Form filling, repeat/template lifecycle and rendering |
+| `workout-history.js` | Cards, search, virtualization and delete action |
+| `workout-events.js` | Scoped workout/review handlers, bound once |
+| `units.js`, `rest-timer.js` | Unit display/conversion and rest timing |
+| `src/core/ui-utils.js` | Shared debounce helper, loaded before history |
+
+This is an incremental responsibility split, not an ES-module/framework rewrite. Existing global APIs remain compatibility boundaries for navigation and coaching. Production script order is tested. Retired technique-review code is archived and not loaded; its saved data is preserved. Nutrition/coaching and non-workout inline handlers remain outside this pass.
+
 `app.js` still owns navigation and most feature orchestration. This release deliberately moves only small boundaries with regression coverage:
 
 - `workout-session.js`: pure draft conversion, previous-session selection, immutable create/edit operations, and PR provenance. Edits preserve the original record ID and program metadata and check the opened record against current in-memory history.

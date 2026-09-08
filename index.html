@@ -275,9 +275,9 @@
     <!-- BODY MEASUREMENTS -->
     <section id="panel-workouts" class="hidden space-y-6">
       <div class="section-tabs" role="tablist" aria-label="Workouts sections">
-        <button type="button" class="section-tab active" data-sub="wo-log" onclick="showSubTab('workouts','wo-log')">Log</button>
-        <button type="button" class="section-tab" data-sub="wo-history" onclick="showSubTab('workouts','wo-history')">History</button>
-        <button type="button" class="section-tab" data-sub="wo-templates" onclick="showSubTab('workouts','wo-templates')">Templates</button>
+        <button type="button" class="section-tab active" data-sub="wo-log" data-workout-action="tab-log">Log</button>
+        <button type="button" class="section-tab" data-sub="wo-history" data-workout-action="tab-history">History</button>
+        <button type="button" class="section-tab" data-sub="wo-templates" data-workout-action="tab-templates">Templates</button>
       </div>
       <p class="text-xs text-slate-500 -mt-3">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
 
@@ -287,18 +287,18 @@
           <h2 class="font-semibold" id="workout-mode-title">Your workout</h2>
           <div class="flex flex-wrap gap-2 items-center">
             <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-              <input type="checkbox" id="gym-checklist-toggle" onchange="toggleChecklistMode()" />
+              <input type="checkbox" id="gym-checklist-toggle" data-workout-change="checklist" />
               Set checklist
             </label>
-            <button onclick="repeatLastWorkout()" class="btn-secondary text-sm">↻ Repeat Last</button>
-            <select id="template-select" class="input text-sm w-auto" onchange="loadTemplate(this.value)">
+            <button data-workout-action="repeat" class="btn-secondary text-sm">↻ Repeat Last</button>
+            <select id="template-select" class="input text-sm w-auto" data-workout-change="select-template">
               <option value="">Load template…</option>
             </select>
           </div>
         </div>
         <div id="workout-edit-banner" class="session-edit-banner" hidden>
           <span>Editing a saved workout. Changes are saved only after review.</span>
-          <button type="button" class="btn-secondary" onclick="cancelWorkoutEdit()">Cancel edit</button>
+          <button type="button" class="btn-secondary" data-workout-action="cancel-edit">Cancel edit</button>
         </div>
         <div class="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
@@ -314,29 +314,29 @@
         <p id="logger-draft-status" role="status" class="text-sm text-slate-500 mb-2">Draft saves on this device as you train.</p><p id="logger-summary" class="text-sm mb-3"></p><p class="text-xs text-slate-500 mb-3">Check sets off as you go. Saving includes all entered sets, including unchecked sets. Blank rows are ignored.</p>
         <div id="exercise-rows" class="space-y-3 mb-4"></div>
         <div class="flex flex-wrap gap-2 mb-4">
-          <button onclick="addExerciseRow()" class="btn-secondary text-sm">+ Add Strength</button>
-          <button onclick="addExerciseRow({ name: '', type: 'cardio', duration: '', distance: '', distanceUnit: 'km', avgHr: '' })" class="btn-secondary text-sm">+ Add Cardio</button>
+          <button data-workout-action="add-strength" class="btn-secondary text-sm">+ Add Strength</button>
+          <button data-workout-action="add-cardio" class="btn-secondary text-sm">+ Add Cardio</button>
         </div>
 
         <div class="flex gap-3 flex-wrap items-center" id="workout-actions">
-          <button onclick="saveWorkout()" class="btn-primary">Review workout</button>
-          <button onclick="clearWorkoutForm()" class="btn-secondary">Clear</button>
-          <button onclick="saveCurrentAsTemplate()" class="btn-secondary">Save as Template</button>
+          <button data-workout-action="review" class="btn-primary">Review workout</button>
+          <button data-workout-action="clear" class="btn-secondary">Clear</button>
+          <button data-workout-action="save-template" class="btn-secondary">Save as Template</button>
           <div class="flex items-center gap-2 ml-auto border border-slate-200 rounded-lg px-3 py-1.5">
             <span class="text-sm text-slate-500">Rest</span>
-            <button onclick="startRest(60)" class="text-xs btn-secondary py-1 px-2">1m</button>
-            <button onclick="startRest(90)" class="text-xs btn-secondary py-1 px-2">1.5m</button>
-            <button onclick="startRest(180)" class="text-xs btn-secondary py-1 px-2">3m</button>
+            <button data-workout-action="rest-60" class="text-xs btn-secondary py-1 px-2">1m</button>
+            <button data-workout-action="rest-90" class="text-xs btn-secondary py-1 px-2">1.5m</button>
+            <button data-workout-action="rest-180" class="text-xs btn-secondary py-1 px-2">3m</button>
             <span id="rest-timer" class="text-sm font-mono font-medium w-12 text-center">—</span>
-            <button onclick="stopRest()" class="text-xs text-red-500">Stop</button>
+            <button data-workout-action="stop-rest" class="text-xs text-red-500">Stop</button>
           </div>
         </div>
       </div>
 
       <!-- Sticky save bar (Gym mode) -->
       <div id="sticky-save-bar" class="sticky-save-bar hidden">
-        <button onclick="saveWorkout()" class="btn-primary flex-1">Review workout</button>
-        <button onclick="startRest(90)" class="btn-secondary">Rest 1.5m</button>
+        <button data-workout-action="review" class="btn-primary flex-1">Review workout</button>
+        <button data-workout-action="rest-90" class="btn-secondary">Rest 1.5m</button>
         <span id="rest-timer-sticky" class="text-sm font-mono font-medium w-12 text-center">—</span>
       </div>
       </div><!-- /wo-log -->
@@ -346,11 +346,11 @@
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 class="font-semibold">Workout History</h2>
           <div class="flex flex-wrap gap-2">
-            <input type="text" id="history-search" class="input text-sm w-40" placeholder="Search exercise…" oninput="debouncedHistorySearch()" />
-            <button onclick="exportData()" class="btn-secondary text-sm">Export JSON</button>
-            <button onclick="exportCSV()" class="btn-secondary text-sm">Export CSV</button>
-            <button onclick="importData()" class="btn-secondary text-sm">Import</button>
-            <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)" />
+            <input type="text" id="history-search" class="input text-sm w-40" placeholder="Search exercise…" data-workout-input="history-search" />
+            <button data-workout-action="export-json" class="btn-secondary text-sm">Export JSON</button>
+            <button data-workout-action="export-csv" class="btn-secondary text-sm">Export CSV</button>
+            <button data-workout-action="import" class="btn-secondary text-sm">Import</button>
+            <input type="file" id="import-file" accept=".json" class="hidden" data-workout-change="import-file" />
           </div>
         </div>
         <div id="workout-history" class="space-y-3"></div>
@@ -1283,7 +1283,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.3.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.3.1 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1831,6 +1831,14 @@
   <script src="src/programming-athlete.js" defer></script>
   <script src="src/programming-mesocycle.js" defer></script>
   <script src="src/coach/coach-engine.js" defer></script>
+  <script src="src/core/ui-utils.js" defer></script>
+  <script src="src/product/state-store.js" defer></script>
+  <script src="src/product/units.js" defer></script>
+  <script src="src/product/workout-form.js" defer></script>
+  <script src="src/product/workout-templates.js" defer></script>
+  <script src="src/product/rest-timer.js" defer></script>
+  <script src="src/product/data-transfer.js" defer></script>
+  <script src="src/product/workout-events.js" defer></script>
   <script src="src/product/draft-model.js" defer></script>
   <script src="src/product/persistence.js" defer></script>
   <script src="src/product/workout-history.js" defer></script>
@@ -1838,8 +1846,8 @@
     <h2 id="workout-review-title">Review your workout</h2>
     <div id="workout-review-content"></div>
     <div class="session-review-actions">
-      <button id="back-to-workout" type="button" class="btn-secondary" onclick="closeWorkoutReview()">Back to workout</button>
-      <button id="confirm-workout-save" type="button" class="btn-primary" onclick="commitReviewedWorkout()">Save workout</button>
+      <button id="back-to-workout" type="button" class="btn-secondary" data-workout-action="review-back">Back to workout</button>
+      <button id="confirm-workout-save" type="button" class="btn-primary" data-workout-action="review-save">Save workout</button>
     </div>
   </dialog>
   <script src="src/product/workout-session.js" defer></script>

@@ -1,6 +1,6 @@
 # Loadnote
 
-**v1.3.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v1.3.1 · Development build.** An adaptive strength-training log that learns how you train.
 
 ## Workout flow
 
@@ -35,8 +35,8 @@ The included workflow runs checks on pushes and pull requests with read-only rep
 | Location | Purpose |
 | --- | --- |
 | `index.html`, `styles.css` | App shell and styling |
-| `app.js` | Legacy orchestration; refactor incrementally |
-| `src/product/` | Draft model, logger UI, persistence, history rendering |
+| `app.js` | Remaining dashboard, nutrition, coaching, navigation, and startup orchestration |
+| `src/product/` | Workout form/templates/history/events, state storage, data transfer, units, timer, drafts and review |
 | `src/core/`, `src/training/`, `src/coach/` | Existing training and coaching rules |
 | `tests/`, `tests/browser/` | Node regression tests and browser checks |
 | `docs/` | Current architecture and testing notes |

@@ -1,4 +1,13 @@
-# v1.3.0 — Compare, review, and edit workouts
+# v1.3.1 — First code-consolidation pass
+
+- Move workout forms, templates/repeats, history orchestration, units, rest timing, state loading/saving, and import/export into focused files.
+- Share named draft capture and conversion between sessions/templates while preserving template-specific behavior.
+- Share performance lookup with caller-specific ordering and filters.
+- Replace inline handlers in the workout panel, generated workout controls, and review dialog with scoped, idempotent event delegation.
+- Archive retired technique-review code without deleting its saved `formReviews` records.
+- Add production-script-order, storage, template and delegated-control regressions. Interface, schema version 10, and storage keys stay unchanged.
+
+## v1.3.0 — Compare, review, and edit workouts
 
 - Show previous-session values beside current entries, matching exercise name and tracking mode; exclude the edited workout and sessions after the selected date.
 - Add an accessible review dialog before creating or updating a workout. Back preserves the draft; successful saves clear it only after persistence succeeds.
