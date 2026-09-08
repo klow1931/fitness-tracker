@@ -284,7 +284,7 @@
       <div class="sub-panel" data-panel="workouts" data-sub="wo-log">
       <div class="card" id="workout-log-card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 class="font-semibold">Your workout</h2>
+          <h2 class="font-semibold" id="workout-mode-title">Your workout</h2>
           <div class="flex flex-wrap gap-2 items-center">
             <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
               <input type="checkbox" id="gym-checklist-toggle" onchange="toggleChecklistMode()" />
@@ -295,6 +295,10 @@
               <option value="">Load template…</option>
             </select>
           </div>
+        </div>
+        <div id="workout-edit-banner" class="session-edit-banner" hidden>
+          <span>Editing a saved workout. Changes are saved only after review.</span>
+          <button type="button" class="btn-secondary" onclick="cancelWorkoutEdit()">Cancel edit</button>
         </div>
         <div class="grid sm:grid-cols-2 gap-4 mb-4">
           <div>
@@ -315,7 +319,7 @@
         </div>
 
         <div class="flex gap-3 flex-wrap items-center" id="workout-actions">
-          <button onclick="saveWorkout()" class="btn-primary">Save Workout</button>
+          <button onclick="saveWorkout()" class="btn-primary">Review workout</button>
           <button onclick="clearWorkoutForm()" class="btn-secondary">Clear</button>
           <button onclick="saveCurrentAsTemplate()" class="btn-secondary">Save as Template</button>
           <div class="flex items-center gap-2 ml-auto border border-slate-200 rounded-lg px-3 py-1.5">
@@ -331,7 +335,7 @@
 
       <!-- Sticky save bar (Gym mode) -->
       <div id="sticky-save-bar" class="sticky-save-bar hidden">
-        <button onclick="saveWorkout()" class="btn-primary flex-1">Save Workout</button>
+        <button onclick="saveWorkout()" class="btn-primary flex-1">Review workout</button>
         <button onclick="startRest(90)" class="btn-secondary">Rest 1.5m</button>
         <span id="rest-timer-sticky" class="text-sm font-mono font-medium w-12 text-center">—</span>
       </div>
@@ -1279,7 +1283,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.2.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.3.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1830,6 +1834,16 @@
   <script src="src/product/draft-model.js" defer></script>
   <script src="src/product/persistence.js" defer></script>
   <script src="src/product/workout-history.js" defer></script>
+  <dialog id="workout-review" aria-labelledby="workout-review-title" class="session-review">
+    <h2 id="workout-review-title">Review your workout</h2>
+    <div id="workout-review-content"></div>
+    <div class="session-review-actions">
+      <button id="back-to-workout" type="button" class="btn-secondary" onclick="closeWorkoutReview()">Back to workout</button>
+      <button id="confirm-workout-save" type="button" class="btn-primary" onclick="commitReviewedWorkout()">Save workout</button>
+    </div>
+  </dialog>
+  <script src="src/product/workout-session.js" defer></script>
+  <script src="src/product/session-ui.js" defer></script>
   <script src="src/product/workout-logger.js" defer></script>
   <script src="app.js" defer></script>
 </body>

@@ -859,6 +859,7 @@
         if (!confirm('Clear the workout form? Unsaved sets will be lost.')) return;
       }
       pendingProgramSession = null;
+      resetSessionEdit();
       stopRest();
       document.getElementById('wo-date').value = today();
       document.getElementById('wo-notes').value = '';
@@ -866,133 +867,7 @@
       addExerciseRow();
     }
 
-    async function saveWorkout() {
-      if (window.loggerSaving) return;
-      if (!validateWorkoutForm()) return;
-      const date = document.getElementById('wo-date').value;
-      const notes = document.getElementById('wo-notes').value.trim();
-      if (!date) return showToast('Please select a date', 'error');
-
-      const exercises = [];
-      document.querySelectorAll('#exercise-rows > div').forEach(row => {
-        const name = row.querySelector('.ex-name')?.value.trim();
-        if (!name) return;
-        if (row.dataset.type === 'cardio') {
-          const duration = parseFloat(row.querySelector('.cardio-duration')?.value) || 0;
-          const distance = parseFloat(row.querySelector('.cardio-distance')?.value) || 0;
-          const distanceUnit = row.querySelector('.cardio-distance-unit')?.value || 'km';
-          const avgHr = parseFloat(row.querySelector('.cardio-hr')?.value);
-          if (duration <= 0 && distance <= 0) return;
-          const entry = { name, type: 'cardio', duration, distance, distanceUnit, sets: [] };
-          if (!isNaN(avgHr) && avgHr > 0) entry.avgHr = avgHr;
-          exercises.push(entry);
-          return;
-        }
-        const trackBy = row.dataset.trackBy === 'duration' ? 'duration' : 'reps';
-        const sets = [];
-        row.querySelectorAll('.sets-container > div').forEach(s => {
-          const weightRaw = parseFloat(s.querySelector('.set-weight').value);
-          const rpeRaw = parseFloat(s.querySelector('.set-rpe')?.value);
-          if (trackBy === 'duration') {
-            const duration = parseFloat(s.querySelector('.set-duration')?.value);
-            if (duration > 0 && !isNaN(weightRaw) && weightRaw >= 0) {
-              const setObj = { duration, weight: toStorage(weightRaw) };
-              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
-              sets.push(setObj);
-            } else if (duration > 0 && (isNaN(weightRaw) || s.querySelector('.set-weight').value === '')) {
-              // bodyweight hold — allow empty weight as 0
-              const setObj = { duration, weight: 0 };
-              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
-              sets.push(setObj);
-            }
-          } else {
-            const reps = parseFloat(s.querySelector('.set-reps')?.value);
-            if (reps > 0 && !isNaN(weightRaw) && weightRaw >= 0) {
-              const setObj = { reps, weight: toStorage(weightRaw) };
-              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
-              sets.push(setObj);
-            } else if (reps > 0 && (isNaN(weightRaw) || s.querySelector('.set-weight').value === '')) {
-              const setObj = { reps, weight: 0 };
-              if (!isNaN(rpeRaw) && rpeRaw >= 1) setObj.rpe = rpeRaw;
-              sets.push(setObj);
-            }
-          }
-        });
-        if (sets.length) exercises.push({ name, type: 'strength', trackBy, sets });
-      });
-
-      if (!exercises.length) return showToast('Add at least one strength set or cardio entry', 'error');
-
-      const workout = { id: window.LoadnoteCore?.createId?.() || Date.now(), date, notes, exercises };
-      if (pendingProgramSession) {
-        workout.programId = pendingProgramSession.programId;
-        workout.programDayIndex = pendingProgramSession.dayIndex;
-        workout.programDayName = pendingProgramSession.dayName;
-        if (pendingProgramSession.week) workout.programWeek = pendingProgramSession.week;
-        if (pendingProgramSession.blockIndex) workout.programBlockIndex = pendingProgramSession.blockIndex;
-        if (pendingProgramSession.decision) workout.programDecision = pendingProgramSession.decision;
-        pendingProgramSession = null;
-      }
-      const previousState = JSON.parse(JSON.stringify(data));
-      window.loggerSaving = true;
-      data.workouts.push(workout);
-      data.workouts.sort((a, b) => b.date.localeCompare(a.date));
-      saveData(data);
-
-      // Auto-update PRs if better (strength only — skip timed holds)
-      exercises.forEach(ex => {
-        if (ex.type === 'cardio' || !ex.sets) return;
-        ex.sets.forEach(set => {
-          if (!(set.reps > 0)) return;
-          const est = estimated1RM(set.weight, set.reps);
-          const existing = data.prs.find(p => p.exercise.toLowerCase() === ex.name.toLowerCase());
-          if (!existing || est > estimated1RM(existing.weight, existing.reps)) {
-            if (existing) {
-              existing.weight = set.weight;
-              existing.reps = set.reps;
-              existing.date = date;
-              existing.estimated1RM = est;
-            } else {
-              data.prs.push({
-                id: window.LoadnoteCore?.createId?.() || (Date.now() + Math.random()),
-                exercise: ex.name,
-                weight: set.weight,
-                reps: set.reps,
-                date,
-                estimated1RM: est
-              });
-            }
-          }
-        });
-      });
-      // Persist any exercise notes from the form
-      data.exerciseNotes = data.exerciseNotes || {};
-      document.querySelectorAll('#exercise-rows > div').forEach(row => {
-        if (row.dataset.type === 'cardio') return;
-        const n = row.querySelector('.ex-name')?.value.trim();
-        const note = row.querySelector('.ex-note')?.value.trim();
-        if (!n) return;
-        if (note) data.exerciseNotes[n] = note;
-      });
-      saveData(data);
-
-      try {
-        clearTimeout(saveTimer);
-        await persistNow(data);
-      } catch (error) {
-        data = previousState;
-        pendingProgramSession = readLoggerDraft()?.program || null;
-        window.loggerSaving = false;
-        showToast('Workout could not be saved. Your draft is still available.', 'error');
-        return;
-      }
-      window.loggerSaving = false;
-      clearWorkoutForm(true);
-      saveLoggerDraft();
-      renderWorkoutHistory();
-      showToast('Workout saved', 'success');
-      updateBackupBanner();
-    }
+    function saveWorkout() { return reviewWorkout(); }
 
     function deleteWorkout(id) {
       if (!confirm('Delete this workout?')) return;
@@ -1906,6 +1781,7 @@
         existing.reps = reps;
         existing.date = date;
         existing.estimated1RM = est;
+        delete existing.source; delete existing.sourceWorkoutId; delete existing.baselinePR;
       } else {
         data.prs.push({
           id: Date.now(),
@@ -4798,9 +4674,10 @@ ${woLines}
     }
 
     // ========== Templates & Repeat Last ==========
-    function fillWorkoutForm(exercises, notes) {
+    function fillWorkoutForm(exercises, notes, preserveRpe = false) {
       if (loggerHasContent() && !confirm('Replace the current workout draft?')) return false;
       pendingProgramSession = null;
+      resetSessionEdit();
       document.getElementById('wo-date').value = today();
       document.getElementById('wo-notes').value = notes || '';
       document.getElementById('exercise-rows').innerHTML = '';
@@ -4819,7 +4696,7 @@ ${woLines}
             name: ex.name,
             type: 'strength',
             trackBy: ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0)) ? 'duration' : 'reps',
-            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: '' }))
+            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: preserveRpe ? s.rpe : '' }))
           });
         }
       });

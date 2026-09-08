@@ -14,3 +14,5 @@ assert.equal(normalize({version:1,rows:[{type:'strength'}]}),null);
 assert.equal(normalize({version:99,rows:[]}),null);
 assert.equal(normalize({version:2,rows:[{type:'strength',sets:Array(201).fill({})}]}),null);
 console.log('Draft migration and named-field tests passed');
+const editing=normalize({...migrated,edit:{id:'workout-id',original:{id:'workout-id',date:'2026-09-07',exercises:[]}}});
+assert.equal(editing.edit.id,'workout-id');assert.equal(normalize({...migrated,edit:{id:'wrong',original:{id:'other',exercises:[]}}}).edit,null);

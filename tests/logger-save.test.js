@@ -1,25 +1,21 @@
-// Save-path integration: run the real save function against a small form fixture.
-const assert = require('assert');
-const fs = require('fs');
-const vm = require('vm');
-const source = fs.readFileSync(require('path').join(__dirname,'../app.js'),'utf8');
-const saveFunction = source.slice(source.indexOf('    async function saveWorkout()'), source.indexOf('    function deleteWorkout('));
-function fixture(fail = false) {
-  const fields = {'.set-weight':{value:'100'}, '.set-reps':{value:'5'}, '.set-rpe':{value:'8'}};
-  const set = {querySelector:s=>fields[s]};
-  const row = {dataset:{type:'strength',trackBy:'reps'},querySelector:s=>s==='.ex-name'?{value:'Bench Press'}:{value:''},querySelectorAll:()=>[set]};
-  const ctx = { window:{}, data:{workouts:[],prs:[]}, pendingProgramSession:{programId:7,dayIndex:0,dayName:'Day 1'}, saveTimer:0,
-    document:{getElementById:id=>({value:id==='wo-date'?'2026-09-07':''}),querySelectorAll:()=>[row]},
-    validateWorkoutForm:()=>true, showToast:()=>{}, toStorage:x=>x, estimated1RM:(w,r)=>w*(1+r/30), saveData:()=>{},clearTimeout:()=>{},
-    persistNow:async()=>{if(fail)throw Error('quota');}, clearWorkoutForm:()=>{ctx.cleared=true;},saveLoggerDraft:()=>{},
-    readLoggerDraft:()=>({program:{programId:7}}),renderWorkoutHistory:()=>{},updateBackupBanner:()=>{} };
-  vm.createContext(ctx);vm.runInContext(saveFunction,ctx);return ctx;
+const assert=require('assert'),fs=require('fs'),vm=require('vm'),path=require('path');
+const Session=require('../src/product/workout-session');
+function fixture(fail=false){
+ const draft={version:2,date:'2026-09-08',notes:'',unit:'kg',program:{programId:7,dayIndex:0},edit:null,rows:[{type:'strength',trackBy:'reps',name:'Bench',note:'',sets:[{reps:'5',weight:'100',rpe:'8'}]}]};
+ const nodes=new Map();let finish;
+ const context={LoadnoteSession:Session,window:{LoadnoteCore:{createId:()=> 'new-id'}},data:{workouts:[],prs:[]},saveTimer:0,
+ captureLoggerDraft:()=>JSON.parse(JSON.stringify(draft)),estimated1RM:(w,r)=>w*(1+r/30),
+ document:{getElementById:id=>{if(!nodes.has(id))nodes.set(id,{close(){}});return nodes.get(id);}},
+ clearTimeout:()=>{},persistNow:async()=>{if(fail)throw Error('quota');await new Promise(resolve=>{finish=resolve;});},
+ clearWorkoutForm:()=>{context.cleared=true;},saveLoggerDraft:()=>{},renderWorkoutHistory:()=>{},updateBackupBanner:()=>{},showToast:()=>{},showSubTab:()=>{}};
+ vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/product/session-ui.js'),'utf8'),context);
+ context.testDraft=draft;vm.runInContext("reviewedSession={draft:JSON.stringify(testDraft),workout:LoadnoteSession.fromDraft(testDraft,'new-id'),program:testDraft.program,edit:null}",context);
+ return {context,finish:()=>finish()};
 }
 (async()=>{
- const ok=fixture();await Promise.all([ok.saveWorkout(),ok.saveWorkout()]);
- assert.equal(ok.data.workouts.length,1);assert.equal(ok.data.workouts[0].exercises[0].sets[0].weight,100);
- assert.equal(ok.data.workouts[0].programId,7);assert(ok.cleared);assert.equal(ok.data.prs.length,1);
- const bad=fixture(true);await bad.saveWorkout();assert.equal(bad.data.workouts.length,0);assert.equal(bad.data.prs.length,0);
- assert(!bad.cleared);assert.equal(bad.pendingProgramSession.programId,7);assert.equal(bad.window.loggerSaving,false);
- console.log('logger save integration tests passed');
+ const {context:c,finish}=fixture();const first=c.commitReviewedWorkout();await c.commitReviewedWorkout();
+ assert.equal(c.data.workouts.length,0,'Do not expose unsaved state');finish();await first;
+ assert.equal(c.data.workouts.length,1);assert.equal(c.data.workouts[0].programId,7);assert(c.cleared);assert.equal(c.data.prs.length,1);
+ const {context:bad}=fixture(true);await bad.commitReviewedWorkout();assert.equal(bad.data.workouts.length,0);assert(!bad.cleared);assert.equal(bad.window.loggerSaving,false);
+ console.log('Review commit durability and duplicate-save tests passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

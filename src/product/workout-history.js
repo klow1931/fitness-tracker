@@ -22,6 +22,7 @@
               <span class="text-slate-500 text-sm ml-2">Vol: ${Math.round(toDisplay(vol))} ${unitLabel()}</span>
             </div>
             <div class="flex gap-2 shrink-0">
+              <button data-workout-id="${escapeHtml(w.id)}" onclick="editWorkout(this.dataset.workoutId)" class="btn-secondary">Edit</button>
               <button data-workout-id="${escapeHtml(w.id)}" onclick="saveWorkoutAsTemplate(this.dataset.workoutId)" class="text-xs text-indigo-600 hover:underline">Template</button>
               <button data-workout-id="${escapeHtml(w.id)}" onclick="deleteWorkout(this.dataset.workoutId)" class="btn-danger">Delete</button>
             </div>

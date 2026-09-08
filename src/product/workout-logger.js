@@ -12,7 +12,7 @@ function loggerHasContent() {
 function captureLoggerDraft() {
   const value = (row, selector) => row.querySelector(selector)?.value || '';
   return { version: 2, date: document.getElementById('wo-date').value, notes: document.getElementById('wo-notes').value,
-    unit: currentUnit(), program: pendingProgramSession, updatedAt: Date.now(),
+    unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, updatedAt: Date.now(),
     rows: [...document.querySelectorAll('#exercise-rows > div')].map(row => ({
       type: row.dataset.type, trackBy: row.dataset.trackBy,
       name:value(row,'.ex-name'),note:value(row,'.ex-note'),duration:value(row,'.cardio-duration'),distance:value(row,'.cardio-distance'),distanceUnit:value(row,'.cardio-distance-unit'),avgHr:value(row,'.cardio-hr'),
@@ -27,6 +27,7 @@ function saveLoggerDraft() {
     else { localStorage.removeItem(LOGGER_DRAFT_KEY); status.textContent = 'Draft saves on this device as you train.'; }
   } catch (_) { status.textContent = 'Draft could not be saved. Keep this page open and export your data.'; }
   updateLoggerSummary();
+  updateSessionComparisons();
 }
 function updateLoggerSummary() {
   let total = 0, done = 0;
@@ -87,6 +88,7 @@ function initWorkoutLogger() {
     document.getElementById('wo-date').value = draft.date;
     document.getElementById('wo-notes').value = draft.notes;
     pendingProgramSession = draft.program || null;
+    workoutEdit = draft.edit || null;
     document.getElementById('logger-draft-status').textContent = 'Recovered your unfinished workout';
   }
   const panel = document.getElementById('workout-log-card');
@@ -96,5 +98,8 @@ function initWorkoutLogger() {
   window.addEventListener('pagehide', saveLoggerDraft);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveLoggerDraft(); });
   updateLoggerSummary();
+  refreshSessionMode();
+  updateSessionComparisons();
+  document.getElementById('workout-review').addEventListener('cancel',event=>{if(window.loggerSaving)event.preventDefault();else reviewedSession=null;});
 }
 if (typeof module !== 'undefined') module.exports = { validLoggerNumber };
