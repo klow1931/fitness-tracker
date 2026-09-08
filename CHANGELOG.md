@@ -50,3 +50,8 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Keep food totals visible while adding foods; emphasize Add food and group day maintenance actions.
 - Mobile action placement, 44px buttons, input sizing, destination focus and reduced-motion support.
 - Add navigation regression tests and a render-count benchmark. No saved-data migration.
+# v1.5.1 — Measurements layout
+
+- New overview tiles, grouped entry fields, focused trend panel and expandable history cards that include notes and neck measurements.
+- Responsive layout, dark styling, clearer labels and edit state. Existing dates and stored centimeter values preserved.
+- Convert in-progress measurement values when switching cm/in instead of relabeling them.

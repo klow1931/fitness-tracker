@@ -749,121 +749,34 @@
       </div><!-- /nu-history -->
     </section>
 
-    <section id="panel-measures" class="hidden space-y-6">
-      <div class="card">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <div>
-            <h2 class="font-semibold">Body Measurements</h2>
-            <p class="text-xs text-slate-500">Tape-measure tracking for bodybuilding / physique progress. Leave blanks for sites you skip.</p>
-          </div>
-          <div class="flex rounded-lg border border-slate-300 overflow-hidden text-sm font-medium">
-            <button type="button" id="meas-unit-cm" onclick="setMeasureUnit('cm')" class="px-3 py-1.5 bg-indigo-600 text-white">cm</button>
-            <button type="button" id="meas-unit-in" onclick="setMeasureUnit('in')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">in</button>
-          </div>
+    <section id="panel-measures" class="hidden measurements-page">
+      <header class="measure-hero"><div><p class="measure-eyebrow">BODY MEASUREMENTS</p><h1>Your progress, over time.</h1><p>Track the measurements that matter to you. Every field is optional.</p></div><button class="btn-primary" onclick="focusMeasurementForm()">Log a check-in</button></header>
+      <div id="measure-overview" class="measure-overview" aria-live="polite"></div>
+      <div class="measure-workspace">
+        <div class="measure-card measure-entry" id="measure-entry">
+          <div class="measure-card-heading"><div><p class="measure-eyebrow">NEW CHECK-IN</p><h2>Record measurements</h2></div><div class="measure-unit-switch" aria-label="Measurement unit"><button type="button" id="meas-unit-cm" onclick="setMeasureUnit('cm')">cm</button><button type="button" id="meas-unit-in" onclick="setMeasureUnit('in')">in</button></div></div>
+          <p id="measure-edit-status" role="status">Enter one or more measurements to get started.</p>
+          <form id="measurement-form" onsubmit="event.preventDefault(); saveMeasurements()">
+          <label for="meas-date">Check-in date<input type="date" id="meas-date" class="input" required /></label>
+          <fieldset><legend>Torso</legend><div class="measure-fields"><label for="meas-chest">Chest<span class="measure-input-wrap"><input type="number" id="meas-chest" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-waist">Waist<span class="measure-input-wrap"><input type="number" id="meas-waist" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-hips">Hips<span class="measure-input-wrap"><input type="number" id="meas-hips" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label></div></fieldset>
+          <details class="measure-field-group"><summary>Upper body <span>Neck, shoulders & arms</span></summary><div class="measure-fields"><label for="meas-neck">Neck<span class="measure-input-wrap"><input type="number" id="meas-neck" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-shoulders">Shoulders<span class="measure-input-wrap"><input type="number" id="meas-shoulders" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-leftArm">Left arm<span class="measure-input-wrap"><input type="number" id="meas-leftArm" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-rightArm">Right arm<span class="measure-input-wrap"><input type="number" id="meas-rightArm" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label></div></details>
+          <details class="measure-field-group"><summary>Lower body <span>Thighs & calves</span></summary><div class="measure-fields"><label for="meas-leftThigh">Left thigh<span class="measure-input-wrap"><input type="number" id="meas-leftThigh" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-rightThigh">Right thigh<span class="measure-input-wrap"><input type="number" id="meas-rightThigh" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-leftCalf">Left calf<span class="measure-input-wrap"><input type="number" id="meas-leftCalf" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label>
+<label for="meas-rightCalf">Right calf<span class="measure-input-wrap"><input type="number" id="meas-rightCalf" class="input" min="0.1" step="0.1" inputmode="decimal" placeholder="—" /><span class="meas-unit-label">cm</span></span></label></div></details>
+          <label for="meas-notes">Notes <span class="measure-muted">Optional</span><textarea id="meas-notes" class="input" rows="2" placeholder="Morning check-in, relaxed arms…"></textarea></label>
+          <p class="measure-hint">Use the same tape position and conditions each time. Saving to an existing date updates filled fields; blank fields keep their saved values.</p>
+          <div class="measure-actions"><button type="submit" class="btn-primary">Save check-in</button><button type="button" onclick="clearMeasurementForm()" class="btn-secondary">Clear form</button></div>
+          </form>
         </div>
-        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-          <div>
-            <label class="label">Date</label>
-            <input type="date" id="meas-date" class="input" />
-          </div>
-          <div>
-            <label class="label">Neck (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-neck" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Shoulders (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-shoulders" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Chest (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-chest" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Left arm (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-leftArm" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Right arm (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-rightArm" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Waist (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-waist" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Hips (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-hips" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Left thigh (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-leftThigh" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Right thigh (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-rightThigh" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Left calf (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-leftCalf" class="input" min="0" step="0.1" />
-          </div>
-          <div>
-            <label class="label">Right calf (<span class="meas-unit-label">cm</span>)</label>
-            <input type="number" id="meas-rightCalf" class="input" min="0" step="0.1" />
-          </div>
-          <div class="sm:col-span-2 md:col-span-3">
-            <label class="label">Notes (optional)</label>
-            <input type="text" id="meas-notes" class="input" placeholder="e.g. morning, flexed arms, post-workout" />
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="saveMeasurements()" class="btn-primary">Save measurements</button>
-          <button onclick="clearMeasurementForm()" class="btn-secondary">Clear form</button>
-        </div>
+        <div class="measure-card measure-trends"><div class="measure-card-heading"><div><p class="measure-eyebrow">TRENDS</p><h2>See what’s changing</h2></div></div><label for="meas-chart-key">Measurement<select id="meas-chart-key" class="input" onchange="renderMeasuresChart()"><option value="neck">Neck</option><option value="shoulders">Shoulders</option><option value="chest">Chest</option><option value="leftArm">Left arm</option><option value="rightArm">Right arm</option><option value="waist" selected>Waist</option><option value="hips">Hips</option><option value="leftThigh">Left thigh</option><option value="rightThigh">Right thigh</option><option value="leftCalf">Left calf</option><option value="rightCalf">Right calf</option></select></label><div class="measure-chart-wrap"><canvas id="measuresChart" height="220" aria-label="Measurement trend"></canvas></div><p id="meas-delta" role="status"></p><p class="measure-hint">Changes are shown neutrally. A higher or lower number is not automatically better.</p></div>
       </div>
-
-      <div class="card">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <h2 class="font-semibold">Trend</h2>
-          <select id="meas-chart-key" class="input text-sm w-auto" onchange="renderMeasuresChart()">
-            <option value="waist">Waist</option>
-            <option value="chest">Chest</option>
-            <option value="shoulders">Shoulders</option>
-            <option value="hips">Hips</option>
-            <option value="leftArm">Left arm</option>
-            <option value="rightArm">Right arm</option>
-            <option value="leftThigh">Left thigh</option>
-            <option value="rightThigh">Right thigh</option>
-            <option value="leftCalf">Left calf</option>
-            <option value="rightCalf">Right calf</option>
-            <option value="neck">Neck</option>
-          </select>
-        </div>
-        <canvas id="measuresChart" height="220"></canvas>
-        <div id="meas-delta" class="text-sm text-slate-500 mt-2"></div>
-      </div>
-
-      <div class="card">
-        <h2 class="font-semibold mb-3">History</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-slate-500 border-b border-slate-200">
-                <th class="py-2 pr-2">Date</th>
-                <th class="py-2 pr-2">Waist</th>
-                <th class="py-2 pr-2">Chest</th>
-                <th class="py-2 pr-2">Shoulders</th>
-                <th class="py-2 pr-2">Arms L/R</th>
-                <th class="py-2 pr-2">Hips</th>
-                <th class="py-2 pr-2">Thighs L/R</th>
-                <th class="py-2 pr-2">Calves L/R</th>
-                <th class="py-2 pr-2"></th>
-              </tr>
-            </thead>
-            <tbody id="measures-history"></tbody>
-          </table>
-        </div>
-        <p id="measures-empty" class="text-sm text-slate-500 hidden">No measurements yet. Log your first check-in above.</p>
-      </div>
+      <div class="measure-card"><div class="measure-card-heading"><div><p class="measure-eyebrow">YOUR CHECK-INS</p><h2>Measurement history</h2></div><span id="measure-history-count" class="measure-count"></span></div><div id="measures-history" class="measure-history"></div><p id="measures-empty" class="measure-empty hidden">Your first check-in starts the story. Add any measurement above; you can fill in more later.</p></div>
     </section>
 
     <!-- AI COACH -->
@@ -1302,7 +1215,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.5.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.5.1 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

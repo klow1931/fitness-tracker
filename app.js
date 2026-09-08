@@ -827,7 +827,10 @@
     }
 
     function setMeasureUnit(u) {
-      data.measureUnit = u === 'in' ? 'in' : 'cm';
+      const previous=measureUnitLabel(), next=u==='in'?'in':'cm';
+      if(previous===next)return;
+      MEASURE_KEYS.forEach(({key})=>{const input=document.getElementById('meas-'+key);if(input && input.value!==''){const value=Number(input.value);if(Number.isFinite(value))input.value=round1(previous==='in'?value*2.54:value/2.54);}});
+      data.measureUnit = next;
       saveData(data);
       updateMeasureUnitUI();
       renderMeasures();
@@ -839,8 +842,8 @@
       const inBtn = document.getElementById('meas-unit-in');
       if (cmBtn && inBtn) {
         const isCm = data.measureUnit !== 'in';
-        cmBtn.className = 'px-3 py-1.5 ' + (isCm ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50');
-        inBtn.className = 'px-3 py-1.5 ' + (!isCm ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50');
+        cmBtn.setAttribute('aria-pressed',String(isCm));
+        inBtn.setAttribute('aria-pressed',String(!isCm));
       }
     }
 
@@ -851,12 +854,15 @@
       });
       const notes = document.getElementById('meas-notes');
       if (notes) notes.value = '';
+      document.getElementById('measure-edit-status').textContent='Enter one or more measurements to get started.';
     }
 
     function saveMeasurements() {
       const date = document.getElementById('meas-date')?.value || today();
       const entry = { id: Date.now() + Math.random(), date, notes: (document.getElementById('meas-notes')?.value || '').trim() };
       let any = false;
+      const invalid=MEASURE_KEYS.find(({key})=>{const value=document.getElementById('meas-'+key)?.value;return value!=='' && value!=null && (!Number.isFinite(Number(value)) || Number(value)<=0);});
+      if(invalid) {showToast('Measurements must be positive numbers.','error');return;}
       MEASURE_KEYS.forEach(({ key }) => {
         const raw = document.getElementById('meas-' + key)?.value;
         const cm = toMeasureStorage(raw);
@@ -906,35 +912,39 @@
       const notes = document.getElementById('meas-notes');
       if (notes) notes.value = m.notes || '';
       showToast('Loaded into form — edit and save to update', 'info');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('measure-edit-status').textContent='Editing check-in for '+formatDate(m.date)+'. Save to update this date.';
+      document.querySelectorAll('#measurement-form details').forEach(detail=>{if([...detail.querySelectorAll('input')].some(input=>input.value!==''))detail.open=true;});
+      focusMeasurementForm();
     }
 
+    function focusMeasurementForm() {
+      document.getElementById('measure-entry').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+      document.getElementById('meas-date').focus({preventScroll:true});
+    }
+    function renderMeasureOverview() {
+      const rows=[...(data.measurements || [])].sort((a,b)=>b.date.localeCompare(a.date));
+      const tiles=[['waist','Waist'],['chest','Chest'],['hips','Hips']].map(([key,label])=>{
+        const record=rows.find(r=>Number(r[key])>0);
+        return '<div class="measure-stat"><span>'+label+'</span><strong>'+ (record?escapeHtml(formatMeasure(record[key])):'—')+'</strong><small>'+(record?escapeHtml(formatDate(record.date)):'No check-in yet')+'</small></div>';
+      });
+      tiles.unshift('<div class="measure-stat"><span>Check-ins</span><strong>'+rows.length+'</strong><small>'+(rows.length?'Latest: '+escapeHtml(formatDate(rows[0].date)):'Start with one measurement')+'</small></div>');
+      document.getElementById('measure-overview').innerHTML=tiles.join('');
+    }
     function renderMeasuresHistory() {
       const tbody = document.getElementById('measures-history');
       const empty = document.getElementById('measures-empty');
       if (!tbody) return;
       const list = data.measurements || [];
+      document.getElementById('measure-history-count').textContent=list.length+' check-ins';
       if (empty) empty.classList.toggle('hidden', list.length > 0);
       if (!list.length) {
         tbody.innerHTML = '';
         return;
       }
-      tbody.innerHTML = list.map(m => `
-        <tr class="border-b border-slate-100">
-          <td class="py-2 pr-2 whitespace-nowrap font-medium">${formatDate(m.date)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.waist)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.chest)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.shoulders)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.leftArm)} / ${formatMeasure(m.rightArm)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.hips)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.leftThigh)} / ${formatMeasure(m.rightThigh)}</td>
-          <td class="py-2 pr-2">${formatMeasure(m.leftCalf)} / ${formatMeasure(m.rightCalf)}</td>
-          <td class="py-2 pr-2 whitespace-nowrap">
-            <button onclick="loadMeasurementIntoForm('${m.id}')" class="text-xs text-indigo-600 hover:underline mr-2">Edit</button>
-            <button onclick="deleteMeasurement('${m.id}')" class="text-xs text-red-500 hover:underline">Del</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = [...list].sort((a,b)=>b.date.localeCompare(a.date)).map((m,index)=>{
+        const values=MEASURE_KEYS.filter(({key})=>m[key]!=null);
+        return `<details ${index===0?'open':''}><summary>${escapeHtml(formatDate(m.date))}<span>${values.length} measurements</span></summary><dl>${values.map(({key,label})=>'<div><dt>'+label+'</dt><dd>'+escapeHtml(formatMeasure(m[key]))+'</dd></div>').join('')}</dl>${m.notes?'<p>'+escapeHtml(m.notes)+'</p>':''}<div class="measure-actions"><button data-id="${escapeHtml(m.id)}" onclick="loadMeasurementIntoForm(this.dataset.id)" class="btn-secondary">Edit check-in</button><button data-id="${escapeHtml(m.id)}" onclick="deleteMeasurement(this.dataset.id)" class="btn-secondary">Delete</button></div></details>`;
+      }).join('');
     }
 
     function renderMeasuresChart() {
@@ -990,6 +1000,7 @@
 
     function renderMeasures() {
       updateMeasureUnitUI();
+      renderMeasureOverview();
       const dateEl = document.getElementById('meas-date');
       if (dateEl && !dateEl.value) dateEl.value = today();
       renderMeasuresHistory();
