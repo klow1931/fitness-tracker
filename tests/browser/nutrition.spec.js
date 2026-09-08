@@ -65,6 +65,7 @@ test('food persists across navigation, refresh, editing and clearing',async({pag
  await page.locator('#nutrition-edit-amount').fill('2');await page.getByRole('button',{name:'Save food',exact:true}).click();
  await expect(page.locator('#tot-cal')).toHaveText('600');
  await expect(page.locator('#nutrition-save-status')).toHaveText('Saved on this device');
+ await page.getByText('Day options',{exact:true}).click();
  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Clear Day Foods'}).click();
  await expect(page.locator('#nutrition-save-status')).toHaveText('Saved on this device');
  await page.evaluate(()=>loadDayFoods());await expect(page.locator('#tot-foods')).toHaveText('0');

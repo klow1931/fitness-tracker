@@ -110,6 +110,7 @@
 
     let persistenceWriter;
     function persistNow(state) {
+      if(typeof invalidateViews==='function')invalidateViews();
       if (!persistenceWriter) persistenceWriter = LoadnotePersistence.createWriter({backend:()=>storageBackend,setBackend:value=>{storageBackend=value;},idbSet,local:localStorage,key:STORAGE_KEY});
       return persistenceWriter(state || data).then(() => {
         document.getElementById('storage-error-banner')?.remove();
@@ -127,6 +128,7 @@
     }
 
     function saveData(state) {
+      if(typeof invalidateViews==='function')invalidateViews();
       if (state) data = state;
       // Debounce rapid saves (typing / bulk updates)
       clearTimeout(saveTimer);
@@ -161,4 +163,3 @@
       base.api = { ...DEFAULT_DATA.api, ...base.api };
       return base;
     }
-

@@ -405,6 +405,7 @@
       }
       document.getElementById('tot-foods').textContent=dayFoods.length;
       renderNutritionTargets(t);
+      if(typeof updateFoodEntrySummary==='function')updateFoodEntrySummary();
       const complete=data.nutrition.find(n=>n.date===(document.getElementById('nu-date').value || today()))?.complete===true;
       document.getElementById('nutrition-day-complete').checked=complete;
       document.getElementById('nutrition-completeness-status').textContent=complete?'Complete. Known nutrient totals contribute to averages.':'Partial / unconfirmed. Excluded from averages; mark complete when finished.';
@@ -427,7 +428,8 @@
       const idx=data.nutrition.findIndex(n=>n.date===date);
       if(idx>=0) data.nutrition[idx]=entry; else data.nutrition.push(entry);
       data.nutrition.sort((a,b)=>b.date.localeCompare(a.date));
-      renderDayFoods(); renderNutritionHistory();
+      renderDayFoods();
+      if(typeof LoadnoteNavigation==='undefined' || LoadnoteNavigation.sub.nutrition==='nu-history')renderNutritionHistory();
       const status=document.getElementById('nutrition-save-status');
       const sequence=++nutritionSaveSequence;
       if(status)status.textContent='Saving…';

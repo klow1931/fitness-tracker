@@ -1,4 +1,24 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+.food-entry-header { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.7rem; background:#eef2ff; border:1px solid #c7d2fe; border-radius:.75rem; }
+.food-entry-header p { margin:0; font-weight:600; }
+body.dark .food-entry-header { background:#1e293b; border-color:#475569; }
+.day-options { padding:.4rem; }
+.day-options summary { cursor:pointer; min-height:32px; }
+.view-enter { animation:loadnote-enter 120ms ease-out; }
+@keyframes loadnote-enter { from {opacity:.7;} to {opacity:1;} }
+:is(button,input,select,textarea,summary):focus-visible { outline:3px solid #6366f1; outline-offset:3px; }
+@media (max-width:768px) {
+  .input { font-size:16px; }
+  :is(.btn-primary,.btn-secondary,.tab-btn,.section-tab) { min-height:44px; }
+  #workout-actions { position:sticky; bottom:calc(4.5rem + env(safe-area-inset-bottom)); background:white; padding:.6rem; z-index:25; border-top:1px solid #cbd5e1; }
+  body.dark #workout-actions { background:#0f172a; }
+  body.gym-mode #workout-actions { position:static; }
+  #workout-actions > .btn-primary { flex:1 0 100%; }
+  .food-entry-header { font-size:.9rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+}
 .nutrition-dialog { box-sizing:border-box; width:min(42rem,calc(100vw - 2rem)); max-height:85dvh; overflow:auto; padding:1.2rem; border:1px solid #94a3b8; border-radius:1rem; }
 .nutrition-dialog::backdrop { background:rgba(0,0,0,.5); }
 .nutrition-dialog label { display:block; margin-block:.65rem; }
