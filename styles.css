@@ -1,4 +1,9 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+/* Keep nutrition controls clear of the fixed mobile navigation when focused/scrolled. */
+#panel-nutrition :is(summary, input, button) { scroll-margin-block: 6rem; }
+@media (max-width: 768px) {
+  #panel-nutrition { padding-bottom: 7rem; }
+}
 body {
   font-family: system-ui, -apple-system, sans-serif;
 }
