@@ -1,12 +1,14 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.5.2';
+const CACHE = 'loadnote-v1.6.0';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
+  './energy.css',
   './app.js',
   './src/core/ui-utils.js',
   './src/product/navigation.js',
+  './src/product/home-activity.js',
   './src/product/nutrition-model.js',
   './src/product/nutrition-ui.js',
   './src/product/nutrition-forms.js',

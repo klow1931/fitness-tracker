@@ -1,0 +1,16 @@
+const assert=require('assert');
+const {homeActivityWeek}=require('../src/product/home-activity');
+const now=new Date(2026,0,1,0,15);
+const week=homeActivityWeek([{date:'2025-12-29'},{date:'2026-01-01'},{date:'2026-01-01'},{date:'2026-01-02'},{date:'2025-12-28'}],['2025-12-30'],now);
+assert.equal(week.total,3);
+assert.equal(week.days[0].date,'2025-12-29');
+assert.equal(week.days[6].date,'2026-01-04');
+assert.equal(week.days[3].count,2);
+assert(week.days[3].today);
+assert(week.days[1].rest);
+assert.equal(week.days[4].count,0);
+assert(week.days[4].future);
+const sunday=homeActivityWeek([],[],new Date(2026,0,4,23,59));
+assert.equal(sunday.days[0].date,'2025-12-29');
+assert(sunday.days[6].today);
+console.log('Home activity local week, year boundary, rest and future-date tests passed');

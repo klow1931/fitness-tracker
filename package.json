@@ -1,6 +1,6 @@
 {
   "name": "loadnote",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "An adaptive strength-training log that learns how you train.",
   "private": true,
   "scripts": {

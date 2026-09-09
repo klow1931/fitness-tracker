@@ -61,3 +61,10 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Keyboard-accessible calendar days, stacked record cards, separate photo entry/comparison/journal, grouped calculators and backups.
 - Advanced RPE, credits and demo data are expandable. Photo notes and identifiers are escaped in rendered markup.
 - Existing calculators, records, backups and photo storage retained.
+# v1.6.0 — A stronger rhythm
+
+- Home leads with the next workout and a Monday–Sunday activity strip with session and recovery states.
+- Shared indigo/teal styling, larger statistics, consistent mobile navigation icons and richer page headers.
+- Completed sets retain readable values; saved workouts and new PRs get distinct feedback. Reduced-motion preferences are honored.
+- Home shortcuts preserve drafts. Weekly activity excludes future sessions and uses local calendar dates.
+- No data migration. Existing training, nutrition and backup flows retained.
