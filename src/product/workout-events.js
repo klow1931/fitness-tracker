@@ -7,6 +7,8 @@ function initWorkoutEvents(){
     review:()=>saveWorkout(),clear:()=>clearWorkoutForm(),'save-template':()=>saveCurrentAsTemplate(),
     'rest-60':()=>startRest(60),'rest-90':()=>startRest(90),'rest-180':()=>startRest(180),'stop-rest':()=>stopRest(),
     'pause-rest':()=>pauseRest(),'add-rest':()=>addRestTime(),
+    'exercise-detail':el=>openExerciseDetail(el.dataset.exerciseName,el.dataset.tracking),'compare-session':el=>openSessionComparison(el.dataset.workoutId),
+    'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),
     'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),
     'export-json':()=>exportData(),'export-csv':()=>exportCSV(),import:()=>importData(),
     'remove-exercise':el=>el.closest('[data-idx]')?.remove(),'remove-set':el=>el.parentElement.remove(),
@@ -16,7 +18,7 @@ function initWorkoutEvents(){
     'load-template':el=>loadTemplate(el.dataset.templateId),'delete-template':el=>deleteTemplate(el.dataset.templateId),'focus-date':()=>document.getElementById('wo-date')?.focus(),
     'review-back':()=>closeWorkoutReview(),'review-save':()=>commitReviewedWorkout()
   };
-  const change={'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el)};
+  const change={'history-date':()=>renderWorkoutHistory(),'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el)};
   const input={'history-search':()=>debouncedHistorySearch()};
   for(const root of [document.getElementById('panel-workouts'),document.getElementById('workout-review')]){
     if(!root || root.dataset.eventsBound)continue;

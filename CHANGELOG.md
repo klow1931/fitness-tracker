@@ -75,3 +75,10 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Deadline-based rest ring with pause/resume, +30 seconds, and refresh recovery.
 - Post-save recap with session totals, personal bests, and prior matching exercise sets.
 - Move exercises up/down and explicitly swap names while retaining entered sets, notes and checkmarks. Draft order and cardio completion survive refresh.
+# v1.8.0 — Progress and history
+
+- Paginated, naturally sized history cards with expandable exercises, date filters and stable newest-first ordering.
+- Exercise details combine recent sets, best load/estimated 1RM and 4-week, 12-week or all-time trends; tracking modes stay separate.
+- Compare any two saved workouts by exercise name and tracking mode, with unmatched movements explicitly labeled.
+- Workout deletion durably commits recalculated derived PRs and preserves manual benchmarks. Failed saves leave history and records unchanged.
+- Existing workout edits retain their PR reconciliation. No historical schema migration.

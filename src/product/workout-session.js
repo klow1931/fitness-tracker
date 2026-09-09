@@ -81,5 +81,10 @@
     next.prs=reconcilePRs(next.prs,list,estimate,createId);
     return next;
   }
-  return {previous,findPerformance,fromDraft,apply,reconcilePRs};
+  function remove(state,id,estimate,createId){
+    if(!(state.workouts||[]).some(w=>same(w.id,id)))throw Error('Workout not found.');
+    const next=clone(state);next.workouts=next.workouts.filter(w=>!same(w.id,id));
+    next.prs=reconcilePRs(next.prs,next.workouts,estimate,createId);return next;
+  }
+  return {previous,findPerformance,fromDraft,apply,reconcilePRs,remove};
 });
