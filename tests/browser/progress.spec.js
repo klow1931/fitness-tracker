@@ -39,3 +39,22 @@ test('Chart range and metric controls use filtered actual data',async({page})=>{
  await page.locator('#progress-metric').selectOption('load');await expect(page.locator('#progress-description')).toContainText('Heaviest actual set');
  await page.locator('#progress-range').selectOption('4');await expect(page.locator('#progress-description')).toContainText('No rep-based strength data');
 });
+test('New lifter dashboard avoids premature fatigue and plateau signals and agrees with chart estimates',async({page})=>{
+ await page.evaluate(()=>{
+  data.workouts=[{id:'baseline',date:today(),exercises:[{name:'Bench',type:'strength',sets:[{weight:80,reps:5,rpe:8}]}]}];
+  invalidateViews();showTab('dashboard');
+  document.getElementById('progress-exercise').value='Bench';renderProgressChart();
+ });
+ await expect(page.locator('#training-status-value')).toHaveText('Not enough data');
+ await expect(page.locator('#fatigue-score-value')).toHaveText('Not enough data');
+ await expect(page.locator('#training-intelligence-lifts')).not.toContainText('possible plateau');
+ await expect(page.locator('#training-intelligence-lifts')).toContainText('98.7');
+ await expect(page.locator('#next-workout-recommendation')).not.toContainText('Reduce');
+ expect(await page.evaluate(()=>window.lastChartConfig.data.datasets[0].data)).toEqual([98.7]);
+ await page.evaluate(()=>{
+  const original=data.workouts[0];data.workouts=[0,2,4].map((ago,i)=>{
+   const d=new Date();d.setDate(d.getDate()-ago);return {...original,id:String(i),date:d.toISOString().slice(0,10)};
+  });invalidateViews();renderTrainingIntelligence();
+ });
+ await expect(page.locator('#training-intelligence-lifts')).toContainText('possible plateau');
+});

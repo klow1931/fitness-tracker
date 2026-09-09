@@ -21,7 +21,7 @@ function renderExerciseDetail(){
  const entries=LoadnoteProgress.entries(LoadnoteProgress.filter(data.workouts,{from:weeks?start.toISOString().slice(0,10):'',to:end}),detailExercise,detailTracking);
  const series=LoadnoteProgress.series(data.workouts,detailExercise,{weeks,metric,end},estimated1RM);
  const strength=detailTracking==='reps';document.getElementById('detail-metric-label').hidden=!strength;document.getElementById('detail-chart-wrap').hidden=!strength;
- const note=strength?'Heaviest actual set is logged load, not a tested 1RM. Estimated 1RM is calculated from reps and load.':'Timed holds and cardio are shown separately from rep-based strength estimates.';
+ const note=strength?'Heaviest actual set is logged load, not a tested 1RM. Estimated 1RM uses reps and load, adjusted for RPE when provided.':'Timed holds and cardio are shown separately from rep-based strength estimates.';
  const best=strength&&series.length?` Best ${metric==='load'?'logged load':'estimated 1RM'} in range: ${toDisplay(Math.max(...series.map(p=>p.value)))} ${unitLabel()}.`:'';
  document.getElementById('detail-summary').textContent=(entries.length?`${new Set(entries.map(e=>e.id)).size} sessions in range.`:'No matching sessions in this range.')+best+' '+note;
  if(exerciseDetailChart){exerciseDetailChart.destroy();exerciseDetailChart=null;}

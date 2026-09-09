@@ -12,4 +12,13 @@ const manual={id:'manual',exercise:'Bench',weight:120,reps:5};const withManual={
 assert.deepEqual(S.remove(withManual,'c',estimate,()=> 'record').prs,[manual]);
 assert.equal(S.remove({workouts:[list[0]],prs:S.reconcilePRs([],[list[0]],estimate,()=> 'x')},'a',estimate,()=> 'x').prs.length,0);
 assert.throws(()=>S.remove(state,'missing',estimate,()=> 'x'));
+const Core=require('../src/core/loadnote-core'),Analytics=require('../src/training/analytics');
+for(const rpe of [undefined,8,10,0,11]) {
+ const dated=new Date().toISOString().slice(0,10);
+ const records=[workout('rpe',dated,[{name:'Bench',sets:[{weight:80,reps:5,rpe}]}])];
+ const value=P.series(records,'Bench',{},Core.estimated1RM)[0].value;
+ assert.equal(value,Analytics.exerciseTrend(records,'Bench').latestEstimated1RM);
+ assert.equal(value,rpe===8?98.7:93.3);
+ assert.equal(P.series(records,'Bench',{metric:'load'},Core.estimated1RM)[0].value,80);
+}
 console.log('Progress ranges, mode-aware comparisons and deletion PR reconciliation passed');

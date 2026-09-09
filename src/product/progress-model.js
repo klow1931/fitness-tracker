@@ -9,7 +9,7 @@
   const from=weeks?start.toISOString().slice(0,10):'',byDate=new Map();
   for(const entry of entries(filter(workouts,{from,to:now}),name))for(const s of entry.exercise.sets||[]){
    if(!(Number(s.reps)>0)||!Number.isFinite(Number(s.weight))||Number(s.weight)<0)continue;
-   const value=metric==='load'?Number(s.weight):estimate(Number(s.weight),Number(s.reps));if(!Number.isFinite(value))continue;
+   const value=metric==='load'?Number(s.weight):estimate(Number(s.weight),Number(s.reps),s.rpe);if(!Number.isFinite(value))continue;
    byDate.set(entry.date,Math.max(byDate.get(entry.date)??-Infinity,value));
   }
   return [...byDate].sort(([a],[b])=>a.localeCompare(b)).map(([date,value])=>({date,value}));
