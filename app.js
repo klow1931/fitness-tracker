@@ -417,7 +417,7 @@
       const fatigue = window.LoadnoteFatigue?.analyze?.(data.workouts || [], { plannedDaysPerWeek: data.athleteProfile?.daysPerWeek });
       const status = summary.status || {};
       const fatigueStatus = fatigue?.status || null;
-      const fatigueStatusMap = { 'strong': 'strong', 'normal': 'normal', 'elevated-fatigue': 'elevated-fatigue', 'high-fatigue': 'performance-watch' };
+      const fatigueStatusMap = { 'insufficient-data': 'insufficient-data', 'strong': 'strong', 'normal': 'normal', 'elevated-fatigue': 'elevated-fatigue', 'high-fatigue': 'performance-watch' };
       if (fatigueStatus && fatigueStatusMap[fatigueStatus]) status.status = fatigueStatusMap[fatigueStatus];
       const statusMap = {
         'normal': ['Normal', 'Training load looks manageable based on recent logged sessions.'],
@@ -430,7 +430,7 @@
       if (statusHintEl) statusHintEl.textContent = fatigue?.recommendation || statusCopy[1];
       const fatigueScoreEl = document.getElementById('fatigue-score-value');
       const fatigueDetailsEl = document.getElementById('fatigue-engine-details');
-      if (fatigueScoreEl && fatigue) fatigueScoreEl.textContent = `${fatigue.score}/100`;
+      if (fatigueScoreEl && fatigue) fatigueScoreEl.textContent = fatigue.score == null ? 'Not enough data' : `${fatigue.score}/100`;
       if (fatigueDetailsEl && fatigue) {
         const flagText = fatigue.flags.length ? fatigue.flags.slice(0, 3).map(f => `<span class=\"inline-block mr-2 mb-1\">• ${escapeHtml(f.message)}</span>`).join('') : '<span>No major training-stress flags detected from the available log.</span>';
         const ratio = fatigue.load.ratio == null ? '—' : `${fatigue.load.ratio}×`;
@@ -441,10 +441,10 @@
       const top = (summary.exerciseTrends || []).filter(Boolean).slice(0, 6);
       if (liftsEl) {
         liftsEl.innerHTML = top.length ? top.map(t => {
-          const pct = t.change?.percent;
+          const pct = t.sessions >= 2 ? t.change?.percent : null;
           const arrow = pct == null ? '→' : pct > 1 ? '↑' : pct < -1 ? '↓' : '→';
           const cls = pct == null ? 'text-slate-500' : pct > 1 ? 'text-emerald-600' : pct < -1 ? 'text-rose-600' : 'text-slate-600';
-          const plateau = t.change?.percent != null && t.change.percent <= 1 ? ' · possible plateau' : '';
+          const plateau = analytics.plateauSignal(data.workouts || [], t.exercise).status === 'possible-plateau' ? ' · possible plateau' : '';
           return `<div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0"><div class="min-w-0"><p class="font-medium truncate">${escapeHtml(t.exercise)}</p><p class="text-xs text-slate-500">${t.sessions} session${t.sessions === 1 ? '' : 's'} · e1RM ${toDisplay(t.latestEstimated1RM)} ${unitLabel()}${plateau}</p></div><span class="font-semibold ${cls}">${arrow} ${pct == null ? '—' : Math.abs(pct) + '%'}</span></div>`;
         }).join('') : '<p class="text-sm text-slate-500">Log at least a few strength sessions to see lift trends.</p>';
       }

@@ -59,12 +59,25 @@
   }
 
   function analyze(workouts, options) {
-    const ws = workouts || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const ws = (workouts || []).filter(w => /^\d{4}-\d{2}-\d{2}$/.test(w.date) && w.date <= today && Core.calcVolume(w) > 0);
     const load = loadRatio(ws);
     const rpe = rpeSignal(ws);
     const performance = performanceSignal(ws);
     const adherenceData = adherence(ws, options?.plannedDaysPerWeek);
     const flags = [];
+    // A full observation window and multiple training days are required before
+    // interpreting missing days as low load/adherence. This is a product guard,
+    // not a physiological fatigue diagnosis.
+    const first = ws.map(w => w.date).sort()[0];
+    const historyDays = first ? Math.floor((Date.parse(today) - Date.parse(first)) / 86400000) + 1 : 0;
+    const recentDays = new Set(recent(ws, 28).map(w => w.date)).size;
+    if (historyDays < 28 || recentDays < 3) {
+      return { score: null, status: 'insufficient-data', load: { ...load, ratio: null }, rpe, performance,
+        adherence: { ...adherenceData, percent: null }, flags,
+        recommendation: 'Building your baseline: training-status estimates need 28 days of history and at least 3 training days in the last 28 days.',
+        weekly: weeklyVolume(ws, 4), generatedAt: new Date().toISOString() };
+    }
 
     if (load.ratio != null && load.ratio >= 1.35) flags.push({ type: 'load-spike', severity: load.ratio >= 1.55 ? 'high' : 'medium', message: `7-day volume is ${load.ratio}× the recent 28-day weekly average.` });
     if (rpe.averageRPE != null && rpe.averageRPE >= 9.2) flags.push({ type: 'high-rpe', severity: 'high', message: `Average logged RPE over 14 days is ${rpe.averageRPE}.` });
