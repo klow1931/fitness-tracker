@@ -199,6 +199,7 @@
       const weight = toStorage(weightRaw);
       const est = estimated1RM(weight, reps);
       const existing = data.prs.find(p => p.exercise.toLowerCase() === exercise.toLowerCase());
+      const newBest = !existing || est > estimated1RM(existing.weight, existing.reps);
       if (existing) {
         existing.weight = weight;
         existing.reps = reps;
@@ -221,7 +222,7 @@
       document.getElementById('pr-weight').value = '';
       document.getElementById('pr-reps').value = '1';
       renderPRs();
-      showToast('PR saved', 'success');
+      showToast(newBest ? 'PR saved · New personal best!' : 'PR updated', newBest ? 'milestone' : 'success');
     }
 
     function deletePR(id) {
@@ -287,6 +288,7 @@
 
     let bwChart = null;
     function renderDashboard() {
+      renderHomeActivity();
       const now = new Date();
       const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
       const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
@@ -381,15 +383,15 @@
         const load = ex.weight != null ? `${escapeHtml(String(toDisplay(ex.weight)))} ${unitLabel()}` : 'Auto';
         return `<div class="v1-session-row"><span>${escapeHtml(ex.name)}</span><b>${load} · ${ex.sets} × ${ex.reps}${ex.targetRPE ? ` · RPE ${ex.targetRPE}` : ''}</b></div>`;
       }).join('');
-      const startButton = session ? `<button class="btn-primary text-sm" onclick="startNextAdaptiveWorkout()">Start today's workout</button>` : `<button class="btn-primary text-sm" onclick="showTab('coach'); showSubTab('coach','co-programs')">Build a program</button>`;
+      const startButton = session ? `<button class="btn-primary text-sm" onclick="startNextAdaptiveWorkout()">Start today's workout</button>` : `<button class="btn-primary text-sm" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">Open workout logger</button><button class="btn-secondary text-sm" onclick="showTab('coach'); showSubTab('coach','co-programs')">Build a program</button>`;
       el.innerHTML = `
         <div class="v1-command-grid">
           <div>
-            <span class="eyebrow">Your training command center</span>
-            <h2 class="v1-command-title">${active ? escapeHtml(session?.dayName || 'Next session') : 'Set up your training plan'}</h2>
-            <p class="text-sm text-slate-600 mt-1">${active ? `Week ${session?.week || 1} · Block ${session?.blockIndex || 1} · ${escapeHtml(profile?.goal || 'strength')}` : 'Loadnote becomes more useful as you log workouts with RPE.'}</p>
-            ${exerciseRows ? `<div class="v1-session-list mt-4">${exerciseRows}</div>` : `<div class="v1-empty-note mt-4">Your next workout will appear here once you activate a program.</div>`}
-            <div class="mt-4">${startButton}</div>
+            <span class="eyebrow">TRAIN. LOG. BUILD.</span>
+            <h2 class="v1-command-title">${active ? escapeHtml(session?.dayName || 'Next session') : 'Your next session starts here.'}</h2>
+            <p class="text-sm text-slate-600 mt-1">${active ? `Week ${session?.week || 1} · Block ${session?.blockIndex || 1} · ${escapeHtml(profile?.goal || 'strength')}` : 'Pick up your log, find your rhythm, and make each set count.'}</p>
+            ${exerciseRows ? `<div class="v1-session-list mt-4">${exerciseRows}</div>` : `<p class="v1-empty-note mt-4">Train your way, or build a program for a guided session.</p>`}
+            <div class="home-workout-actions">${startButton}</div>
           </div>
           <div class="v1-status-panel">
             <div class="v1-status-item"><span>Training status</span><b>${statusLabel}</b></div>
