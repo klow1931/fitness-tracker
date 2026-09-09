@@ -1258,61 +1258,14 @@
     }
 
     function renderProgressChart() {
-      const exercise = document.getElementById('progress-exercise')?.value;
-      const canvas = document.getElementById('progressChart');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (progressChart) progressChart.destroy();
-
-      if (!exercise) {
-        progressChart = new Chart(ctx, {
-          type: 'line',
-          data: { labels: [], datasets: [] },
-          options: {
-            plugins: chartPluginOptions(false),
-            scales: chartScaleOptions(unitLabel(), true)
-          }
-        });
-        return;
-      }
-
-      // Collect best estimated 1RM per day for this exercise
-      const byDate = {};
-      data.workouts.forEach(w => {
-        w.exercises.filter(e => e.name === exercise && e.type !== 'cardio').forEach(ex => {
-          if (!ex.sets || !ex.sets.length) return;
-          const repSets = (ex.sets || []).filter(s => s.reps > 0);
-          if (!repSets.length) return;
-          const best = Math.max(...repSets.map(s => estimated1RM(s.weight, s.reps)));
-          if (!byDate[w.date] || best > byDate[w.date]) byDate[w.date] = best;
-        });
-      });
-
-      const dates = Object.keys(byDate).sort();
-      const values = dates.map(d => toDisplay(byDate[d]));
-      const dark = !!data.dark;
-
-      progressChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: dates.map(d => formatDate(d)),
-          datasets: [{
-            label: 'Est. 1RM (' + unitLabel() + ')',
-            data: values,
-            borderColor: dark ? '#a5b4fc' : '#4f46e5',
-            backgroundColor: dark ? 'rgba(165, 180, 252, 0.15)' : 'rgba(79, 70, 229, 0.1)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 4,
-            pointBackgroundColor: dark ? '#c7d2fe' : '#4f46e5'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: chartPluginOptions(false),
-          scales: chartScaleOptions(unitLabel(), false)
-        }
-      });
+      const exercise=document.getElementById('progress-exercise')?.value,canvas=document.getElementById('progressChart');
+      if(!canvas)return;
+      if(progressChart)progressChart.destroy();
+      const weeks=Number(document.getElementById('progress-range')?.value||0),metric=document.getElementById('progress-metric')?.value||'estimate';
+      const series=LoadnoteProgress.series(data.workouts,exercise,{weeks,metric,end:today()},estimated1RM);
+      const label=metric==='load'?'Heaviest actual set':'Estimated 1RM';
+      document.getElementById('progress-description').textContent=series.length?label+' · '+series.length+' logged days. Actual load is not necessarily a tested 1RM; estimates are calculated.':'No rep-based strength data in this range. Timed holds and cardio are available in exercise details.';
+      progressChart=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:series.map(p=>formatDate(p.date)),datasets:[{label:label+' ('+unitLabel()+')',data:series.map(p=>toDisplay(p.value)),borderColor:data.dark?'#a5b4fc':'#4f46e5',tension:0,pointRadius:4}]},options:{responsive:true,animation:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,plugins:chartPluginOptions(false),scales:chartScaleOptions(unitLabel(),true)}});
     }
 
     function renderNutritionChart() {

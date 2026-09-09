@@ -1,4 +1,22 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+.progress-controls { display:flex; flex-wrap:wrap; align-items:end; gap:.8rem; margin:1rem 0; }
+.progress-controls label { display:flex; flex-direction:column; gap:.35rem; flex:1 1 140px; min-width:0; }
+.progress-controls .input { width:100%; box-sizing:border-box; min-width:0; }
+.progress-controls [hidden] { display:none; }
+.history-session { margin-block:1rem; padding:1rem; }
+.history-session-heading,.history-session-actions,.history-pagination { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.8rem; }
+.history-session-heading span { font-size:.8rem; color:var(--muted); }
+.history-session summary { cursor:pointer; min-height:44px; padding-block:.6rem; }
+.history-exercise { border-top:1px solid var(--line); padding:.8rem 0; overflow-wrap:anywhere; }
+.history-exercise p { margin:.6rem 0; }
+.history-pagination button,.history-session-actions button { min-height:44px; }
+#workout-history { scroll-margin-block:6rem; }
+.progress-dialog { width:min(860px,calc(100% - 24px)); }
+.progress-dialog h3 { font-weight:700; margin-top:1rem; }
+.progress-dialog p { overflow-wrap:anywhere; }
+.session-comparison-table { width:100%; border-collapse:collapse; table-layout:fixed; margin:1rem 0; font-size:.85rem; }
+.session-comparison-table th,.session-comparison-table td { text-align:left; vertical-align:top; padding:.6rem; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+#detail-chart-wrap[hidden] { display:none; }
 .training-session-bar { display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between; align-items:center; padding:1rem; margin:1rem 0; border:1px solid var(--line); border-radius:1rem; background:var(--surface); }
 .training-session-bar > div { min-width:0; flex:1 1 220px; }
 .training-session-bar label { font-weight:700; }
