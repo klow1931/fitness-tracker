@@ -726,10 +726,10 @@
         let tip = '';
         if (info) tip = info.list.length + ' session(s)';
         else if (restSet.has(iso)) tip = 'Rest';
-        html += `<div class="${cls}" onclick="selectCalDay('${iso}')">
-          <div class="cal-num">${d.getDate()}</div>
-          <div class="cal-dot">${tip}</div>
-        </div>`;
+        html += `<button type="button" class="${cls}" aria-label="${iso}${tip ? ', '+tip : ''}" aria-pressed="${iso === calSelectedDate}" onclick="selectCalDay('${iso}')">
+          <span class="cal-num">${d.getDate()}</span>
+          <span class="cal-dot">${tip}</span>
+        </button>`;
       }
       grid.innerHTML = html;
       if (calSelectedDate) showCalDayDetail(calSelectedDate);
@@ -1423,7 +1423,7 @@
 
     function deletePhoto(id) {
       if (!confirm('Delete this progress photo?')) return;
-      data.progressPhotos = (data.progressPhotos || []).filter(p => p.id !== id);
+      data.progressPhotos = (data.progressPhotos || []).filter(p => String(p.id) !== String(id));
       saveData(data);
       renderPhotos();
       showToast('Photo deleted', 'info');
@@ -1446,18 +1446,18 @@
       document.getElementById('photo-compare')?.classList.remove('hidden');
       grid.innerHTML = list.map(p => `
         <div class="photo-card">
-          <img src="${p.dataUrl}" alt="${p.tag} ${p.date}" onclick="viewPhotoFull('${p.id}')" />
+          <img src="${escapeHtml(p.dataUrl)}" alt="${escapeHtml(p.tag)} ${escapeHtml(p.date)}" data-photo-id="${escapeHtml(p.id)}" onclick="viewPhotoFull(this.dataset.photoId)" />
           <div class="photo-meta flex justify-between items-start gap-1">
             <div>
-              <div class="font-medium text-slate-700">${formatDate(p.date)} · ${p.tag}</div>
-              ${p.note ? `<div>${p.note}</div>` : ''}
+              <div class="font-medium text-slate-700">${formatDate(p.date)} · ${escapeHtml(p.tag)}</div>
+              ${p.note ? `<div>${escapeHtml(p.note)}</div>` : ''}
             </div>
-            <button onclick="deletePhoto(${p.id})" class="btn-danger text-xs">✕</button>
+            <button data-photo-id="${escapeHtml(p.id)}" onclick="deletePhoto(this.dataset.photoId)" aria-label="Delete photo" class="btn-danger text-xs">✕</button>
           </div>
         </div>
       `).join('');
       const opts = list.map(p =>
-        `<option value="${p.id}">${p.date} · ${p.tag}${p.note ? ' · ' + p.note : ''}</option>`
+        `<option value="${escapeHtml(p.id)}">${escapeHtml(p.date)} · ${escapeHtml(p.tag)}${p.note ? ' · ' + escapeHtml(p.note) : ''}</option>`
       ).join('');
       const a = document.getElementById('photo-compare-a');
       const b = document.getElementById('photo-compare-b');
@@ -1481,8 +1481,8 @@
       const pB = list.find(p => String(p.id) === String(idB));
       const vA = document.getElementById('photo-compare-a-view');
       const vB = document.getElementById('photo-compare-b-view');
-      if (vA) vA.innerHTML = pA ? `<img src="${pA.dataUrl}" alt="compare A" />` : '';
-      if (vB) vB.innerHTML = pB ? `<img src="${pB.dataUrl}" alt="compare B" />` : '';
+      if (vA) vA.innerHTML = pA ? `<img src="${escapeHtml(pA.dataUrl)}" alt="compare A" />` : '';
+      if (vB) vB.innerHTML = pB ? `<img src="${escapeHtml(pB.dataUrl)}" alt="compare B" />` : '';
     }
 
     function viewPhotoFull(id) {
@@ -1490,7 +1490,7 @@
       if (!p) return;
       const w = window.open('');
       if (w) {
-        w.document.write(`<title>${p.date} ${p.tag}</title><body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh"><img src="${p.dataUrl}" style="max-width:100%;max-height:100vh" /></body>`);
+        w.document.write(`<title>${escapeHtml(p.date)} ${escapeHtml(p.tag)}</title><body style="margin:0;background:#111;display:flex;justify-content:center;align-items:center;min-height:100vh"><img src="${escapeHtml(p.dataUrl)}" style="max-width:100%;max-height:100vh" /></body>`);
       }
     }
 

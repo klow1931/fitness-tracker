@@ -55,3 +55,9 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - New overview tiles, grouped entry fields, focused trend panel and expandable history cards that include notes and neck measurements.
 - Responsive layout, dark styling, clearer labels and edit state. Existing dates and stored centimeter values preserved.
 - Convert in-progress measurement values when switching cm/in instead of relabeling them.
+# v1.5.2 — More pages
+
+- Calendar, PRs, Photos and Tools share the Measurements visual language with clear headers and responsive cards.
+- Keyboard-accessible calendar days, stacked record cards, separate photo entry/comparison/journal, grouped calculators and backups.
+- Advanced RPE, credits and demo data are expandable. Photo notes and identifiers are escaped in rendered markup.
+- Existing calculators, records, backups and photo storage retained.
