@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.6.0';
+const CACHE = 'loadnote-v1.7.0';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './src/product/workout-form.js',
   './src/product/workout-templates.js',
   './src/product/rest-timer.js',
+  './src/product/training-flow.js',
   './src/product/data-transfer.js',
   './src/product/workout-events.js',
 

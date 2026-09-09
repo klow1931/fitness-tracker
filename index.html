@@ -287,6 +287,7 @@
         <button type="button" class="section-tab" data-sub="wo-templates" data-workout-action="tab-templates">Templates</button>
       </div>
       <p class="text-xs text-slate-500 -mt-3">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
+      <div id="workout-recap" class="card workout-recap" aria-live="polite" hidden></div>
 
       <div class="sub-panel" data-panel="workouts" data-sub="wo-log">
       <div class="card" id="workout-log-card">
@@ -319,6 +320,10 @@
         </div>
 
         <p id="logger-draft-status" role="status" class="text-sm text-slate-500 mb-2">Draft saves on this device as you train.</p><p id="logger-summary" class="text-sm mb-3"></p><p class="text-xs text-slate-500 mb-3">Check sets off as you go. Saving includes all entered sets, including unchecked sets. Blank rows are ignored.</p>
+        <div class="training-session-bar">
+          <div><label><input type="checkbox" id="training-focus" data-workout-change="training-focus" /> Focus mode</label><p id="training-progress-label"></p><progress id="training-progress" max="1" value="0" aria-label="Entered strength sets completed"></progress></div>
+          <button type="button" data-workout-action="review" class="btn-primary">Finish workout</button>
+        </div>
         <div id="exercise-rows" class="space-y-3 mb-4"></div>
         <div class="flex flex-wrap gap-2 mb-4">
           <button data-workout-action="add-strength" class="btn-secondary text-sm">+ Add Strength</button>
@@ -329,13 +334,16 @@
           <button data-workout-action="review" class="btn-primary">Review workout</button>
           <button data-workout-action="clear" class="btn-secondary">Clear</button>
           <button data-workout-action="save-template" class="btn-secondary">Save as Template</button>
-          <div class="flex items-center gap-2 ml-auto border border-slate-200 rounded-lg px-3 py-1.5">
+          <div class="training-rest-controls">
             <span class="text-sm text-slate-500">Rest</span>
             <button data-workout-action="rest-60" class="text-xs btn-secondary py-1 px-2">1m</button>
             <button data-workout-action="rest-90" class="text-xs btn-secondary py-1 px-2">1.5m</button>
             <button data-workout-action="rest-180" class="text-xs btn-secondary py-1 px-2">3m</button>
-            <span id="rest-timer" class="text-sm font-mono font-medium w-12 text-center">—</span>
+            <span id="rest-ring" role="progressbar" aria-label="Rest seconds remaining" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0"><span id="rest-timer">—</span></span>
+            <button type="button" id="rest-pause" data-workout-action="pause-rest" class="btn-secondary" disabled>Pause</button>
+            <button type="button" id="rest-add" data-workout-action="add-rest" class="btn-secondary" disabled>+30 seconds</button>
             <button data-workout-action="stop-rest" class="text-xs text-red-500">Stop</button>
+            <span id="rest-storage-hint" role="status"></span>
           </div>
         </div>
       </div>
@@ -1240,13 +1248,19 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.6.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.7.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
   </div>
 
   <!-- Mobile bottom navigation -->
+  <dialog id="exercise-swap" class="session-review" aria-labelledby="swap-title">
+    <h2 id="swap-title">Swap exercise</h2><p>Replacing: <strong id="swap-current"></strong></p>
+    <p>All entered sets, checkmarks and notes will be assigned to the replacement. If you already performed those sets, cancel and add a separate exercise instead.</p>
+    <label for="swap-name">Replacement exercise</label><input id="swap-name" class="input" list="exercise-list" required />
+    <div class="session-review-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('exercise-swap').close()">Cancel</button><button type="button" class="btn-primary" onclick="confirmExerciseSwap()">Swap and keep sets</button></div>
+  </dialog>
   <nav id="mobile-nav" class="mobile-nav" aria-label="Main">
     <button type="button" class="mobile-nav-btn nav-active" data-tab="dashboard" onclick="showTab('dashboard')">
       <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7v10H3Z M9 20v-7h6v7"/></svg></span><span>Home</span>
@@ -1799,6 +1813,7 @@
   <script src="src/product/workout-form.js" defer></script>
   <script src="src/product/workout-templates.js" defer></script>
   <script src="src/product/rest-timer.js" defer></script>
+  <script src="src/product/training-flow.js" defer></script>
   <script src="src/product/data-transfer.js" defer></script>
   <script src="src/product/workout-events.js" defer></script>
   <script src="src/product/draft-model.js" defer></script>

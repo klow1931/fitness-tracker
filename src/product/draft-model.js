@@ -24,7 +24,7 @@
           }
         }
         if (!r || !['cardio','strength'].includes(r.type)) throw Error('Invalid row');
-        if (r.type === 'cardio') return {type:'cardio',name:string(r.name),duration:string(r.duration),distance:string(r.distance),distanceUnit:['km','mi','m'].includes(r.distanceUnit)?r.distanceUnit:'km',avgHr:string(r.avgHr)};
+        if (r.type === 'cardio') return {type:'cardio',cardioDone:!!r.cardioDone,name:string(r.name),duration:string(r.duration),distance:string(r.distance),distanceUnit:['km','mi','m'].includes(r.distanceUnit)?r.distanceUnit:'km',avgHr:string(r.avgHr)};
         if (!Array.isArray(r.sets) || r.sets.length > 200) throw Error('Invalid sets');
         return {type:'strength', name:string(r.name),note:string(r.note),trackBy:r.trackBy === 'duration'?'duration':'reps',sets:r.sets.map(s=>({reps:string(s.reps),duration:string(s.duration),weight:string(s.weight),rpe:string(s.rpe),done:!!s.done,showCompletion:!!s.showCompletion}))};
       });

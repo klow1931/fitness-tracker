@@ -14,7 +14,7 @@ function captureLoggerDraft() {
   return { version: 2, date: document.getElementById('wo-date').value, notes: document.getElementById('wo-notes').value,
     unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, updatedAt: Date.now(),
     rows: [...document.querySelectorAll('#exercise-rows > div')].map(row => ({
-      type: row.dataset.type, trackBy: row.dataset.trackBy,
+      type: row.dataset.type, trackBy: row.dataset.trackBy,cardioDone:!!row.querySelector('.cardio-done')?.checked,
       name:value(row,'.ex-name'),note:value(row,'.ex-note'),duration:value(row,'.cardio-duration'),distance:value(row,'.cardio-distance'),distanceUnit:value(row,'.cardio-distance-unit'),avgHr:value(row,'.cardio-hr'),
       sets:[...row.querySelectorAll('.sets-container > div')].map(s=>({reps:value(s,'.set-reps'),duration:value(s,'.set-duration'),weight:value(s,'.set-weight'),rpe:value(s,'.set-rpe'),done:!!s.querySelector('.set-done-check')?.checked,showCompletion:!!s.querySelector('.set-done-check')}))
     })) };
@@ -40,9 +40,11 @@ function updateLoggerSummary() {
     });
   });
   document.getElementById('logger-summary').textContent = `${document.querySelectorAll('#exercise-rows > div').length} exercises · ${done}/${total} sets checked`;
+  if(typeof updateTrainingFlow==='function')updateTrainingFlow();
 }
 function validateWorkoutForm() {
   for (const row of document.querySelectorAll('#exercise-rows > div')) {
+    row.classList.remove('training-collapsed');
     const name = row.querySelector('.ex-name');
     const entered = [...row.querySelectorAll('input[type=number]')].some(i => i.value !== '' || i.validity.badInput);
     if (entered && !name.value.trim()) { name.focus(); showToast('Name every exercise with entered values.', 'error'); return false; }
@@ -76,6 +78,7 @@ function initWorkoutLogger() {
       const row = container.lastElementChild;
       const put = (target,selector,value) => { const input=target.querySelector(selector); if(input) input.value=value ?? ''; };
       put(row,'.ex-name',saved.name); put(row,'.ex-note',saved.note);
+      if(row.querySelector('.cardio-done'))row.querySelector('.cardio-done').checked=!!saved.cardioDone;
       for (const key of ['duration','distance','avgHr','distanceUnit']) put(row, {duration:'.cardio-duration',distance:'.cardio-distance',avgHr:'.cardio-hr',distanceUnit:'.cardio-distance-unit'}[key],saved[key]);
       [...row.querySelectorAll('.sets-container > div')].forEach((set,i) => {
         const values=saved.sets[i];
@@ -100,6 +103,7 @@ function initWorkoutLogger() {
   updateLoggerSummary();
   refreshSessionMode();
   updateSessionComparisons();
+  initRestTimer();
   document.getElementById('workout-review').addEventListener('cancel',event=>{if(window.loggerSaving)event.preventDefault();else reviewedSession=null;});
 }
 if (typeof module !== 'undefined') module.exports = { validLoggerNumber };
