@@ -1,0 +1,10 @@
+const assert=require('assert'),vm=require('vm'),fs=require('fs');
+let now=1000;const stored=new Map(),labels=new Map();
+const context={Date:{now:()=>now},Number,Math,JSON,document:{getElementById:id=>{if(!labels.has(id))labels.set(id,{style:{setProperty(){}},setAttribute(){}});return labels.get(id);},addEventListener(){}},localStorage:{getItem:k=>stored.get(k),setItem:(k,v)=>stored.set(k,v),removeItem:k=>stored.delete(k)},setInterval:()=>1,clearInterval(){},navigator:{},showToast:()=>context.notifications++};context.notifications=0;
+vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../src/product/rest-timer'),'utf8'),context);
+context.startRest(90);now+=10000;context.pauseRest();assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).remaining,80000);
+now+=120000;context.addRestTime();assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).remaining,110000);
+context.pauseRest();assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).deadline,now+110000);
+now+=110001;context.tickRest();context.tickRest();assert.equal(context.notifications,1);assert.equal(stored.size,0);
+context.startRest(60);context.stopRest();assert.equal(stored.size,0);
+console.log('Rest pause, resume, extension, expiry and cancellation tests passed');

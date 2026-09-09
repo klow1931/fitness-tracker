@@ -72,12 +72,15 @@ async function commitReviewedWorkout(){
   try{clearTimeout(saveTimer);await persistNow(next);}
   catch(error){lockSessionSaving(false);showToast('Could not save. Your draft and saved workout are unchanged.','error');return;}
   const editing=!!reviewedSession.edit;
+  const savedWorkout=reviewedSession.workout,previousWorkouts=data.workouts;
+  const recapPRs=editing?[]:next.prs.filter(p=>p.sourceWorkoutId===savedWorkout.id&&!data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase()&&estimated1RM(old.weight,old.reps)>=p.estimated1RM));
   const newBest=!editing && next.prs.some(p=>p.sourceWorkoutId===reviewedSession.workout.id && !data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase() && estimated1RM(old.weight,old.reps)>=p.estimated1RM));
   data=next;
   lockSessionSaving(false);closeWorkoutReview();clearWorkoutForm(true);saveLoggerDraft();
   renderWorkoutHistory();updateBackupBanner();
   if(editing)showSubTab('workouts','wo-history');
   showToast(editing?'Workout updated':newBest?'Workout saved · New personal best!':'Workout saved · Session complete',newBest?'milestone':'success');
+  if(typeof showWorkoutRecap==='function')showWorkoutRecap(savedWorkout,previousWorkouts,recapPRs,editing);
 }
 function updateSessionComparisons(){
   const date=document.getElementById('wo-date')?.value;if(!date)return;

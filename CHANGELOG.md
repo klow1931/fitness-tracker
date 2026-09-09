@@ -68,3 +68,10 @@ Automated browser execution and visual/iOS checks remain pending in the authorin
 - Completed sets retain readable values; saved workouts and new PRs get distinct feedback. Reduced-motion preferences are honored.
 - Home shortcuts preserve drafts. Weekly activity excludes future sessions and uses local calendar dates.
 - No data migration. Existing training, nutrition and backup flows retained.
+# v1.7.0 — Training flow
+
+- Optional Focus mode highlights the next unfinished exercise and collapses completed exercises, with controls to reopen them.
+- Entered-set progress, cardio completion, and a Finish workout action that retains the existing review step.
+- Deadline-based rest ring with pause/resume, +30 seconds, and refresh recovery.
+- Post-save recap with session totals, personal bests, and prior matching exercise sets.
+- Move exercises up/down and explicitly swap names while retaining entered sets, notes and checkmarks. Draft order and cardio completion survive refresh.

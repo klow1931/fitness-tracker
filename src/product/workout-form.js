@@ -43,6 +43,7 @@
               <input type="text" class="input ex-name" list="exercise-list" value="${escapeHtml(ex.name || '')}" placeholder="e.g. Running, Cycling" />
             </div>
             <span class="text-xs text-indigo-600 font-medium mb-2">Cardio</span>
+            <label><input type="checkbox" class="cardio-done" /> Cardio complete</label>
             <button data-workout-action="remove-exercise" class="btn-danger">Remove</button>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -288,4 +289,3 @@
     }
 
     function saveWorkout() { return reviewWorkout(); }
-

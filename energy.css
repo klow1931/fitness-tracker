@@ -1,4 +1,26 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+.training-session-bar { display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between; align-items:center; padding:1rem; margin:1rem 0; border:1px solid var(--line); border-radius:1rem; background:var(--surface); }
+.training-session-bar > div { min-width:0; flex:1 1 220px; }
+.training-session-bar label { font-weight:700; }
+#training-progress-label { font-size:.8rem; color:var(--muted); margin:.5rem 0; }
+#training-progress { width:100%; accent-color:#0d9488; height:.6rem; display:block; }
+.exercise-flow-bar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:1rem; }
+.exercise-flow-bar strong { overflow-wrap:anywhere; min-width:0; }
+.exercise-flow-buttons { display:flex; gap:.4rem; flex-wrap:wrap; }
+.exercise-flow-buttons button { min-height:44px; }
+.exercise-flow-buttons [hidden] { display:none; }
+#exercise-rows > .training-current { box-shadow:inset 4px 0 0 #0d9488; }
+#exercise-rows > .training-collapsed > :not(.exercise-flow-bar) { display:none!important; }
+.training-collapsed .exercise-flow-bar { margin-bottom:0; }
+.training-rest-controls { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; width:100%; padding:1rem; border:1px solid var(--line); border-radius:1rem; }
+#rest-ring { --rest-progress:0; display:grid; place-items:center; width:88px; height:88px; border-radius:50%; background:conic-gradient(#0d9488 calc(var(--rest-progress)*1turn),var(--line) 0); }
+#rest-timer { display:grid; place-items:center; text-align:center; width:72px; height:72px; padding:4px; background:var(--surface); border-radius:50%; font-size:.85rem; font-variant-numeric:tabular-nums; }
+#rest-storage-hint { width:100%; font-size:.75rem; }
+.workout-recap { border-top:4px solid #0d9488; overflow-wrap:anywhere; }
+.workout-recap[hidden] { display:none; }
+.workout-recap h2 { font-size:1.4rem; font-weight:750; }
+.workout-recap h3 { font-weight:700; margin-top:1rem; }
+.workout-recap p { margin:.6rem 0; }
 :root { --brand:#4f46e5; --brand-deep:#312e81; --accent:#5eead4; --ink:#182344; --muted:#53627c; --surface:#fff; --line:#dce3f0; }
 body { background:#f3f5fc; color:var(--ink); }
 body.dark { --ink:#edf2ff; --muted:#b2bfd5; --surface:#17213a; --line:#344360; background:#0c1326; }

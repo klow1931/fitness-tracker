@@ -6,6 +6,8 @@ function initWorkoutEvents(){
     'add-strength':()=>addExerciseRow(),'add-cardio':()=>addExerciseRow({name:'',type:'cardio',duration:'',distance:'',distanceUnit:'km',avgHr:''}),
     review:()=>saveWorkout(),clear:()=>clearWorkoutForm(),'save-template':()=>saveCurrentAsTemplate(),
     'rest-60':()=>startRest(60),'rest-90':()=>startRest(90),'rest-180':()=>startRest(180),'stop-rest':()=>stopRest(),
+    'pause-rest':()=>pauseRest(),'add-rest':()=>addRestTime(),
+    'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),
     'export-json':()=>exportData(),'export-csv':()=>exportCSV(),import:()=>importData(),
     'remove-exercise':el=>el.closest('[data-idx]')?.remove(),'remove-set':el=>el.parentElement.remove(),
     'track-reps':el=>setExerciseTrackBy(el,'reps'),'track-duration':el=>setExerciseTrackBy(el,'duration'),
@@ -14,7 +16,7 @@ function initWorkoutEvents(){
     'load-template':el=>loadTemplate(el.dataset.templateId),'delete-template':el=>deleteTemplate(el.dataset.templateId),'focus-date':()=>document.getElementById('wo-date')?.focus(),
     'review-back':()=>closeWorkoutReview(),'review-save':()=>commitReviewedWorkout()
   };
-  const change={checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el)};
+  const change={'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el)};
   const input={'history-search':()=>debouncedHistorySearch()};
   for(const root of [document.getElementById('panel-workouts'),document.getElementById('workout-review')]){
     if(!root || root.dataset.eventsBound)continue;
