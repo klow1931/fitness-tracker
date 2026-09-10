@@ -1,3 +1,72 @@
+# v1.8.1 — Analytics, interface and release housekeeping
+
+- Delay fatigue scoring until sufficient history exists; use the minimum-session plateau guard and avoid one-session percentage trends.
+- Include optional RPE in progress estimates to match the training dashboard.
+- Keep review/rest controls in normal page flow and remove the duplicate floating Gym-mode bar.
+- Give coach suggested questions explicit light/night colors, hover contrast and touch targets.
+- Align package, app footer, release helper and cache versions; refresh current documentation and add release-consistency assertions.
+- Preserve workout data and schema version 10.
+
+# v1.8.0 — Progress and history
+
+- Paginated, naturally sized history cards with expandable exercises, date filters and stable newest-first ordering.
+- Exercise details combine recent sets, best load/estimated 1RM and 4-week, 12-week or all-time trends; tracking modes stay separate.
+- Compare any two saved workouts by exercise name and tracking mode, with unmatched movements explicitly labeled.
+- Workout deletion durably commits recalculated derived PRs and preserves manual benchmarks. Failed saves leave history and records unchanged.
+- Existing workout edits retain their PR reconciliation. No historical schema migration.
+
+# v1.7.0 — Training flow
+
+- Optional Focus mode highlights the next unfinished exercise and collapses completed exercises, with controls to reopen them.
+- Entered-set progress, cardio completion, and a Finish workout action that retains the existing review step.
+- Deadline-based rest ring with pause/resume, +30 seconds, and refresh recovery.
+- Post-save recap with session totals, personal bests, and prior matching exercise sets.
+- Move exercises up/down and explicitly swap names while retaining entered sets, notes and checkmarks. Draft order and cardio completion survive refresh.
+
+# v1.6.0 — A stronger rhythm
+
+- Home leads with the next workout and a Monday–Sunday activity strip with session and recovery states.
+- Shared indigo/teal styling, larger statistics, consistent mobile navigation icons and richer page headers.
+- Completed sets retain readable values; saved workouts and new PRs get distinct feedback. Reduced-motion preferences are honored.
+- Home shortcuts preserve drafts. Weekly activity excludes future sessions and uses local calendar dates.
+- No data migration. Existing training, nutrition and backup flows retained.
+
+# v1.5.2 — More pages
+
+- Calendar, PRs, Photos and Tools share the Measurements visual language with clear headers and responsive cards.
+- Keyboard-accessible calendar days, stacked record cards, separate photo entry/comparison/journal, grouped calculators and backups.
+- Advanced RPE, credits and demo data are expandable. Photo notes and identifiers are escaped in rendered markup.
+- Existing calculators, records, backups and photo storage retained.
+
+# v1.5.1 — Measurements layout
+
+- New overview tiles, grouped entry fields, focused trend panel and expandable history cards that include notes and neck measurements.
+- Responsive layout, dark styling, clearer labels and edit state. Existing dates and stored centimeter values preserved.
+- Convert in-progress measurement values when switching cm/in instead of relabeling them.
+
+# v1.5.0 — Navigation and daily flow
+
+- Remember subsection, scroll position and food mode during tab switches.
+- Render only selected views and refresh on saved-data changes.
+- Keep food totals visible while adding foods; emphasize Add food and group day maintenance actions.
+- Mobile action placement, 44px buttons, input sizing, destination focus and reduced-motion support.
+- Add navigation regression tests and a render-count benchmark. No saved-data migration.
+
+# v1.4.1 — Nutrition summaries and editing
+
+- Complete-day summaries with nutrient-specific coverage across dashboard, weekly report and coach.
+- Direct g/ml portions with explicit serving basis; mobile food and recent-entry dialogs replace prompts.
+- Correct names/nutrients in entries or library; review barcode refresh against package labels before replacing library values.
+- Preserve historical meals and unconfirmed legacy days. Scanner implementation unchanged.
+
+# v1.4.0 — Nutrition reliability
+
+- Save food additions, removals, portion edits and cleared days immediately with visible save status.
+- Preserve historical totals-only days; add recent-food reuse and optional user-set calorie/protein targets.
+- Isolate nutrition calculations and UI from app.js. Use one barcode nutrient basis, explicit gram conversions and unknown values for missing nutrients.
+- Validate entries and escape food text/IDs. Add nutrition model and desktop/mobile browser regressions.
+- Existing stored zero values cannot be distinguished from historically missing nutrients. Existing barcode foods should be checked against their labels or looked up again after removing the old library copy.
+
 # v1.3.1 — First code-consolidation pass
 
 - Move workout forms, templates/repeats, history orchestration, units, rest timing, state loading/saving, and import/export into focused files.
@@ -7,7 +76,7 @@
 - Archive retired technique-review code without deleting its saved `formReviews` records.
 - Add production-script-order, storage, template and delegated-control regressions. Interface, schema version 10, and storage keys stay unchanged.
 
-## v1.3.0 — Compare, review, and edit workouts
+# v1.3.0 — Compare, review, and edit workouts
 
 - Show previous-session values beside current entries, matching exercise name and tracking mode; exclude the edited workout and sessions after the selected date.
 - Add an accessible review dialog before creating or updating a workout. Back preserves the draft; successful saves clear it only after persistence succeeds.
@@ -16,7 +85,7 @@
 - Add pure session logic and regression coverage for editing, units, comparisons, provenance, review saves, and browser flows.
 - Update version and service-worker cache to v1.3.0.
 
-## v1.2.1 — Reliability and project cleanup
+# v1.2.1 — Reliability and project cleanup
 
 - Handle string/UUID and legacy numeric IDs safely in workout-history, template, and PR actions.
 - Escape workout names, notes, template labels, and ID attributes at updated rendering boundaries.
@@ -30,55 +99,3 @@
 - Update app/package version and service-worker cache to v1.2.1; include new modules in the offline asset list.
 
 Automated browser execution and visual/iOS checks remain pending in the authoring environment. See `docs/testing.md` for exact coverage and remaining checks.
-# v1.4.0 — Nutrition reliability
-
-- Save food additions, removals, portion edits and cleared days immediately with visible save status.
-- Preserve historical totals-only days; add recent-food reuse and optional user-set calorie/protein targets.
-- Isolate nutrition calculations and UI from app.js. Use one barcode nutrient basis, explicit gram conversions and unknown values for missing nutrients.
-- Validate entries and escape food text/IDs. Add nutrition model and desktop/mobile browser regressions.
-- Existing stored zero values cannot be distinguished from historically missing nutrients. Existing barcode foods should be checked against their labels or looked up again after removing the old library copy.
-# v1.4.1 — Nutrition summaries and editing
-
-- Complete-day summaries with nutrient-specific coverage across dashboard, weekly report and coach.
-- Direct g/ml portions with explicit serving basis; mobile food and recent-entry dialogs replace prompts.
-- Correct names/nutrients in entries or library; review barcode refresh against package labels before replacing library values.
-- Preserve historical meals and unconfirmed legacy days. Scanner implementation unchanged.
-# v1.5.0 — Navigation and daily flow
-
-- Remember subsection, scroll position and food mode during tab switches.
-- Render only selected views and refresh on saved-data changes.
-- Keep food totals visible while adding foods; emphasize Add food and group day maintenance actions.
-- Mobile action placement, 44px buttons, input sizing, destination focus and reduced-motion support.
-- Add navigation regression tests and a render-count benchmark. No saved-data migration.
-# v1.5.1 — Measurements layout
-
-- New overview tiles, grouped entry fields, focused trend panel and expandable history cards that include notes and neck measurements.
-- Responsive layout, dark styling, clearer labels and edit state. Existing dates and stored centimeter values preserved.
-- Convert in-progress measurement values when switching cm/in instead of relabeling them.
-# v1.5.2 — More pages
-
-- Calendar, PRs, Photos and Tools share the Measurements visual language with clear headers and responsive cards.
-- Keyboard-accessible calendar days, stacked record cards, separate photo entry/comparison/journal, grouped calculators and backups.
-- Advanced RPE, credits and demo data are expandable. Photo notes and identifiers are escaped in rendered markup.
-- Existing calculators, records, backups and photo storage retained.
-# v1.6.0 — A stronger rhythm
-
-- Home leads with the next workout and a Monday–Sunday activity strip with session and recovery states.
-- Shared indigo/teal styling, larger statistics, consistent mobile navigation icons and richer page headers.
-- Completed sets retain readable values; saved workouts and new PRs get distinct feedback. Reduced-motion preferences are honored.
-- Home shortcuts preserve drafts. Weekly activity excludes future sessions and uses local calendar dates.
-- No data migration. Existing training, nutrition and backup flows retained.
-# v1.7.0 — Training flow
-
-- Optional Focus mode highlights the next unfinished exercise and collapses completed exercises, with controls to reopen them.
-- Entered-set progress, cardio completion, and a Finish workout action that retains the existing review step.
-- Deadline-based rest ring with pause/resume, +30 seconds, and refresh recovery.
-- Post-save recap with session totals, personal bests, and prior matching exercise sets.
-- Move exercises up/down and explicitly swap names while retaining entered sets, notes and checkmarks. Draft order and cardio completion survive refresh.
-# v1.8.0 — Progress and history
-
-- Paginated, naturally sized history cards with expandable exercises, date filters and stable newest-first ordering.
-- Exercise details combine recent sets, best load/estimated 1RM and 4-week, 12-week or all-time trends; tracking modes stay separate.
-- Compare any two saved workouts by exercise name and tracking mode, with unmatched movements explicitly labeled.
-- Workout deletion durably commits recalculated derived PRs and preserves manual benchmarks. Failed saves leave history and records unchanged.
-- Existing workout edits retain their PR reconciliation. No historical schema migration.

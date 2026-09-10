@@ -7,5 +7,9 @@ const scripts=[...html.matchAll(/<script src="([^":]+)"/g)].map(m=>m[1]);
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 for(const script of scripts){assert(fs.existsSync(path.join(root,script)),script);assert(sw.includes("'./"+script+"'"),'Not cached: '+script);}
 assert(scripts.indexOf('src/product/draft-model.js')<scripts.indexOf('src/product/workout-logger.js'));
-assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version,'1.8.0');
+const version=JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version;
+assert(html.includes(`Loadnote web v${version} ·`),'Footer version drift');
+assert(sw.includes(`const CACHE = 'loadnote-v${version}';`),'Cache version drift');
+assert(fs.readFileSync(path.join(root,'README.md'),'utf8').includes(`**v${version} ·`),'README version drift');
+assert(fs.readFileSync(path.join(root,'CHANGELOG.md'),'utf8').startsWith(`# v${version} —`),'Latest changelog version drift');
 console.log('App shell, version, script-order, and cached-module tests passed');

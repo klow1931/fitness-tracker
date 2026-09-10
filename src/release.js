@@ -1,4 +1,4 @@
-/* Loadnote v1.0 release helpers — product-level status and data-quality checks. */
+/* Loadnote release helpers — product-level status and data-quality checks. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.LoadnoteRelease = factory();
@@ -15,7 +15,7 @@
       { id:'fatigue', label:'Performance & fatigue signals', ok:Number(d.schemaVersion || 0) >= 9 },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 10 }
     ];
-    return { version:'1.8.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'1.8.1', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });
