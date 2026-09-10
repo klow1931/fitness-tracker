@@ -37,6 +37,6 @@ Paths below are under `src/product/` unless otherwise noted.
 
 ## Remaining boundaries
 
-Continue extracting legacy orchestration only with regression coverage. Some non-workout inline handlers remain. Retired technique-review code is archived, while saved form-review records remain intact. Replace CDN styling with a local build before claiming full offline support.
+Continue extracting legacy orchestration only with regression coverage. Some non-workout inline handlers remain. Retired technique-review code is archived, while saved form-review records remain intact. Styles and charts are now generated into committed assets; food lookup and online coaching still require a connection.
 
-The service worker caches the app shell; cache identity changes with releases. This does not change stored workout data. Release labels are checked against `package.json`.
+The service worker caches each release's complete app shell without background replacement. app-lifecycle.js presents waiting updates, saves drafts/data before explicit activation and blocks activation while other app tabs are open. Old caches are retained for open pages; cache reclamation remains follow-up work. Browser eviction can still remove local caches/data, so exports remain important. Release labels are checked against `package.json`.
