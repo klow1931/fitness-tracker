@@ -1,4 +1,7 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+#coach-quick-links button { background:var(--surface); color:var(--ink); border:1px solid var(--line); min-height:44px; padding:.5rem .75rem; border-radius:999px; }
+#coach-quick-links button:hover { background:var(--line); color:var(--ink); }
+body.gym-mode #panel-workouts { padding-bottom:0; }
 .progress-controls { display:flex; flex-wrap:wrap; align-items:end; gap:.8rem; margin:1rem 0; }
 .progress-controls label { display:flex; flex-direction:column; gap:.35rem; flex:1 1 140px; min-width:0; }
 .progress-controls .input { width:100%; box-sizing:border-box; min-width:0; }

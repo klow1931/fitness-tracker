@@ -350,12 +350,6 @@
         </div>
       </div>
 
-      <!-- Sticky save bar (Gym mode) -->
-      <div id="sticky-save-bar" class="sticky-save-bar hidden">
-        <button data-workout-action="review" class="btn-primary flex-1">Review workout</button>
-        <button data-workout-action="rest-90" class="btn-secondary">Rest 1.5m</button>
-        <span id="rest-timer-sticky" class="text-sm font-mono font-medium w-12 text-center">—</span>
-      </div>
       </div><!-- /wo-log -->
 
       <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-history">
@@ -864,7 +858,7 @@
           <input type="text" id="chat-input" class="input flex-1" placeholder="e.g. How do I progress on squat? / Is 150g protein enough?" onkeydown="if(event.key==='Enter') sendChat()" />
           <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
         </div>
-        <div class="flex flex-wrap gap-2 mt-2">
+        <div id="coach-quick-links" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Coach suggested questions">
           <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
           <button onclick="askSuggestion('How much protein do I need?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Protein</button>
           <button onclick="askSuggestion('I feel sore, should I train?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Soreness</button>
