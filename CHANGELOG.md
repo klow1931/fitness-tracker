@@ -1,3 +1,12 @@
+# v1.10.0 — Training Block Context
+
+- Add dated training blocks with structured type, goal, loading strategy and progression intent.
+- Keep programming training maxes and known 1RMs separate from RPE-aware performance estimates; store benchmark loads in kg with known-on dates.
+- Associate historical workouts by date without rewriting them; reject overlaps, retain revision/deletion history and expose chronological as-recorded and explicit retrospective APIs.
+- Add compact workout-page editing, sparse block analytics and complete JSON backup validation.
+- Migrate schema 10 to 11 with an empty block collection for existing users. Retain v1.9 offline assets, drafts and update controls.
+- No v2 recommendations or predictions.
+
 # v1.9.0 — Gym-ready reliability
 
 - Bundle utility styles and charts with pinned dependencies and a lockfile.

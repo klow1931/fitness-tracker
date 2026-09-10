@@ -13,9 +13,9 @@
       { id:'adaptive', label:'Adaptive programming', ok:Number(d.schemaVersion || 0) >= 6 },
       { id:'coach', label:'Coach architecture', ok:Number(d.schemaVersion || 0) >= 5 },
       { id:'fatigue', label:'Performance & fatigue signals', ok:Number(d.schemaVersion || 0) >= 9 },
-      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 10 }
+      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 11 }
     ];
-    return { version:'1.9.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'1.10.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });
