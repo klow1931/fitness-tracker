@@ -108,7 +108,7 @@ body.dark .food-entry-header { background:#1e293b; border-color:#475569; }
 @media (max-width:768px) {
   .input { font-size:16px; }
   :is(.btn-primary,.btn-secondary,.tab-btn,.section-tab) { min-height:44px; }
-  #workout-actions { position:sticky; bottom:calc(4.5rem + env(safe-area-inset-bottom)); background:white; padding:.6rem; z-index:25; border-top:1px solid #cbd5e1; }
+  #workout-actions { position:static; background:white; padding:.6rem; border-top:1px solid #cbd5e1; }
   body.dark #workout-actions { background:#0f172a; }
   body.gym-mode #workout-actions { position:static; }
   #workout-actions > .btn-primary { flex:1 0 100%; }

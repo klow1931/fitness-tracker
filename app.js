@@ -140,12 +140,6 @@
         btn.classList.toggle('btn-primary', !!data.gymMode);
         btn.classList.toggle('btn-secondary', !data.gymMode);
       }
-      const sticky = document.getElementById('sticky-save-bar');
-      if (sticky) {
-        // Show sticky bar only in gym mode while on workouts tab
-        const onWorkouts = !document.getElementById('panel-workouts')?.classList.contains('hidden');
-        sticky.classList.toggle('hidden', !(data.gymMode && onWorkouts));
-      }
     }
 
     function updateBackupBanner() {
