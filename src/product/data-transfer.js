@@ -11,6 +11,7 @@
         try {
           const parsed = JSON.parse(reader.result);
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
+          parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           if (!confirm('This will replace your current data. Continue?')) return;
           data = normalizeDataShape(parsed);
           clearTimeout(saveTimer);
@@ -141,4 +142,3 @@
 
       showToast('CSV files downloaded', 'success');
     }
-

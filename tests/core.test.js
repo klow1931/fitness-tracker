@@ -7,7 +7,7 @@ const Progression = require('../src/training/progression');
 const defaults = { workouts: [], nutrition: [], prs: [], goals: [], programs: [], templates: [], bodyweight: [], foodLibrary: [], restDays: [], progressPhotos: [], measurements: [], formReviews: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', api: {} };
 
 const migrated = Core.normalizeState({ workouts: [{ date: '2026-09-01', exercises: [] }], schemaVersion: 1 }, defaults);
-assert.equal(migrated.schemaVersion, 10);
+assert.equal(migrated.schemaVersion, 11);
 assert.equal(migrated.trainingIntelligenceVersion, 1);
 assert.equal(migrated.adaptiveProgrammingVersion, 2);
 assert.equal(migrated.coachVersion, 2);
@@ -32,4 +32,3 @@ assert.ok(trend.change.percent > 0);
 assert.equal(Analytics.plateauSignal(workouts, 'Bench Press').status, 'insufficient-data');
 
 console.log('Loadnote v0.2 core tests: PASS');
-

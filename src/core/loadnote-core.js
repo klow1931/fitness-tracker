@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 10;
+  const SCHEMA_VERSION = 11;
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -129,6 +129,10 @@
       });
     }
 
+    // Blocks are independent of workouts. Preserve existing block records verbatim;
+    // strict validation happens on import and block mutations, never by dropping data.
+    if(state.trainingBlocks === undefined)state.trainingBlocks=[];
+    if(Number(state.schemaVersion||1)<11)state.schemaVersion=11;
     return state;
   }
 

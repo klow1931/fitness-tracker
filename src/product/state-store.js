@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 10,
+      schemaVersion: 11, trainingBlocks: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],

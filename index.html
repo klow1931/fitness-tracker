@@ -299,6 +299,7 @@
       </div>
       <p class="text-xs text-slate-500 -mt-3">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
       <div id="workout-recap" class="card workout-recap" aria-live="polite" hidden></div>
+      <details id="training-blocks" class="card training-blocks"></details>
 
       <div class="sub-panel" data-panel="workouts" data-sub="wo-log">
       <div class="card" id="workout-log-card">
@@ -1254,7 +1255,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.9.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.10.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1836,6 +1837,8 @@
   </dialog>
   <script src="src/product/workout-session.js" defer></script>
   <script src="src/product/progress-model.js" defer></script>
+  <script src="src/product/training-blocks.js" defer></script>
+  <script src="src/product/training-blocks-ui.js" defer></script>
   <script src="src/product/progress-ui.js" defer></script>
   <script src="src/product/session-ui.js" defer></script>
   <script src="src/product/workout-logger.js" defer></script>

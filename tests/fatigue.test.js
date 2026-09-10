@@ -25,5 +25,5 @@ for (const early of [[], [workout(day(0),80)], [workout(day(0),80,10)],
   assert.deepEqual(baseline.flags, []);
 }
 assert.equal(fatigue.analyze([workout(day(27),80),workout(day(14),80),workout(day(0),800)]).status,'high-fatigue');
-assert.strictEqual(core.SCHEMA_VERSION, 10);
+assert.strictEqual(core.SCHEMA_VERSION, 11);
 console.log('Fatigue tests passed');
