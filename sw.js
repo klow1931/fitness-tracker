@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.8.0-ui-position-fix';
+const CACHE = 'loadnote-v1.8.1';
 const ASSETS = [
   './',
   './index.html',

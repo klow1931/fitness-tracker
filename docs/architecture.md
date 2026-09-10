@@ -1,31 +1,42 @@
-# Incremental module boundaries
+# Current architecture
 
-## v1.3.1 ownership
+Loadnote is a static app using ordered browser scripts and shared global APIs. It is an incremental modularization of `app.js`, not a framework or ES-module rewrite. See `package.json` for the current release version.
 
-| File | Responsibility |
+## Module ownership
+
+Paths below are under `src/product/` unless otherwise noted.
+
+| Files | Responsibility |
 | --- | --- |
-| `state-store.js` | State defaults, normalization, IndexedDB adapter, fallback loading, scheduled saves and errors |
-| `persistence.js` | Ordered snapshot writes |
-| `data-transfer.js` | Existing JSON/CSV and photo-backup import/export |
-| `workout-form.js` | Exercise/set controls and last-weight actions |
-| `workout-templates.js` | Form filling, repeat/template lifecycle and rendering |
-| `workout-history.js` | Cards, search, virtualization and delete action |
-| `workout-events.js` | Scoped workout/review handlers, bound once |
-| `units.js`, `rest-timer.js` | Unit display/conversion and rest timing |
-| `src/core/ui-utils.js` | Shared debounce helper, loaded before history |
+| `state-store.js`, `persistence.js` | State defaults, normalization, IndexedDB/localStorage loading and serialized snapshot writes |
+| `data-transfer.js` | JSON/CSV and photo-backup import/export |
+| `draft-model.js`, `workout-logger.js` | Named-field draft validation, migration, capture, restoration and status |
+| `workout-form.js`, `workout-templates.js` | Exercise/set forms, last weights, repeat and template flows |
+| `workout-events.js` | Scoped, idempotent workout/review event delegation |
+| `workout-session.js`, `session-ui.js` | Immutable create/edit operations, PR reconciliation, review and durable save coordination |
+| `workout-history.js` | Paginated history cards, date/search filters and history actions |
+| `progress-model.js`, `progress-ui.js` | Exercise series, tracking-mode-aware comparisons and exercise-detail dialogs |
+| `training-flow.js`, `rest-timer.js` | Focus/completion, exercise order and deadline-based timer recovery |
+| `nutrition-model.js`, `nutrition-ui.js`, `nutrition-forms.js` | Nutrient/portion rules, day summaries, food entry/edit and barcode review |
+| `navigation.js`, `home-activity.js` | View navigation/refresh and weekly activity model |
+| `units.js` | Display-unit conversion |
+| `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and coaching rules |
 
-This is an incremental responsibility split, not an ES-module/framework rewrite. Existing global APIs remain compatibility boundaries for navigation and coaching. Production script order is tested. Retired technique-review code is archived and not loaded; its saved data is preserved. Nutrition/coaching and non-workout inline handlers remain outside this pass.
+`app.js` still coordinates startup and several dashboard, program, coaching and More-page views. Production script order and global compatibility boundaries are tested. `styles.css` and `energy.css` share layout/theme responsibility.
 
-`app.js` still owns navigation and most feature orchestration. This release deliberately moves only small boundaries with regression coverage:
+## Data and calculation boundaries
 
-- `workout-session.js`: pure draft conversion, previous-session selection, immutable create/edit operations, and PR provenance. Edits preserve the original record ID and program metadata and check the opened record against current in-memory history.
-- `session-ui.js`: review dialog, edit lifecycle, comparison tables, and durable save coordination. No history mutation occurs before a successful write. Review is a frozen form snapshot, rechecked before confirmation.
+- Review freezes a form snapshot and rechecks it before confirmation. Create/edit/delete operations persist successfully before replacing visible history. Edits preserve record IDs and program metadata.
+- Derived workout PRs are reconciled when sessions change; independent manual and legacy benchmarks are preserved.
+- History uses pages of naturally sized cards, not fixed-height virtualization.
+- Progress series separate reps, timed holds and cardio. Rep-based estimates use the core estimator with optional RPE; actual load remains a separate metric.
+- Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
+- Draft migration preserves named fields, units, completion, order and edit context. Workout schema remains version 10.
+- Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
+- Storage is browser-local. Simultaneous tabs and cross-device sync are not coordinated.
 
-- `draft-model.js`: pure validation/normalization and v1-to-v2 draft migration. v2 contains named fields, display units, set completion, and program context; it does not depend on DOM field order.
-- `workout-logger.js`: form capture, restoration, validation, and draft status. History remains in the existing data schema.
-- `persistence.js`: serialized snapshot writes and explicit fallback marking. The app supplies IndexedDB/localStorage adapters; errors propagate to UI callers. IndexedDB resolves on transaction completion.
-- `workout-history.js`: history-card presentation. IDs are HTML-escaped data attributes, never interpolated JavaScript arguments.
+## Remaining boundaries
 
-Remaining work: extract program and template orchestration behind tests; make rendering consistently DOM-based throughout the legacy app; review remaining non-workout inline handlers and import boundaries; replace CDN styling with a local build before claiming full offline support. No comprehensive security certification is implied by escaping the updated text paths.
+Continue extracting legacy orchestration only with regression coverage. Some non-workout inline handlers remain. Retired technique-review code is archived, while saved form-review records remain intact. Replace CDN styling with a local build before claiming full offline support.
 
-State remains single-browser local storage. Simultaneous tabs and cross-device sync are not coordinated. Fallback mode intentionally remains on localStorage after reload until a later recovery/migration feature is designed; it must not silently prefer stale IndexedDB records.
+The service worker caches the app shell; cache identity changes with releases. This does not change stored workout data. Release labels are checked against `package.json`.

@@ -1,52 +1,56 @@
 # Loadnote
 
-**v1.3.1 · Development build.** An adaptive strength-training log that learns how you train.
+**v1.8.1 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
 
-## Workout flow
+## Current features
 
-Enter today's sets and compare them with the previous session for the same exercise and tracking mode. Select **Review workout**, check the date, exercises, sets, and notes, then confirm **Save workout**. Back to workout leaves the draft intact.
-
-In History, select **Edit** to correct a saved session. Review and **Save changes** replaces that session while preserving its ID and program linkage. **Cancel edit** leaves the saved workout unchanged. Unfinished edits recover after refresh. Unchecked entered sets remain included; the review states this explicitly.
+- Log strength, timed holds and cardio. Review before saving; edit saved sessions without changing their identity.
+- Restore unfinished drafts, reorder exercises, use Focus mode and run a rest timer with pause/resume and refresh recovery. Review and timer controls stay in the page.
+- Browse paginated history, filter dates, compare workouts and chart exercise progress. Strength charts include optional RPE in estimated 1RM, matching the training dashboard.
+- Track food portions, edit entries, review barcode refreshes and mark complete nutrition days.
+- View weekly activity, measurements, records, photos and training recommendations. Fatigue scoring waits for sufficient history; plateau signals require multiple sessions.
+- Use coach insights, chat and suggested questions with light/night-mode styling.
 
 ## Run locally
 
-Install Node.js 22, then run `npm run serve` and open `http://127.0.0.1:8000`.
-The core static app and Node checks do not require dependency installation.
-Charts and utility styling still load from third-party CDNs, so a network connection is needed for the full interface.
+Use Node.js 22. Run `npm run serve` and open `http://127.0.0.1:8000`.
+The static app and Node checks do not require dependency installation.
+Charts and utility styling load from third-party CDNs; full offline behavior is not guaranteed.
 
 ## Checks
 
-- `npm test` — all Node unit and integration test files.
-- `npm run check` — syntax checks for production code, scripts, and tests.
-- `npm install --ignore-scripts` — install the declared development/native dependencies.
-- `npx playwright install chromium` — install the browser used for regression tests.
-- `npm run test:browser` — desktop and mobile-viewport Chromium checks.
+- `npm test` — Node unit and integration tests.
+- `npm run check` — production, script and test JavaScript syntax.
+- `npm install --ignore-scripts`, then `npx playwright install chromium` — browser-test dependencies.
+- `npm run test:browser` — desktop and mobile-viewport Chromium regressions.
 
-The browser tests stub chart/CDN scripts and test logger behavior, not production visual fidelity. Service workers are disabled in that suite; offline/update behavior requires separate manual checks. Mobile Chromium is not a substitute for iOS Safari testing.
+Browser tests stub external chart/CDN scripts and disable service workers. They cover behavior and selected layout/contrast checks, not full production rendering, offline behavior or iOS Safari. See [testing](docs/testing.md).
 
-## Update your GitHub repository
+## Repository and releases
 
-Commit the **contents** of this package at the existing app root, including `.github/workflows/test.yml` and `.gitignore`; uploading only the ZIP will not install the workflow. Review your working tree first and preserve unrelated files. Historical root README/changelog files have moved to `docs/archive`; remove obsolete root copies only after confirming their archived versions are present. No repository changes or workflow runs have been made on your behalf.
+Develop changes on a branch and open a pull request. The read-only GitHub Actions test workflow runs on pushes and PRs; it does not deploy. Review checks before merging. GitHub Pages serves the static app; the optional coach backend requires separate hosting.
 
-The included workflow runs checks on pushes and pull requests with read-only repository permissions. It does not deploy the app or use secrets. On failure it retains the browser report for seven days. Once dependencies can be installed, commit the generated `package-lock.json` and switch the workflow to `npm ci` for locked installs; this package does not fabricate a lockfile.
+`package.json` is the release-version reference. Update the release helper, app footer, service-worker cache, README and newest changelog entry together. Tests reject disagreement. Keep historical changelog entries and archived documents at their original versions. A branch name does not define the app version.
+
+Dependencies currently use `npm install`; reproducible lockfile-based installs remain follow-up work.
 
 ## Project map
 
 | Location | Purpose |
 | --- | --- |
-| `index.html`, `styles.css` | App shell and styling |
-| `app.js` | Remaining dashboard, nutrition, coaching, navigation, and startup orchestration |
-| `src/product/` | Workout form/templates/history/events, state storage, data transfer, units, timer, drafts and review |
-| `src/core/`, `src/training/`, `src/coach/` | Existing training and coaching rules |
-| `tests/`, `tests/browser/` | Node regression tests and browser checks |
-| `docs/` | Current architecture and testing notes |
-| `docs/archive/`, `dev-archive/` | Preserved historical documentation and source |
-| `backend/` | Optional coach server; not provided by static hosting |
+| `index.html`, `styles.css`, `energy.css` | App shell and shared visual system |
+| `app.js` | Startup and remaining dashboard, coaching, program and feature orchestration |
+| `src/product/` | Workout, nutrition, navigation, history/progress, drafts, timers and persistence |
+| `src/core/`, `src/training/`, `src/coach/` | Shared data rules, training models and coaching |
+| `tests/`, `tests/browser/` | Node and desktop/mobile Chromium regressions |
+| `docs/` | Current architecture and testing guidance |
+| `docs/archive/`, `dev-archive/` | Historical documentation and source |
+| `backend/` | Optional coach server; not supplied by static hosting |
 
-Native packaging remains experimental; see `docs/archive/README-NATIVE.md`. Do not treat old release READMEs as current setup instructions.
+Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Existing workout storage keys and history formats are retained. v1.2 positional drafts migrate to named-field drafts on restore. Drafts and history remain on the current browser/device; a GitHub repository does not back up training data. Export JSON before testing upgrades or importing replacement data.
+Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. This release does not migrate saved workout data or change schema version 10.
 
-See [CHANGELOG.md](CHANGELOG.md), [testing](docs/testing.md), and [architecture](docs/architecture.md). This is not a public-release sign-off or a comprehensive security audit.
+See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.
