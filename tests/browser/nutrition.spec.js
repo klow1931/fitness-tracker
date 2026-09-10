@@ -42,7 +42,7 @@ test('barcode refresh requires review and preserves history',async({page})=>{
  expect(await page.evaluate(()=>data.nutrition[0].foods[0].serving)).toBe('30g');
 });
 test.beforeEach(async({page})=>{
- await page.route(/https:\/\/(cdn\.tailwindcss\.com|cdn\.jsdelivr\.net)(\/|$)/,route=>route.fulfill({contentType:'text/javascript',body:''}));
+ await page.route(/assets\/chart\.umd\.js$/,route=>route.fulfill({contentType:'text/javascript',body:''}));
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
  await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
  await page.addStyleTag({content:'.hidden{display:none!important}'});

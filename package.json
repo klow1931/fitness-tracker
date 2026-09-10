@@ -1,6 +1,6 @@
 {
   "name": "loadnote",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "description": "An adaptive strength-training log that learns how you train.",
   "private": true,
   "scripts": {
@@ -14,7 +14,8 @@
     "add:ios": "npx cap add ios",
     "start:coach": "node backend/server.js",
     "test:browser": "playwright test",
-    "serve": "node scripts/serve.js"
+    "serve": "node scripts/serve.js",
+    "build:assets": "node scripts/build-assets.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -23,6 +24,8 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
-    "playwright": "1.62.1"
+    "chart.js": "4.4.1",
+    "playwright": "1.62.1",
+    "tailwindcss": "3.4.17"
   }
 }

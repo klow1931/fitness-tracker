@@ -10,13 +10,13 @@ Browser coverage includes workout/review/edit/reload flows, templates, history p
 
 ## Test limits
 
-The browser suite stubs external Chart/CDN scripts and disables service workers. Passing it does not verify real chart rendering, production Tailwind styling, offline cache updates, physical touch hardware or iOS Safari. Selected layout/contrast assertions are not a full visual audit.
+Most behavioral tests stub the bundled chart script and disable service workers. The offline suite uses the real bundled styles and Chart.js with service workers enabled, testing draft reload, offline saves/charts and an explicit update with another tab open. These checks do not replace physical touch or iOS Safari verification. Selected layout/contrast assertions are not a full visual audit.
 
 Local Chromium installation can fail because of network/download issues. Record such runs as blocked, not application failures or browser passes; GitHub Actions can provide an independent execution environment.
 
 ## Manual acceptance
 
-- Test the deployed build with real charts and styles in desktop and iPhone Safari, including night mode and Gym mode.
+- Before v1.9 release, test the deployed build in iPhone Safari and Add to Home Screen, including night mode and Gym mode. Check keyboard overlap when entering sets/chat, and confirm all controls can be reached with touch.
 - Confirm review/rest controls stay in normal page flow and coach quick links remain readable and clickable.
 - Log, review, save, edit and reload a workout; verify history identity, notes, completion and units.
 - Exercise chart metrics/ranges and compare estimates for the same logged set.

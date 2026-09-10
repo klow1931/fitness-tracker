@@ -1,3 +1,11 @@
+# v1.9.0 — Gym-ready reliability
+
+- Bundle utility styles and charts with pinned dependencies and a lockfile.
+- Cache complete release assets for offline workouts, history and timers after initial setup.
+- Wait for Save and update; persist the draft and app data before activation and block updates with other open tabs.
+- Show device save status, connection guidance and a visible backup shortcut.
+- Add real-asset and offline regressions. Physical iPhone acceptance remains required.
+
 # v1.8.1 — Analytics, interface and release housekeeping
 
 - Delay fatigue scoring until sufficient history exists; use the minimum-session plateau guard and avoid one-session percentage trends.

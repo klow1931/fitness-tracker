@@ -2837,7 +2837,7 @@ async function initApp() {
       hideAppLoader();
 
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        window.LoadnoteLifecycle?.start();
       }
 
       // Keep gym-mode preference in sync if user resizes across breakpoint before choosing
