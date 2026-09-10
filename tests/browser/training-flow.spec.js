@@ -1,6 +1,6 @@
 const {test,expect}=require('playwright/test');
 test.beforeEach(async({page})=>{
- await page.route(/https:\/\/(cdn\.tailwindcss\.com|cdn\.jsdelivr\.net)(\/|$)/,r=>r.fulfill({contentType:'text/javascript',body:''}));
+ await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
  await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
  await page.addStyleTag({content:'.hidden{display:none!important}'});await page.evaluate(()=>showTab('workouts'));

@@ -1,6 +1,6 @@
 # Loadnote
 
-**v1.8.1 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.9.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
 
 ## Current features
 
@@ -15,7 +15,7 @@
 
 Use Node.js 22. Run `npm run serve` and open `http://127.0.0.1:8000`.
 The static app and Node checks do not require dependency installation.
-Charts and utility styling load from third-party CDNs; full offline behavior is not guaranteed.
+Styles and charts ship with the app. After the first online load completes offline setup, workouts, history, timers and charts can be used offline. Online coaching and food lookup still require internet.
 
 ## Checks
 
@@ -24,7 +24,7 @@ Charts and utility styling load from third-party CDNs; full offline behavior is 
 - `npm install --ignore-scripts`, then `npx playwright install chromium` — browser-test dependencies.
 - `npm run test:browser` — desktop and mobile-viewport Chromium regressions.
 
-Browser tests stub external chart/CDN scripts and disable service workers. They cover behavior and selected layout/contrast checks, not full production rendering, offline behavior or iOS Safari. See [testing](docs/testing.md).
+Most behavioral tests stub charts and disable service workers. The offline suite uses real bundled assets and enabled service workers. They cover behavior and selected layout/contrast checks, not full production rendering, offline behavior or iOS Safari. See [testing](docs/testing.md).
 
 ## Repository and releases
 
@@ -32,7 +32,7 @@ Develop changes on a branch and open a pull request. The read-only GitHub Action
 
 `package.json` is the release-version reference. Update the release helper, app footer, service-worker cache, README and newest changelog entry together. Tests reject disagreement. Keep historical changelog entries and archived documents at their original versions. A branch name does not define the app version.
 
-Dependencies currently use `npm install`; reproducible lockfile-based installs remain follow-up work.
+Use `npm ci` for locked installs and `npm run build:assets` to regenerate committed styles and charts. Updates wait for Save and update; drafts and data must save first. Close other Loadnote tabs before applying an update.
 
 ## Project map
 

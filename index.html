@@ -12,12 +12,21 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="assets/tailwind.css" />
+  <script src="assets/chart.umd.js"></script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="energy.css" />
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
+<div class="device-status" aria-label="Device and connection status">
+  <span id="device-save-status" role="status">Data stays on this device</span>
+  <span id="connection-status" role="status"></span>
+  <button type="button" class="btn-secondary" onclick="exportData()">Export backup</button>
+</div>
+<div id="app-update" class="device-status" hidden>
+  <span id="app-update-status" role="status">Update available. Your workout can wait until you are ready.</span>
+  <button type="button" id="apply-app-update" class="btn-secondary">Save and update</button>
+</div>
 
 <div id="loadnote-focus-message" class="loadnote-focus-message" role="note">
   <strong>Train. Log. Adapt.</strong>
@@ -1245,7 +1254,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.8.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.9.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1810,6 +1819,7 @@
   <script src="src/product/workout-form.js" defer></script>
   <script src="src/product/workout-templates.js" defer></script>
   <script src="src/product/rest-timer.js" defer></script>
+  <script src="src/product/app-lifecycle.js" defer></script>
   <script src="src/product/training-flow.js" defer></script>
   <script src="src/product/data-transfer.js" defer></script>
   <script src="src/product/workout-events.js" defer></script>

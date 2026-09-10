@@ -1,11 +1,14 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.8.1';
+const CACHE = 'loadnote-v1.9.0';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './energy.css',
   './app.js',
+  './assets/tailwind.css',
+  './assets/chart.umd.js',
+  './src/product/app-lifecycle.js',
   './src/core/ui-utils.js',
   './src/product/navigation.js',
   './src/product/home-activity.js',
@@ -47,37 +50,32 @@ const ASSETS = [
   './apple-touch-icon.png'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+const SCOPE = self.registration.scope;
+const assetURLs = new Set(ASSETS.map(path => new URL(path, SCOPE).href));
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
+self.addEventListener('message', event => {
+  if(event.data?.type !== 'APPLY_UPDATE')return;
+  event.waitUntil((async()=>{
+    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const appClients=clients.filter(client=>client.url.startsWith(SCOPE));
+    if(appClients.length>1){event.source?.postMessage({type:'UPDATE_BLOCKED'});return;}
+    await self.skipWaiting();
+  })());
 });
-
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-
-  const url = new URL(req.url);
-  const isAppShell = ASSETS.some((a) => url.pathname.endsWith(a.replace('./', '')) || url.pathname.endsWith('/'));
-
-  if (isAppShell || url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        const fetched = fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
-          return res;
-        }).catch(() => cached);
-        return cached || fetched;
-      })
-    );
-  }
+self.addEventListener('activate', event => {
+  // Retain previous release caches for still-open pages; do not delete unrelated caches.
+  event.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', event => {
+  const req=event.request;
+  if(req.method!=='GET')return;
+  const url=new URL(req.url);url.hash='';url.search='';
+  if(url.origin!==self.location.origin||!assetURLs.has(url.href))return;
+  event.respondWith(caches.open(CACHE).then(async cache=>{
+    const cached=await cache.match(url.href);
+    if(cached)return cached;
+    return fetch(req);
+  }));
 });

@@ -1,4 +1,8 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+.device-status { display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; padding:.6rem 1rem; background:var(--surface); color:var(--ink); border-bottom:1px solid var(--line); font-size:.8rem; }
+.device-status[hidden] { display:none; }
+.device-status button { min-height:44px; }
+@media(max-width:640px) { #chat-input { min-width:0; } input,select,textarea { scroll-margin-block:5rem; } }
 #coach-quick-links button { background:var(--surface); color:var(--ink); border:1px solid var(--line); min-height:44px; padding:.5rem .75rem; border-radius:999px; }
 #coach-quick-links button:hover { background:var(--line); color:var(--ink); }
 body.gym-mode #panel-workouts { padding-bottom:0; }
