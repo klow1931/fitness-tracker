@@ -1,22 +1,24 @@
 (function(root,factory){
-  if(typeof module==='object' && module.exports) module.exports=factory();
-  else root.LoadnoteSession=factory();
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  if(typeof module==='object' && module.exports) module.exports=factory(require('./data-integrity'));
+  else root.LoadnoteSession=factory(root.LoadnoteIntegrity);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity){
   'use strict';
   const key=value=>String(value || '').trim().toLowerCase();
   const same=(a,b)=>String(a)===String(b);
   const clone=value=>JSON.parse(JSON.stringify(value));
-  function findPerformance(workouts,name,eligible=()=>true){
+  function comparable(value){const copy=clone(value);for(const exercise of copy?.exercises||[])delete exercise.exerciseId;return JSON.stringify(copy);}
+  function findPerformance(workouts,name,eligible=()=>true,exerciseId){
+    const ids=new Set(exerciseId?[exerciseId]:[]);for(const w of workouts||[])for(const exercise of w.exercises||[])if(key(exercise.name)===key(name)&&exercise.exerciseId)ids.add(exercise.exerciseId);
     for(const w of workouts || [])for(const exercise of w.exercises || []){
-      if(key(exercise.name)===key(name) && eligible(exercise,w))return {date:w.date,exercise};
+      if((key(exercise.name)===key(name)||(exercise.exerciseId&&ids.has(exercise.exerciseId))) && eligible(exercise,w))return {date:w.date,exercise};
     }
     return null;
   }
-  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps') {
+  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps',exerciseId) {
     const candidates=(workouts || []).map((w,index)=>({w,index})).filter(({w})=>!same(w.id,excludeId) && w.date<=date)
       .sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
     return findPerformance(candidates.map(c=>c.w),name,e=>(e.type || 'strength')===type &&
-      (type==='cardio' || (e.trackBy || ((e.sets || []).some(s=>s.duration>0 && !(s.reps>0))?'duration':'reps'))===trackBy));
+      (type==='cardio' || (e.trackBy || ((e.sets || []).some(s=>s.duration>0 && !(s.reps>0))?'duration':'reps'))===trackBy),exerciseId);
   }
   function fromDraft(draft,id,options={}){
     const factor=draft.unit==='lb'?1/2.2046226218:1;
@@ -40,16 +42,17 @@
     return {id,date:draft.date,notes:String(draft.notes || '').trim(),exercises};
   }
   function reconcilePRs(prs,workouts,estimate,createId){
-    const old=new Map((prs || []).map(p=>[key(p.exercise),p]));
+    const identity=value=>value?.exerciseId?'id:'+value.exerciseId:'name:'+key(value?.exercise||value?.name);
+    const old=new Map((prs || []).map(p=>[identity(p),p]));
     // Preserve manual and older unclassified PRs as independent benchmarks.
     const anchors=new Map();
-    for(const p of prs || []){const anchor=p.source==='workout'?p.baselinePR:p;if(anchor)anchors.set(key(anchor.exercise),clone(anchor));}
+    for(const p of prs || []){const anchor=p.source==='workout'?p.baselinePR:p;if(anchor)anchors.set(identity(anchor),clone(anchor));}
     const best=new Map();
     for(const w of workouts)for(const e of w.exercises || []){
       if(e.type==='cardio')continue;
       for(const s of e.sets || [])if(s.reps>0){
-        const score=estimate(s.weight,s.reps),k=key(e.name);
-        if(!best.has(k) || score>best.get(k).estimated1RM)best.set(k,{exercise:e.name,weight:s.weight,reps:s.reps,date:w.date,estimated1RM:score,source:'workout',sourceWorkoutId:w.id});
+        const score=estimate(s.weight,s.reps),k=identity(e),candidate={exercise:e.name,weight:s.weight,reps:s.reps,date:w.date,estimated1RM:score,source:'workout',sourceWorkoutId:w.id};if(e.exerciseId)candidate.exerciseId=e.exerciseId;
+        if(!best.has(k) || score>best.get(k).estimated1RM)best.set(k,candidate);
       }
     }
     const result=[];
@@ -61,13 +64,14 @@
     }
     return result.sort((a,b)=>a.exercise.localeCompare(b.exercise));
   }
-  function apply(state,workout,edit,program,estimate,createId){
+  function apply(state,workout,edit,program,estimate,createId,now=new Date().toISOString()){
     const next=clone(state),list=next.workouts || [];
     if(edit){
       const index=list.findIndex(w=>same(w.id,edit.id));
       if(index<0)throw Error('This workout was deleted. Cancel this edit and start a new workout.');
-      if(JSON.stringify(list[index])!==JSON.stringify(edit.original))throw Error('This workout changed since you opened it. Cancel this edit and open it again from History.');
-      list[index]={...list[index],date:workout.date,notes:workout.notes,exercises:clone(workout.exercises),updatedAt:new Date().toISOString()};
+      if(comparable(list[index])!==comparable(edit.original))throw Error('This workout changed since you opened it. Cancel this edit and open it again from History.');
+      const before=clone(list[index]);list[index]={...list[index],date:workout.date,notes:workout.notes,exercises:clone(workout.exercises),updatedAt:now};
+      if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,before,list[index],{now,id:createId()});
     }else{
       if(list.some(w=>same(w.id,workout.id)))throw Error('This workout has already been saved.');
       const entry=clone(workout);
@@ -78,13 +82,14 @@
       list.push(entry);
     }
     next.workouts=list.sort((a,b)=>b.date.localeCompare(a.date));
-    next.prs=reconcilePRs(next.prs,list,estimate,createId);
-    return next;
+    let result=Integrity?Integrity.normalizeState(next):next;result.prs=reconcilePRs(result.prs,result.workouts,estimate,createId);
+    return Integrity?Integrity.normalizeState(result):result;
   }
-  function remove(state,id,estimate,createId){
+  function remove(state,id,estimate,createId,now=new Date().toISOString()){
     if(!(state.workouts||[]).some(w=>same(w.id,id)))throw Error('Workout not found.');
-    const next=clone(state);next.workouts=next.workouts.filter(w=>!same(w.id,id));
-    next.prs=reconcilePRs(next.prs,next.workouts,estimate,createId);return next;
+    const next=clone(state),before=next.workouts.find(w=>same(w.id,id));next.workouts=next.workouts.filter(w=>!same(w.id,id));
+    if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,before,null,{now,id:createId()});
+    let result=Integrity?Integrity.normalizeState(next):next;result.prs=reconcilePRs(result.prs,result.workouts,estimate,createId);return Integrity?Integrity.normalizeState(result):result;
   }
   return {previous,findPerformance,fromDraft,apply,reconcilePRs,remove};
 });

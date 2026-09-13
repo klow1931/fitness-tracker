@@ -1185,6 +1185,8 @@
         </div>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
         <p class="more-hint">Your records stay in this browser. Export a backup before changing devices.</p>
+        <details class="more-details"><summary>Automatic recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
+        <details class="more-details"><summary>Exercise identities & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
       </div>
 
       <details class="card more-details" id="tools-about"><summary>Credits &amp; open source</summary><div class="more-details-body">
@@ -1255,7 +1257,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.10.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.11.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1799,6 +1801,7 @@
     <option value="Donkey Kicks">
   </datalist>
   <script src="src/core/loadnote-core.js" defer></script>
+  <script src="src/product/data-integrity.js" defer></script>
   <script src="src/training/exercises.js" defer></script>
   <script src="src/training/analytics.js" defer></script>
   <script src="src/training/progression.js" defer></script>
@@ -1823,6 +1826,7 @@
   <script src="src/product/app-lifecycle.js" defer></script>
   <script src="src/product/training-flow.js" defer></script>
   <script src="src/product/data-transfer.js" defer></script>
+  <script src="src/product/data-integrity-ui.js" defer></script>
   <script src="src/product/workout-events.js" defer></script>
   <script src="src/product/draft-model.js" defer></script>
   <script src="src/product/persistence.js" defer></script>

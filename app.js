@@ -250,12 +250,12 @@
     let nutritionChart = null;
 
     function getUniqueExercises() {
-      const set = new Set();
+      const set = new Map();
       data.workouts.forEach(w => w.exercises.forEach(e => {
-        if (e.type !== 'cardio') set.add(e.name);
+        const key=e.exerciseId||String(e.name||'').toLowerCase();if(e.type !== 'cardio' && e.name && !set.has(key))set.set(key,e.name);
       }));
-      data.prs.forEach(p => set.add(p.exercise));
-      return Array.from(set).sort();
+      data.prs.forEach(p => {const key=p.exerciseId||String(p.exercise||'').toLowerCase();if(p.exercise&&!set.has(key))set.set(key,p.exercise);});
+      return Array.from(set.values()).sort();
     }
 
     function calcStreak() {
@@ -1256,7 +1256,8 @@
       if(!canvas)return;
       if(progressChart)progressChart.destroy();
       const weeks=Number(document.getElementById('progress-range')?.value||0),metric=document.getElementById('progress-metric')?.value||'estimate';
-      const series=LoadnoteProgress.series(data.workouts,exercise,{weeks,metric,end:today()},estimated1RM);
+      const exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,exercise)?.id;
+      const series=LoadnoteProgress.series(data.workouts,exercise,{weeks,metric,end:today(),exerciseId},estimated1RM);
       const label=metric==='load'?'Heaviest actual set':'Estimated 1RM';
       document.getElementById('progress-description').textContent=series.length?label+' · '+series.length+' logged days. Actual load is not necessarily a tested 1RM; estimates are calculated.':'No rep-based strength data in this range. Timed holds and cardio are available in exercise details.';
       progressChart=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:series.map(p=>formatDate(p.date)),datasets:[{label:label+' ('+unitLabel()+')',data:series.map(p=>toDisplay(p.value)),borderColor:data.dark?'#a5b4fc':'#4f46e5',tension:0,pointRadius:4}]},options:{responsive:true,animation:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,plugins:chartPluginOptions(false),scales:chartScaleOptions(unitLabel(),true)}});
@@ -2771,6 +2772,7 @@ ${woLines}
           });
         });
       });
+      if(window.LoadnoteIntegrity)data=window.LoadnoteIntegrity.normalizeState(data);
       saveData(data);
     }
 

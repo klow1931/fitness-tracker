@@ -4,7 +4,7 @@
 
 Run `npm test` and `npm run check`, then the full `npm run test:browser` suite before merging. GitHub Actions installs Chromium and runs these commands on pushes and pull requests. Check the run for the actual proposed commit; an older passing run does not validate newer changes.
 
-The Node suite covers training and nutrition rules, drafts, unit conversion, session edits and PR reconciliation, persistence failures, release consistency and module boundaries.
+The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, session edits and PR reconciliation, persistence failures, release consistency and module boundaries.
 
 Browser coverage includes workout/review/edit/reload flows, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and More pages, Focus mode, timer recovery, dashboard signal guards, and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
 

@@ -144,7 +144,8 @@
 
     function getLastExercisePerformance(name) {
       if (!name) return null;
-      const found = LoadnoteSession.findPerformance(data.workouts, name, ex => ex.type !== 'cardio' && ex.sets?.length);
+      const exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id;
+      const found = LoadnoteSession.findPerformance(data.workouts, name, ex => ex.type !== 'cardio' && ex.sets?.length,exerciseId);
       if (!found) return null;
       return {date:found.date, trackBy:found.exercise.trackBy, sets:found.exercise.sets.map(s => ({reps:s.reps,duration:s.duration,weight:s.weight,rpe:s.rpe}))};
     }

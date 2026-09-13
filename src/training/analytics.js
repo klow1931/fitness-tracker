@@ -93,9 +93,9 @@
   }
 
   function dashboardSummary(workouts) {
-    const names = new Set();
-    (workouts || []).forEach(w => (w.exercises || []).forEach(ex => { if (ex.type !== 'cardio' && ex.name) names.add(ex.name); }));
-    const trends = Array.from(names).map(name => exerciseTrend(workouts, name, 42)).filter(Boolean).sort((a, b) => (b.latestEstimated1RM || 0) - (a.latestEstimated1RM || 0));
+    const names = new Map();
+    (workouts || []).forEach(w => (w.exercises || []).forEach(ex => { if (ex.type !== 'cardio' && ex.name) names.set(ex.exerciseId || ex.name.trim().toLowerCase(),ex.name); }));
+    const trends = Array.from(names.values()).map(name => exerciseTrend(workouts, name, 42)).filter(Boolean).sort((a, b) => (b.latestEstimated1RM || 0) - (a.latestEstimated1RM || 0));
     return {
       status: trainingStatus(workouts),
       volume: volumeTrend(workouts, 7),

@@ -6,7 +6,8 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 11, trainingBlocks: [],
+      schemaVersion: 12, trainingBlocks: [], integrityVersion: 1,
+      exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
       activeProgramId: null, templates: [], bodyweight: [], foodLibrary: [],
@@ -156,9 +157,12 @@
     }
 
     function normalizeDataShape(d) {
-      if (window.LoadnoteCore?.normalizeState) return window.LoadnoteCore.normalizeState(d, DEFAULT_DATA);
+      if (window.LoadnoteCore?.normalizeState) {
+        const normalized=window.LoadnoteCore.normalizeState(d, DEFAULT_DATA);
+        return window.LoadnoteIntegrity?.normalizeState?window.LoadnoteIntegrity.normalizeState(normalized):normalized;
+      }
       const base = { ...DEFAULT_DATA, ...(d || {}) };
-      ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews'].forEach(k => {
+      ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews','exerciseCatalog','workoutRevisions','recoverySnapshots'].forEach(k => {
         if (!Array.isArray(base[k])) base[k] = [];
       });
       if (!base.exerciseNotes || typeof base.exerciseNotes !== 'object') base.exerciseNotes = {};

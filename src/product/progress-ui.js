@@ -1,5 +1,5 @@
 /* Detail and comparison views share the same mode-aware progress model. */
-let detailExercise='',detailTracking='reps',exerciseDetailChart=null;
+let detailExercise='',detailExerciseId=null,detailTracking='reps',exerciseDetailChart=null;
 function progressDialog(id,title){
  let dialog=document.getElementById(id);if(dialog)return dialog;
  dialog=document.createElement('dialog');dialog.id=id;dialog.className='session-review progress-dialog';dialog.setAttribute('aria-label',title);
@@ -7,7 +7,7 @@ function progressDialog(id,title){
 }
 function detailSetText(ex){return ex.type==='cardio'?`${ex.duration||0} min · ${ex.distance||0} ${ex.distanceUnit||'km'}`:(ex.sets||[]).map(formatStrengthSet).join(' / ');}
 function openExerciseDetail(name,tracking='reps'){
- detailExercise=name;detailTracking=tracking;
+ detailExercise=name;detailExerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id||null;detailTracking=tracking;
  const dialog=progressDialog('exercise-detail','Exercise details');
  dialog.innerHTML='<h2 id="exercise-detail-title"></h2><div class="progress-controls"><label>Range <select id="detail-range" class="input"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="0" selected>All time</option></select></label><label id="detail-metric-label">Metric <select id="detail-metric" class="input"><option value="load">Heaviest actual set</option><option value="estimate">Estimated 1RM</option></select></label></div><p id="detail-summary"></p><div id="detail-chart-wrap"><canvas id="exercise-detail-chart" height="180" aria-label="Exercise strength trend"></canvas></div><div id="detail-sessions"></div><button type="button" class="btn-secondary" id="close-exercise-detail">Close</button>';
  document.getElementById('exercise-detail-title').textContent=name+' · '+({reps:'Reps',duration:'Timed holds',cardio:'Cardio'}[tracking]||tracking);
@@ -18,8 +18,8 @@ function openExerciseDetail(name,tracking='reps'){
 function renderExerciseDetail(){
  const weeks=Number(document.getElementById('detail-range').value),metric=document.getElementById('detail-metric').value,end=today();
  const start=new Date(end+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-weeks*7+1);
- const entries=LoadnoteProgress.entries(LoadnoteProgress.filter(data.workouts,{from:weeks?start.toISOString().slice(0,10):'',to:end}),detailExercise,detailTracking);
- const series=LoadnoteProgress.series(data.workouts,detailExercise,{weeks,metric,end},estimated1RM);
+ const entries=LoadnoteProgress.entries(LoadnoteProgress.filter(data.workouts,{from:weeks?start.toISOString().slice(0,10):'',to:end}),detailExercise,detailTracking,detailExerciseId);
+ const series=LoadnoteProgress.series(data.workouts,detailExercise,{weeks,metric,end,exerciseId:detailExerciseId},estimated1RM);
  const strength=detailTracking==='reps';document.getElementById('detail-metric-label').hidden=!strength;document.getElementById('detail-chart-wrap').hidden=!strength;
  const note=strength?'Heaviest actual set is logged load, not a tested 1RM. Estimated 1RM uses reps and load, adjusted for RPE when provided.':'Timed holds and cardio are shown separately from rep-based strength estimates.';
  const best=strength&&series.length?` Best ${metric==='load'?'logged load':'estimated 1RM'} in range: ${toDisplay(Math.max(...series.map(p=>p.value)))} ${unitLabel()}.`:'';

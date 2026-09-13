@@ -12,13 +12,16 @@
           const parsed = JSON.parse(reader.result);
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
-          if (!confirm('This will replace your current data. Continue?')) return;
-          data = normalizeDataShape(parsed);
+          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
+          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Templates',preview.templates),'','This replaces current data after creating an automatic recovery snapshot.'];
+          if (!confirm(message.join('\n'))) return;
+          data = LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
           clearTimeout(saveTimer);
           await persistNow(data).catch(error => { reportStorageFailure(error); throw error; });
           applyDark();
           updateUnitToggle();
           showTab('dashboard');
+          window.renderDataIntegrityTools?.();
           showToast('Import successful', 'success');
         } catch (e) {
           data = previousState;
@@ -31,7 +34,7 @@
 
     function exportData() {
       // Strip large photo binaries from routine backup
-      const payload = { ...data, progressPhotos: (data.progressPhotos || []).map(p => ({
+      const payload = { ...data, recoverySnapshots:[], progressPhotos: (data.progressPhotos || []).map(p => ({
         id: p.id, date: p.date, tag: p.tag, note: p.note, hasImage: !!p.dataUrl
       })) };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });

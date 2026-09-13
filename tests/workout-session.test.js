@@ -9,6 +9,7 @@ assert.equal(updated.workouts.length,1);assert.equal(updated.workouts[0].id,'uui
 assert.equal(updated.prs[0].weight,80);assert.equal(updated.prs[0].sourceWorkoutId,'uuid');
 assert.throws(()=>S.apply(updated,workout,{id:'uuid',original},null,estimate,id),/changed/);
 assert.throws(()=>S.apply({workouts:[],prs:[]},workout,{id:'uuid',original},null,estimate,id),/deleted/);
+const identityOnly={...original,exercises:original.exercises.map(e=>({...e,exerciseId:'exercise-bench'}))};assert.doesNotThrow(()=>S.apply({workouts:[identityOnly],prs:[]},workout,{id:'uuid',original},null,estimate,id));
 const baseline={id:9,exercise:'Bench',weight:70,reps:5,date:'2020-01-01'};
 let p=S.reconcilePRs([baseline],[original],estimate,id);assert.equal(p[0].weight,100);assert.equal(p[0].baselinePR.weight,70);
 p=S.reconcilePRs(p,[],estimate,id);assert.equal(p[0].weight,70,'Restore independent benchmark');

@@ -1,13 +1,16 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.LoadnoteProgress=factory();})(typeof globalThis!=='undefined'?globalThis:this,function(){
  const nameKey=name=>String(name||'').trim().toLowerCase();
  function mode(e){return e.type==='cardio'?'cardio':e.trackBy==='duration'||(!e.trackBy&&(e.sets||[]).some(s=>s.duration>0&&!(s.reps>0)))?'duration':'reps';}
- function key(e){return JSON.stringify([nameKey(e.name),mode(e)]);}
+ function key(e){return JSON.stringify([e.exerciseId||nameKey(e.name),mode(e)]);}
  function filter(workouts,{query='',from='',to=''}={}){return (workouts||[]).filter(w=>(!from||w.date>=from)&&(!to||w.date<=to)&&(!query||(w.exercises||[]).some(e=>nameKey(e.name).includes(nameKey(query))))).slice().sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id)));}
- function entries(workouts,name,tracking='reps'){return filter(workouts).flatMap(w=>(w.exercises||[]).filter(e=>nameKey(e.name)===nameKey(name)&&mode(e)===tracking).map(e=>({date:w.date,id:w.id,exercise:e})));}
- function series(workouts,name,{weeks=0,metric='estimate',end}={},estimate){
+ function entries(workouts,name,tracking='reps',exerciseId){
+  const ids=new Set(exerciseId?[exerciseId]:[]);for(const w of workouts||[])for(const e of w.exercises||[])if(nameKey(e.name)===nameKey(name)&&e.exerciseId)ids.add(e.exerciseId);
+  return filter(workouts).flatMap(w=>(w.exercises||[]).filter(e=>(nameKey(e.name)===nameKey(name)||(e.exerciseId&&ids.has(e.exerciseId)))&&mode(e)===tracking).map(e=>({date:w.date,id:w.id,exercise:e})));
+ }
+ function series(workouts,name,{weeks=0,metric='estimate',end,exerciseId}={},estimate){
   const now=end||new Date().toISOString().slice(0,10),start=new Date(now+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-Number(weeks)*7+1);
   const from=weeks?start.toISOString().slice(0,10):'',byDate=new Map();
-  for(const entry of entries(filter(workouts,{from,to:now}),name))for(const s of entry.exercise.sets||[]){
+  for(const entry of entries(filter(workouts,{from,to:now}),name,'reps',exerciseId))for(const s of entry.exercise.sets||[]){
    if(!(Number(s.reps)>0)||!Number.isFinite(Number(s.weight))||Number(s.weight)<0)continue;
    const value=metric==='load'?Number(s.weight):estimate(Number(s.weight),Number(s.reps),s.rpe);if(!Number.isFinite(value))continue;
    byDate.set(entry.date,Math.max(byDate.get(entry.date)??-Infinity,value));

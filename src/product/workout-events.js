@@ -14,7 +14,7 @@ function initWorkoutEvents(){
     'remove-exercise':el=>el.closest('[data-idx]')?.remove(),'remove-set':el=>el.parentElement.remove(),
     'track-reps':el=>setExerciseTrackBy(el,'reps'),'track-duration':el=>setExerciseTrackBy(el,'duration'),
     'last-weights':el=>fillLastWeights(el),'jump-weights':el=>fillLastWeights(el,true),'add-set':el=>addSetRow(el),
-    edit:el=>editWorkout(el.dataset.workoutId),'history-template':el=>saveWorkoutAsTemplate(el.dataset.workoutId),delete:el=>deleteWorkout(el.dataset.workoutId),
+    edit:el=>editWorkout(el.dataset.workoutId),duplicate:el=>duplicateWorkout(el.dataset.workoutId),'undo-change':el=>undoWorkoutChange(el.dataset.revisionId),'history-template':el=>saveWorkoutAsTemplate(el.dataset.workoutId),delete:el=>deleteWorkout(el.dataset.workoutId),
     'load-template':el=>loadTemplate(el.dataset.templateId),'delete-template':el=>deleteTemplate(el.dataset.templateId),'focus-date':()=>document.getElementById('wo-date')?.focus(),
     'review-back':()=>closeWorkoutReview(),'review-save':()=>commitReviewedWorkout()
   };
