@@ -9,14 +9,15 @@
  function text(s,max=2000){if(typeof s!=='string'||s.length>max)throw Error('Invalid block text');return s.trim();}
  function context(input){
   if(!input||typeof input!=='object')throw Error('Invalid block context');
-  const c={name:text(input.name||'',120),startDate:input.startDate,endDate:input.endDate||null,blockType:input.blockType||'general',primaryGoal:text(input.primaryGoal||'',300),loadStrategy:input.loadStrategy||'unknown',progressionIntent:input.progressionIntent||'unknown',notes:text(input.notes||''),progressionNotes:text(input.progressionNotes||''),trainingMaxes:[],known1RMs:[]};
+  const c={name:text(input.name||'',120),startDate:input.startDate,endDate:input.endDate||null,blockType:input.blockType||'general',primaryGoal:text(input.primaryGoal||'',300),loadStrategy:input.loadStrategy||'unknown',progressionIntent:input.progressionIntent||'unknown',dataCompleteness:input.dataCompleteness||'unknown',notes:text(input.notes||''),progressionNotes:text(input.progressionNotes||''),trainingMaxes:[],known1RMs:[]};
   if(!c.name||!date(c.startDate)||(c.endDate&&(!date(c.endDate)||c.endDate<c.startDate)))throw Error('Enter a name and valid date range');
   // String identifiers allow future block types without restructuring persisted records.
   if(typeof c.blockType!=='string'||!/^[a-z][a-z0-9-]{0,63}$/.test(c.blockType))throw Error('Invalid block type');
   if(!Object.hasOwn(strategies,c.loadStrategy)||!Object.hasOwn(intents,c.progressionIntent))throw Error('Invalid loading or progression option');
+  if(!['unknown','incomplete','complete'].includes(c.dataCompleteness))throw Error('Invalid historical data coverage');
   for(const field of ['trainingMaxes','known1RMs']){
    const rows=input[field]??[];if(!Array.isArray(rows)||rows.length>100)throw Error('Invalid strength benchmarks');
-   c[field]=rows.map(r=>{const exercise=text(r.exercise||'',120);if(!exercise||typeof r.kg!=='number'||!Number.isFinite(r.kg)||r.kg<=0||r.kg>2000||!date(r.observedOn))throw Error('Benchmarks need an exercise, positive kg and known-on date');return {exercise,kg:r.kg,observedOn:r.observedOn};});
+   c[field]=rows.map(r=>{const exercise=text(r.exercise||'',120);if(!exercise||typeof r.kg!=='number'||!Number.isFinite(r.kg)||r.kg<=0||r.kg>2000||!date(r.observedOn))throw Error('Benchmarks need an exercise, positive kg and known-on date');const row={exercise,kg:r.kg,observedOn:r.observedOn};if(r.exerciseId)row.exerciseId=String(r.exerciseId);return row;});
    if(new Set(c[field].map(r=>r.exercise.toLowerCase())).size!==c[field].length)throw Error('Duplicate benchmark exercise');
   }
   return c;
@@ -54,17 +55,20 @@
   const b=list(records,cutoff).find(b=>b.id===id);if(!b||b.startDate>asOf)return null;
   const end=b.endDate&&b.endDate<asOf?b.endDate:asOf;
   const ws=(workouts||[]).filter(w=>date(w.date)&&w.date>=b.startDate&&w.date<=end);
-  const days=new Set(ws.map(w=>w.date)).size,duration=Math.floor((Date.parse(end)-Date.parse(b.startDate))/86400000)+1;
-  const exercises=new Map();for(const w of ws)for(const e of w.exercises||[]){if(e.type==='cardio'||e.trackBy==='duration')continue;const key=String(e.name||'').trim().toLowerCase();if(!key)continue;if(!exercises.has(key))exercises.set(key,{name:e.name,loads:new Map(),estimates:new Map()});const row=exercises.get(key);
+  const days=new Set(ws.map(w=>w.date)).size,duration=Math.floor((Date.parse(end)-Date.parse(b.startDate))/86400000)+1,workoutDates=[...new Set(ws.map(w=>w.date))].sort();
+  const observedDays=workoutDates.length>1?Math.floor((Date.parse(workoutDates.at(-1))-Date.parse(workoutDates[0]))/86400000)+1:workoutDates.length;
+  const exercises=new Map();for(const w of ws)for(const e of w.exercises||[]){if(e.type==='cardio'||e.trackBy==='duration')continue;const key=e.exerciseId||String(e.name||'').trim().toLowerCase();if(!key)continue;if(!exercises.has(key))exercises.set(key,{name:e.name,exerciseId:e.exerciseId||null,loads:new Map(),estimates:new Map()});const row=exercises.get(key);
    for(const s of e.sets||[]){const weight=Number(s.weight),reps=Number(s.reps),rpe=Number(s.rpe);if(!(weight>0&&Number.isFinite(weight)&&reps>=1&&Number.isInteger(reps)))continue;row.loads.set(w.date,Math.max(row.loads.get(w.date)||0,weight));
     if(reps<=12&&rpe>=6&&rpe<=10)row.estimates.set(w.date,Math.max(row.estimates.get(w.date)||0,Core.estimated1RM(weight,reps,rpe)));
    }
   }
   const trend=map=>{const rows=[...map].sort(([a],[b])=>a.localeCompare(b));if(rows.length<3)return null;const first=rows[0],last=rows.at(-1);return {firstDate:first[0],lastDate:last[0],start:first[1],end:last[1],percent:Core.round((last[1]/first[1]-1)*100,1),days:rows.length};};
   for(const field of ['trainingMaxes','known1RMs'])b[field]=b[field].filter(r=>r.observedOn<=end);
-  return {block:b,contextMode:retrospective?'retrospective':'as-recorded',workoutCount:ws.length,totalVolume:ws.length?ws.reduce((s,w)=>s+Core.calcVolume(w),0):null,averageRPE:Core.averageRPE(ws),durationDays:duration,trainingDays:days,frequencyPerWeek:duration>=7?Core.round(days/duration*7,1):null,adherence:null,completionRate:null,prescribedIntensity:null,prs:null,
-   exercises:[...exercises.values()].map(e=>({name:e.name,loggedLoadTrend:trend(e.loads),estimatedCapacityTrend:trend(e.estimates),prescriptionTrend:null})),
+  const observedFrequency=observedDays>=7?Core.round(days/observedDays*7,1):null,frequency=b.dataCompleteness==='complete'&&duration>=7?Core.round(days/duration*7,1):null;
+  return {block:b,contextMode:retrospective?'retrospective':'as-recorded',workoutCount:ws.length,totalVolume:ws.length?ws.reduce((s,w)=>s+Core.calcVolume(w),0):null,averageRPE:Core.averageRPE(ws),durationDays:duration,trainingDays:days,frequencyPerWeek:frequency,observedFrequencyPerWeek:observedFrequency,dataCompleteness:b.dataCompleteness,adherence:null,completionRate:null,prescribedIntensity:null,prs:null,
+   exercises:[...exercises.values()].map(e=>({name:e.name,exerciseId:e.exerciseId,loggedLoadTrend:trend(e.loads),estimatedCapacityTrend:trend(e.estimates),prescriptionTrend:null})),
    interpretation:b.loadStrategy==='conservative'||b.blockType==='return-reentry'||b.progressionIntent==='return-ramp'?'Deliberate progression context: increases in logged load are not equivalent to strength gains. RPE-aware estimates describe demonstrated performance, not tested maximum capacity.':'Logged load and RPE-aware estimated performance are separate observations, not predictions.'};
  }
- return {types,strategies,intents,context,validate,list,upsert,remove,at,analyze,date};
+ function contextWarnings(input){const c=context(input),returning=/\b(return|rebuild|re-entry)\b/i.test(c.name+' '+c.primaryGoal);const warnings=[];if(returning&&['aggressive','performance-based'].includes(c.loadStrategy))warnings.push('This looks like return-to-training context, but the load strategy is '+strategies[c.loadStrategy]+'.');if(returning&&['performance','testing'].includes(c.progressionIntent))warnings.push('This looks like return-to-training context, but the progression intent is '+intents[c.progressionIntent]+'.');return warnings;}
+ return {types,strategies,intents,context,contextWarnings,validate,list,upsert,remove,at,analyze,date};
 });

@@ -21,7 +21,7 @@ function renderVisibleView(panel,sub) {
   else if(panel==='measures')renderMeasures();
   else if(panel==='photos')renderPhotos();
   else if(panel==='coach')renderCoach();
-  else if(panel==='tools')updateStorageInfo();
+  else if(panel==='tools'){updateStorageInfo();window.renderDataIntegrityTools?.();}
   nav.rendered[key]=stamp;nav.metrics.renders++;nav.metrics.lastRenderMs=performance.now()-start;
 }
 function restoreViewPosition(panel) {

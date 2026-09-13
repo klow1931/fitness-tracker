@@ -9,7 +9,7 @@ const duplicate=workout('d','2026-01-12',[lift(90),lift(95)]);assert.equal(P.com
 const prs=S.reconcilePRs([],list,estimate,()=> 'record');const state={workouts:list,prs};const next=S.remove(state,'c',estimate,()=> 'record');
 assert.equal(next.prs[0].weight,110);assert.equal(state.prs[0].weight,200);assert.equal(next.workouts.length,2);
 const manual={id:'manual',exercise:'Bench',weight:120,reps:5};const withManual={workouts:list,prs:S.reconcilePRs([manual],list,estimate,()=> 'record')};
-assert.deepEqual(S.remove(withManual,'c',estimate,()=> 'record').prs,[manual]);
+const restoredManual=S.remove(withManual,'c',estimate,()=> 'record').prs;assert.equal(restoredManual.length,1);assert.equal(restoredManual[0].id,manual.id);assert.equal(restoredManual[0].weight,manual.weight);assert.ok(restoredManual[0].exerciseId);
 assert.equal(S.remove({workouts:[list[0]],prs:S.reconcilePRs([],[list[0]],estimate,()=> 'x')},'a',estimate,()=> 'x').prs.length,0);
 assert.throws(()=>S.remove(state,'missing',estimate,()=> 'x'));
 const Core=require('../src/core/loadnote-core'),Analytics=require('../src/training/analytics');

@@ -1,6 +1,12 @@
 # Loadnote
 
-**v1.10.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.11.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## Training Data Integrity
+
+Schema 12 assigns stable identities to exercises without rewriting the labels in saved workouts. Compact spelling variants are linked automatically; Tools → Exercise identities & aliases can merge semantic aliases such as “Adduction Machine” and “Hip Adduction.” Analysis and previous-session lookup follow the stable identity.
+
+Workout edits and deletions retain bounded revision snapshots with History-level undo. Duplicate creates a new draft instead of editing the source session. Imports show added/changed/removed record counts and save a local recovery snapshot before replacement; exported backups omit nested recovery payloads to stay portable.
 
 ## Training Block Context
 
@@ -10,7 +16,7 @@ Block analysis is explicitly retrospective and filters workouts through the anal
 
 ## Current features
 
-- Log strength, timed holds and cardio. Review before saving; edit saved sessions without changing their identity.
+- Log strength, timed holds and cardio. Review before saving; edit with revision-backed undo or duplicate a session into a new draft.
 - Restore unfinished drafts, reorder exercises, use Focus mode and run a rest timer with pause/resume and refresh recovery. Review and timer controls stay in the page.
 - Browse paginated history, filter dates, compare workouts and chart exercise progress. Strength charts include optional RPE in estimated 1RM, matching the training dashboard.
 - Track food portions, edit entries, review barcode refreshes and mark complete nutrition days.
@@ -57,6 +63,6 @@ Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 11 adds an independent training-block collection; existing workout records stay unchanged.
+Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 12 adds exercise identities, workout revisions and local recovery snapshots around the existing workout records; migration does not rewrite their sets, dates or loads.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.

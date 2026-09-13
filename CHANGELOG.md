@@ -1,3 +1,13 @@
+# v1.11.0 — Training Data Integrity
+
+- Assign stable exercise identities while preserving the original labels in workouts, templates, PRs and block benchmarks. Automatically link compact spelling variants and provide an explicit alias merge tool.
+- Retain bounded workout edit/deletion revisions, expose safe History-level undo and add an explicit Duplicate action that always creates a new draft.
+- Preview workout, block and template changes before JSON replacement imports; create restorable local snapshots before imports and identity merges.
+- Mark block workout coverage as unknown, incomplete or complete. Withhold full-block frequency for incomplete history and report observed logging frequency separately.
+- Add conservative-return presets and warnings for contradictory block strategy/intent combinations. Label weighted tonnage and its exclusions honestly.
+- Migrate schema 11 to 12 without changing historical set/date/load values. Align export, footer, service-worker cache and release metadata at v1.11.0.
+- No v2 automated training decisions.
+
 # v1.10.0 — Training Block Context
 
 - Add dated training blocks with structured type, goal, loading strategy and progression intent.

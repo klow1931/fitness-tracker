@@ -5,7 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 11;
+  const SCHEMA_VERSION = 12;
+  const RELEASE_VERSION = '1.11.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -20,7 +21,8 @@
 
   const DEFAULT_COLLECTIONS = [
     'workouts', 'nutrition', 'prs', 'goals', 'programs', 'templates',
-    'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews'
+    'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews',
+    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots'
   ];
 
   function normalizeState(input, defaults) {
@@ -133,6 +135,16 @@
     // strict validation happens on import and block mutations, never by dropping data.
     if(state.trainingBlocks === undefined)state.trainingBlocks=[];
     if(Number(state.schemaVersion||1)<11)state.schemaVersion=11;
+    // v11 → v12: add integrity collections without rewriting workout payloads.
+    if(Number(state.schemaVersion||1)<12){
+      if(!Array.isArray(state.exerciseCatalog))state.exerciseCatalog=[];
+      if(!Array.isArray(state.workoutRevisions))state.workoutRevisions=[];
+      if(!Array.isArray(state.recoverySnapshots))state.recoverySnapshots=[];
+      state.integrityVersion=1;state.schemaVersion=12;
+    }else state.integrityVersion=state.integrityVersion||1;
+    // This identifies the application version that most recently normalized the state.
+    state.releaseVersion=RELEASE_VERSION;
+    state.productVersion=11;
     return state;
   }
 
@@ -195,9 +207,11 @@
   function exerciseHistory(workouts, exerciseName) {
     const target = String(exerciseName || '').trim().toLowerCase();
     if (!target) return [];
+    const identities=new Set();
+    (workouts || []).forEach(w=>(w.exercises||[]).forEach(ex=>{if(String(ex.name||'').trim().toLowerCase()===target&&ex.exerciseId)identities.add(ex.exerciseId);}));
     const rows = [];
     (workouts || []).forEach((w) => (w.exercises || []).forEach((ex) => {
-      if (String(ex.name || '').trim().toLowerCase() !== target || ex.type === 'cardio') return;
+      if ((String(ex.name || '').trim().toLowerCase() !== target && !(ex.exerciseId&&identities.has(ex.exerciseId))) || ex.type === 'cardio') return;
       (ex.sets || []).forEach((set) => {
         if ((Number(set.reps) || 0) > 0) {
           rows.push({ date: w.date, weight: Number(set.weight) || 0, reps: Number(set.reps) || 0, rpe: Number(set.rpe) || null, estimated1RM: estimated1RM(set.weight, set.reps, set.rpe) });
@@ -221,6 +235,7 @@
 
   return {
     SCHEMA_VERSION,
+    RELEASE_VERSION,
     createId,
     round,
     clone,

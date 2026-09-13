@@ -1,4 +1,4 @@
-# Training Block Context (schema 11)
+# Training Block Context (introduced in schema 11; current schema 12)
 
 This is context infrastructure, not the v2 Decision Engine. Existing workouts, drafts, PR reconciliation and core RPE-aware estimates retain their formats and behavior.
 
@@ -6,7 +6,7 @@ This is context infrastructure, not the v2 Decision Engine. Existing workouts, d
 
 `trainingBlocks` is an independent collection. Each record has a stable UUID, ISO UTC `createdAt`/`updatedAt`, and ordered `revisions`. Each revision has a `recordedAt` timestamp and a complete context snapshot, or `context: null` for deletion. Deletion removes current association/UI visibility but preserves audit history in JSON backups. It is not permanent erasure of notes.
 
-Context contains name, inclusive start/end calendar dates, extensible block-type string ID, goal, structured load strategy, progression intent/notes, optional notes, training maxes and known/recent 1RMs. Each benchmark stores an exercise name, positive kg value and `observedOn` calendar date. UI captures units when opening an editor and converts only at that boundary. Benchmarks are never used as estimated capacity.
+Context contains name, inclusive start/end calendar dates, extensible block-type string ID, goal, structured load strategy, progression intent/notes, workout-history coverage, optional notes, training maxes and known/recent 1RMs. Each benchmark stores an exercise name, stable exercise identity when available, positive kg value and `observedOn` calendar date. UI captures units when opening an editor and converts only at that boundary. Benchmarks are never used as estimated capacity.
 
 Block overlaps are rejected, including shared boundary days. An open end extends indefinitely. Close the earlier range before adding a sequential block. Validation checks each revision-time snapshot too, so imported histories cannot create ambiguous historical precedence. Unknown future block-type IDs are preserved; unknown strategy/intent IDs are rejected until explicitly supported.
 
@@ -26,7 +26,7 @@ Block summaries provide workout count, training days, elapsed duration through t
 
 Per-exercise logged-load trends use best logged load per date. Estimated-capacity trends use the existing core RPE-aware estimator on positive loads, 1–12 reps and RPE 6–10, with at least three distinct days. Estimates are demonstrated-performance proxies, not measured physiological strength. Partial/missing RPE cannot become an invented estimate. Neither known 1RMs nor training maxes fill gaps. Same-load/different-effort and same-effort/increasing-load cases remain distinct.
 
-The current workout schema does not reliably retain prescribed loads or planned block sessions. Prescription trends, adherence, completion, prescribed intensity and block PR counts remain null rather than guessed. Logged-load trends are never labeled prescription or strength gains. Conservative/re-entry/ramp context explicitly cautions against equating load increases with capacity gains.
+The current workout schema does not reliably retain prescribed loads or planned block sessions. Prescription trends, adherence, completion, prescribed intensity and block PR counts remain null rather than guessed. Logged-load trends are never labeled prescription or strength gains. Conservative/re-entry/ramp context explicitly cautions against equating load increases with capacity gains. Full-block frequency is reported only when workout-history coverage is explicitly complete; otherwise observed logging frequency is separate and may still be unavailable.
 
 ## Acceptance
 

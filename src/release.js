@@ -13,9 +13,10 @@
       { id:'adaptive', label:'Adaptive programming', ok:Number(d.schemaVersion || 0) >= 6 },
       { id:'coach', label:'Coach architecture', ok:Number(d.schemaVersion || 0) >= 5 },
       { id:'fatigue', label:'Performance & fatigue signals', ok:Number(d.schemaVersion || 0) >= 9 },
-      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 11 }
+      { id:'integrity', label:'Training data integrity', ok:Number(d.schemaVersion || 0) >= 12 && Array.isArray(d.workoutRevisions) && Array.isArray(d.exerciseCatalog) },
+      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 12 }
     ];
-    return { version:'1.10.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'1.11.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });

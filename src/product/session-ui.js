@@ -24,6 +24,11 @@ function editWorkout(id){
   showTab('workouts');showSubTab('workouts','wo-log');refreshSessionMode();saveLoggerDraft();
   document.getElementById('workout-mode-title').scrollIntoView({block:'start'});
 }
+function duplicateWorkout(id){
+  if(window.loggerSaving)return;const original=data.workouts.find(w=>String(w.id)===String(id));if(!original)return showToast('Workout not found.','error');
+  if(fillWorkoutForm(original.exercises,'')===false)return;document.getElementById('wo-date').value=today();resetSessionEdit();showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();
+  showToast('Workout copied into a new draft · adjust and review before saving','info');document.getElementById('workout-mode-title').scrollIntoView({block:'start'});
+}
 function reviewWorkout(){
   if(window.loggerSaving || !validateWorkoutForm())return;
   const draft=captureLoggerDraft();
@@ -35,7 +40,7 @@ function reviewWorkout(){
   const add=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;content.appendChild(el);return el;};
   document.getElementById('workout-review-title').textContent=workoutEdit?'Review workout changes':'Review your workout';
   add('p',formatDate(workout.date));
-  if(workoutEdit)add('p','This replaces the saved session. It will not add another workout.');
+  if(workoutEdit)add('p','This replaces the saved session. The previous version remains available from History → Recent workout changes.');
   const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length || 0),0);
   add('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
   for(const exercise of workout.exercises){
@@ -86,7 +91,8 @@ function updateSessionComparisons(){
   const date=document.getElementById('wo-date')?.value;if(!date)return;
   for(const row of document.querySelectorAll('#exercise-rows > div')){
     const name=row.querySelector('.ex-name')?.value.trim();
-    const last=name?LoadnoteSession.previous(data.workouts,name,date,workoutEdit?.id,row.dataset.type,row.dataset.trackBy):null;
+    const exerciseId=name?window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id:null;
+    const last=name?LoadnoteSession.previous(data.workouts,name,date,workoutEdit?.id,row.dataset.type,row.dataset.trackBy,exerciseId):null;
     let panel=row.querySelector('.previous-performance');
     if(!panel){panel=document.createElement('div');panel.className='previous-performance';row.appendChild(panel);}
     const inputs=[...row.querySelectorAll('.sets-container > div')].map(s=>({reps:s.querySelector('.set-reps')?.value,duration:s.querySelector('.set-duration')?.value,weight:s.querySelector('.set-weight')?.value,rpe:s.querySelector('.set-rpe')?.value}));
