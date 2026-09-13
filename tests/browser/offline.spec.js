@@ -8,7 +8,7 @@ test.beforeAll(async()=>{
  server=http.createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
   const file=path.join(root,pathname==='/'?'index.html':pathname);
-  try{let body=fs.readFileSync(file);if(pathname==='/sw.js')body=Buffer.from(body.toString().replaceAll('loadnote-v1.9.0',`loadnote-v1.9.0-test${revision}`));
+  try{let body=fs.readFileSync(file);if(pathname==='/sw.js')body=Buffer.from(body.toString().replaceAll('loadnote-v'+require('../../package.json').version,`loadnote-test${revision}`));
    res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png'})[path.extname(file)]||'application/octet-stream');res.end(body);
   }catch{res.writeHead(404).end();}
  });

@@ -49,7 +49,7 @@
     }
 
     // ========== Tab Navigation ==========
-    function showTab(name) { navigateTab(name); }
+    function showTab(name) { navigateTab(name); if(name==='workouts')window.renderTrainingBlocks?.(); }
     function showSubTab(panel, sub) { navigateSubTab(panel, sub); }
 
     function toggleMobileMore(force) {

@@ -4,7 +4,7 @@ const scripts=[...html.matchAll(/<script src="([^":]+)"/g)].map(m=>m[1]);
 const context={console,setTimeout,clearTimeout,document:{readyState:'loading',addEventListener(){}},navigator:{}};context.window=context;
 vm.createContext(context);
 for(const file of scripts)vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{filename:file});
-assert.equal(vm.runInContext('DEFAULT_DATA.schemaVersion',context),10);
+assert.equal(vm.runInContext('DEFAULT_DATA.schemaVersion',context),11);
 for(const name of ['addExerciseRow','saveCurrentAsTemplate','persistNow','handleImport','exportCSV','initWorkoutEvents','getLastExercisePerformance'])assert.equal(typeof context[name],'function',name);
 assert.equal(typeof context.renderFormReview,'undefined');assert.equal(typeof context.loadFormVideo,'undefined');
 const panel=html.slice(html.indexOf('<section id="panel-workouts"'),html.indexOf('</section>',html.indexOf('<section id="panel-workouts"')));

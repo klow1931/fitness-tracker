@@ -1,6 +1,12 @@
 # Loadnote
 
-**v1.9.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.10.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## Training Block Context
+
+Under Workouts, open Training Block Context to add a current or historical date range. Block dates are inclusive; open-ended blocks must end before a later block begins. Optional training maxes are programming choices, while known 1RMs are athlete-reported benchmarks. Both store kg and a known-on date. Neither becomes a capacity estimate.
+
+Block analysis is explicitly retrospective and filters workouts through the analysis date. Three distinct performance days with usable reps and RPE are required for estimated-capacity trends. Actual prescribed-load, adherence and completion metrics remain unavailable without planned-session evidence. See [block API and backtesting](docs/training-blocks.md).
 
 ## Current features
 
@@ -51,6 +57,6 @@ Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. This release does not migrate saved workout data or change schema version 10.
+Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 11 adds an independent training-block collection; existing workout records stay unchanged.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.

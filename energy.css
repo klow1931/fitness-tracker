@@ -1,4 +1,14 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+.training-blocks summary { cursor:pointer; min-height:44px; }
+.training-blocks p,.block-dialog p { margin:.7rem 0; color:var(--muted); }
+.block-list article,#block-analysis article { border-top:1px solid var(--line); padding:1rem 0; overflow-wrap:anywhere; }
+.block-dialog { width:min(760px,calc(100% - 24px)); max-height:85dvh; overflow:auto; color:var(--ink); background:var(--surface); }
+.block-dialog::backdrop { background:#0008; }
+.block-dialog label { display:flex; flex-direction:column; gap:.3rem; margin:.5rem 0; min-width:0; }
+.block-fields,.block-benchmark { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; }
+.block-dialog .input { width:100%; min-width:0; }
+.block-dialog button,.training-blocks button { min-height:44px; }
+@media(max-width:480px) { .block-fields,.block-benchmark { grid-template-columns:1fr; } }
 .device-status { display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; padding:.6rem 1rem; background:var(--surface); color:var(--ink); border-bottom:1px solid var(--line); font-size:.8rem; }
 .device-status[hidden] { display:none; }
 .device-status button { min-height:44px; }
