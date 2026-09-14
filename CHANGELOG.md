@@ -1,3 +1,10 @@
+# v1.13.1 — Prescription comparison corrections
+
+- Group repeated exercise rows by identity and tracking mode; compare flattened positions without reusing completed sets.
+- Convert cardio distances to meters before comparing planned and completed targets.
+- Preserve target heart rate through repeated normalization and backup roundtrips.
+- Separate prescription coverage from adherence; adherence remains unknown without scheduling evidence.
+
 # v1.13.0 — Training Prescription & Session Intent
 
 - Add optional session roles and goals to the workout logger, with deviation reasons for fatigue, pain, time, equipment, autoregulation or programming changes.

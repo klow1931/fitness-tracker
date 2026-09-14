@@ -42,7 +42,7 @@
       const duration=Math.max(0,Number(raw.duration)||0),distance=Math.max(0,Number(raw.distance)||0);
       if(!(duration>0||distance>0))return null;
       const row={name,type:'cardio',duration,distance,distanceUnit:['km','mi','m'].includes(raw.distanceUnit)?raw.distanceUnit:'km'};
-      if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);if(Number(raw.avgHr)>0)row.targetAvgHr=Number(raw.avgHr);return row;
+      if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);if(Number.isFinite(Number(raw.targetAvgHr??raw.avgHr))&&Number(raw.targetAvgHr??raw.avgHr)>0)row.targetAvgHr=Number(raw.targetAvgHr??raw.avgHr);return row;
     }
     const trackBy=raw.trackBy==='duration'?'duration':'reps',sets=(raw.sets||[]).map(set=>plannedSet(set,trackBy)).filter(Boolean);
     if(!sets.length)return null;const row={name,type:'strength',trackBy,sets};if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);return row;
@@ -88,14 +88,35 @@
     return Number(planned?.[measure])===Number(actual?.[measure])&&Math.abs((Number(planned?.weight)||0)-(Number(actual?.weight)||0))<=0.01;
   }
   function compare(workout,exerciseIds){
-    const plan=workout?.sessionIntent?.prescription;if(!plan)return null;const ids=exerciseIds?new Set(exerciseIds):null,actualByKey=new Map();
-    for(const exercise of workout.exercises||[])if(!ids||exercise.exerciseId&&ids.has(exercise.exerciseId)){actualByKey.set(key(exercise),exercise);actualByKey.set('name:'+text(exercise.name,160).toLowerCase(),exercise);}
+    const plan=workout?.sessionIntent?.prescription;if(!plan)return null;
+    const ids=exerciseIds?new Set(exerciseIds):null;
+    const mode=e=>e.type==='cardio'?'cardio':e.trackBy==='duration'?'duration':'reps';
+    const name=e=>text(e.name,160).toLowerCase()+'|'+mode(e);
+    const identityByName=new Map();
+    for(const e of [...plan.plannedExercises,...(workout.exercises||[])])if(e.exerciseId){
+      if(!identityByName.has(name(e)))identityByName.set(name(e),new Set());
+      identityByName.get(name(e)).add(String(e.exerciseId));
+    }
+    const identity=e=>e.exerciseId?String(e.exerciseId):identityByName.get(name(e))?.size===1?[...identityByName.get(name(e))][0]:null;
+    const group=exercises=>{const out=new Map();for(const e of exercises){
+      const id=identity(e);if(ids&&(!id||!ids.has(id)))continue;
+      const k=(id?'id:'+id:'name:'+text(e.name,160).toLowerCase())+'|'+mode(e);
+      if(!out.has(k))out.set(k,{mode:mode(e),sets:[]});
+      out.get(k).sets.push(...comparableSets(e));
+    }return out;};
+    const plannedGroups=group(plan.plannedExercises),actualGroups=group(workout.exercises||[]);
+    const meters=e=>{const scale={m:1,km:1000,mi:1609.344}[e.distanceUnit||'km'];return scale==null?null:Number(e.distance||0)*scale;};
+    const cardioMatches=(p,a)=>{const x=meters(p),y=meters(a);return Number(a.duration||0)>=Number(p.duration||0)&&x!=null&&y!=null&&y+0.01>=x;};
     let plannedSets=0,completedSets=0,exactSets=0,targetRpeTotal=0,targetRpeSets=0;
-    for(const planned of plan.plannedExercises){
-      if(ids&&(!planned.exerciseId||!ids.has(planned.exerciseId)))continue;
-      const expected=comparableSets(planned),actual=comparableSets(actualByKey.get(key(planned))||actualByKey.get('name:'+text(planned.name,160).toLowerCase()));plannedSets+=expected.length;completedSets+=Math.min(expected.length,actual.length);for(const set of expected)if(Number(set.targetRpe)>=1&&Number(set.targetRpe)<=10){targetRpeTotal+=Number(set.targetRpe);targetRpeSets++;}
-      if(planned.type==='cardio'){if(actual.length&&Number(actual[0].duration||0)>=Number(planned.duration||0)&&Number(actual[0].distance||0)>=Number(planned.distance||0))exactSets++;}
-      else for(let i=0;i<Math.min(expected.length,actual.length);i++)if(sameSet(expected[i],actual[i],planned.trackBy))exactSets++;
+    for(const [k,planned] of plannedGroups){
+      const expected=planned.sets,actual=actualGroups.get(k)?.sets||[];
+      plannedSets+=expected.length;completedSets+=Math.min(expected.length,actual.length);
+      for(const set of expected)if(Number(set.targetRpe)>=1&&Number(set.targetRpe)<=10){targetRpeTotal+=Number(set.targetRpe);targetRpeSets++;}
+      // Compare flattened positions within an exercise/tracking mode. No actual
+      // position may satisfy two planned rows; extra completed sets stay capped.
+      for(let i=0;i<Math.min(expected.length,actual.length);i++){
+        if(planned.mode==='cardio'?cardioMatches(expected[i],actual[i]):sameSet(expected[i],actual[i],planned.mode))exactSets++;
+      }
     }
     if(!plannedSets)return null;const completionRate=Math.round(completedSets/plannedSets*1000)/10,exactRate=Math.round(exactSets/plannedSets*1000)/10;
     return {plannedSets,completedSets,exactSets,completionRate,exactRate,targetRpeTotal,targetRpeSets,averageTargetRpe:targetRpeSets?Math.round(targetRpeTotal/targetRpeSets*10)/10:null,status:exactSets===plannedSets?'as-planned':completedSets===0?'not-completed':'modified',deviationReason:workout.sessionIntent.deviationReason||'none',hasExplanation:(workout.sessionIntent.deviationReason||'none')!=='none'||!!workout.sessionIntent.deviationNotes};

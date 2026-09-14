@@ -1,6 +1,6 @@
 # Loadnote
 
-**v1.13.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.13.1 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
 
 ## Training Prescription & Session Intent
 
