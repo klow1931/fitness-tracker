@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const Intent=require('../src/product/session-intent'),Session=require('../src/product/workout-session'),Integrity=require('../src/product/data-integrity'),Blocks=require('../src/product/training-blocks');
+const planned=[{exerciseId:'squat',name:'Back Squat',type:'strength',trackBy:'reps',sets:[{reps:5,weight:140,rpe:7},{reps:5,weight:140,rpe:7}]},{exerciseId:'bike',name:'Bike',type:'cardio',duration:20,distance:0,distanceUnit:'km'}];
+const prescription=Intent.createPrescription(planned,{type:'program',referenceId:'program-1',label:'Day 1'},'2026-09-10T12:00:00.000Z');
+assert.equal(prescription.plannedExercises[0].sets[0].targetRpe,7);assert.equal(prescription.source.type,'program');assert.equal(planned[0].sets[0].rpe,7,'capture must not mutate the source');
+const manualDraft={version:3,date:'2026-09-10',notes:'',unit:'kg',sessionIntent:null,rows:[{type:'strength',trackBy:'reps',name:'Back Squat',sets:[{reps:'5',weight:'140',rpe:'7'}]}]};
+const manualPlan=Intent.createPrescription(Session.fromDraft(manualDraft,null).exercises,{type:'manual'},'2026-09-10T12:00:00.000Z');assert.equal(manualPlan.plannedExercises[0].sets[0].targetRpe,7,'manual plan capture must preserve target RPE');
+const draft={version:3,date:'2026-09-10',notes:'',unit:'kg',sessionIntent:{role:'volume',goal:'Build work capacity',prescription,deviationReason:'autoregulation',deviationNotes:'Stopped after one set'},rows:[{type:'strength',trackBy:'reps',name:'Back Squat',sets:[{reps:'5',weight:'140',rpe:'8'}]},{type:'cardio',name:'Bike',duration:'20',distance:'0',distanceUnit:'km'}]};
+const workout=Session.fromDraft(draft,'workout');workout.exercises[0].exerciseId='squat';workout.exercises[1].exerciseId='bike';
+const comparison=Intent.compare(workout);assert.equal(comparison.plannedSets,3);assert.equal(comparison.completedSets,2);assert.equal(comparison.exactSets,2);assert.equal(comparison.completionRate,66.7);assert.equal(comparison.hasExplanation,true);
+const summary=Intent.summarize([workout]);assert.equal(summary.prescriptionCoverage,100);assert.equal(summary.setCompletionRate,66.7);assert.equal(summary.averageTargetRpe,7);assert.equal(summary.unexplainedModifiedSessions,0);
+const withoutReason=structuredClone(workout);withoutReason.sessionIntent.deviationReason='none';withoutReason.sessionIntent.deviationNotes='';assert.equal(Intent.summarize([withoutReason]).unexplainedModifiedSessions,1);
+assert.equal(Intent.summarize([{id:'legacy',exercises:[]}]).prescriptionCoverage,null,'missing historical plans stay unknown');
+assert.throws(()=>Intent.prescription({...prescription,capturedAt:'not-a-date'}),/Invalid/);assert.throws(()=>Intent.context({...draft.sessionIntent,role:'invented'}),/Invalid|session intent/);
+const normalized=Integrity.normalizeState({exerciseCatalog:[],workouts:[workout],templates:[],prs:[],trainingBlocks:[],workoutRevisions:[],exerciseRoles:[]});assert.equal(normalized.workouts[0].exercises[0].exerciseId,normalized.workouts[0].sessionIntent.prescription.plannedExercises[0].exerciseId);
+const blocks=Blocks.upsert([],{name:'Volume',startDate:'2026-09-01',endDate:'2026-09-30',dataCompleteness:'complete'},{now:'2026-09-30T20:00:00.000Z'}),analysis=Blocks.analyze(blocks,[normalized.workouts[0]],blocks[0].id,{asOf:'2026-09-30',retrospective:true});
+assert.equal(analysis.adherence,100);assert.equal(analysis.completionRate,66.7);assert.equal(analysis.exercises.find(row=>row.name==='Back Squat').prescriptionTrend,null,'trends still require three days');
+console.log('Session prescription, intent, adherence and identity tests passed');

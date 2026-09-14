@@ -331,6 +331,53 @@
           </div>
         </div>
 
+        <details id="session-intent" class="session-intent mb-4">
+          <summary><b>Session intent &amp; planned work</b> <span class="text-xs text-slate-500">optional, recommended for v2 readiness</span></summary>
+          <p class="text-sm text-slate-600 mt-2">Record what this session is meant to accomplish. A planned-work snapshot is kept separate from the performance you complete.</p>
+          <div class="grid sm:grid-cols-2 gap-3 mt-3">
+            <div>
+              <label class="label" for="session-role">Session role</label>
+              <select id="session-role" class="input" data-workout-change="session-intent">
+                <option value="">Not specified</option>
+                <option value="heavy-exposure">Heavy exposure</option>
+                <option value="volume">Volume</option>
+                <option value="technique">Technique / skill</option>
+                <option value="recovery">Recovery</option>
+                <option value="testing">Testing</option>
+                <option value="deload">Deload</option>
+                <option value="mixed">Mixed session</option>
+              </select>
+            </div>
+            <div>
+              <label class="label" for="session-goal">Session goal</label>
+              <input id="session-goal" class="input" maxlength="300" placeholder="e.g. Low-fatigue competition-squat practice" data-workout-change="session-intent" />
+            </div>
+            <div>
+              <label class="label" for="session-deviation-reason">Why completed work changed</label>
+              <select id="session-deviation-reason" class="input" data-workout-change="session-intent">
+                <option value="">No deviation noted</option>
+                <option value="fatigue">Fatigue / readiness</option>
+                <option value="pain">Pain or discomfort</option>
+                <option value="time">Time constraint</option>
+                <option value="equipment">Equipment unavailable</option>
+                <option value="autoregulation">Intentional autoregulation</option>
+                <option value="plan-change">Programming change</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="label" for="session-deviation-notes">Change notes</label>
+              <input id="session-deviation-notes" class="input" maxlength="500" placeholder="Optional explanation" data-workout-change="session-intent" />
+            </div>
+          </div>
+          <div id="planned-work-summary" class="planned-work-summary mt-3" aria-live="polite"></div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button type="button" class="btn-secondary" data-workout-action="capture-plan">Use entered work as plan</button>
+            <button type="button" id="clear-planned-work" class="btn-secondary" data-workout-action="clear-plan" hidden>Remove planned work</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">When capturing a manual plan, entered RPE values become target RPE and then clear so you can record actual RPE after each set.</p>
+        </details>
+
         <p id="logger-draft-status" role="status" class="text-sm text-slate-500 mb-2">Draft saves on this device as you train.</p><p id="logger-summary" class="text-sm mb-3"></p><p class="text-xs text-slate-500 mb-3">Check sets off as you go. Saving includes all entered sets, including unchecked sets. Blank rows are ignored.</p>
         <div class="training-session-bar">
           <div><label><input type="checkbox" id="training-focus" data-workout-change="training-focus" /> Focus mode</label><p id="training-progress-label"></p><progress id="training-progress" max="1" value="0" aria-label="Entered strength sets completed"></progress></div>
@@ -1259,7 +1306,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v1.12.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v1.13.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1804,6 +1851,7 @@
   </datalist>
   <script src="src/core/loadnote-core.js" defer></script>
   <script src="src/product/data-integrity.js" defer></script>
+  <script src="src/product/session-intent.js" defer></script>
   <script src="src/training/exercises.js" defer></script>
   <script src="src/training/analytics.js" defer></script>
   <script src="src/training/progression.js" defer></script>
@@ -1823,6 +1871,7 @@
   <script src="src/product/state-store.js" defer></script>
   <script src="src/product/units.js" defer></script>
   <script src="src/product/workout-form.js" defer></script>
+  <script src="src/product/session-intent-ui.js" defer></script>
   <script src="src/product/workout-templates.js" defer></script>
   <script src="src/product/rest-timer.js" defer></script>
   <script src="src/product/app-lifecycle.js" defer></script>

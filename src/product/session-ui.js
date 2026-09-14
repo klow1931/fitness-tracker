@@ -17,7 +17,7 @@ function editWorkout(id){
   if(window.loggerSaving)return;
   const original=data.workouts.find(w=>String(w.id)===String(id));
   if(!original)return showToast('Workout not found.','error');
-  if(fillWorkoutForm(original.exercises,original.notes,true)===false)return;
+  if(fillWorkoutForm(original.exercises,original.notes,true,{restore:original.sessionIntent||null})===false)return;
   workoutEdit={id:original.id,original:JSON.parse(JSON.stringify(original))};
   pendingProgramSession=null;
   document.getElementById('wo-date').value=original.date;
@@ -26,7 +26,7 @@ function editWorkout(id){
 }
 function duplicateWorkout(id){
   if(window.loggerSaving)return;const original=data.workouts.find(w=>String(w.id)===String(id));if(!original)return showToast('Workout not found.','error');
-  if(fillWorkoutForm(original.exercises,'')===false)return;document.getElementById('wo-date').value=today();resetSessionEdit();showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();
+  if(fillWorkoutForm(original.exercises,'',false,{source:{type:'repeated-workout',referenceId:original.id,label:formatDate(original.date)},role:original.sessionIntent?.role,goal:original.sessionIntent?.goal})===false)return;document.getElementById('wo-date').value=today();resetSessionEdit();showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();
   showToast('Workout copied into a new draft · adjust and review before saving','info');document.getElementById('workout-mode-title').scrollIntoView({block:'start'});
 }
 function reviewWorkout(){
@@ -40,6 +40,10 @@ function reviewWorkout(){
   const add=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;content.appendChild(el);return el;};
   document.getElementById('workout-review-title').textContent=workoutEdit?'Review workout changes':'Review your workout';
   add('p',formatDate(workout.date));
+  if(workout.sessionIntent){
+    const role=window.LoadnoteIntent.SESSION_ROLES[workout.sessionIntent.role]||'Not specified';add('p','Session role: '+role+(workout.sessionIntent.goal?' · '+workout.sessionIntent.goal:''));
+    const comparison=window.LoadnoteIntent.compare(workout);if(comparison)add('p',`Planned vs completed: ${comparison.completedSets}/${comparison.plannedSets} planned sets represented · ${comparison.exactRate}% unchanged${comparison.status!=='as-planned'&&comparison.hasExplanation?' · change explained':''}.`);
+  }
   if(workoutEdit)add('p','This replaces the saved session. The previous version remains available from History → Recent workout changes.');
   const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length || 0),0);
   add('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
@@ -49,6 +53,7 @@ function reviewWorkout(){
     else add('p',exercise.sets.map((s,i)=>`${i+1}. ${formatStrengthSet(s)}`).join(' / '));
   }
   if(workout.notes)add('p','Notes: '+workout.notes);
+  if(workout.sessionIntent&&(workout.sessionIntent.deviationReason!=='none'||workout.sessionIntent.deviationNotes)){const reason=window.LoadnoteIntent.DEVIATION_REASONS[workout.sessionIntent.deviationReason]||'Other';add('p','Plan change: '+reason+(workout.sessionIntent.deviationNotes?' · '+workout.sessionIntent.deviationNotes:''));}
   const unchecked=draft.rows.reduce((n,r)=>n+(r.sets || []).filter(s=>Number(s.reps || s.duration)>0 && !s.done).length,0);
   add('p',unchecked?`${unchecked} entered sets are unchecked. They are included in this review and will be saved.`:'All entered sets shown above will be saved.');
   const button=document.getElementById('confirm-workout-save');button.textContent=workoutEdit?'Save changes':'Save workout';button.disabled=false;

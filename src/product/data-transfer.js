@@ -83,27 +83,32 @@
 
     function exportCSV() {
       // Workouts CSV (one row per set / cardio line)
-      const woHeaders = ['date', 'workout_id', 'exercise', 'type', 'set_index', 'reps', 'hold_sec', 'weight_kg', 'rpe', 'duration_min', 'distance', 'distance_unit', 'avg_hr', 'notes'];
+      const woHeaders = ['date', 'workout_id', 'exercise', 'type', 'set_index', 'reps', 'hold_sec', 'weight_kg', 'rpe', 'duration_min', 'distance', 'distance_unit', 'avg_hr', 'session_role', 'session_goal', 'deviation_reason', 'deviation_notes', 'notes'];
       const woRows = [woHeaders.join(',')];
       (data.workouts || []).forEach(w => {
         (w.exercises || []).forEach(ex => {
           if (ex.type === 'cardio') {
             woRows.push([
               w.date, w.id, csvEscape(ex.name), 'cardio', '', '', '', '', '',
-              ex.duration || '', ex.distance || '', ex.distanceUnit || '', ex.avgHr || '', csvEscape(w.notes || '')
+              ex.duration || '', ex.distance || '', ex.distanceUnit || '', ex.avgHr || '', w.sessionIntent?.role || '', csvEscape(w.sessionIntent?.goal || ''), w.sessionIntent?.deviationReason || '', csvEscape(w.sessionIntent?.deviationNotes || ''), csvEscape(w.notes || '')
             ].join(','));
           } else {
             (ex.sets || []).forEach((s, i) => {
               woRows.push([
                 w.date, w.id, csvEscape(ex.name), 'strength', i + 1,
                 s.reps || '', s.duration || '', s.weight, s.rpe || '',
-                '', '', '', '', csvEscape(w.notes || '')
+                '', '', '', '', w.sessionIntent?.role || '', csvEscape(w.sessionIntent?.goal || ''), w.sessionIntent?.deviationReason || '', csvEscape(w.sessionIntent?.deviationNotes || ''), csvEscape(w.notes || '')
               ].join(','));
             });
           }
         });
       });
       downloadText(`workouts-${today()}.csv`, woRows.join('\n'));
+
+      // Planned work is exported separately so it cannot be mistaken for completed performance.
+      const planRows=[['date','workout_id','source_type','source_reference','source_label','session_role','session_goal','exercise','type','set_index','planned_reps','planned_hold_sec','planned_weight_kg','target_rpe','planned_duration_min','planned_distance','distance_unit'].join(',')];
+      (data.workouts||[]).forEach(w=>{const intent=w.sessionIntent,plan=intent?.prescription;if(!plan)return;(plan.plannedExercises||[]).forEach(ex=>{if(ex.type==='cardio')planRows.push([w.date,w.id,plan.source.type,plan.source.referenceId||'',csvEscape(plan.source.label||''),intent.role,csvEscape(intent.goal||''),csvEscape(ex.name),'cardio','','','','', '',ex.duration||'',ex.distance||'',ex.distanceUnit||''].join(','));else (ex.sets||[]).forEach((set,index)=>planRows.push([w.date,w.id,plan.source.type,plan.source.referenceId||'',csvEscape(plan.source.label||''),intent.role,csvEscape(intent.goal||''),csvEscape(ex.name),'strength',index+1,set.reps||'',set.duration||'',set.weight,set.targetRpe||'','','',''].join(',')));});});
+      if(planRows.length>1)downloadText(`workout-prescriptions-${today()}.csv`,planRows.join('\n'));
 
       // Nutrition CSV (macros + micros)
       const nuHeaders = [

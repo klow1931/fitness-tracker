@@ -1,12 +1,18 @@
 # Loadnote
 
-**v1.12.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.13.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## Training Prescription & Session Intent
+
+The workout logger can record a session role, goal and an immutable snapshot of planned sets separately from completed performance. Templates, repeated workouts and generated program days capture their loaded work automatically; a manual session can use **Use entered work as plan** before training. If execution changes, record the reason without rewriting the original plan.
+
+History, block analysis and Decision Readiness now report planned-session coverage and planned-set completion. Missing planned work remains unknown rather than being treated as nonadherence. Loadnote still does not make or apply training decisions. See [the prescription contract](docs/session-intent.md).
 
 ## Athlete Model & Decision Readiness
 
 Coach → Programs now includes a per-lift Decision Readiness panel. Confirm competition lifts and variation relationships, inspect an explicit analysis date, and compare logged load, RPE-aware estimated capacity, block training maxes, known 1RMs and legacy profile benchmarks without collapsing them into one “max.” Current-corrected analysis supports historical context entered later; Historical as-recorded replay withholds block and role knowledge that was not yet recorded and flags legacy timestamp limits.
 
-v1.12 reports evidence quality only. It does not automatically change loads, prescribe deloads or enable the v2 decision engine. See [the evidence contract](docs/decision-readiness.md).
+v1.13 reports evidence quality and execution context only. It does not automatically change loads, prescribe deloads or enable the v2 decision engine. See [the evidence contract](docs/decision-readiness.md).
 
 ## Training Data Integrity
 
@@ -18,7 +24,7 @@ Workout edits and deletions retain bounded revision snapshots with History-level
 
 Under Workouts, open Training Block Context to add a current or historical date range. Block dates are inclusive; open-ended blocks must end before a later block begins. Optional training maxes are programming choices, while known 1RMs are athlete-reported benchmarks. Both store kg and a known-on date. Neither becomes a capacity estimate.
 
-Block analysis is explicitly retrospective and filters workouts through the analysis date. Three distinct performance days with usable reps and RPE are required for estimated-capacity trends. Actual prescribed-load, adherence and completion metrics remain unavailable without planned-session evidence. See [block API and backtesting](docs/training-blocks.md).
+Block analysis is explicitly retrospective and filters workouts through the analysis date. Three distinct performance days with usable reps and RPE are required for estimated-capacity trends. Prescription coverage and planned-set completion appear only where planned-session evidence exists. See [block API and backtesting](docs/training-blocks.md).
 
 ## Current features
 
@@ -69,6 +75,6 @@ Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 12 adds exercise identities, workout revisions and local recovery snapshots around the existing workout records; migration does not rewrite their sets, dates or loads.
+Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 14 adds optional session-intent and planned-work snapshots without rewriting older workouts, sets, dates or loads.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.

@@ -12,10 +12,11 @@
  function references(state){
   const refs=[];
   const exercises=collection=>(collection||[]).forEach(item=>(item.exercises||[]).forEach(ex=>{if(ex&&name(ex.name))refs.push(ex);}));
-  exercises(state.workouts);exercises(state.templates);
+  const plans=collection=>(collection||[]).forEach(item=>(item?.sessionIntent?.prescription?.plannedExercises||[]).forEach(ex=>{if(ex&&name(ex.name))refs.push(ex);}));
+  exercises(state.workouts);plans(state.workouts);exercises(state.templates);
   (state.prs||[]).forEach(p=>{if(p&&name(p.exercise))refs.push({owner:p,name:p.exercise,exerciseId:p.exerciseId});if(p?.baselinePR&&name(p.baselinePR.exercise))refs.push({owner:p.baselinePR,name:p.baselinePR.exercise,exerciseId:p.baselinePR.exerciseId||p.exerciseId});});
   (state.trainingBlocks||[]).forEach(block=>(block.revisions||[]).forEach(revision=>{const context=revision?.context;if(!context)return;for(const field of ['trainingMaxes','known1RMs'])(context[field]||[]).forEach(row=>{if(row&&name(row.exercise))refs.push({owner:row,name:row.exercise,exerciseId:row.exerciseId});});}));
-  (state.workoutRevisions||[]).forEach(revision=>{exercises(revision.before?[revision.before]:[]);exercises(revision.after?[revision.after]:[]);});
+  (state.workoutRevisions||[]).forEach(revision=>{exercises(revision.before?[revision.before]:[]);plans(revision.before?[revision.before]:[]);exercises(revision.after?[revision.after]:[]);plans(revision.after?[revision.after]:[]);});
   return refs;
  }
  function normalizedEntry(raw){

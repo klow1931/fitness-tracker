@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.12.0';
+const CACHE = 'loadnote-v1.13.0';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './assets/chart.umd.js',
   './src/product/app-lifecycle.js',
   './src/product/data-integrity.js',
+  './src/product/session-intent.js',
   './src/product/data-integrity-ui.js',
   './src/core/ui-utils.js',
   './src/product/navigation.js',
@@ -20,6 +21,7 @@ const ASSETS = [
   './src/product/state-store.js',
   './src/product/units.js',
   './src/product/workout-form.js',
+  './src/product/session-intent-ui.js',
   './src/product/workout-templates.js',
   './src/product/rest-timer.js',
   './src/product/training-flow.js',

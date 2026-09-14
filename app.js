@@ -1504,13 +1504,13 @@
         ? session.exercises.map(ex => ({
             name: ex.name,
             type: ex.duration ? 'strength' : 'strength',
-            sets: Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || '', weight: ex.weight == null ? '' : ex.weight }))
+            sets: Array.from({ length: ex.sets || 1 }, () => ({ reps: ex.reps || '', weight: ex.weight == null ? '' : ex.weight, rpe: ex.targetRPE || '' }))
           }))
         : (day.exercises || []).map(parseProgramExerciseLine).filter(Boolean);
       if (!exercises.length) return alert('No exercises on this day.');
       const programContext = { programId: prog.id, dayIndex, dayName: day.day, week: session?.week || state?.currentWeek || 1, blockIndex: session?.blockIndex || state?.blockIndex || 1, decision };
       showTab('workouts'); showSubTab('workouts','wo-log');
-      if (fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : '')) === false) return;
+      if (fillWorkoutForm(exercises, 'From program: ' + day.day + (session ? ` · Week ${session.week} · ${decision}` : ''), false, {source:{type:'program',referenceId:prog.id,label:`${day.day} · Week ${session?.week || state?.currentWeek || 1}`},role:decision==='deload'?'deload':'mixed',goal:`Complete ${day.day} as programmed`}) === false) return;
       pendingProgramSession = programContext;
       saveLoggerDraft();
       showToast(session ? `Week ${session.week} loaded — review targets before starting.` : 'Program workout loaded.', 'success');

@@ -1,4 +1,4 @@
-# Training Block Context (introduced in schema 11; current schema 13)
+# Training Block Context (introduced in schema 11; current schema 14)
 
 This is context infrastructure, not the v2 Decision Engine. Existing workouts, drafts, PR reconciliation and core RPE-aware estimates retain their formats and behavior.
 

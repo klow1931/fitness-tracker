@@ -1,6 +1,6 @@
-# Athlete Model & Decision Readiness (schema 13)
+# Athlete Model & Decision Readiness (schema 14)
 
-v1.12 is the evidence boundary immediately before the v2 Training Decision Engine. It describes what Loadnote knows, when it knew it and why evidence may be limited. `decisionAllowed` remains `false`; this release does not prescribe load changes, deloads, progression or meet preparation.
+v1.13 extends the evidence boundary immediately before the v2 Training Decision Engine. It describes what Loadnote knows, what was planned, what was completed, when it knew it and why evidence may be limited. `decisionAllowed` remains `false`; this release does not prescribe load changes, deloads, progression or meet preparation.
 
 ## Confirmed exercise roles
 

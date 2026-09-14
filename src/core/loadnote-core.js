@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 13;
-  const RELEASE_VERSION = '1.12.0';
+  const SCHEMA_VERSION = 14;
+  const RELEASE_VERSION = '1.13.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -147,9 +147,14 @@
       if(!Array.isArray(state.exerciseRoles))state.exerciseRoles=[];
       state.readinessVersion=1;state.schemaVersion=13;
     }else state.readinessVersion=state.readinessVersion||1;
+    // v13 → v14: workouts may carry separate planned-work/session-intent snapshots.
+    // Existing workout payloads remain unchanged and therefore have unknown prescription coverage.
+    if(Number(state.schemaVersion||1)<14){
+      state.prescriptionVersion=1;state.schemaVersion=14;
+    }else state.prescriptionVersion=state.prescriptionVersion||1;
     // This identifies the application version that most recently normalized the state.
     state.releaseVersion=RELEASE_VERSION;
-    state.productVersion=12;
+    state.productVersion=13;
     return state;
   }
 

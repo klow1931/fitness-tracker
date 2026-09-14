@@ -21,7 +21,7 @@ assert.equal(B.context({name:'Minimal',startDate:'2026-01-01'}).loadStrategy,'un
 assert.equal(B.context({...config,blockType:'future-type'}).blockType,'future-type');
 const workouts=[0,7,14].map((d,i)=>({id:String(i),date:`2026-06-${String(10+d).padStart(2,'0')}`,exercises:[{name:'Squat',sets:[{weight:140+i*10,reps:5,rpe:6}]}]}));
 const snapshot=JSON.stringify(workouts);const a=B.analyze(records,workouts,id,{asOf:'2026-07-21',retrospective:true});
-assert.equal(JSON.stringify(workouts),snapshot);assert.equal(a.workoutCount,3);assert.equal(a.adherence,null);assert.equal(a.exercises[0].prescriptionTrend,null);assert.match(a.interpretation,/not equivalent/);
+assert.equal(JSON.stringify(workouts),snapshot);assert.equal(a.workoutCount,3);assert.equal(a.adherence,null);assert.equal(a.completionRate,null);assert.equal(a.exercises[0].prescriptionTrend,null);assert.match(a.interpretation,/not equivalent/);
 assert.equal(a.exercises[0].estimatedCapacityTrend.end,Core.estimated1RM(160,5,6));
 const harder=structuredClone(workouts);harder[2].exercises[0].sets[0].rpe=9.5;
 assert(B.analyze(records,harder,id,{asOf:'2026-07-21',retrospective:true}).exercises[0].estimatedCapacityTrend.percent<a.exercises[0].estimatedCapacityTrend.percent);
@@ -29,6 +29,6 @@ assert.equal(B.analyze(records,workouts,id,{asOf:'2026-06-17',retrospective:true
 const future={date:'2026-12-01',exercises:[{name:'Squat',sets:[{weight:999,reps:5,rpe:6}]}]};
 assert.deepEqual(B.analyze(records,[...workouts,future],id,{asOf:'2026-07-21',retrospective:true}),a);
 const noRPE=structuredClone(workouts);noRPE.forEach(w=>delete w.exercises[0].sets[0].rpe);assert.equal(B.analyze(records,noRPE,id,{asOf:'2026-07-21',retrospective:true}).exercises[0].estimatedCapacityTrend,null);
-const old={schemaVersion:10,workouts,prs:[{id:'pr',weight:150}]};const migrated=Core.normalizeState(old,{});assert.equal(migrated.schemaVersion,13);assert.deepEqual(migrated.trainingBlocks,[]);assert.deepEqual(migrated.workouts,workouts);assert.deepEqual(migrated.prs,old.prs);
+const old={schemaVersion:10,workouts,prs:[{id:'pr',weight:150}]};const migrated=Core.normalizeState(old,{});assert.equal(migrated.schemaVersion,14);assert.deepEqual(migrated.trainingBlocks,[]);assert.deepEqual(migrated.workouts,workouts);assert.deepEqual(migrated.prs,old.prs);
 assert.deepEqual(Core.normalizeState({...old,trainingBlocks:records},{}).trainingBlocks,records);
 console.log('Training block CRUD, timelines, sparse estimates, import and migration passed');

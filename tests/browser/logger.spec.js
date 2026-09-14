@@ -37,7 +37,7 @@ test('draft values and checkmarks survive refresh',async({page})=>{
  await enter(page);await page.locator('.set-done-check').check();await page.locator('#wo-notes').fill('Keep my notes');
  await page.reload();await expect(page.locator('.set-weight')).toHaveValue('100');await page.evaluate(()=>showTab('workouts'));
  await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-done-check')).toBeChecked();await expect(page.locator('#wo-notes')).toHaveValue('Keep my notes');
- expect(await page.evaluate(()=>readLoggerDraft().version)).toBe(2);
+ expect(await page.evaluate(()=>readLoggerDraft().version)).toBe(3);
 });
 test('UUID history template and delete buttons work; text stays text',async({page})=>{
  await enter(page,'<img src=x onerror="window.injected=true">');await page.locator('#workout-actions .btn-primary').click();

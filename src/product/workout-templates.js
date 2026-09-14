@@ -1,8 +1,9 @@
     // ========== Templates & Repeat Last ==========
-    function fillWorkoutForm(exercises, notes, preserveRpe = false) {
+    function fillWorkoutForm(exercises, notes, preserveRpe = false, intentOptions = {}) {
       if (loggerHasContent() && !confirm('Replace the current workout draft?')) return false;
       pendingProgramSession = null;
       resetSessionEdit();
+      resetSessionIntent();
       document.getElementById('wo-date').value = today();
       document.getElementById('wo-notes').value = notes || '';
       document.getElementById('exercise-rows').innerHTML = '';
@@ -26,12 +27,14 @@
         }
       });
       if (!(exercises || []).length) addExerciseRow();
+      if(intentOptions.restore)restoreSessionIntentDraft(intentOptions.restore);
+      else if(intentOptions.source)setPrescriptionFromExercises(exercises,intentOptions.source,intentOptions);
     }
 
     function repeatLastWorkout() {
       if (!data.workouts.length) return alert('No previous workouts found.');
       const last = data.workouts[0]; // already sorted newest first
-      if (fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '') === false) return;
+      if (fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '', false, {source:{type:'repeated-workout',referenceId:last.id,label:formatDate(last.date)},role:last.sessionIntent?.role,goal:last.sessionIntent?.goal}) === false) return;
       alert('Loaded last workout. Adjust weights/reps or hold times as needed, then Save.');
     }
 
@@ -51,7 +54,7 @@
       if (!id) return;
       const t = (data.templates || []).find(x => String(x.id) === String(id));
       if (!t) return;
-      if (fillWorkoutForm(t.exercises, '') === false) return;
+      if (fillWorkoutForm(t.exercises, '', false, {source:{type:'template',referenceId:t.id,label:t.name}}) === false) return;
       document.getElementById('template-select').value = '';
       alert('Template loaded. Adjust and Save when ready.');
     }
@@ -101,4 +104,3 @@
         </div>
       `).join('');
     }
-
