@@ -31,3 +31,13 @@ test('templates automatically become provenance-labelled plans',async({page})=>{
   await page.locator('#template-select').selectOption('template-1');await expect(page.locator('#planned-work-summary')).toContainText('Template · Squat volume');
   const plan=await page.evaluate(()=>pendingPrescription);expect(plan.source.type).toBe('template');expect(plan.source.referenceId).toBe('template-1');
 });
+test('review counts repeated exercise rows without reusing completed sets',async({page})=>{
+ await enterPlan(page);
+ await page.getByRole('button',{name:'Use entered work as plan'}).click();
+ await page.evaluate(()=>{pendingPrescription.plannedExercises.push(JSON.parse(JSON.stringify(pendingPrescription.plannedExercises[0])));renderPrescriptionSummary();});
+ await page.getByRole('button',{name:'Review workout',exact:true}).click();
+ await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');
+ await page.getByRole('button',{name:'Save workout',exact:true}).click();
+ await page.evaluate(()=>showSubTab('workouts','wo-history'));
+ await expect(page.locator('#workout-history')).toContainText('1/2 planned sets represented');
+});

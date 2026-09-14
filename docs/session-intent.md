@@ -14,6 +14,10 @@ Session intent is optional athlete-entered context stored on a completed workout
 
 Set completion reports how many planned set positions have corresponding completed sets. Exact completion additionally requires the planned reps or duration and load to match. It is descriptive adherence evidence, not a quality judgment. Extra completed sets do not inflate completion above 100%.
 
+Repeated rows are flattened in row/set order within the same exercise identity and tracking mode. Each completed position is used once. Distinct identities and timed/repetition tracking do not merge; name fallback is allowed only when identity is unambiguous. Cardio distance is compared in meters (1 mile = 1609.344 meters); meeting or exceeding the distance and duration targets retains the existing cardio completion semantics. Target heart rate remains metadata, not an exact-completion criterion.
+
+Prescription coverage means the proportion of logged sessions with a plan. It is exposed separately as `prescriptionCoverage`, not training adherence. The block `adherence` field remains null until reliable scheduled-session evidence exists.
+
 Modified sessions can carry an athlete-selected reason and free-text note. Loadnote reports unexplained changes but does not infer why a session changed.
 
 ## Historical behavior
