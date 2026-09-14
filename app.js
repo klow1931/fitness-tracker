@@ -1684,7 +1684,7 @@
       set('athlete-tm-percent', Math.round(p.trainingMaxPercent * 100)); set('athlete-target-date', p.targetDate || ''); set('athlete-notes', p.notes || '');
       const table = document.getElementById('athlete-tm-table');
       if (table) table.innerHTML = engine.buildPersonalizedSummary(p, tms, currentUnit()).map(row => row.available
-        ? `<div class="flex items-center justify-between gap-3 py-2 border-t border-slate-200"><span class="font-medium">${escapeHtml(row.lift)}</span><span class="text-sm"><b>${escapeHtml(String(toDisplay(row.estimated1RM)))} ${unitLabel()}</b> e1RM · <b>${escapeHtml(String(toDisplay(row.trainingMax)))} ${unitLabel()}</b> TM</span></div>`
+        ? `<div class="flex items-center justify-between gap-3 py-2 border-t border-slate-200"><span class="font-medium">${escapeHtml(row.lift)}</span><span class="text-sm"><b>${escapeHtml(String(toDisplay(row.estimated1RM)))} ${unitLabel()}</b> profile/history estimate · <b>${escapeHtml(String(toDisplay(row.trainingMax)))} ${unitLabel()}</b> generator TM</span></div>`
         : `<div class="flex items-center justify-between gap-3 py-2 border-t border-slate-200"><span class="font-medium">${escapeHtml(row.lift)}</span><span class="text-xs text-slate-500">No data yet</span></div>`).join('');
     }
 
@@ -2572,6 +2572,7 @@ ${woLines}
 
     function renderCoach() {
       try { renderAthleteProfile(); } catch (e) { console.warn('Athlete profile render failed', e); }
+      try { window.renderDecisionReadiness?.(); } catch (e) { console.warn('Decision readiness render failed', e); }
       // Advice
       const adviceEl = document.getElementById('coach-advice');
       const tips = getCoachAdvice();

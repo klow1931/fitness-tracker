@@ -1,3 +1,13 @@
+# v1.12.0 — Athlete Model & Decision Readiness
+
+- Add revisioned, athlete-confirmed exercise roles for competition lifts, close variations, supplemental work, assistance, isolation/rehabilitation and conditioning. Suggestions only populate the form and never save automatically.
+- Build an explicit-date evidence snapshot for squat, bench and deadlift with active block context, matching sessions, RPE coverage and point-in-time knowledge cutoffs.
+- Keep logged working load, RPE-aware estimated capacity, block training max, known 1RM and legacy profile benchmark separate with source and date labels.
+- Report per-lift Ready, Limited or Not ready states with concrete missing-evidence reasons. No aggregate readiness score and no automated training decision.
+- Add saved-at timestamps and creation revisions to newly logged workouts. Reverse later edit/delete/undo revisions during strict replay while flagging legacy workouts whose original save time cannot be reconstructed.
+- Migrate schema 12 to 13 with an empty exercise-role collection. Preserve workout, set, date, load, block and benchmark values.
+- Add desktop/mobile browser coverage for confirmed mappings, conservative-return interpretation and as-recorded withholding. Align export validation, service-worker cache, footer and release metadata at v1.12.0.
+
 # v1.11.0 — Training Data Integrity
 
 - Assign stable exercise identities while preserving the original labels in workouts, templates, PRs and block benchmarks. Automatically link compact spelling variants and provide an explicit alias merge tool.

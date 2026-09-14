@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 12;
-  const RELEASE_VERSION = '1.11.0';
+  const SCHEMA_VERSION = 13;
+  const RELEASE_VERSION = '1.12.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -22,7 +22,7 @@
   const DEFAULT_COLLECTIONS = [
     'workouts', 'nutrition', 'prs', 'goals', 'programs', 'templates',
     'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews',
-    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots'
+    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles'
   ];
 
   function normalizeState(input, defaults) {
@@ -142,9 +142,14 @@
       if(!Array.isArray(state.recoverySnapshots))state.recoverySnapshots=[];
       state.integrityVersion=1;state.schemaVersion=12;
     }else state.integrityVersion=state.integrityVersion||1;
+    // v12 → v13: add revisioned exercise-role mappings for point-in-time evidence.
+    if(Number(state.schemaVersion||1)<13){
+      if(!Array.isArray(state.exerciseRoles))state.exerciseRoles=[];
+      state.readinessVersion=1;state.schemaVersion=13;
+    }else state.readinessVersion=state.readinessVersion||1;
     // This identifies the application version that most recently normalized the state.
     state.releaseVersion=RELEASE_VERSION;
-    state.productVersion=11;
+    state.productVersion=12;
     return state;
   }
 

@@ -1,4 +1,4 @@
-# Training Block Context (introduced in schema 11; current schema 12)
+# Training Block Context (introduced in schema 11; current schema 13)
 
 This is context infrastructure, not the v2 Decision Engine. Existing workouts, drafts, PR reconciliation and core RPE-aware estimates retain their formats and behavior.
 
@@ -18,7 +18,7 @@ Block overlaps are rejected, including shared boundary days. An open end extends
 
 `analyze(records, workouts, blockId, {asOf, knownAt?, retrospective?})` requires an explicit date, excludes all workouts later than that date or outside the selected range, and uses metadata available by the cutoff. `retrospective: true` opts into today's corrected/backfilled context; the result and UI label it explicitly. Historical context entered today is NOT silently treated as information recorded months ago. This conservative default can omit legitimately known but unrecorded context; retrospective analysis is available separately.
 
-Workout records have not historically retained revision/entry timestamps. These APIs prevent future workout dates and later block revisions from leaking into earlier analysis, but cannot reconstruct what an edited historical workout looked like before its edit. A strict future backtester must add workout revisions/provenance before claiming full point-in-time replay.
+Workout records did not historically retain entry timestamps. Schema 13 timestamps newly saved workouts and the Decision Readiness snapshot reverses later edit/delete/undo revisions for historical replay. Legacy workouts remain usable by workout date but are explicitly flagged because their original save time cannot be reconstructed.
 
 ## Metrics and interpretation
 

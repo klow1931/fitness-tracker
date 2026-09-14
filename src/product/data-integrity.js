@@ -25,7 +25,7 @@
  }
  function normalizeState(input){
   const state=clone(input)||{};state.exerciseCatalog=(Array.isArray(state.exerciseCatalog)?state.exerciseCatalog:[]).map(normalizedEntry).filter(Boolean);
-  state.workoutRevisions=Array.isArray(state.workoutRevisions)?state.workoutRevisions:[];state.recoverySnapshots=Array.isArray(state.recoverySnapshots)?state.recoverySnapshots:[];
+  state.workoutRevisions=Array.isArray(state.workoutRevisions)?state.workoutRevisions:[];state.recoverySnapshots=Array.isArray(state.recoverySnapshots)?state.recoverySnapshots:[];state.exerciseRoles=Array.isArray(state.exerciseRoles)?state.exerciseRoles:[];
   (state.trainingBlocks||[]).forEach(block=>(block.revisions||[]).forEach(revision=>{if(revision?.context&&!revision.context.dataCompleteness)revision.context.dataCompleteness='unknown';}));
   const byId=new Map(),byName=new Map();
   for(const entry of state.exerciseCatalog){
@@ -54,11 +54,16 @@
   if(!source||!target)throw Error('Exercise identity no longer exists.');
   target.aliases.push(source.name,...source.aliases);
   for(const ref of references(state)){const holder=ref.owner||ref;if(holder.exerciseId===source.id)holder.exerciseId=target.id;}
+  const roles=Array.isArray(state.exerciseRoles)?state.exerciseRoles:[],targetRole=roles.find(record=>record.revisions?.at(-1)?.context?.exerciseId===target.id);
+  for(const record of roles.filter(row=>row.revisions?.at(-1)?.context?.exerciseId===source.id)){
+   if(targetRole){const recordedAt=new Date(Math.max(Date.now(),Date.parse(record.updatedAt)+1)).toISOString();record.revisions.push({recordedAt,context:null});record.updatedAt=recordedAt;}
+   else for(const revision of record.revisions||[])if(revision.context)revision.context.exerciseId=target.id;
+  }
   state.exerciseCatalog=state.exerciseCatalog.filter(e=>e.id!==source.id);return normalizeState(state);
  }
  function previewImport(current,incoming){
   const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
-  return {workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates)};
+  return {workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles)};
  }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid recovery snapshot time.');const next=clone(target)||{},payload=clone(source)||{};delete payload.recoverySnapshots;
