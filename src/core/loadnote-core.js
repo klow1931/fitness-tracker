@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 14;
-  const RELEASE_VERSION = '1.13.0';
+  const SCHEMA_VERSION = 15;
+  const RELEASE_VERSION = '1.14.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -154,7 +154,9 @@
     }else state.prescriptionVersion=state.prescriptionVersion||1;
     // This identifies the application version that most recently normalized the state.
     state.releaseVersion=RELEASE_VERSION;
-    state.productVersion=13;
+    state.productVersion=14;
+    if(state.scheduledSessions===undefined)state.scheduledSessions=[];
+    if(Number(state.schemaVersion||1)<15)state.schemaVersion=15;
     return state;
   }
 

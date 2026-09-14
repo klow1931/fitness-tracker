@@ -1,11 +1,12 @@
 /* Athlete-entered session purpose and immutable planned-work snapshots. */
 let pendingPrescription=null;
+let pendingScheduledSession=null;
 function sessionIntentValue(id){return document.getElementById(id)?.value||'';}
 function readSessionIntentDraft(){
-  return {role:sessionIntentValue('session-role')||'unspecified',goal:sessionIntentValue('session-goal'),deviationReason:sessionIntentValue('session-deviation-reason')||'none',deviationNotes:sessionIntentValue('session-deviation-notes'),prescription:pendingPrescription?JSON.parse(JSON.stringify(pendingPrescription)):null};
+  return {role:sessionIntentValue('session-role')||'unspecified',goal:sessionIntentValue('session-goal'),deviationReason:sessionIntentValue('session-deviation-reason')||'none',deviationNotes:sessionIntentValue('session-deviation-notes'),prescription:pendingPrescription?JSON.parse(JSON.stringify(pendingPrescription)):null,...(pendingScheduledSession?{schedule:{...pendingScheduledSession}}:{})};
 }
 function restoreSessionIntentDraft(value){
-  const input=value||{};pendingPrescription=input.prescription?window.LoadnoteIntent.prescription(input.prescription):null;
+  const input=value||{};pendingScheduledSession=input.schedule?{...input.schedule}:null;pendingPrescription=input.prescription?window.LoadnoteIntent.prescription(input.prescription):null;
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||'';};
   put('session-role',input.role==='unspecified'?'':input.role);put('session-goal',input.goal);put('session-deviation-reason',input.deviationReason==='none'?'':input.deviationReason);put('session-deviation-notes',input.deviationNotes);renderPrescriptionSummary();
 }
@@ -17,6 +18,7 @@ function setPrescriptionFromExercises(exercises,source,intent={}){
   renderPrescriptionSummary();
 }
 function capturePlannedWork(){
+  if(pendingScheduledSession)return showToast('Scheduled plans stay unchanged. Record actual changes and their reason.','info');
   if(!validateWorkoutForm())return;
   const draft=captureLoggerDraft(),exercises=LoadnoteSession.fromDraft({...draft,sessionIntent:null}).exercises;
   const plan=window.LoadnoteIntent.createPrescription(exercises,{type:'manual',label:'Entered before training'});
@@ -27,6 +29,7 @@ function capturePlannedWork(){
   renderPrescriptionSummary();saveLoggerDraft();showToast('Planned work captured · now record what you actually perform','success');
 }
 function clearPlannedWork(){
+  if(pendingScheduledSession)return showToast('Clear the workout to start an unscheduled session.','info');
   if(!pendingPrescription)return;pendingPrescription=null;renderPrescriptionSummary();saveLoggerDraft();showToast('Planned-work snapshot removed from this draft','info');
 }
 function prescriptionSourceLabel(plan){

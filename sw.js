@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v1.13.1';
+const CACHE = 'loadnote-v1.14.0';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,8 @@ const ASSETS = [
   './src/product/app-lifecycle.js',
   './src/product/data-integrity.js',
   './src/product/session-intent.js',
+  './src/product/schedule.js',
+  './src/product/schedule-ui.js',
   './src/product/data-integrity-ui.js',
   './src/core/ui-utils.js',
   './src/product/navigation.js',

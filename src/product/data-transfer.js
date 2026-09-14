@@ -11,6 +11,8 @@
         try {
           const parsed = JSON.parse(reader.result);
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
+          parsed.scheduledSessions=LoadnoteSchedule.validate(parsed.scheduledSessions??[]);
+          for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
           const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;

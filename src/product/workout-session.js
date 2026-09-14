@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object' && module.exports) module.exports=factory(require('./data-integrity'),require('./session-intent'));
-  else root.LoadnoteSession=factory(root.LoadnoteIntegrity,root.LoadnoteIntent);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity,Intent){
+  if(typeof module==='object' && module.exports) module.exports=factory(require('./data-integrity'),require('./session-intent'),require('./schedule'));
+  else root.LoadnoteSession=factory(root.LoadnoteIntegrity,root.LoadnoteIntent,root.LoadnoteSchedule);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity,Intent,Schedule){
   'use strict';
   const key=value=>String(value || '').trim().toLowerCase();
   const same=(a,b)=>String(a)===String(b);
@@ -66,6 +66,7 @@
     return result.sort((a,b)=>a.exercise.localeCompare(b.exercise));
   }
   function apply(state,workout,edit,program,estimate,createId,now=new Date().toISOString()){
+    Schedule.checkLink(state,workout,edit);
     const next=clone(state),list=next.workouts || [];
     if(edit){
       const index=list.findIndex(w=>same(w.id,edit.id));

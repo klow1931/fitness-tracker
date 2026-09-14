@@ -1,0 +1,26 @@
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./session-intent'));else root.LoadnoteSchedule=factory(root.LoadnoteIntent);})(typeof globalThis!=='undefined'?globalThis:this,function(Intent){
+ 'use strict';
+ const copy=x=>JSON.parse(JSON.stringify(x));
+ const date=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s;
+ const stamp=s=>typeof s==='string'&&Number.isFinite(Date.parse(s))&&new Date(s).toISOString()===s;
+ function context(c){if(!c||!date(c.date)||typeof c.name!=='string'||!c.name.trim()||c.name.length>160||!['scheduled','skipped','cancelled'].includes(c.status))throw Error('Invalid scheduled session');
+  const intent=Intent.context({role:c.role,goal:c.goal,prescription:c.prescription});if(!intent?.prescription)throw Error('Choose a plan containing valid sets or cardio targets');
+  if(typeof c.reason!=='string'||c.reason.length>500||(c.status!=='scheduled'&&!c.reason.trim()))throw Error('Provide a reason for the schedule change');
+  return {date:c.date,name:c.name.trim(),status:c.status,reason:c.reason.trim(),blockId:typeof c.blockId==='string'?c.blockId:null,role:intent.role,goal:intent.goal,prescription:intent.prescription};
+ }
+ function validate(records){if(!Array.isArray(records)||records.length>5000)throw Error('Invalid schedule');const ids=new Set();return records.map(r=>{if(!r||typeof r.id!=='string'||!r.id||ids.has(r.id)||!Array.isArray(r.revisions)||!r.revisions.length||r.revisions.length>500)throw Error('Invalid schedule identity');ids.add(r.id);let last='';return {id:r.id,revisions:r.revisions.map(v=>{if(!stamp(v.recordedAt)||v.recordedAt<=last)throw Error('Invalid schedule revision');last=v.recordedAt;return {recordedAt:v.recordedAt,context:context(v.context)};})};});}
+ function list(records,knownAt){if(knownAt&&!stamp(knownAt))throw Error('Invalid knowledge cutoff');return (records||[]).map(r=>{const v=r.revisions.filter(v=>!knownAt||v.recordedAt<=knownAt).at(-1);return v?{id:r.id,...copy(v.context),revisionAt:v.recordedAt,createdAt:r.revisions[0].recordedAt,retrospective:r.revisions[0].context.date<r.revisions[0].recordedAt.slice(0,10),lateChange:v.context.date<v.recordedAt.slice(0,10)}:null;}).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));}
+ function create(records,c,{id,now=new Date().toISOString()}={}){if(!id||!stamp(now))throw Error('Invalid schedule identity');return validate([...(records||[]),{id,revisions:[{recordedAt:now,context:context({...c,status:'scheduled',reason:''})}]}]);}
+ function change(records,id,{date:day,status,reason},now=new Date().toISOString()){const next=validate(records);const r=next.find(r=>r.id===id);if(!r)throw Error('Session no longer exists');const c=copy(r.revisions.at(-1).context);if(!reason?.trim())throw Error('Provide a reason');r.revisions.push({recordedAt:now,context:{...c,date:day||c.date,status:status||c.status,reason}});return validate(next);}
+ function rows(records,workouts,{asOf,knownAt}={}){if(!date(asOf))throw Error('An analysis date is required');const end=asOf+'T23:59:59.999Z',cutoff=knownAt&&knownAt<end?knownAt:end;return list(records,cutoff).map(s=>{const linked=(workouts||[]).filter(w=>w.sessionIntent?.schedule?.id===s.id&&w.date<=asOf&&(!knownAt||w.createdAt&&w.createdAt<=cutoff));return {...s,workoutIds:linked.map(w=>w.id),state:linked.length?'completed':s.status==='scheduled'?(s.date<asOf?'unconfirmed':'scheduled'):s.status};});}
+ function summary(records,workouts,{from,to,asOf,knownAt}={}){if(!date(from)||!date(to)||from>to)throw Error('Invalid date range');const sessions=rows(records,workouts,{asOf,knownAt}).filter(s=>s.date>=from&&s.date<=to),counts={completed:0,skipped:0,cancelled:0,unconfirmed:0,scheduled:0};for(const s of sessions)counts[s.state]++;const resolved=counts.completed+counts.skipped;return {sessions,counts,resolved,adherence:resolved?Math.round(counts.completed/resolved*1000)/10:null,definition:'Completed / (completed + explicitly skipped). Unconfirmed, upcoming and cancelled sessions are excluded.'};}
+ const planKey=p=>{const v=copy(p);for(const e of v.plannedExercises||[])delete e.exerciseId;return JSON.stringify(v);};
+ function checkLink(state,workout,edit){const link=workout.sessionIntent?.schedule;if(!link)return;const current=list(state.scheduledSessions||[]).find(s=>s.id===link.id);if(!current)throw Error('Scheduled session no longer exists');
+  if((state.workouts||[]).some(w=>String(w.id)!==String(edit?.id)&&w.sessionIntent?.schedule?.id===link.id))throw Error('This scheduled session already has a saved workout');
+  const prior=edit?.original?.sessionIntent?.schedule;
+  if(!prior&&(current.revisionAt!==link.revisionAt||current.status!=='scheduled'))throw Error('The schedule changed. Reload this session from Calendar before saving.');
+  const revision=(state.scheduledSessions||[]).find(s=>s.id===link.id).revisions.find(v=>v.recordedAt===link.revisionAt);
+  if(!revision||planKey(revision.context.prescription)!==planKey(workout.sessionIntent.prescription))throw Error('Scheduled prescription must match the captured plan');
+ }
+ return {date,validate,list,create,change,rows,summary,checkLink};
+});

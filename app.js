@@ -282,6 +282,7 @@
 
     let bwChart = null;
     function renderDashboard() {
+      window.renderSchedule?.();
       renderHomeActivity();
       const now = new Date();
       const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
@@ -685,6 +686,7 @@
     }
 
     function renderCalendar() {
+      window.renderSchedule?.();
       const grid = document.getElementById('calendar-grid');
       const label = document.getElementById('cal-month-label');
       if (!grid || !label) return;
