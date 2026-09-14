@@ -146,3 +146,23 @@ body.dark .set-row-done { background:#134e4a; }
  *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
  :is(.btn-primary,.btn-secondary,.home-week-day):active { transform:none; }
 }
+
+/* v1.15 theme-aware evidence review. */
+#training-review { min-width:0; overflow-wrap:anywhere; }
+#training-review h2 { font-size:1.15rem; font-weight:750; }
+#training-review h3 { font-weight:700; margin-top:1.25rem; }
+#training-review p { margin:.6rem 0; }
+.training-review-controls { display:flex; flex-wrap:wrap; gap:.75rem; align-items:end; margin:1rem 0; }
+.training-review-controls label { display:flex; flex-direction:column; gap:.3rem; flex:1 1 160px; min-width:0; }
+.training-review-controls .input { width:100%; min-width:0; }
+#training-review summary { cursor:pointer; min-height:44px; padding:.75rem 0; font-weight:650; }
+.review-lift { border-top:1px solid var(--border,#cbd5e1); margin-top:.75rem; }
+.review-lift dt { font-weight:650; margin-top:.65rem; }
+.review-lift dd { margin:.2rem 0 .7rem; }
+.review-evidence { padding:.75rem; margin:.5rem 0; border:1px solid var(--border,#cbd5e1); border-radius:.65rem; }
+.review-evidence h5 { font-weight:650; }
+.review-mode-note { color:var(--muted); font-size:.875rem; }
+.review-context-note { border-left:3px solid var(--brand); padding-left:.75rem; }
+#review-error { color:#b91c1c; }
+body.dark #review-error { color:#fca5a5; }
+@media(max-width:480px) { .training-review-controls label { flex-basis:100%; } }

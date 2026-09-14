@@ -1,3 +1,11 @@
+# v1.15.0 — Training Review
+
+- Added compact date/range/mode controls, weekly schedule outcomes and expandable per-lift evidence alongside Strength Progress.
+- Reused block sparse-data guards and RPE-aware capacity calculations; kept prescription and actual-load trends separate from estimated performance.
+- Withheld aggregate trends across changing training contexts and disclosed missing RPE, missing plans and retrospective knowledge.
+- Reused retained workout-history replay; added chronology, nonmutation, unit, scheduling and offline browser regressions.
+- No schema change, new recommendations or automatic program adjustments.
+
 # v1.14.0 — Plan Your Week
 
 - Schedule captured template, program-day or logger plans independently of completed workouts.
