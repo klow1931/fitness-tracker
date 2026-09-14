@@ -7,6 +7,7 @@ test.beforeEach(async({page})=>{
 });
 async function enterPlan(page){
   await page.locator('.ex-name').fill('Back Squat');await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('140');await page.locator('.set-rpe').fill('7');
+  await page.locator('#session-intent > summary').click();
   await page.locator('#session-role').selectOption('technique');await page.locator('#session-goal').fill('Competition movement practice');
 }
 test('manual plan keeps target and actual performance separate through save and history',async({page})=>{
