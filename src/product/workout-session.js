@@ -74,12 +74,13 @@
       if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,before,list[index],{now,id:createId()});
     }else{
       if(list.some(w=>same(w.id,workout.id)))throw Error('This workout has already been saved.');
-      const entry=clone(workout);
+      const entry={...clone(workout),createdAt:now,updatedAt:now};
       if(program){
         Object.assign(entry,{programId:program.programId,programDayIndex:program.dayIndex,programDayName:program.dayName});
         for(const [from,to] of [['week','programWeek'],['blockIndex','programBlockIndex'],['decision','programDecision']])if(program[from]!=null)entry[to]=program[from];
       }
       list.push(entry);
+      if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,null,entry,{now,id:createId()});
     }
     next.workouts=list.sort((a,b)=>b.date.localeCompare(a.date));
     let result=Integrity?Integrity.normalizeState(next):next;result.prs=reconcilePRs(result.prs,result.workouts,estimate,createId);

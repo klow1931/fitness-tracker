@@ -1,6 +1,12 @@
 # Loadnote
 
-**v1.11.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.12.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## Athlete Model & Decision Readiness
+
+Coach → Programs now includes a per-lift Decision Readiness panel. Confirm competition lifts and variation relationships, inspect an explicit analysis date, and compare logged load, RPE-aware estimated capacity, block training maxes, known 1RMs and legacy profile benchmarks without collapsing them into one “max.” Current-corrected analysis supports historical context entered later; Historical as-recorded replay withholds block and role knowledge that was not yet recorded and flags legacy timestamp limits.
+
+v1.12 reports evidence quality only. It does not automatically change loads, prescribe deloads or enable the v2 decision engine. See [the evidence contract](docs/decision-readiness.md).
 
 ## Training Data Integrity
 
