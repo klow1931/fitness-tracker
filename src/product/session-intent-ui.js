@@ -18,7 +18,7 @@ function setPrescriptionFromExercises(exercises,source,intent={}){
 }
 function capturePlannedWork(){
   if(!validateWorkoutForm())return;
-  const draft=captureLoggerDraft(),exercises=LoadnoteSession.fromDraft({...draft,sessionIntent:null},null,{template:true}).exercises;
+  const draft=captureLoggerDraft(),exercises=LoadnoteSession.fromDraft({...draft,sessionIntent:null}).exercises;
   const plan=window.LoadnoteIntent.createPrescription(exercises,{type:'manual',label:'Entered before training'});
   if(!plan)return showToast('Enter at least one planned set or cardio target first.','error');
   pendingPrescription=plan;
