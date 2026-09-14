@@ -281,6 +281,7 @@
         if (!confirm('Clear the workout form? Unsaved sets will be lost.')) return;
       }
       pendingProgramSession = null;
+      resetSessionIntent();
       resetSessionEdit();
       stopRest();
       document.getElementById('wo-date').value = today();

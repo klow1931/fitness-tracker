@@ -1,11 +1,11 @@
 (function(root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.LoadnoteDraft = factory();
-})(typeof globalThis !== 'undefined' ? globalThis : this, function() {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./session-intent'));
+  else root.LoadnoteDraft = factory(root.LoadnoteIntent);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function(Intent) {
   'use strict';
   const string = v => v == null ? '' : String(v);
   function normalize(input) {
-    if (!input || ![1, 2].includes(input.version) || !Array.isArray(input.rows) || input.rows.length > 200) return null;
+    if (!input || ![1, 2, 3].includes(input.version) || !Array.isArray(input.rows) || input.rows.length > 200) return null;
     try {
       const rows = input.rows.map(raw => {
         let r = raw;
@@ -30,7 +30,8 @@
       });
       const edit=input.edit && input.edit.id!=null && input.edit.original && String(input.edit.id)===String(input.edit.original.id) && Array.isArray(input.edit.original.exercises)
         ? {id:input.edit.id,original:input.edit.original}:null;
-      return {version:2, date:string(input.date),notes:string(input.notes),unit:input.unit === 'lb'?'lb':'kg',program:input.program && typeof input.program === 'object'?input.program:null,edit,updatedAt:input.updatedAt,rows};
+      const sessionIntent=input.version>=3&&input.sessionIntent?Intent.context(input.sessionIntent):null;
+      return {version:3, date:string(input.date),notes:string(input.notes),unit:input.unit === 'lb'?'lb':'kg',program:input.program && typeof input.program === 'object'?input.program:null,edit,sessionIntent,updatedAt:input.updatedAt,rows};
     } catch (_) { return null; }
   }
   return {normalize};

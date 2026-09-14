@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 13, trainingBlocks: [], integrityVersion: 1, readinessVersion: 1,
+      schemaVersion: 14, trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -159,7 +159,8 @@
     function normalizeDataShape(d) {
       if (window.LoadnoteCore?.normalizeState) {
         const normalized=window.LoadnoteCore.normalizeState(d, DEFAULT_DATA);
-        return window.LoadnoteIntegrity?.normalizeState?window.LoadnoteIntegrity.normalizeState(normalized):normalized;
+        const integrity=window.LoadnoteIntegrity?.normalizeState?window.LoadnoteIntegrity.normalizeState(normalized):normalized;
+        return window.LoadnoteIntent?.validateState?window.LoadnoteIntent.validateState(integrity):integrity;
       }
       const base = { ...DEFAULT_DATA, ...(d || {}) };
       ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews','exerciseCatalog','workoutRevisions','recoverySnapshots','exerciseRoles'].forEach(k => {

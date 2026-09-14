@@ -1,3 +1,12 @@
+# v1.13.0 — Training Prescription & Session Intent
+
+- Add optional session roles and goals to the workout logger, with deviation reasons for fatigue, pain, time, equipment, autoregulation or programming changes.
+- Capture immutable planned-work snapshots separately from completed sets. Manual plans preserve entered RPE as target RPE and clear the live RPE field for actual effort.
+- Automatically capture planned work when loading templates, repeating workouts or starting generated program days, while preserving source provenance.
+- Compare planned and completed sets in review and History. Report prescription coverage, completion and unexplained modifications in block analysis and per-lift Decision Readiness.
+- Keep missing prescriptions unknown rather than treating older or incomplete history as failed adherence. Retain workout revision and point-in-time replay safeguards.
+- Migrate schema 13 to 14 without changing existing workouts. Keep automated training decisions disabled and align release, cache, documentation and test metadata at v1.13.0.
+
 # v1.12.0 — Athlete Model & Decision Readiness
 
 - Add revisioned, athlete-confirmed exercise roles for competition lifts, close variations, supplemental work, assistance, isolation/rehabilitation and conditioning. Suggestions only populate the form and never save automatically.

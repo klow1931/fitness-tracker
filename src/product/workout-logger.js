@@ -7,12 +7,12 @@ function readLoggerDraft() {
   try { return LoadnoteDraft.normalize(JSON.parse(localStorage.getItem(LOGGER_DRAFT_KEY))); } catch (_) { return null; }
 }
 function loggerHasContent() {
-  return [...document.querySelectorAll('#exercise-rows input:not([type=checkbox]), #wo-notes')].some(i => i.value !== '');
+  return !!pendingPrescription || [...document.querySelectorAll('#exercise-rows input:not([type=checkbox]), #wo-notes, #session-intent input, #session-intent select')].some(i => i.value !== '');
 }
 function captureLoggerDraft() {
   const value = (row, selector) => row.querySelector(selector)?.value || '';
-  return { version: 2, date: document.getElementById('wo-date').value, notes: document.getElementById('wo-notes').value,
-    unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, updatedAt: Date.now(),
+  return { version: 3, date: document.getElementById('wo-date').value, notes: document.getElementById('wo-notes').value,
+    unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, sessionIntent: readSessionIntentDraft(), updatedAt: Date.now(),
     rows: [...document.querySelectorAll('#exercise-rows > div')].map(row => ({
       type: row.dataset.type, trackBy: row.dataset.trackBy,cardioDone:!!row.querySelector('.cardio-done')?.checked,
       name:value(row,'.ex-name'),note:value(row,'.ex-note'),duration:value(row,'.cardio-duration'),distance:value(row,'.cardio-distance'),distanceUnit:value(row,'.cardio-distance-unit'),avgHr:value(row,'.cardio-hr'),
@@ -92,8 +92,9 @@ function initWorkoutLogger() {
     document.getElementById('wo-notes').value = draft.notes;
     pendingProgramSession = draft.program || null;
     workoutEdit = draft.edit || null;
+    restoreSessionIntentDraft(draft.sessionIntent);
     document.getElementById('logger-draft-status').textContent = 'Recovered your unfinished workout';
-  }
+  } else resetSessionIntent();
   const panel = document.getElementById('workout-log-card');
   panel.addEventListener('input', saveLoggerDraft);
   panel.addEventListener('change', saveLoggerDraft);

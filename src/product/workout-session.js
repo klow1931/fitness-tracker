@@ -1,12 +1,12 @@
 (function(root,factory){
-  if(typeof module==='object' && module.exports) module.exports=factory(require('./data-integrity'));
-  else root.LoadnoteSession=factory(root.LoadnoteIntegrity);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity){
+  if(typeof module==='object' && module.exports) module.exports=factory(require('./data-integrity'),require('./session-intent'));
+  else root.LoadnoteSession=factory(root.LoadnoteIntegrity,root.LoadnoteIntent);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity,Intent){
   'use strict';
   const key=value=>String(value || '').trim().toLowerCase();
   const same=(a,b)=>String(a)===String(b);
   const clone=value=>JSON.parse(JSON.stringify(value));
-  function comparable(value){const copy=clone(value);for(const exercise of copy?.exercises||[])delete exercise.exerciseId;return JSON.stringify(copy);}
+  function comparable(value){const copy=clone(value);for(const exercise of copy?.exercises||[])delete exercise.exerciseId;for(const exercise of copy?.sessionIntent?.prescription?.plannedExercises||[])delete exercise.exerciseId;return JSON.stringify(copy);}
   function findPerformance(workouts,name,eligible=()=>true,exerciseId){
     const ids=new Set(exerciseId?[exerciseId]:[]);for(const w of workouts||[])for(const exercise of w.exercises||[])if(key(exercise.name)===key(name)&&exercise.exerciseId)ids.add(exercise.exerciseId);
     for(const w of workouts || [])for(const exercise of w.exercises || []){
@@ -39,7 +39,8 @@
         if(sets.length)exercises.push({name,type:'strength',trackBy,sets});
       }
     }
-    return {id,date:draft.date,notes:String(draft.notes || '').trim(),exercises};
+    const workout={id,date:draft.date,notes:String(draft.notes || '').trim(),exercises},intent=Intent?.context(draft.sessionIntent);
+    if(intent)workout.sessionIntent=intent;return workout;
   }
   function reconcilePRs(prs,workouts,estimate,createId){
     const identity=value=>value?.exerciseId?'id:'+value.exerciseId:'name:'+key(value?.exercise||value?.name);
@@ -70,7 +71,8 @@
       const index=list.findIndex(w=>same(w.id,edit.id));
       if(index<0)throw Error('This workout was deleted. Cancel this edit and start a new workout.');
       if(comparable(list[index])!==comparable(edit.original))throw Error('This workout changed since you opened it. Cancel this edit and open it again from History.');
-      const before=clone(list[index]);list[index]={...list[index],date:workout.date,notes:workout.notes,exercises:clone(workout.exercises),updatedAt:now};
+      const before=clone(list[index]),updated={...list[index],date:workout.date,notes:workout.notes,exercises:clone(workout.exercises),updatedAt:now};
+      if(workout.sessionIntent)updated.sessionIntent=clone(workout.sessionIntent);else delete updated.sessionIntent;list[index]=updated;
       if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,before,list[index],{now,id:createId()});
     }else{
       if(list.some(w=>same(w.id,workout.id)))throw Error('This workout has already been saved.');

@@ -4,7 +4,7 @@ const fields=values=>values.map(value=>({value,checked:false}));
 const legacy={version:1,date:'2026-09-07',notes:'draft',unit:'lb',program:{programId:'uuid'},rows:[{type:'strength',trackBy:'reps',setCount:1,fields:fields(['Bench','cue','on','5','225','8'])}]};
 legacy.rows[0].fields[2].checked=true;
 const migrated=normalize(legacy);
-assert.equal(migrated.version,2);assert.equal(migrated.rows[0].sets[0].weight,'225');assert(migrated.rows[0].sets[0].done);assert.equal(migrated.program.programId,'uuid');
+assert.equal(migrated.version,3);assert.equal(migrated.rows[0].sets[0].weight,'225');assert(migrated.rows[0].sets[0].done);assert.equal(migrated.program.programId,'uuid');
 assert.deepEqual(normalize(JSON.parse(JSON.stringify(migrated))),migrated);
 const noCheck=normalize({version:1,rows:[{type:'strength',trackBy:'duration',setCount:1,fields:fields(['Plank','','30','',''])}]});
 assert.equal(noCheck.rows[0].sets[0].duration,'30');assert.equal(noCheck.rows[0].sets[0].weight,'');
@@ -16,3 +16,4 @@ assert.equal(normalize({version:2,rows:[{type:'strength',sets:Array(201).fill({}
 console.log('Draft migration and named-field tests passed');
 const editing=normalize({...migrated,edit:{id:'workout-id',original:{id:'workout-id',date:'2026-09-07',exercises:[]}}});
 assert.equal(editing.edit.id,'workout-id');assert.equal(normalize({...migrated,edit:{id:'wrong',original:{id:'other',exercises:[]}}}).edit,null);
+const planned=normalize({...migrated,sessionIntent:{role:'technique',goal:'Practice',prescription:null,deviationReason:'none',deviationNotes:''}});assert.equal(planned.sessionIntent.role,'technique');

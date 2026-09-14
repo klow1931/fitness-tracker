@@ -11,6 +11,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `state-store.js`, `persistence.js` | State defaults, normalization, IndexedDB/localStorage loading and serialized snapshot writes |
 | `data-integrity.js`, `data-integrity-ui.js` | Stable exercise identity, aliases, workout revisions, recovery snapshots and import previews |
 | `decision-readiness.js`, `decision-readiness-ui.js` | Revisioned exercise roles, explicit-date evidence snapshots, point-in-time replay and per-lift readiness UI |
+| `session-intent.js`, `session-intent-ui.js` | Planned-work validation/comparison, session roles, deviation context and logger presentation |
 | `data-transfer.js` | JSON/CSV and photo-backup import/export |
 | `draft-model.js`, `workout-logger.js` | Named-field draft validation, migration, capture, restoration and status |
 | `workout-form.js`, `workout-templates.js` | Exercise/set forms, last weights, repeat and template flows |
@@ -31,13 +32,14 @@ Paths below are under `src/product/` unless otherwise noted.
 - Review freezes a form snapshot and rechecks it before confirmation. Create/edit/delete operations persist successfully before replacing visible history. Edits preserve record IDs and program metadata; edits and deletions append bounded revision snapshots for safe undo.
 - Exercise labels remain historical display data. Schema 12 adds stable exercise IDs across workouts, templates, records and block benchmarks; compact spelling variants resolve automatically and explicit aliases can share an identity.
 - Schema 13 adds athlete-confirmed exercise roles without rewriting workout labels. The evidence model keeps working load, estimated capacity, training max, known 1RM and legacy profile benchmarks separate.
+- Schema 14 adds optional session intent and immutable planned-work snapshots inside saved workouts. Planned sets, target RPE and source provenance remain separate from completed sets and actual RPE; missing plans are unknown rather than failed adherence.
 - Newly saved workouts include save timestamps and creation revisions. Historical as-recorded snapshots reverse later workout revisions; legacy records without save timestamps remain usable but are flagged as incomplete replay evidence.
 - Replacement imports expose collection-level added/changed/removed counts and include the prior state as one of three local recovery snapshots. Portable JSON exports omit nested recovery payloads.
 - Derived workout PRs are reconciled when sessions change; independent manual and legacy benchmarks are preserved.
 - History uses pages of naturally sized cards, not fixed-height virtualization.
 - Progress series separate reps, timed holds and cardio. Rep-based estimates use the core estimator with optional RPE; actual load remains a separate metric.
 - Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
-- Draft migration preserves named fields, units, completion, order and edit context. Schema 12 wraps integrity metadata around the existing workout payload shape.
+- Draft migration preserves named fields, units, completion, order, edit context and optional prescription snapshots. Schema 12 wraps integrity metadata around the existing workout payload shape.
 - Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
 - Storage is browser-local. Simultaneous tabs and cross-device sync are not coordinated.
 - Decision-readiness results are evidence-quality classifications, not training prescriptions. The v2 decision engine remains disabled.

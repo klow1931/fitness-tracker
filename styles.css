@@ -877,6 +877,11 @@ body.dark .coach-recommendation { background:#0f172a; border-color:#475569; }
 /* v1.1.1 clean foundation */
 .session-edit-banner { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:12px; margin-bottom:16px; background:#eef2ff; color:#3730a3; border-radius:10px; }
 .session-edit-banner[hidden] { display:none; }
+.session-intent { border:1px solid #cbd5e1; border-radius:12px; background:#f8fafc; padding:14px; }
+.session-intent > summary { cursor:pointer; }
+.planned-work-summary { border-left:3px solid #6366f1; background:#eef2ff; border-radius:8px; padding:10px 12px; color:#334155; font-size:14px; }
+body.dark .session-intent { border-color:#475569; background:#1e293b; }
+body.dark .planned-work-summary { background:#312e81; color:#e0e7ff; }
 .previous-performance { margin-top:12px; font-size:13px; }
 .previous-performance:empty { display:none; }
 .previous-performance p { color:#64748b; margin-bottom:6px; }

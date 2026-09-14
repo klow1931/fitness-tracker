@@ -1,9 +1,9 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'));
-  else root.LoadnoteReadiness=factory(root.LoadnoteCore,root.LoadnoteBlocks);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./session-intent'));
+  else root.LoadnoteReadiness=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteIntent);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Intent){
   'use strict';
-  if(!Core||!Blocks)throw Error('Loadnote readiness dependencies are required');
+  if(!Core||!Blocks||!Intent)throw Error('Loadnote readiness dependencies are required');
   const ROLES={competition:'Competition lift','close-variation':'Close variation',supplemental:'Supplemental movement',assistance:'Assistance movement','isolation-rehab':'Isolation / rehabilitation',conditioning:'Conditioning'};
   const LIFTS={squat:'Squat',bench:'Bench Press',deadlift:'Deadlift'};
   const clone=value=>value==null?value:JSON.parse(JSON.stringify(value));
@@ -85,19 +85,22 @@
     const block=Blocks.at(state.trainingBlocks||[],asOf,{knownAt:knowledgeCutoff||undefined,retrospective}),windowStart=block?.startDate||dayBefore(asOf,83),windowWorkouts=workoutView.workouts.filter(workout=>workout.date>=windowStart);
     const profile=state.athleteProfile||{},results={};
     for(const [lift,label] of Object.entries(LIFTS)){
-      const related=mappings.filter(row=>row.competitionLift===lift),primary=related.filter(row=>row.role==='competition'),primaryIds=new Set(primary.map(row=>row.exerciseId)),variationIds=new Set(related.filter(row=>row.role==='close-variation').map(row=>row.exerciseId)),metrics=performance(windowWorkouts,primaryIds,windowStart),variationMetrics=performance(windowWorkouts,variationIds,windowStart),reasons=[];
+      const related=mappings.filter(row=>row.competitionLift===lift),primary=related.filter(row=>row.role==='competition'),primaryIds=new Set(primary.map(row=>row.exerciseId)),variationIds=new Set(related.filter(row=>row.role==='close-variation').map(row=>row.exerciseId)),metrics=performance(windowWorkouts,primaryIds,windowStart),variationMetrics=performance(windowWorkouts,variationIds,windowStart),liftWorkouts=windowWorkouts.filter(workout=>(workout.exercises||[]).some(ex=>ex.exerciseId&&primaryIds.has(ex.exerciseId))||(workout.sessionIntent?.prescription?.plannedExercises||[]).some(ex=>ex.exerciseId&&primaryIds.has(ex.exerciseId))),prescription=Intent.summarize(liftWorkouts,primaryIds),reasons=[];
       if(!primary.length)reasons.push('Confirm which exercise is the competition '+label.toLowerCase()+'.');
       if(primary.length>1)reasons.push('Only one current competition '+label.toLowerCase()+' should be mapped.');
       if(metrics.sessions<3)reasons.push(metrics.sessions?'Fewer than three matching sessions are available.':'No matching sessions are available in this analysis window.');
       if(metrics.sets&&metrics.rpeCoverage<0.5)reasons.push('Fewer than half of eligible sets include usable RPE 6–10.');
+      if(primary.length&&metrics.sessions&&!prescription.prescribedSessions)reasons.push('No planned-work snapshots are recorded for matching sessions.');
+      else if(prescription.prescribedSessions&&prescription.prescriptionCoverage<50)reasons.push('Fewer than half of matching sessions include planned-work snapshots.');
+      if(prescription.unexplainedModifiedSessions)reasons.push('Some modified sessions do not include a reason for the change.');
       if(!block)reasons.push('No training block is active on this date.');
       else if(block.dataCompleteness!=='complete')reasons.push('The active block workout history is '+block.dataCompleteness+'.');
       if(!retrospective&&workoutView.legacyTimestampCount)reasons.push('Legacy workouts lack saved-at timestamps, so strict point-in-time replay is incomplete.');
       const status=!primary.length||!metrics.sessions?'not-ready':reasons.length?'limited':'ready';
       const durationDays=Math.floor((Date.parse(asOf)-Date.parse(windowStart))/86400000)+1;
-      results[lift]={lift,label,status,reasons,competitionExercise:primary[0]?catalog.find(entry=>entry.id===primary[0].exerciseId)?.name||primary[0].exerciseId:null,relatedExercises:related.map(row=>({exerciseId:row.exerciseId,name:catalog.find(entry=>entry.id===row.exerciseId)?.name||row.exerciseId,role:row.role})),metrics:{...metrics,variationSessions:variationMetrics.sessions,observedHardSetsPerWeek:durationDays>=7?Core.round(metrics.hardSets/durationDays*7,1):null},evidence:{trainingMax:mappedBenchmark(block?.trainingMaxes,primaryIds,catalog),known1RM:mappedBenchmark(block?.known1RMs,primaryIds,catalog),profileBenchmark:Number(profile[lift])>0?{kg:Number(profile[lift]),source:'legacy athlete profile'}:null,baselineEstimatedCapacity:metrics.baselineEstimatedCapacity==null?null:{kg:metrics.baselineEstimatedCapacity,date:metrics.baselineCapacityDate,source:'first RPE-aware competition-lift performance'},estimatedCapacity:metrics.latestEstimatedCapacity==null?null:{kg:metrics.latestEstimatedCapacity,date:metrics.latestCapacityDate,source:'latest RPE-aware competition-lift performance'},loggedLoad:metrics.latestLoggedLoad==null?null:{kg:metrics.latestLoggedLoad,date:metrics.latestDate,source:'logged competition-lift working load'}},interpretation:block&&(block.loadStrategy==='conservative'||block.blockType==='return-reentry'||block.progressionIntent==='return-ramp')?'Planned load increases in this block are not equivalent to strength gains.':null};
+      results[lift]={lift,label,status,reasons,competitionExercise:primary[0]?catalog.find(entry=>entry.id===primary[0].exerciseId)?.name||primary[0].exerciseId:null,relatedExercises:related.map(row=>({exerciseId:row.exerciseId,name:catalog.find(entry=>entry.id===row.exerciseId)?.name||row.exerciseId,role:row.role})),metrics:{...metrics,variationSessions:variationMetrics.sessions,observedHardSetsPerWeek:durationDays>=7?Core.round(metrics.hardSets/durationDays*7,1):null,prescription},evidence:{trainingMax:mappedBenchmark(block?.trainingMaxes,primaryIds,catalog),known1RM:mappedBenchmark(block?.known1RMs,primaryIds,catalog),profileBenchmark:Number(profile[lift])>0?{kg:Number(profile[lift]),source:'legacy athlete profile'}:null,baselineEstimatedCapacity:metrics.baselineEstimatedCapacity==null?null:{kg:metrics.baselineEstimatedCapacity,date:metrics.baselineCapacityDate,source:'first RPE-aware competition-lift performance'},estimatedCapacity:metrics.latestEstimatedCapacity==null?null:{kg:metrics.latestEstimatedCapacity,date:metrics.latestCapacityDate,source:'latest RPE-aware competition-lift performance'},loggedLoad:metrics.latestLoggedLoad==null?null:{kg:metrics.latestLoggedLoad,date:metrics.latestDate,source:'logged competition-lift working load'}},interpretation:block&&(block.loadStrategy==='conservative'||block.blockType==='return-reentry'||block.progressionIntent==='return-ramp')?'Planned load increases in this block are not equivalent to strength gains.':null};
     }
-    return {version:1,asOf,mode:retrospective?'current-corrected':'as-recorded',knowledgeCutoff,windowStart,block,workoutCount:windowWorkouts.length,legacyTimestampCount:workoutView.legacyTimestampCount,lifts:results,decisionAllowed:false};
+    return {version:2,asOf,mode:retrospective?'current-corrected':'as-recorded',knowledgeCutoff,windowStart,block,workoutCount:windowWorkouts.length,legacyTimestampCount:workoutView.legacyTimestampCount,lifts:results,decisionAllowed:false};
   }
   return {ROLES,LIFTS,context,validate,list,upsert,remove,replace,suggestion,workoutsAt,snapshot};
 });
