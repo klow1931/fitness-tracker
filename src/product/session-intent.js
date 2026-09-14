@@ -71,7 +71,8 @@
     if(raw.deviationReason!=null&&!Object.hasOwn(DEVIATION_REASONS,raw.deviationReason))throw Error('Invalid session deviation reason.');
     const role=Object.hasOwn(SESSION_ROLES,raw.role)?raw.role:'unspecified',goal=text(raw.goal,300),deviationReason=Object.hasOwn(DEVIATION_REASONS,raw.deviationReason)?raw.deviationReason:'none',deviationNotes=text(raw.deviationNotes,500),plan=prescription(raw.prescription);
     if(role==='unspecified'&&!goal&&!plan&&deviationReason==='none'&&!deviationNotes)return null;
-    return {version:1,role,goal,prescription:plan,deviationReason,deviationNotes};
+    const result={version:1,role,goal,prescription:plan,deviationReason,deviationNotes};
+    if(raw.schedule!=null){if(typeof raw.schedule.id!=='string'||!raw.schedule.id||!iso(raw.schedule.revisionAt)||!plan)throw Error('Invalid scheduled-session link');result.schedule={id:raw.schedule.id,revisionAt:raw.schedule.revisionAt};}return result;
   }
   function validateState(input){
     const state=clone(input)||{};

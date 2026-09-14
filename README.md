@@ -1,8 +1,10 @@
 # Loadnote
 
-**v1.13.1 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.14.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
 
 ## Training Prescription & Session Intent
+
+v1.14 adds **This week** on Home and **Scheduled sessions** in Calendar. Schedule a captured template/program/logger plan, start its linked draft, and explicitly reschedule, skip or cancel. Overdue sessions without a workout stay unconfirmed. See [scheduling and adherence definitions](docs/scheduling.md).
 
 The workout logger can record a session role, goal and an immutable snapshot of planned sets separately from completed performance. Templates, repeated workouts and generated program days capture their loaded work automatically; a manual session can use **Use entered work as plan** before training. If execution changes, record the reason without rewriting the original plan.
 

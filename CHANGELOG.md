@@ -1,3 +1,10 @@
+# v1.14.0 — Plan Your Week
+
+- Schedule captured template, program-day or logger plans independently of completed workouts.
+- Start linked drafts, preserve prescriptions and derive completion only from successful workout saves.
+- Revisioned reschedules, skipped/cancelled reasons, explicit unconfirmed sessions and retrospective labels.
+- Resolved-session adherence shows counts and exclusions; backups retain schedules. Schema 15 adds an empty collection for older users.
+
 # v1.13.1 — Prescription comparison corrections
 
 - Group repeated exercise rows by identity and tracking mode; compare flattened positions without reusing completed sets.

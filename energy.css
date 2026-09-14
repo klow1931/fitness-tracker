@@ -1,4 +1,10 @@
 /* Shared visual system: vivid actions, quiet inputs, and readable training data. */
+.schedule-row { border-top:1px solid var(--line); padding:1rem 0; overflow-wrap:anywhere; }
+.schedule-dialog { width:min(620px,calc(100% - 24px)); max-height:85dvh; overflow:auto; color:var(--ink); background:var(--surface); }
+.schedule-dialog::backdrop { background:#0008; }
+.schedule-dialog label { display:flex; flex-direction:column; gap:.4rem; margin:.7rem 0; }
+.schedule-dialog .input { width:100%; min-width:0; }
+.schedule-dialog button,.schedule-row button { min-height:44px; }
 .training-blocks summary { cursor:pointer; min-height:44px; }
 .training-blocks p,.block-dialog p { margin:.7rem 0; color:var(--muted); }
 .block-list article,#block-analysis article { border-top:1px solid var(--line); padding:1rem 0; overflow-wrap:anywhere; }
