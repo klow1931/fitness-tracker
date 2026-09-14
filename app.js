@@ -1254,6 +1254,7 @@
     }
 
     function renderProgressChart() {
+      window.renderTrainingReview?.();
       const exercise=document.getElementById('progress-exercise')?.value,canvas=document.getElementById('progressChart');
       if(!canvas)return;
       if(progressChart)progressChart.destroy();

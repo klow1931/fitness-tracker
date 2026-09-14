@@ -1,6 +1,10 @@
 # Loadnote
 
-**v1.14.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.15.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## Training Review
+
+v1.15 adds a compact **Training Review** below Strength Progress: dated weekly outcomes, separate prescribed-load/logged-load/capacity trends, block interpretation and expandable supporting sessions. Switch between corrected history and as-recorded replay. Missing evidence stays unknown; reviews never apply training changes. See [review definitions and replay limits](docs/training-review.md).
 
 ## Training Prescription & Session Intent
 
@@ -77,6 +81,6 @@ Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 14 adds optional session-intent and planned-work snapshots without rewriting older workouts, sets, dates or loads.
+Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 15 preserves optional intent, planned-work and revisioned schedule records. v1.15 is a read-only review layer and does not change the stored schema or rewrite older workouts.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.
