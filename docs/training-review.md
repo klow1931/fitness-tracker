@@ -1,6 +1,6 @@
-# Training Review — v1.15
+# Training Review — v1.16
 
-A read-only panel below Strength Progress on Home. Choose an analysis date, 1/4/12-week performance window, and Current-corrected or Historical as-recorded evidence. It does not prescribe loads or modify saved workouts, drafts, programs or blocks. Schema 15 is unchanged; no new persisted collection or migration is needed.
+A read-only panel below Strength Progress on Home. Choose an analysis date, a training block or 1/4/12-week performance window, and Current-corrected or Historical as-recorded evidence. It does not prescribe loads or modify saved workouts, drafts, programs or blocks. Schema 15 is unchanged; no new persisted collection or migration is needed.
 
 ## Weekly review
 
@@ -10,11 +10,11 @@ Completed / (completed + explicitly skipped) is **resolved-session adherence**, 
 
 ## Performance and supporting evidence
 
-The pure API is `LoadnoteReview.review(state, {asOf, weeks:1|4|12, retrospective:true|false, knownAt?})`. The UI defaults to current-corrected analysis; callers should choose their mode deliberately. The result exposes dates, block context, weekly outcomes, execution, warnings, per-exercise evidence and `decisionAllowed:false`.
+The pure API is `LoadnoteReview.review(state, {asOf, weeks:1|4|12, retrospective:true|false, knownAt?, blockId?})`. The UI defaults to current-corrected analysis; callers should choose their mode deliberately. The result exposes dates, block context, weekly outcomes, execution, warnings, per-exercise evidence and `decisionAllowed:false`.
 
 Prescription, logged-load and demonstrated-capacity trends remain separate. Prescription trends use recorded snapshots on logged workouts, not inferred loads or uncompleted scheduled plans. Planned-set completion reuses the session-intent comparison; it is not scheduled-session adherence.
 
-The model delegates trend calculation and the three-distinct-day guard to the existing block analyzer with an ephemeral date-range scope. That scope is never saved or presented as a real training block. Capacity uses the existing core RPE-aware estimator with positive finite load, 1–12 reps and actual RPE 6–10. Per-day maxima and first/last evidence dates are shown; percentages are endpoint comparisons, not physiological strength-growth rates or fitted slopes. Different rep schemes and effort can still affect interpretation.
+The model delegates trend calculation and the three-distinct-day guard to the existing block analyzer with an ephemeral date-range scope. That scope is never saved or presented as a real training block. Capacity uses the existing core RPE-aware estimator with positive finite load, 2–12 reps at actual RPE 6–10, or a single at RPE 10. Per-day maxima and first/last evidence dates are shown; percentages are endpoint comparisons, not physiological strength-growth rates or fitted slopes. Different rep schemes and effort can still affect interpretation.
 
 Supporting sessions show workout ID/date, actual sets/RPE, recorded planned sets/target RPE, plan capture timestamp, individual estimates and exclusions. Missing RPE cannot be filled from target RPE, training maxes or known 1RMs. Late-captured plans are marked retrospective. Distinct exercise identities and variations are not pooled. Legacy entries without IDs use exact normalized names, with a warning rather than guessed alias matching.
 
@@ -31,3 +31,9 @@ Legacy saved-at gaps, bounded revision retention and undated identity-alias chan
 Automated fixtures model conservative return-to-powerlifting, different actual RPE, missing prescriptions/RPE, separate variations, future workouts, later edits/deletions, late block/plan knowledge, schema-14 migration, JSON roundtrips, rescheduling and unit-invariant kg results. These are synthetic fixtures, not validation against the athlete's complete real training dataset. A fresh exported dataset is needed for that separate acceptance pass.
 
 Browser tests exercise desktop/mobile-viewport controls, escaped text, nonmutation, dark-mode lb display and real offline reload. Full existing offline/update tests remain part of CI. Physical iPhone Safari remains a manual release check. No new network requests or external data sharing are added.
+
+## v1.16 evidence and block selection
+
+`Core.capacityEvidence` exposes version 2, an estimate or null, and a structured exclusion reason. Singles below RPE 10 are observed loads only; no unvalidated single-rep formula is introduced. Low RPE is valid training evidence, not a missing entry. Legacy estimated1RM, PRs and charts retain their numerical behavior, with clarified chart labels. Block/review/readiness capacity outputs use the new shared classification. Hard-set counts and RPE coverage still count submaximal singles independently of capacity eligibility.
+
+Selecting a block replaces the rolling performance window with its start through min(end, analysis date). The weekly summary remains the week of the analysis date. Historical mode only offers block revisions known by the cutoff; a previously selected unavailable block produces an explicit error, not a silent range change. Controls are view state only and reset on page reload. Exercise-level mixed-context guards remain in force. No personal entries or aliases are changed automatically.

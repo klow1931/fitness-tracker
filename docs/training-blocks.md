@@ -1,4 +1,4 @@
-# Training Block Context (introduced in schema 11; current schema 14)
+# Training Block Context (introduced in schema 11; current schema 15)
 
 This is context infrastructure, not the v2 Decision Engine. Existing workouts, drafts, PR reconciliation and core RPE-aware estimates retain their formats and behavior.
 
@@ -24,7 +24,7 @@ Workout records did not historically retain entry timestamps. Schema 13 timestam
 
 Block summaries provide workout count, training days, elapsed duration through the cutoff, logged volume, average RPE and frequency when at least a week is observable. A zero workout count is real; unavailable performance data is null.
 
-Per-exercise logged-load trends use best logged load per date. Estimated-capacity trends use the existing core RPE-aware estimator on positive loads, 1–12 reps and RPE 6–10, with at least three distinct days. Estimates are demonstrated-performance proxies, not measured physiological strength. Partial/missing RPE cannot become an invented estimate. Neither known 1RMs nor training maxes fill gaps. Same-load/different-effort and same-effort/increasing-load cases remain distinct.
+Per-exercise logged-load trends use best logged load per date. Estimated-capacity trends use the existing core RPE-aware estimator on positive loads, 2–12 reps and RPE 6–10 (or observed singles at RPE 10), with at least three distinct days. Estimates are demonstrated-performance proxies, not measured physiological strength. Partial/missing RPE cannot become an invented estimate. Neither known 1RMs nor training maxes fill gaps. Same-load/different-effort and same-effort/increasing-load cases remain distinct.
 
 The current workout schema does not reliably retain prescribed loads or planned block sessions. Prescription trends, adherence, completion, prescribed intensity and block PR counts remain null rather than guessed. Logged-load trends are never labeled prescription or strength gains. Conservative/re-entry/ramp context explicitly cautions against equating load increases with capacity gains. Full-block frequency is reported only when workout-history coverage is explicitly complete; otherwise observed logging frequency is separate and may still be unavailable.
 

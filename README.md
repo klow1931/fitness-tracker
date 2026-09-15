@@ -1,6 +1,10 @@
 # Loadnote
 
-**v1.15.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.16.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## v1.16 Evidence clarity
+
+Training Review can now select a specific training block. Low-RPE work, missing RPE and submaximal singles have distinct explanations. Review, block analysis and Decision Readiness share a stricter capacity-evidence rule: multi-rep sets at RPE 6–10 or observed singles at RPE 10. Legacy PR/estimated-1RM calculations and saved records are unchanged. Displayed capacity trends may change because submaximal singles no longer masquerade as RPE-adjusted estimates.
 
 ## Training Review
 

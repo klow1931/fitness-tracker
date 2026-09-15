@@ -43,3 +43,7 @@ Older workouts do not have reliable saved-at timestamps. They remain visible by 
 ## Returning-powerlifter acceptance case
 
 For a conservative return/re-entry block, increasing logged training loads must remain separate from estimated capacity. A 365 lb programming training max, a known 446 lb squat and an RPE-aware performance estimate are three different facts. The snapshot explicitly warns that planned load increases in a conservative return ramp are not equivalent to strength gains.
+
+## v1.16 capacity evidence
+
+Capacity evidence excludes singles below RPE 10 without changing legacy estimated1RM or saved PRs. Logged hard sets and RPE coverage retain those singles; estimate eligibility is separate. Fewer than three distinct capacity-evidence days explicitly limits readiness, even if three workout dates exist. Low effort is not missing RPE. Review and block analytics use the same `Core.capacityEvidence` contract.
