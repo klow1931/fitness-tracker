@@ -12,7 +12,7 @@
    r.blocks.map(b=>'<article><h4>'+esc(b.name)+'</h4><p>'+esc(b.start+' – '+b.end)+' · '+b.workoutCount+' workouts on '+b.days+' dates.</p><p>'+esc(b.first?'Recorded span: '+b.first+' – '+b.last:'No workouts recorded in this block.')+'</p><p>Athlete-confirmed coverage: '+esc(b.coverage)+'.</p><button type="button" class="btn-secondary" data-clean-block="'+esc(b.id)+'">Review block coverage</button></article>').join('');
   host.querySelectorAll('[data-clean-edit]').forEach(b=>b.onclick=()=>editWorkout(b.dataset.cleanEdit));
   host.querySelectorAll('[data-clean-block]').forEach(b=>b.onclick=()=>window.openTrainingBlockEditor(b.dataset.cleanBlock));
-  host.querySelectorAll('[data-clean-alias]').forEach(b=>b.onclick=()=>{const a=r.aliases[Number(b.dataset.cleanAlias)];showTab('tools');renderDataIntegrityTools();document.getElementById('exercise-alias-source').value=a.left.id;document.getElementById('exercise-alias-target').value=a.right.id;document.getElementById('exercise-alias-tools').scrollIntoView({block:'start'});});
+  host.querySelectorAll('[data-clean-alias]').forEach(b=>b.onclick=()=>{const a=r.aliases[Number(b.dataset.cleanAlias)];showTab('tools');renderDataIntegrityTools();document.getElementById('exercise-alias-source').value=a.left.id;document.getElementById('exercise-alias-target').value=a.right.id;const panel=document.getElementById('exercise-alias-tools');panel.closest('details').open=true;panel.scrollIntoView({block:'start'});});
  }
  window.renderHistoryCleanup=render;
 })();
