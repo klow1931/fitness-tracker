@@ -166,3 +166,14 @@ body.dark .set-row-done { background:#134e4a; }
 #review-error { color:#b91c1c; }
 body.dark #review-error { color:#fca5a5; }
 @media(max-width:480px) { .training-review-controls label { flex-basis:100%; } }
+
+/* History cleanup uses native details and existing theme colors. */
+#history-cleanup { overflow-wrap:anywhere; }
+#history-cleanup summary { cursor:pointer; padding:.75rem 0; min-height:44px; font-weight:650; }
+#history-cleanup h3,#history-cleanup h4 { font-weight:650; margin:.8rem 0; }
+#history-cleanup article { border-top:1px solid var(--border,#cbd5e1); padding:.8rem 0; }
+#history-cleanup p { margin:.6rem 0; }
+.cleanup-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.cleanup-single-table { width:100%; text-align:left; font-size:.875rem; }
+.cleanup-single-table td,.cleanup-single-table th { padding:.35rem; }
+@media(max-width:600px) { .cleanup-columns { grid-template-columns:1fr; } }

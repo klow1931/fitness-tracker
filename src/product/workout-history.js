@@ -28,6 +28,7 @@ async function deleteWorkout(id){
  data=next;renderWorkoutHistory();renderDashboard();showToast('Workout deleted · records updated','success');
 }
 function renderWorkoutHistory(){
+ window.renderHistoryCleanup?.();
  const el=document.getElementById('workout-history');if(!el)return;
  const options={query:document.getElementById('history-search')?.value||'',from:document.getElementById('history-from')?.value||'',to:document.getElementById('history-to')?.value||''};
  const signature=JSON.stringify(options);if(signature!==historyFilterSignature){historyPage=0;historyFilterSignature=signature;}

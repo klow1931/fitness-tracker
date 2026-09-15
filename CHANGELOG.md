@@ -1,3 +1,10 @@
+# v1.17.0 — History cleanup & coverage
+
+- Added review-only middle-set load flags, name-based alias suggestions with side-by-side history, and block coverage summaries in Workout History.
+- Routed confirmed changes through existing workout/block editors and identity merge controls, preserving revision/undo and recovery paths.
+- Added current-corrected Training Review edit links and separate observed single load/RPE tables; historical snapshots stay read-only.
+- Added synthetic model/browser regressions and offline assets. No persisted schema changes, personal-data corrections or new estimates.
+
 # v1.16.0 — Evidence clarity and block reviews
 
 - Added shared capacity-evidence classification across Training Review, blocks and Decision Readiness. Submaximal singles stay logged, but no longer supply capacity estimates.

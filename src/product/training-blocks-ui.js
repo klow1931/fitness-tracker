@@ -20,7 +20,7 @@
   const frequency=a.dataCompleteness==='complete'?`Training days/week: ${val(a.frequencyPerWeek)}.`:`Observed logged days/week: ${val(a.observedFrequencyPerWeek)}. Full-block frequency is withheld until workout coverage is marked complete.`;
   const empty=!a.workoutCount&&a.dataCompleteness!=='complete'?'<p>No workouts have been imported for this block; this is missing data, not zero adherence.</p>':'';
   const prescription=a.prescription.prescribedSessions?`Planned work recorded for ${a.prescription.prescribedSessions}/${a.workoutCount} workouts (${val(a.prescriptionCoverage)}%). Planned-set completion: ${val(a.completionRate)}%. Average target RPE: ${val(a.prescribedIntensity)}. ${a.prescription.unexplainedModifiedSessions} modified sessions lack a reason.`:'No planned-work snapshots are recorded in this block, so adherence and completion remain unknown.';
-  el.innerHTML=`<h3>${esc(a.block.name)} · retrospective analysis</h3><p>${esc(a.interpretation)}</p>${empty}<p>${a.workoutCount} workouts · ${a.durationDays} days · Weighted tonnage ${a.totalVolume==null?'Not enough data':toDisplay(a.totalVolume)+' '+unitLabel()+'·reps'} · Average RPE ${val(a.averageRPE)}</p><p>${frequency}</p><p>${prescription}</p>${a.exercises.map(e=>`<article><b>${esc(e.name)}</b><p>Planned load: ${trend(display(e.prescriptionTrend))}</p><p>Completed logged load: ${trend(display(e.loggedLoadTrend))}</p><p>RPE-aware estimated capacity: ${trend(display(e.estimatedCapacityTrend))}</p></article>`).join('')}<p>Weighted tonnage excludes bodyweight-only work and timed holds. Planned load, completed load and estimated capacity remain separate. Estimates require load, reps (1–12) and RPE (6–10); no estimates come from training maxes or known 1RMs.</p>`;
+  el.innerHTML=`<h3>${esc(a.block.name)} · retrospective analysis</h3><p>${esc(a.interpretation)}</p>${empty}<p>${a.workoutCount} workouts · ${a.durationDays} days · Weighted tonnage ${a.totalVolume==null?'Not enough data':toDisplay(a.totalVolume)+' '+unitLabel()+'·reps'} · Average RPE ${val(a.averageRPE)}</p><p>${frequency}</p><p>${prescription}</p>${a.exercises.map(e=>`<article><b>${esc(e.name)}</b><p>Planned load: ${trend(display(e.prescriptionTrend))}</p><p>Completed logged load: ${trend(display(e.loggedLoadTrend))}</p><p>RPE-aware estimated capacity: ${trend(display(e.estimatedCapacityTrend))}</p></article>`).join('')}<p>Weighted tonnage excludes bodyweight-only work and timed holds. Planned load, completed load and estimated capacity remain separate. Capacity estimates require 2–12 reps at RPE 6–10, or an observed single at RPE 10; no estimates come from training maxes or known 1RMs.</p>`;
  }
  function addBenchmark(field,value={}){
   const row=document.createElement('div');row.className='block-benchmark';
@@ -39,7 +39,7 @@
   document.getElementById('block-add-max').onclick=()=>addBenchmark('block-maxes');document.getElementById('block-add-known').onclick=()=>addBenchmark('block-known');document.getElementById('block-cancel').onclick=()=>dialog.close();document.getElementById('block-form').onsubmit=save;guidance();
   dialog.oncancel=e=>{if(busy)e.preventDefault();};dialog.showModal();
  }
- async function commit(blocks){const next=window.LoadnoteIntegrity?.normalizeState({...data,trainingBlocks:blocks})||{...data,trainingBlocks:blocks};clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();}
+ async function commit(blocks){const next=window.LoadnoteIntegrity?.normalizeState({...data,trainingBlocks:blocks})||{...data,trainingBlocks:blocks};clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderHistoryCleanup?.();}
  async function save(event){event.preventDefault();if(busy)return;busy=true;const form=event.target,buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
   try{
    if(JSON.stringify(data.trainingBlocks||[])!==opened)throw Error('Blocks changed while editing. Cancel and reopen.');
@@ -53,4 +53,5 @@
  }
  async function destroy(id){if(busy||!confirm('Delete this training block? Workouts will be preserved. Block revisions remain in backups for historical analysis.'))return;busy=true;try{await commit(B().remove(data.trainingBlocks||[],id));}catch(error){showToast('Could not delete block: '+error.message,'error');}finally{busy=false;}}
  window.renderTrainingBlocks=render;
+ window.openTrainingBlockEditor=open;
 })();

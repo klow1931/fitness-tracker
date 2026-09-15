@@ -1,6 +1,10 @@
 # Loadnote
 
-**v1.16.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+**v1.17.0 · Development build.** A local-first strength-training log with workout review, progress tracking, nutrition and coaching.
+
+## v1.17 History cleanup & coverage
+
+Workout History now offers a review-only cleanup panel: unusual middle-set loads, possible exercise aliases with side-by-side history, and athlete-confirmed block coverage. Training Review links to the existing workout editor and shows submaximal singles as load/RPE observations, without new capacity estimates. No corrections or identity merges happen automatically. See [cleanup rules](docs/history-cleanup.md).
 
 ## v1.16 Evidence clarity
 

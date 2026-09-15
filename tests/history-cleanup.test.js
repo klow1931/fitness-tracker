@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),C=require('../src/product/history-cleanup'),B=require('../src/product/training-blocks');
+const w=(id,date,name,exerciseId,loads)=>({id,date,exercises:[{name,exerciseId,sets:loads.map(weight=>({weight,reps:10,rpe:8}))}]});
+const state={workouts:[w('a','2026-01-01','Hip Adduction','a',[80,30,80]),w('b','2026-01-02','Adduction Machine','b',[80,70,60]),w('future','2026-02-01','Hip Adduction','a',[80,30,80])],exerciseCatalog:[{id:'a',name:'Hip Adduction'},{id:'b',name:'Adduction Machine'}],trainingBlocks:B.upsert([],{name:'Base',startDate:'2026-01-01',endDate:'2026-01-31',dataCompleteness:'incomplete'},{now:'2026-01-01T00:00:00.000Z'})};
+const before=JSON.stringify(state),r=C.inspect(state,{asOf:'2026-01-20'});
+assert.equal(r.flags.length,1);assert.equal(r.flags[0].setNumber,2);assert.equal(r.flags[0].workoutId,'a');assert.match(r.flags[0].reason,/intentional/);
+assert.equal(r.aliases.length,1);assert.equal(r.aliases[0].leftHistory.length,1);assert.equal(r.blocks[0].workoutCount,2);assert.equal(r.blocks[0].coverage,'incomplete');assert.equal(r.blocks[0].last,'2026-01-02');
+assert.equal(JSON.stringify(state),before);assert.deepEqual(C.inspect(JSON.parse(before),{asOf:'2026-01-20'}),r);
+assert.equal(C.similar('Hip Abduction','Hip Adduction'),false);assert.equal(C.similar('Squat','Pause Squat'),false);assert.equal(C.similar('Row','Single Arm Row'),false);
+assert.equal(C.similar('Single Leg Hip Abduction','Single-Leg Abduction Machine'),true);
+const singles=C.singles([{date:'2026-01-02',workoutId:'b',actualSets:[{weight:110,reps:1,rpe:8}]},{date:'2026-01-01',workoutId:'a',actualSets:[{weight:100,reps:1,rpe:6},{weight:80,reps:5,rpe:8},{weight:120,reps:1,rpe:10}]}]);
+assert.equal(singles.length,2);assert.equal(singles[0].rpe,6);assert.equal(singles[1].weight,110);assert(!('estimate' in singles[0]));
+assert.equal(C.inspect({},{asOf:'2026-01-01'}).flags.length,0);assert.throws(()=>C.inspect(state,{asOf:'invalid'}));
+console.log('History cleanup flags, aliases, coverage and observed singles passed');
