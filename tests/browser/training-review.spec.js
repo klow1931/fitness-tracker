@@ -54,4 +54,9 @@ test('low RPE and submaximal singles have distinct explanations',async({page})=>
  await expect(page.locator('.review-lift')).toContainText('Submaximal single: observed load only');
  await expect(page.locator('.review-lift')).toContainText('RPE not recorded');
  await expect(page.locator('.review-lift')).toContainText('200 kg × 1 @ 7');
+ await expect(page.locator('.cleanup-single-table')).toContainText('200 kg');
+ await expect(page.locator('.cleanup-single-table')).toContainText('7');
+ await page.locator('[data-review-edit]').first().click();
+ await expect(page.locator('#wo-date')).toHaveValue('2026-06-10');
+ expect(await page.evaluate(()=>workoutEdit.id)).toBe('review-0');
 });

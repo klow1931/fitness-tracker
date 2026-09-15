@@ -3,6 +3,7 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const kg=v=>v==null?'Not enough data':toDisplay(v)+' '+unitLabel();
   const pct=v=>v==null?'Not enough data':v+'%';
+  function singleView(e){const rows=LoadnoteCleanup.singles(e.evidence);return rows.length?'<h4>Submaximal singles — observed performance</h4><p>Compare load alongside effort. Different RPE or block context is not an equivalent test; no capacity or strength-gain percentage is inferred.</p><table class="cleanup-single-table"><thead><tr><th>Date</th><th>Load</th><th>RPE</th></tr></thead><tbody>'+rows.map(s=>'<tr><td>'+esc(s.date)+'</td><td>'+esc(kg(s.weight))+'</td><td>'+esc(s.rpe)+'</td></tr>').join('')+'</tbody></table>':'';}
   const trend=v=>v?esc(kg(v.start)+' → '+kg(v.end)+' ('+(v.percent>0?'+':'')+v.percent+'%) · '+v.firstDate+' to '+v.lastDate+' · '+v.days+' evidence days'):'Not enough data — needs 3 distinct days within one training context.';
   const sets=(rows,planned)=>rows.length?rows.map(s=>esc(kg(s.weight)+' × '+s.reps+(planned?(s.targetRpe==null?'':' @ target '+s.targetRpe):(s.rpe==null?' · RPE missing':' @ '+s.rpe)))).join('<br>'):'Not recorded';
   function render(){
@@ -36,11 +37,13 @@
         r.warnings.map(w=>'<p class="review-context-note">'+esc(w)+'</p>').join('')+
         '<p class="review-mode-note">Trends use the highest value per day and compare first/last evidence days, not a fitted growth rate. Capacity uses positive load, 2–12 reps at actual RPE 6–10, or an observed single at RPE 10. Submaximal singles and low-RPE work stay logged but do not supply capacity estimates. This v1.16 evidence rule can change displayed trends; saved sets and legacy PR calculations are unchanged. Training maxes and known 1RMs never fill missing estimates. Variations stay separate.</p>'+
         (r.exercises.map(e=>'<details class="review-lift"><summary>'+esc(e.name)+' · '+e.capacityDays+' capacity-evidence days</summary><dl><dt>Prescription progression</dt><dd>'+trend(e.prescriptionTrend)+'</dd><dt>Logged-load progression</dt><dd>'+trend(e.loggedLoadTrend)+'</dd><dt>Demonstrated-capacity estimate</dt><dd>'+trend(e.estimatedCapacityTrend)+'</dd></dl><p>'+e.usableSets+' / '+e.actualSets+' logged strength sets usable for capacity estimates.</p>'+
-          e.reasons.map(reason=>'<p>'+esc(reason)+'</p>').join('')+'<h4>Supporting sessions</h4>'+
+          e.reasons.map(reason=>'<p>'+esc(reason)+'</p>').join('')+singleView(e)+'<h4>Supporting sessions</h4>'+
           e.evidence.map(row=>'<article class="review-evidence"><h5>'+esc(row.date+' · Workout '+row.workoutId)+'</h5><p><b>Planned:</b> '+sets(row.plannedSets,true)+'</p><p><b>Actual:</b> '+sets(row.actualSets,false)+'</p><p><b>Set capacity estimates:</b> '+(row.actualSets.length?row.actualSets.map(s=>s.estimatedCapacity==null?esc(s.limitation):esc(kg(s.estimatedCapacity))).join(' / '):'Not enough data')+'</p>'+
+            (r.mode==='current-corrected'?'<button type="button" class="btn-secondary" data-review-edit="'+esc(row.workoutId)+'">Review / edit saved workout</button>':'<p>Historical snapshot — edit current records from History.</p>')+
             (row.capturedAt?'<p>Plan captured: '+esc(row.capturedAt)+(row.retrospectivePlan?' · Retrospective':'')+'</p>':'')+
             (row.deviationReason!=='none'||row.deviationNotes?'<p>Change context: '+esc((LoadnoteIntent.DEVIATION_REASONS[row.deviationReason]||row.deviationReason)+' · '+row.deviationNotes)+'</p>':'')+'</article>').join('')+'</details>').join('')||'<p>Not enough data — no rep-based strength evidence in this range.</p>')+
-        '<p class="review-mode-note">Review only. No loads, programs, workouts or recommendations are changed.</p>';
+        '<p class="review-mode-note">Review calculations do not change data. Edit buttons open the existing editor; changes require review and save.</p>';
+      results.querySelectorAll('[data-review-edit]').forEach(b=>b.onclick=()=>editWorkout(b.dataset.reviewEdit));
     }catch(e){results.replaceChildren();error.textContent=e.message;}
   }
   window.renderTrainingReview=render;
