@@ -59,7 +59,8 @@
   const observedDays=workoutDates.length>1?Math.floor((Date.parse(workoutDates.at(-1))-Date.parse(workoutDates[0]))/86400000)+1:workoutDates.length;
   const exercises=new Map(),ensure=e=>{const key=e.exerciseId||String(e.name||'').trim().toLowerCase();if(!key)return null;if(!exercises.has(key))exercises.set(key,{name:e.name,exerciseId:e.exerciseId||null,loads:new Map(),estimates:new Map(),prescriptions:new Map()});return exercises.get(key);};for(const w of ws)for(const e of w.exercises||[]){if(e.type==='cardio'||e.trackBy==='duration')continue;const row=ensure(e);if(!row)continue;
    for(const s of e.sets||[]){const weight=Number(s.weight),reps=Number(s.reps),rpe=Number(s.rpe);if(!(weight>0&&Number.isFinite(weight)&&reps>=1&&Number.isInteger(reps)))continue;row.loads.set(w.date,Math.max(row.loads.get(w.date)||0,weight));
-    if(reps<=12&&rpe>=6&&rpe<=10)row.estimates.set(w.date,Math.max(row.estimates.get(w.date)||0,Core.estimated1RM(weight,reps,rpe)));
+    const estimate=Core.capacityEvidence(weight,reps,s.rpe).estimate;
+    if(estimate!==null)row.estimates.set(w.date,Math.max(row.estimates.get(w.date)||0,estimate));
    }
   }
   for(const w of ws)for(const e of w.sessionIntent?.prescription?.plannedExercises||[]){if(e.type==='cardio'||e.trackBy==='duration')continue;const row=ensure(e);if(!row)continue;for(const s of e.sets||[]){const weight=Number(s.weight),reps=Number(s.reps);if(weight>0&&Number.isFinite(weight)&&reps>=1&&Number.isInteger(reps))row.prescriptions.set(w.date,Math.max(row.prescriptions.get(w.date)||0,weight));}}

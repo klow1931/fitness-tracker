@@ -6,7 +6,7 @@
   'use strict';
 
   const SCHEMA_VERSION = 15;
-  const RELEASE_VERSION = '1.15.0';
+  const RELEASE_VERSION = '1.16.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -154,7 +154,7 @@
     }else state.prescriptionVersion=state.prescriptionVersion||1;
     // This identifies the application version that most recently normalized the state.
     state.releaseVersion=RELEASE_VERSION;
-    state.productVersion=15;
+    state.productVersion=16;
     if(state.scheduledSessions===undefined)state.scheduledSessions=[];
     if(Number(state.schemaVersion||1)<15)state.schemaVersion=15;
     return state;
@@ -181,6 +181,19 @@
       result = w * (1 + (r + rir) / 30);
     }
     return round(result, 1);
+  }
+
+  // Evidence contract v2. Keep legacy estimated1RM/PR behavior unchanged.
+  function capacityEvidence(weight, reps, rpe) {
+    const w=Number(weight),r=Number(reps),effort=Number(rpe);
+    let reason=null;
+    if(!Number.isFinite(w)||w<=0||!Number.isInteger(r)||r<1)reason='invalid-set';
+    else if(r>12)reason='high-reps';
+    else if(rpe==null||rpe==='')reason='missing-rpe';
+    else if(!Number.isFinite(effort)||effort<1||effort>10)reason='invalid-rpe';
+    else if(effort<6)reason='low-rpe';
+    else if(r===1&&effort<10)reason='submax-single';
+    return {version:2,estimate:reason?null:estimated1RM(w,r,effort),reason};
   }
 
   function volumeForExercise(exercise) {
@@ -255,6 +268,7 @@
     migrateState,
     setSchemaVersion,
     estimated1RM,
+    capacityEvidence,
     volumeForExercise,
     calcVolume,
     strengthSets,

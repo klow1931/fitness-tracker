@@ -1262,7 +1262,7 @@
       const exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,exercise)?.id;
       const series=LoadnoteProgress.series(data.workouts,exercise,{weeks,metric,end:today(),exerciseId},estimated1RM);
       const label=metric==='load'?'Heaviest actual set':'Estimated 1RM';
-      document.getElementById('progress-description').textContent=series.length?label+' · '+series.length+' logged days. Actual load is not necessarily a tested 1RM; estimates are calculated.':'No rep-based strength data in this range. Timed holds and cardio are available in exercise details.';
+      document.getElementById('progress-description').textContent=series.length?label+' · '+series.length+' logged days. Actual load is not necessarily a tested 1RM; estimates are calculated. Singles show observed load, not RPE-adjusted capacity. Training Review uses stricter evidence guards.':'No rep-based strength data in this range. Timed holds and cardio are available in exercise details.';
       progressChart=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:series.map(p=>formatDate(p.date)),datasets:[{label:label+' ('+unitLabel()+')',data:series.map(p=>toDisplay(p.value)),borderColor:data.dark?'#a5b4fc':'#4f46e5',tension:0,pointRadius:4}]},options:{responsive:true,animation:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,plugins:chartPluginOptions(false),scales:chartScaleOptions(unitLabel(),true)}});
     }
 

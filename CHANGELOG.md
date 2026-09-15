@@ -1,3 +1,11 @@
+# v1.16.0 — Evidence clarity and block reviews
+
+- Added shared capacity-evidence classification across Training Review, blocks and Decision Readiness. Submaximal singles stay logged, but no longer supply capacity estimates.
+- Distinguished low-effort sets from absent/invalid RPE and high-repetition exclusions; retained hard-set counts and RPE coverage independently of estimate eligibility.
+- Added block-specific Training Review with analysis-date clipping and explicit errors for unavailable historical context.
+- Added a capacity-evidence-day readiness guard, synthetic unit/browser regressions and clarified legacy chart single labels.
+- No schema migration, personal-data edits, PR recalculation or new estimator formula. Existing stored data and legacy estimates remain unchanged; stricter review evidence can change displayed trends.
+
 # v1.15.0 — Training Review
 
 - Added compact date/range/mode controls, weekly schedule outcomes and expandable per-lift evidence alongside Strength Progress.

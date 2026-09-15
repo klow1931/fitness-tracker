@@ -32,4 +32,26 @@ test('review loads offline in dark mode and converts display without rewriting k
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
  const box=await page.locator('#training-review').boundingBox();expect(box.x+box.width).toBeLessThanOrEqual(page.viewportSize().width+1);
  await expect(page.locator('#review-error')).toBeEmpty();
+ await page.locator('#review-block').selectOption(await page.evaluate(()=>data.trainingBlocks[0].id));
+ await expect(page.locator('#review-weeks')).toBeDisabled();
+ await expect(page.locator('#training-review-results')).toContainText('in Return block');
+});
+test('selected block respects historical knowledge and does not silently switch ranges',async({page})=>{
+ const id=await page.evaluate(()=>data.trainingBlocks[0].id);
+ await page.locator('#review-block').selectOption(id);
+ await expect(page.locator('#training-review-results')).toContainText('2026-06-01 – 2026-08-20');
+ await page.locator('#review-mode').selectOption('recorded');
+ await expect(page.locator('#review-error')).toContainText('not available');
+ await expect(page.locator('#training-review-results')).toBeEmpty();
+ await page.locator('#review-block').selectOption('');
+ await expect(page.locator('#review-error')).toBeEmpty();
+ await expect(page.locator('#review-weeks')).toBeEnabled();
+});
+test('low RPE and submaximal singles have distinct explanations',async({page})=>{
+ await page.evaluate(()=>{data.workouts[0].exercises[0].sets=[{weight:200,reps:1,rpe:7},{weight:100,reps:5,rpe:5},{weight:100,reps:5}];renderTrainingReview();});
+ await page.locator('.review-lift summary').click();
+ await expect(page.locator('.review-lift')).toContainText('Low-effort set');
+ await expect(page.locator('.review-lift')).toContainText('Submaximal single: observed load only');
+ await expect(page.locator('.review-lift')).toContainText('RPE not recorded');
+ await expect(page.locator('.review-lift')).toContainText('200 kg × 1 @ 7');
 });
