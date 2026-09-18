@@ -16,12 +16,12 @@ const old=w('old','2025-12-15','s',95,5,8);
 const state={exerciseCatalog:catalog,exerciseRoles:roles,trainingBlocks:blocks,workouts:[old,...squat,...bench,...dead],workoutRevisions:[]};
 const snap=Decisions.snapshot(state,{asOf:'2026-01-31',retrospective:true});
 assert.equal(snap.readOnly,true);assert.equal(snap.automaticChanges,false);
-assert.equal(snap.lifts.squat.decision,'increase');assert.equal(snap.lifts.squat.decisionAllowed,true);assert.match(snap.lifts.squat.reason,/conservative progression/);
+assert.equal(snap.lifts.squat.decision,'increase');assert.equal(snap.lifts.squat.decisionAllowed,true);assert.match(snap.lifts.squat.reason,/conservative progression/);assert.match(snap.lifts.squat.nextExposure,/modest progression/);assert.match(snap.lifts.squat.watchNext,/controlled effort/);
 assert.equal(snap.lifts.squat.evidenceWindowStart,'2026-01-01');assert.equal(snap.lifts.squat.evidence.some(row=>row.date==='2025-12-15'),false,'decision evidence must stay inside the readiness window');
-assert.equal(snap.lifts.bench.decision,'hold');assert.match(snap.lifts.bench.reason,/intentionally conservative/);
-assert.equal(snap.lifts.deadlift.decision,'reduce');assert.match(snap.lifts.deadlift.reason,/declined/);
+assert.equal(snap.lifts.bench.decision,'hold');assert.match(snap.lifts.bench.reason,/intentionally conservative/);assert.match(snap.lifts.bench.nextExposure,/conservative block progression/);
+assert.equal(snap.lifts.deadlift.decision,'reduce');assert.match(snap.lifts.deadlift.reason,/declined/);assert.match(snap.lifts.deadlift.nextExposure,/lower-stress/);assert.match(snap.lifts.deadlift.watchNext,/stabilize or rebound/);
 const sparse={...state,workouts:[squat[0]]};const limited=Decisions.decisionForLift(sparse,'squat',{asOf:'2026-01-31',retrospective:true});
-assert.equal(limited.decision,'insufficient-evidence');assert.equal(limited.decisionAllowed,false);
+assert.equal(limited.decision,'insufficient-evidence');assert.equal(limited.decisionAllowed,false);assert.match(limited.nextExposure,/current plan unchanged/);assert.ok(limited.watchNext);
 const submax=[w('x1','2026-01-05','s',150,1,7),w('x2','2026-01-12','s',155,1,7),w('x3','2026-01-19','s',160,1,7)];
 assert.equal(Decisions.competitionEvidence({...state,workouts:submax},'squat','2026-01-31',{retrospective:true}).length,0,'submaximal singles must not become capacity evidence');
 const inconsistent=[w('i1','2026-01-05','s',100,5,8),w('i2','2026-01-12','s',115,5,8),w('i3','2026-01-19','s',108,5,8)];
@@ -33,7 +33,7 @@ const risingEffort=Decisions.decisionForLift({...state,workouts:effortRise},'squ
 assert.equal(risingEffort.decision,'hold');assert.match(risingEffort.reason,/effort rose sharply/);
 
 const stale=Decisions.decisionForLift({...state,workouts:squat},'squat',{asOf:'2026-02-28',retrospective:true});
-assert.equal(stale.decision,'insufficient-evidence');assert.equal(stale.decisionAllowed,false);assert.match(stale.reason,/days old/);
+assert.equal(stale.decision,'insufficient-evidence');assert.equal(stale.decisionAllowed,false);assert.match(stale.reason,/days old/);assert.match(stale.nextExposure,/fresh evidence opportunity/);assert.match(stale.watchNext,/freshness is restored/);
 
 const bounded=Decisions.competitionEvidence({...state,workouts:[old,...squat]},'squat','2026-01-31',{retrospective:true,startDate:'2026-01-01'});
 assert.equal(bounded.length,3);assert.equal(bounded[0].date,'2026-01-05');
