@@ -49,3 +49,15 @@ test('reduced motion and visible keyboard focus',async({page})=>{
  await page.keyboard.press('Tab');
  expect(await page.evaluate(()=>document.getElementById('panel-nutrition').contains(document.activeElement))).toBe(true);
 });
+
+test('v2.1 primary navigation centers Train Progress and Decisions',async({page})=>{
+ const labels=await page.locator('#mobile-nav .mobile-nav-btn span:last-child').allTextContents();
+ expect(labels).toEqual(['Home','Train','Progress','Decisions','More']);
+ await page.evaluate(()=>showTab('coach'));
+ await expect(page.locator('[data-panel="coach"][data-sub="co-programs"]')).toBeVisible();
+ await expect(page.locator('[data-panel="coach"][data-sub="co-insights"]')).toBeHidden();
+ await expect(page.locator('#decision-readiness-card')).toBeVisible();
+ await page.evaluate(()=>showTab('prs'));
+ await expect(page.locator('#training-review')).toBeVisible();
+ expect(await page.locator('#panel-dashboard #training-review').count()).toBe(0);
+});
