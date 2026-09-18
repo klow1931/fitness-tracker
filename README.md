@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.3.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.4.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.4 Athlete decision feedback
+
+v2.4 adds a local feedback loop to live Decision Center recommendations. For today's current-corrected squat, bench and deadlift decisions, the athlete can **Accept**, **Modify**, or **Ignore** the recommendation.
+
+Modify records the athlete's chosen direction (Increase, Hold, or Reduce) plus an optional reason. Each response preserves the decision snapshot that was shown at the time, including the engine version, rationale, next-exposure guidance and supporting evidence.
+
+Decision history automatically links a saved response to the next usable exposure for the same saved competition-lift exercise identity. Historical replay remains read-only so hindsight cannot be recorded as live athlete feedback.
+
+This release only records and displays feedback. It does not automatically personalize thresholds, alter programs, select exact loads, or assign confidence scores.
 
 ## v2.3 Decision backtesting
 
