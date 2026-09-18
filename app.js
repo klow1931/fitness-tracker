@@ -228,6 +228,12 @@
 
     function renderPRs() {
       const el = document.getElementById('pr-list');
+      const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);const cutoffStr=cutoff.toISOString().slice(0,10);
+      const recent=(data.workouts||[]).filter(w=>w.date>=cutoffStr).sort((a,b)=>a.date.localeCompare(b.date));
+      const workoutsCount=document.getElementById('progress-workouts-count'),latestSession=document.getElementById('progress-latest-session'),prCount=document.getElementById('progress-pr-count');
+      if(workoutsCount)workoutsCount.textContent=recent.length+' session'+(recent.length===1?'':'s');
+      if(latestSession)latestSession.textContent=recent.length?'Latest: '+formatDate(recent.at(-1).date):'No recent training yet';
+      if(prCount)prCount.textContent=(data.prs||[]).length+' record'+((data.prs||[]).length===1?'':'s');
       if (!data.prs.length) {
         el.innerHTML = '<p class="text-slate-500">No personal records yet. Log workouts or add them manually.</p>';
         return;
