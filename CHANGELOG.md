@@ -1,3 +1,16 @@
+# v2.3.0 — Decision backtesting and calibration foundation
+
+- Added a read-only walk-forward backtest engine for historical decision replay.
+- Default backtests use as-recorded historical knowledge to reduce future-data leakage.
+- Evaluate each historical decision against the next usable competition-lift exposure rather than historical programming choice.
+- Added decision counts, abstention rate, outcome coverage, next-capacity response, Increase/Reduce follow-up metrics and warning-miss tracking.
+- Made decision thresholds explicit and replayable through sensitivity analysis.
+- Added explicit historical cutoffs in addition to exposure-date replay.
+- Added synthetic regressions for future-leakage protection, outcome evaluation and threshold sensitivity.
+- Loaded and cached the backtest module in the app shell for future developer-facing reporting.
+- Rolled the service-worker cache to v2.3.0.
+- No stored-schema migration, confidence percentage, automatic optimization or training-data rewrite.
+
 # v2.2.0 — Decision workflow
 
 - Extended each squat, bench and deadlift decision with deterministic **Next exposure** guidance.
