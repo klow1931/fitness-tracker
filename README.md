@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.1.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.1.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.1.1 Progress and Decisions hierarchy
+
+Progress now opens with a compact overview of recent training, saved records, and body-progress destinations before deeper evidence. Training Review remains available but collapsed by default.
+
+Decisions now uses an answer-first hierarchy: the squat, bench and deadlift decision cards appear before readiness diagnostics. Evidence readiness, role mapping and the evidence contract remain available as expandable audit layers.
 
 ## v2.1 Simplified navigation
 
