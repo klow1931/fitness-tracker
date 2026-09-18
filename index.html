@@ -876,9 +876,8 @@
       <div class="card border-slate-300 bg-slate-50">
         <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
         <p class="text-xs text-slate-600">
-          The AI Coach is .
-          Insights, chat replies, deload suggestions, and programs are <b>general fitness recommendations only</b> — not medical advice, diagnosis, or treatment.
-          Always use your own judgment. Talk to a qualified professional before changing training or nutrition if you have an injury, illness, or health condition.
+          Loadnote's Decisions, Insights, chat, deload suggestions, and generated programs are <b>training-support tools, not medical care</b>. Recommendations are based on the training data and context available in the app and may be incomplete or wrong.
+          They do not diagnose injuries, prescribe treatment, or replace a qualified coach or healthcare professional. Use your own judgment, especially when pain, illness, injury, medication, or a health condition could affect training.
         </p>
       </div>
 
@@ -1261,20 +1260,20 @@
 
       <div class="card" id="privacy-policy">
         <h2 class="font-semibold mb-2">Privacy policy</h2>
-        <p class="text-xs text-slate-500 mb-3">Last updated: September 6, 2026 · Simple summary for Loadnote (web).</p>
+        <p class="text-xs text-slate-500 mb-3">Last updated: September 18, 2026 · Plain-language summary for Loadnote (web).</p>
         <div class="text-sm text-slate-600 space-y-3">
           <div>
             <p class="font-medium text-slate-800">What Loadnote is</p>
-            <p>Loadnote is a local-first training log that runs in your browser. You do not need an account to use the core features.</p>
+            <p>Loadnote is a local-first training and decision-support app that runs primarily in your browser. You do not need an account to use the core features.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">Data we store on your device</p>
-            <p>Workout history, nutrition logs, body measurements, progress photos you add, goals, programs, templates, form self-check notes, and settings are stored in this browser on this device (IndexedDB / localStorage). Core training data is stored locally in this web build. Optional AI requests may send relevant context to the configured AI service through the Loadnote backend when enabled.</p>
+            <p>Workout history, nutrition logs, body measurements, progress photos you add, goals, programs, templates, exercise-role mappings, training blocks, decision-readiness data, and settings are stored in this browser on this device (IndexedDB / localStorage). Core training and decision-support data remains local in this web build unless you choose a feature that sends information to an external service.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">What leaves your device</p>
             <ul class="list-disc pl-5 space-y-1 mt-1">
-              <li> If you paste your own API key and send a chat message, the prompt and related context are sent to the AI provider you chose (for example xAI or OpenAI). Keys stay in this browser and are not included in JSON backups.</li>
+              <li><b>Optional AI features:</b> If you configure an AI provider and send a chat or other AI-assisted request, the prompt and relevant context needed for that request are sent to that provider. API keys stay in this browser and are not included in JSON backups.</li>
               <li><b>Barcode food lookup:</b> If you look up a barcode online, the barcode number is requested from Open Food Facts. Their privacy terms apply to that request.</li>
               <li><b>Libraries / CDN:</b> The app may load scripts or styles from third-party CDNs (for example Chart.js, Tailwind, barcode scanner). Those providers may see standard network request data (IP, browser type) like any website.</li>
               <li><b>Hosting:</b> If you open Loadnote on GitHub Pages or another host, that host delivers the app files. Your training log still stays in your browser unless you export it yourself.</li>
@@ -1284,9 +1283,9 @@
             <p class="font-medium text-slate-800">What we do not do (this web build)</p>
             <ul class="list-disc pl-5 space-y-1 mt-1">
               <li>No Loadnote user accounts or login</li>
-              <li>No sale of your workout or nutrition data</li>
+              <li>No sale of your training, nutrition, body-progress, or decision-support data</li>
               <li>No advertising SDK in this build</li>
-              <li>Progress photos stay on-device unless you export them</li>
+              <li>Progress photos stay on-device unless you export them or explicitly use a future feature that says it will upload them</li>
             </ul>
           </div>
           <div>
@@ -1299,7 +1298,7 @@
           </div>
           <div>
             <p class="font-medium text-slate-800">Health disclaimer</p>
-            <p>Loadnote and the AI Coach are not medical care. Information is for general fitness tracking only — not diagnosis, treatment, or personalized medical advice.</p>
+            <p>Loadnote, including Decisions, Insights, chat, deload suggestions, and generated programs, is not medical care. It does not diagnose injuries or illnesses, prescribe treatment, or replace a qualified healthcare professional. Training recommendations can be incomplete or wrong because they depend on the data available to the app.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">Changes</p>
@@ -1314,7 +1313,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.1.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.1.2 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1347,14 +1346,20 @@
   <div id="mobile-more-sheet" class="mobile-more-sheet hidden">
     <div class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
     <div class="mobile-more-panel">
-      <p class="text-sm font-semibold mb-2">More</p>
-      <button type="button" class="mobile-more-item" onclick="showTab('nutrition'); toggleMobileMore(false)">🍽️ Food</button>
-      <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)">📅 Calendar</button>
-      <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)">📏 Measurements</button>
-      <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)">📷 Photos</button>
-      <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)">🛠️ Tools</button>
-      <button type="button" class="mobile-more-item" onclick="toggleGymMode(); toggleMobileMore(false)">🏋️ Toggle Gym mode</button>
-      <button type="button" class="btn-secondary w-full mt-2" onclick="toggleMobileMore(false)">Close</button>
+      <div class="mobile-more-hero">
+        <span class="eyebrow">More</span>
+        <h2>Everything else, when you need it.</h2>
+        <p>Nutrition, planning, body progress, tools and app controls stay one tap away without crowding the main navigation.</p>
+      </div>
+      <div class="mobile-more-grid">
+        <button type="button" class="mobile-more-item" onclick="showTab('nutrition'); toggleMobileMore(false)"><span class="mobile-more-icon">🍽️</span><span><b>Food</b><small>Nutrition log and targets</small></span></button>
+        <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)"><span class="mobile-more-icon">📅</span><span><b>Calendar</b><small>Plan and review training days</small></span></button>
+        <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)"><span class="mobile-more-icon">📏</span><span><b>Measurements</b><small>Body check-ins and trends</small></span></button>
+        <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)"><span class="mobile-more-icon">📷</span><span><b>Photos</b><small>Progress photo check-ins</small></span></button>
+        <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)"><span class="mobile-more-icon">🛠️</span><span><b>Tools</b><small>Calculators, backups and settings</small></span></button>
+        <button type="button" class="mobile-more-item" onclick="toggleGymMode(); toggleMobileMore(false)"><span class="mobile-more-icon">🏋️</span><span><b>Gym mode</b><small>Toggle larger training controls</small></span></button>
+      </div>
+      <button type="button" class="btn-secondary w-full mobile-more-close" onclick="toggleMobileMore(false)">Close</button>
     </div>
   </div>
 
