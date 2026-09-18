@@ -37,14 +37,18 @@
     const readiness=readinessSnapshot.lifts[lift];
     if(!readiness)throw Error('Unknown competition lift.');
     const evidence=competitionEvidence(state,lift,asOf,{retrospective,knownAt:options.knownAt,startDate:readinessSnapshot.windowStart});
-    const base={version:VERSION,lift,label:readiness.label,asOf,mode:retrospective?'current-corrected':'as-recorded',readiness:readiness.status,decision:'insufficient-evidence',decisionAllowed:false,reason:'',evidenceWindowStart:readinessSnapshot.windowStart,evidence:evidence.slice(-3),signals:[]};
+    const base={version:VERSION,lift,label:readiness.label,asOf,mode:retrospective?'current-corrected':'as-recorded',readiness:readiness.status,decision:'insufficient-evidence',decisionAllowed:false,reason:'',nextExposure:'Collect more evidence before making a directional training change.',watchNext:'Complete a fresh, well-mapped competition-lift exposure with usable load, reps and RPE.',evidenceWindowStart:readinessSnapshot.windowStart,evidence:evidence.slice(-3),signals:[]};
     if(readiness.status!=='ready'){
       base.reason=readiness.reasons[0]||'Decision readiness requirements are not met.';
+      base.nextExposure='Keep the current plan unchanged by this model until the missing readiness evidence is resolved.';
+      base.watchNext=readiness.reasons[0]||'Add enough current, mapped evidence for Decision Readiness to become ready.';
       base.signals=readiness.reasons.slice();
       return base;
     }
     if(evidence.length<3){
       base.reason='At least three capacity-evidence days are required before making a training decision.';
+      base.nextExposure='Keep the current plan unchanged by this model while another usable exposure is collected.';
+      base.watchNext='Reach at least three distinct capacity-evidence days in the active analysis window.';
       return base;
     }
     const recent=evidence.slice(-3),first=recent[0],last=recent[2];
@@ -67,26 +71,38 @@
     ];
     if(evidenceAgeDays>MAX_EVIDENCE_AGE_DAYS){
       base.reason=`Latest usable competition-lift evidence is ${evidenceAgeDays} days old. A directional recommendation is withheld until fresher evidence is available.`;
+      base.nextExposure='Use the planned session as a fresh evidence opportunity rather than changing direction from stale data.';
+      base.watchNext='Record a new usable competition-lift exposure; freshness is restored once current evidence enters the window.';
       return base;
     }
     base.decisionAllowed=true;
     if(trend<=-3&&latestRpe>=8.5&&nonIncreasingIntervals===2){
       base.decision='reduce';
       base.reason='Demonstrated capacity declined across the last three usable exposures while the latest evidence set was high effort.';
+      base.nextExposure='Use a lower-stress next exposure or reduce the planned loading direction rather than pushing progression.';
+      base.watchNext='Look for capacity to stabilize or rebound at lower effort before resuming progression.';
     }else if(trend<0||latestRpe>=9||rpeChange>=1.5){
       base.decision='hold';
       base.reason=rpeChange>=1.5?'Recent capacity does not justify an increase because effort rose sharply across the same evidence window.':'Recent evidence does not support increasing the next exposure: capacity is flat/down or the latest evidence set is already high effort.';
+      base.nextExposure='Keep the current loading direction instead of adding a new progression step.';
+      base.watchNext=rpeChange>=1.5?'Watch whether effort settles at the same or better demonstrated capacity.':'Watch for a clearer capacity improvement at controlled effort before increasing.';
     }else if(conservative&&trend<2){
       base.decision='hold';
       base.reason='Performance is stable, but the block is intentionally conservative and the evidence does not justify accelerating its progression.';
+      base.nextExposure='Stay with the conservative block progression rather than accelerating the planned loading direction.';
+      base.watchNext='Require a clearer improvement in demonstrated capacity at controlled effort before accelerating.';
     }else if(trend>=1&&avgRpe<=8.5&&latestRpe<=8.5&&nonDecliningIntervals===2){
       base.decision='increase';
       base.reason=conservative?'Demonstrated capacity improved across recent exposures at controlled effort; a conservative progression is supported without treating planned load increases as strength gains.':'Demonstrated capacity improved across recent exposures while effort remained controlled.';
+      base.nextExposure=conservative?'A modest progression is supported if it fits the conservative block plan; do not treat this as a new tested max.':'A modest progression is supported if it fits the current program; exact loading remains a programming choice.';
+      base.watchNext='Confirm the next exposure maintains controlled effort without reversing the recent capacity direction.';
     }else{
       base.decision='hold';
       base.reason=trend>=1&&nonDecliningIntervals<2
         ?'Overall capacity is higher, but the exposure-to-exposure pattern is inconsistent. Hold until the direction is confirmed.'
         :'The evidence supports continuing the current progression without a directional load change.';
+      base.nextExposure='Keep the current loading direction and use the next exposure to confirm the trend.';
+      base.watchNext=trend>=1&&nonDecliningIntervals<2?'Watch for a second consecutive non-declining exposure before progressing.':'Watch for a clear capacity rise at controlled effort before changing direction.';
     }
     return base;
   }
