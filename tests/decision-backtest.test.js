@@ -28,6 +28,7 @@ const report=Backtest.run(state,{from:'2026-01-19',to:'2026-01-28',horizonDays:1
 assert.equal(report.readOnly,true);
 assert.equal(report.mode,'as-recorded');
 assert.equal(report.horizonDays,14);
+assert.equal(report.cutoffMode,'exposure-dates');
 assert.equal(report.rows.length,6);
 const squat=report.rows.find(r=>r.lift==='squat'&&r.asOf==='2026-01-19');
 const bench=report.rows.find(r=>r.lift==='bench'&&r.asOf==='2026-01-20');
@@ -61,5 +62,11 @@ const sensitivity=Backtest.sensitivity(state,[
 assert.equal(sensitivity.length,2);
 assert.ok(sensitivity[0].summary.counts.increase>sensitivity[1].summary.counts.increase);
 assert.ok(sensitivity[1].summary.counts.hold>sensitivity[0].summary.counts.hold);
+
+const stale=Backtest.run(state,{lifts:['squat'],cutoffs:['2026-02-28'],horizonDays:14});
+assert.equal(stale.cutoffMode,'explicit');
+assert.equal(stale.rows.length,1);
+assert.equal(stale.rows[0].decision,'insufficient-evidence');
+assert.match(stale.rows[0].reason,/days old/);
 
 console.log('v2.3 walk-forward backtesting, outcomes and sensitivity metrics passed');
