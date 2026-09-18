@@ -63,14 +63,14 @@
         </div>
         <button onclick="toggleGymMode()" id="gym-mode-btn" class="btn-secondary text-sm px-3 py-1.5" title="Gym mode: larger controls">🏋️ Gym</button>
         <div class="desktop-tabs flex gap-2 flex-wrap items-center">
-          <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Dashboard</button>
+          <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Home</button>
           <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
-          <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Workouts</button>
+          <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Train</button>
           <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Food</button>
-          <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">PRs</button>
+          <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">Progress</button>
           <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measurements</button>
           <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
-          <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">AI Coach</button>
+          <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">Decisions</button>
           <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
         </div>
       </div>
@@ -255,8 +255,6 @@
           <canvas id="nutritionChart" height="220"></canvas>
         </div>
       </div>
-
-      <section id="training-review" class="card" aria-label="Training Review"></section>
 
       <div class="grid md:grid-cols-2 gap-6">
         <div class="card">
@@ -477,7 +475,8 @@
     </section>
 
     <section id="panel-prs" class="hidden more-page">
-<header class="measure-hero"><div><p class="measure-eyebrow">PERSONAL RECORDS</p><h1>Your strongest moments.</h1><p>Keep your best lifts in one place, with dates and estimated strength.</p></div></header>
+<header class="measure-hero"><div><p class="measure-eyebrow">PROGRESS</p><h1>See what your training is doing.</h1><p>Review trends and records without crowding your daily training screen.</p></div></header>
+<section id="training-review" class="card" aria-label="Training Review"></section>
 <div class="more-columns">
       <div class="card">
         <h2 class="font-semibold mb-4">Record a new best</h2>
@@ -859,15 +858,15 @@
       <div class="measure-card"><div class="measure-card-heading"><div><p class="measure-eyebrow">YOUR CHECK-INS</p><h2>Measurement history</h2></div><span id="measure-history-count" class="measure-count"></span></div><div id="measures-history" class="measure-history"></div><p id="measures-empty" class="measure-empty hidden">Your first check-in starts the story. Add any measurement above; you can fill in more later.</p></div>
     </section>
 
-    <!-- AI COACH -->
+    <!-- DECISIONS & COACHING -->
     <section id="panel-coach" class="hidden space-y-6">
-      <div class="section-tabs" role="tablist" aria-label="Coach sections">
-        <button type="button" class="section-tab active" data-sub="co-insights" onclick="showSubTab('coach','co-insights')">1. Insights</button>
-        <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">2. Chat</button>
-        <button type="button" class="section-tab" data-sub="co-goals" onclick="showSubTab('coach','co-goals')">3. Goals</button>
-        <button type="button" class="section-tab" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">4. Programs</button>
+      <div class="section-tabs" role="tablist" aria-label="Decision and coaching sections">
+        <button type="button" class="section-tab active" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">1. Decisions</button>
+        <button type="button" class="section-tab" data-sub="co-insights" onclick="showSubTab('coach','co-insights')">2. Insights</button>
+        <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">3. Chat</button>
+        <button type="button" class="section-tab" data-sub="co-goals" onclick="showSubTab('coach','co-goals')">4. Goals</button>
       </div>
-      <p class="text-xs text-slate-500 -mt-3">Most people only need <b>Insights</b> and <b>Chat
+      <p class="text-xs text-slate-500 -mt-3">Start with <b>Decisions</b>. Open deeper coaching tools only when you need them
 
       <div class="card border-slate-300 bg-slate-50">
         <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
@@ -878,7 +877,7 @@
         </p>
       </div>
 
-      <div class="sub-panel" data-panel="coach" data-sub="co-insights">
+      <div class="sub-panel hidden" data-panel="coach" data-sub="co-insights">
       <!-- v0.5 Proactive Coach -->
       <div class="card coach-proactive-card" id="coach-proactive">
         <div class="coach-snapshot-head"><div><span class="eyebrow">Proactive coach</span><h3>Analyzing your training…</h3></div></div>
@@ -990,7 +989,13 @@
       </div>
       </div><!-- /co-goals -->
 
-      <div class="sub-panel hidden" data-panel="coach" data-sub="co-programs">
+      <div class="sub-panel" data-panel="coach" data-sub="co-programs">
+      <div class="card decision-center-intro">
+        <span class="eyebrow">Decision Center</span>
+        <h1 class="text-2xl font-bold mt-1">What should you do next?</h1>
+        <p class="text-sm text-slate-500 mt-2">Start with the recommendation. Expand the evidence only when you want to audit why Loadnote reached it.</p>
+      </div>
+      <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
       <div class="grid md:grid-cols-1 gap-6">
         <!-- v0.7 Athlete Profile -->
         <div class="card" id="athlete-profile-card">
@@ -1028,8 +1033,6 @@
           <button onclick="saveAthleteProfile()" class="btn-primary">Save Athlete Profile</button>
           <div class="mt-5"><div class="flex items-center justify-between"><h3 class="font-semibold">Legacy program-generator estimates</h3><span class="text-xs text-slate-500">Not the v2 evidence model</span></div><div id="athlete-tm-table" class="mt-2"></div></div>
         </div>
-
-        <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
 
         <!-- Program Generator -->
         <div class="card">
@@ -1311,7 +1314,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.0.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.1.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1331,11 +1334,11 @@
     <button type="button" class="mobile-nav-btn" data-tab="workouts" onclick="showTab('workouts')">
       <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v8m4-11v14m0-7h10m0-7v14m4-11v8"/></svg></span><span>Train</span>
     </button>
-    <button type="button" class="mobile-nav-btn" data-tab="nutrition" onclick="showTab('nutrition')">
-      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v6c0 3 6 3 6 0V3M7 3v18M19 3c-4 3-4 9 0 9V3v18"/></svg></span><span>Food</span>
+    <button type="button" class="mobile-nav-btn" data-tab="prs" onclick="showTab('prs')">
+      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V9m5 9V5m5 13v-7m5 7V3"/></svg></span><span>Progress</span>
     </button>
     <button type="button" class="mobile-nav-btn" data-tab="coach" onclick="showTab('coach')">
-      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H9l-5 4Z M8 9h8 M8 12h5"/></svg></span><span>Coach</span>
+      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H9l-5 4Z M8 9h8 M8 12h5"/></svg></span><span>Decisions</span>
     </button>
     <button type="button" class="mobile-nav-btn" data-tab="more" onclick="toggleMobileMore()">
       <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2m5 0h2m5 0h2"/></svg></span><span>More</span>
@@ -1345,6 +1348,7 @@
     <div class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
     <div class="mobile-more-panel">
       <p class="text-sm font-semibold mb-2">More</p>
+      <button type="button" class="mobile-more-item" onclick="showTab('nutrition'); toggleMobileMore(false)">🍽️ Food</button>
       <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)">📅 Calendar</button>
       <button type="button" class="mobile-more-item" onclick="showTab('prs'); toggleMobileMore(false)">🏆 PRs</button>
       <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)">📏 Measurements</button>
