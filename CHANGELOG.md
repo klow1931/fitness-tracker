@@ -1,3 +1,12 @@
+# v2.1.2 — More menu and disclosure polish
+
+- Restyled the mobile More sheet with the same card, spacing and dark-mode language used across Loadnote.
+- Added short descriptions for Food, Calendar, Measurements, Photos, Tools and Gym mode.
+- Updated the Decisions/Coach disclaimer to describe training-support limits and the need for user judgment.
+- Updated the in-app privacy summary for the current local-first decision-support model and optional AI requests.
+- Rolled the service-worker cache to v2.1.2.
+- No stored-schema migration or training-data rewrite.
+
 # v2.1.1 — Progress and Decisions hierarchy
 
 - Added a compact Progress overview for recent sessions, saved records and body-progress destinations.

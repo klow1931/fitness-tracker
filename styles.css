@@ -937,3 +937,64 @@ body.dark .previous-performance p { color:#cbd5e1; }
 .readiness-map-row small { display:block; color:#64748b; font-size:.68rem; margin-top:2px; }.readiness-actions { justify-content:flex-end; margin-top:12px; }
 body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; border-color:#334155; } body.dark .readiness-summary,body.dark .readiness-context { background:#312e81; color:#e0e7ff; } body.dark .readiness-title p,body.dark .readiness-controls label,body.dark .readiness-reasons,body.dark .readiness-map-row small,body.dark .readiness-evidence span,body.dark .readiness-evidence small { color:#cbd5e1; }
 @media (max-width:900px){.readiness-grid{grid-template-columns:1fr}.readiness-map-row{grid-template-columns:1fr}.readiness-summary{align-items:flex-start}}
+
+
+/* v2.1.2 More sheet — same card language as the main app. */
+@media (max-width: 768px) {
+  .mobile-more-backdrop { background:rgba(15,23,42,.58); backdrop-filter:blur(3px); }
+  .mobile-more-panel {
+    border-radius:1.35rem 1.35rem 0 0;
+    padding:0 1rem calc(1rem + env(safe-area-inset-bottom));
+    background:#f8fafc;
+    border-top:1px solid #e2e8f0;
+    max-height:min(82vh,720px);
+    overflow-y:auto;
+  }
+  body.dark .mobile-more-panel { background:#0f172a; border-top-color:#334155; }
+  .mobile-more-hero {
+    margin:0 -1rem 1rem;
+    padding:1.2rem 1.2rem 1.1rem;
+    background:linear-gradient(125deg,#201c50,#3730a3);
+    color:white;
+    border-radius:1.35rem 1.35rem .9rem .9rem;
+  }
+  .mobile-more-hero .eyebrow { color:#5eead4; letter-spacing:.12em; }
+  .mobile-more-hero h2 { margin:.35rem 0 .35rem; font-size:1.3rem; line-height:1.2; letter-spacing:-.03em; }
+  .mobile-more-hero p { margin:0; color:#dce5ff; font-size:.8rem; line-height:1.45; }
+  .mobile-more-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; }
+  .mobile-more-item {
+    display:flex;
+    align-items:flex-start;
+    gap:.7rem;
+    min-height:88px;
+    padding:.85rem;
+    border:1px solid #e2e8f0;
+    border-radius:.9rem;
+    background:#fff;
+    box-shadow:0 3px 14px rgba(15,23,42,.04);
+  }
+  .mobile-more-item:hover { background:#f8fafc; border-color:#c7d2fe; }
+  .mobile-more-item > span:last-child { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+  .mobile-more-item b { font-size:.9rem; color:#0f172a; }
+  .mobile-more-item small { color:#64748b; font-size:.7rem; line-height:1.3; }
+  .mobile-more-icon {
+    display:grid;
+    place-items:center;
+    width:2rem;
+    height:2rem;
+    flex:0 0 2rem;
+    border-radius:.65rem;
+    background:#eef2ff;
+    font-size:1rem;
+  }
+  body.dark .mobile-more-item {
+    background:#111b32;
+    border-color:#334155;
+    box-shadow:none;
+  }
+  body.dark .mobile-more-item:hover { background:#17213a; border-color:#4f46e5; }
+  body.dark .mobile-more-item b { color:#e2e8f0; }
+  body.dark .mobile-more-item small { color:#94a3b8; }
+  body.dark .mobile-more-icon { background:#312e81; }
+  .mobile-more-close { margin-top:1rem; min-height:44px; }
+}

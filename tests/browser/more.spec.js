@@ -41,3 +41,16 @@ test('More pages fit the viewport in light and dark modes',async({page})=>{
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),panel).toBe(true);
  }
 });
+
+test('More sheet uses card navigation and updated disclosures',async({page})=>{
+ const copy=await page.locator('#mobile-more-sheet').textContent();
+ expect(copy).toContain('Everything else, when you need it.');
+ expect(copy).toContain('Nutrition log and targets');
+ expect(copy).toContain('Calculators, backups and settings');
+ await page.evaluate(()=>showTab('coach'));
+ await expect(page.locator('#panel-coach')).toContainText('training-support tools, not medical care');
+ await page.evaluate(()=>showTab('tools'));
+ await expect(page.locator('#privacy-policy')).toContainText('Last updated: September 18, 2026');
+ await expect(page.locator('#privacy-policy')).toContainText('training and decision-support app');
+ await expect(page.locator('#privacy-policy')).toContainText('Optional AI features');
+});

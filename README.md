@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.1.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.1.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.1.2 More and disclosure polish
+
+The mobile More sheet now uses the same card-based visual language as the primary app, with clearer labels and short descriptions for Food, Calendar, Measurements, Photos, Tools and Gym mode.
+
+The Decisions/Coach disclaimer and in-app privacy summary have been updated to reflect the current local-first decision-support architecture, optional external AI requests, and the read-only nature and limitations of training recommendations.
 
 ## v2.1.1 Progress and Decisions hierarchy
 
