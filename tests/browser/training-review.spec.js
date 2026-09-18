@@ -28,7 +28,7 @@ test('review separates trends, escapes evidence without changing saved workouts'
 test('review loads offline in dark mode and converts display without rewriting kg',async({page,context})=>{
  await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);});
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
- await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('dashboard');renderTrainingReview();});
+ await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('prs');renderTrainingReview();});
  await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();await page.locator('.review-lift summary').click();
  await expect(page.locator('.review-lift')).toContainText('lb');
