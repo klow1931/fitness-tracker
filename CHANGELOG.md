@@ -1,3 +1,12 @@
+# v2.1.3 — Responsive form controls
+
+- Added a shared max-width/min-width contract for inputs, selects and textareas so controls cannot overflow their cards.
+- Allowed form children inside flex and grid layouts to shrink correctly on narrow screens.
+- Tightened mobile layouts for template selection, history search and compact form grids.
+- Added a browser regression that checks visible controls across primary app screens at mobile width.
+- Rolled the service-worker cache to v2.1.3.
+- No stored-schema migration or data rewrite.
+
 # v2.1.2 — More menu and disclosure polish
 
 - Restyled the mobile More sheet with the same card, spacing and dark-mode language used across Loadnote.
