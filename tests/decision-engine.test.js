@@ -7,7 +7,7 @@ let n=0;const roles=Ready.replace([],[
 const blocks=Blocks.upsert([],{name:'Return',startDate:'2026-01-01',endDate:'2026-03-31',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp',dataCompleteness:'complete'},{now:'2026-01-01T00:00:00.000Z'});
 function w(id,date,exerciseId,weight,reps,rpe){
  const exercises=[{exerciseId,name:catalog.find(x=>x.id===exerciseId).name,sets:[{weight,reps,rpe}]}];
- return {id,date,createdAt:date+'T20:00:00.000Z',sessionIntent:Intent.context({role:'primary',prescription:Intent.createPrescription(exercises,{type:'manual'},date+'T19:00:00.000Z')}),exercises};
+ return {id,date,createdAt:date+'T20:00:00.000Z',sessionIntent:Intent.context({role:'heavy-exposure',prescription:Intent.createPrescription(exercises,{type:'manual'},date+'T19:00:00.000Z')}),exercises};
 }
 const squat=[w('s1','2026-01-05','s',100,5,8),w('s2','2026-01-12','s',105,5,8),w('s3','2026-01-19','s',110,5,8)];
 const bench=[w('b1','2026-01-06','b',80,5,8),w('b2','2026-01-13','b',80,5,8),w('b3','2026-01-20','b',80,5,8)];
