@@ -1,3 +1,13 @@
+# v2.1.0 — Simplified navigation and Decision Center
+
+- Reorganized mobile navigation around Home, Train, Progress, Decisions and More.
+- Moved Food to More while preserving the full nutrition workflow.
+- Moved Training Review out of Home and into Progress alongside personal records.
+- Reframed AI Coach as Decisions and made the Decision Center the default view; insights, chat, goals, athlete profile and program tools remain available.
+- Moved Decision Readiness / Next Decision above legacy program controls so recommendations are seen before configuration detail.
+- Rolled the service-worker cache to v2.1.0 so installed clients receive the information-architecture update.
+- No stored-schema migration or automatic training changes.
+
 # v2.0.1 — Browser decision integration
 
 - Loaded the v2 decision engine in the browser and added it to the offline app-shell cache.
