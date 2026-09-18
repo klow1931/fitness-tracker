@@ -28,7 +28,7 @@ assert.equal(events[0].note,'Meet week is close.');
 assert.throws(()=>Feedback.record(events,decision,{response:'modify'},{now:'2026-09-18T21:10:00.000Z'}),/Increase, Hold, or Reduce/);
 
 const state={decisionEvents:events,workouts:[
-  {id:'future',date:'2026-09-25',exercises:[{exerciseId:'squat-id',name:'Back Squat',sets:[{weight:195,reps:5,rpe:8}]}]},
+  {id:'future',date:'2026-09-25',exercises:[{exerciseId:'squat-id',name:'Back Squat',sets:[{weight:205,reps:5,rpe:8}]}]},
   {id:'other',date:'2026-09-20',exercises:[{exerciseId:'bench-id',name:'Bench Press',sets:[{weight:100,reps:5,rpe:8}]}]}
 ]};
 const history=Feedback.history(state);
