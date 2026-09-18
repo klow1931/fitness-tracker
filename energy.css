@@ -238,3 +238,28 @@ textarea.input { width:100%; resize:vertical; }
   #template-select { width:100%; }
   #history-search { width:100%; }
 }
+
+
+/* v2.1.4 iOS Safari date inputs.
+   Native date controls keep an intrinsic width unless explicitly reset. */
+input[type="date"].input {
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  inline-size:100%;
+  max-inline-size:100%;
+  min-inline-size:0;
+  -webkit-min-logical-width:0;
+  box-sizing:border-box;
+}
+input[type="date"].input::-webkit-date-and-time-value {
+  min-width:0;
+  text-align:left;
+}
+@supports (-webkit-touch-callout:none) {
+  input[type="date"].input {
+    -webkit-appearance:none;
+    appearance:none;
+  }
+}
