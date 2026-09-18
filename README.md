@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.1.4 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.2.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.2 Decision workflow
+
+The Decision Center now answers three questions for each competition lift: **What is the decision? What should the next exposure do? What should I watch next?** The engine returns deterministic next-exposure and watch-next guidance alongside Increase, Hold, Reduce or Insufficient evidence.
+
+Exact kilograms remain outside the decision engine. Loadnote still separates demonstrated capacity from programming prescription and does not automatically change workouts, schedules, training maxes or programs.
 
 ## v2.1.4 iOS date inputs
 

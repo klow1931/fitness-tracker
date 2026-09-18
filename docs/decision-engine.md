@@ -28,6 +28,7 @@ Conservative return/re-entry context remains a guard against interpreting planne
 - Read-only: no workout, program, training max, schedule, or stored athlete data is changed.
 - Deterministic: identical evidence produces identical decisions.
 - Auditable: the latest three capacity-evidence rows and plain-language signals are returned with each decision.
+- Action-oriented but prescription-safe: each decision also returns `nextExposure` and `watchNext` guidance without selecting an exact load or rewriting the program.
 - Chronology-aware: an explicit analysis date is required; future workouts are excluded. As-recorded mode continues to use the existing revision/knowledge-cutoff replay.
 - No fake confidence percentage. Calibration belongs after walk-forward testing.
 - This is training guidance, not a medical readiness or injury-risk model.
@@ -36,5 +37,5 @@ Conservative return/re-entry context remains a guard against interpreting planne
 
 1. Add walk-forward backtesting that evaluates historical decisions against subsequent observed performance without future-data leakage.
 2. Define outcome/error metrics before adding confidence calibration.
-3. Add a read-only Next Decision UI that exposes outcome, reason, freshness and supporting evidence without automatic changes.
-4. Validate the rules against real athlete exports without committing personal training data to the repository.
+3. Validate the rules against real athlete exports without committing personal training data to the repository.
+4. Use walk-forward results to decide whether any numeric load recommendation or confidence calibration is justified.
