@@ -1,3 +1,11 @@
+# v2.0.0 — Decision engine and Training Review UX
+
+- Added the first deterministic, read-only Training Decision Engine for confirmed competition squat, bench press and deadlift evidence, returning Increase, Hold, Reduce or Insufficient evidence with explicit reasons.
+- Preserved demonstrated capacity versus prescription, conservative return/re-entry context, explicit analysis dates and point-in-time replay; submaximal singles remain observed load/RPE rather than inferred capacity.
+- Made Training Review collapsed by default and added display-only exercise filtering so athletes can focus on selected lifts without changing saved history or calculations.
+- Rolled the service-worker cache to v2.0.0 so installed/offline clients can detect the release instead of continuing to serve v1.17.0 cached assets.
+- No stored-schema migration, automatic workout/program changes or numeric confidence score.
+
 # v1.17.0 — History cleanup & coverage
 
 - Added review-only middle-set load flags, name-based alias suggestions with side-by-side history, and block coverage summaries in Workout History.
