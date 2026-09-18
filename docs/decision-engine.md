@@ -35,7 +35,27 @@ Conservative return/re-entry context remains a guard against interpreting planne
 
 ## Next v2 work
 
-1. Add walk-forward backtesting that evaluates historical decisions against subsequent observed performance without future-data leakage.
-2. Define outcome/error metrics before adding confidence calibration.
-3. Validate the rules against real athlete exports without committing personal training data to the repository.
-4. Use walk-forward results to decide whether any numeric load recommendation or confidence calibration is justified.
+1. Validate v2.3 backtest behavior against real athlete exports without committing personal data to the repository.
+2. Review threshold sensitivity before changing the default policy.
+3. Add athlete Accept / Modify / Ignore feedback only after the historical backtest is stable.
+4. Use historical and live feedback together before considering numeric confidence or exact load recommendations.
+
+
+## v2.3 Backtesting contract
+
+v2.3 adds a read-only walk-forward backtest layer. Historical decisions are generated using only information available at each cutoff, then evaluated against the next usable competition-lift exposure that occurs after the decision.
+
+The backtest does **not** treat the athlete's historical programming choice as the ground-truth correct answer. Instead, it measures observable outcomes after each historical decision point.
+
+Reported metrics include:
+- decision counts by Increase / Hold / Reduce / Insufficient evidence
+- abstention rate
+- outcome coverage
+- mean next-exposure capacity change by decision type
+- Increase decisions followed by stable-or-improved capacity
+- Reduce decisions followed by stabilization or rebound
+- warning misses, defined as Increase/Hold decisions followed by a large capacity decline with high effort
+
+Policy thresholds are now explicit and can be replayed side-by-side through sensitivity analysis. This is intended for validation and calibration, not automatic optimization.
+
+As-recorded mode is the default for backtesting. Current-corrected replay remains available for diagnosis, but it should not be confused with what the engine actually could have known at the historical cutoff.
