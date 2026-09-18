@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.0.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.0.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.0 Training Decision Engine
 
@@ -13,6 +13,8 @@ Submaximal singles remain observed load/RPE evidence rather than inferred capaci
 The v2.0 UX pass focuses on progressive disclosure: show the useful answer first and keep deeper evidence available without letting analytics dominate the main interface. **Training Review now collapses by default** and can be expanded when the athlete wants the full review. Athletes can also choose which strength exercises to display, including one or more selected lifts instead of rendering every exercise in the review range.
 
 These controls are presentation-only. They do not change workout history, calculations or stored data. The existing analysis date, review range, training-block context, evidence mode, trends, supporting sessions and workout-edit links remain available inside the expanded review.
+
+Coach → Programs now also loads the read-only **Next Decision** view in the browser. It shows Increase, Hold, Reduce, or Insufficient evidence for squat, bench and deadlift using the same analysis date and replay mode as Decision Readiness, with the reason and supporting signals visible on demand.
 
 ## v1.17 History cleanup & coverage
 
