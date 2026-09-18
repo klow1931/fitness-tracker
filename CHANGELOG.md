@@ -1,3 +1,12 @@
+# v2.1.1 — Progress and Decisions hierarchy
+
+- Added a compact Progress overview for recent sessions, saved records and body-progress destinations.
+- Kept Training Review available but behind its existing collapsed disclosure.
+- Reordered Decisions so recommendation cards appear before readiness diagnostics.
+- Moved readiness metrics into an expandable evidence-audit layer while preserving role mapping and evidence-contract controls.
+- Rolled the service-worker cache to v2.1.1.
+- No stored-schema migration or automatic training changes.
+
 # v2.1.0 — Simplified navigation and Decision Center
 
 - Reorganized mobile navigation around Home, Train, Progress, Decisions and More.

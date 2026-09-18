@@ -475,7 +475,12 @@
     </section>
 
     <section id="panel-prs" class="hidden more-page">
-<header class="measure-hero"><div><p class="measure-eyebrow">PROGRESS</p><h1>See what your training is doing.</h1><p>Review trends and records without crowding your daily training screen.</p></div></header>
+<header class="measure-hero"><div><p class="measure-eyebrow">PROGRESS</p><h1>See what your training is doing.</h1><p>Start with the big picture. Open detailed evidence only when you need it.</p></div></header>
+<div id="progress-overview" class="progress-overview" aria-label="Progress overview">
+  <article class="card progress-overview-card"><span>Last 30 days</span><b id="progress-workouts-count">0 sessions</b><small id="progress-latest-session">No recent training yet</small></article>
+  <article class="card progress-overview-card"><span>Record book</span><b id="progress-pr-count">0 records</b><small>Your saved best performances</small></article>
+  <article class="card progress-overview-card progress-overview-action"><span>Body progress</span><b>Measurements & photos</b><div><button type="button" class="btn-secondary text-sm" onclick="showTab('measures')">Measurements</button><button type="button" class="btn-secondary text-sm" onclick="showTab('photos')">Photos</button></div></article>
+</div>
 <section id="training-review" class="card" aria-label="Training Review"></section>
 <div class="more-columns">
       <div class="card">
@@ -990,11 +995,6 @@
       </div><!-- /co-goals -->
 
       <div class="sub-panel" data-panel="coach" data-sub="co-programs">
-      <div class="card decision-center-intro">
-        <span class="eyebrow">Decision Center</span>
-        <h1 class="text-2xl font-bold mt-1">What should you do next?</h1>
-        <p class="text-sm text-slate-500 mt-2">Start with the recommendation. Expand the evidence only when you want to audit why Loadnote reached it.</p>
-      </div>
       <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
       <div class="grid md:grid-cols-1 gap-6">
         <!-- v0.7 Athlete Profile -->
@@ -1314,7 +1314,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.1.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.1.1 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

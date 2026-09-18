@@ -188,3 +188,26 @@ body.dark #review-error { color:#fca5a5; }
 .training-review-body { border-top:1px solid var(--line); padding-top:.5rem; }
 #review-exercises { min-height:7.5rem; }
 @media(max-width:480px) { #training-review-panel > summary small { max-width:28ch; } }
+
+
+/* v2.1.1 Progress and Decisions hierarchy. */
+.progress-overview { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+.progress-overview-card { display:flex; flex-direction:column; gap:.35rem; min-width:0; }
+.progress-overview-card > span { color:var(--muted); font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.progress-overview-card > b { font-size:1.2rem; letter-spacing:-.025em; }
+.progress-overview-card > small { color:var(--muted); }
+.progress-overview-action > div { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.35rem; }
+.decision-title { margin-bottom:.35rem; }
+.decision-answer-first { margin:1rem 0 1.25rem; }
+.decision-answer-first .readiness-lift { border-top:4px solid var(--line); }
+.decision-answer-first .decision-increase { border-top-color:#0d9488; }
+.decision-answer-first .decision-hold { border-top-color:#6366f1; }
+.decision-answer-first .decision-reduce { border-top-color:#b45309; }
+.decision-answer-first .decision-insufficient-evidence { border-top-color:#94a3b8; }
+.decision-evidence-panel { margin-top:.75rem; }
+.decision-evidence-panel > summary { font-weight:750; }
+@media(max-width:760px) {
+ .progress-overview { grid-template-columns:1fr; }
+ .progress-overview-card { padding:1rem; }
+ .decision-answer-first .readiness-grid { grid-template-columns:1fr; }
+}

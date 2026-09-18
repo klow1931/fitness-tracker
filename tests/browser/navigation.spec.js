@@ -58,6 +58,7 @@ test('v2.1 primary navigation centers Train Progress and Decisions',async({page}
  await expect(page.locator('[data-panel="coach"][data-sub="co-insights"]')).toBeHidden();
  await expect(page.locator('#decision-readiness-card')).toBeVisible();
  await page.evaluate(()=>showTab('prs'));
+ await expect(page.locator('#progress-overview')).toBeVisible();
  await expect(page.locator('#training-review')).toBeVisible();
  expect(await page.locator('#panel-dashboard #training-review').count()).toBe(0);
 });
