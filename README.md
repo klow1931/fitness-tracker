@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.0.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.1.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.1 Simplified navigation
+
+v2.1 reorganizes the app around the athlete's main jobs instead of exposing every feature equally. Mobile navigation is now **Home · Train · Progress · Decisions · More**. Nutrition and other lower-frequency tools remain available under More rather than occupying permanent primary navigation.
+
+**Progress** now contains Training Review and personal records, keeping deeper analysis out of the daily Home experience. **Decisions** opens directly to the Decision Center, with Next Decision and Decision Readiness first; legacy coaching insights, chat, goals, athlete profile and program tools remain available without being removed.
+
+The information architecture follows progressive disclosure: show the answer first, explanation second and detailed evidence only when expanded. No stored training data or schema changes are required.
 
 ## v2.0 Training Decision Engine
 
