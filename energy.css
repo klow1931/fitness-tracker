@@ -263,3 +263,25 @@ input[type="date"].input::-webkit-date-and-time-value {
     appearance:none;
   }
 }
+
+
+/* v2.2 Decision workflow. */
+.decision-reason { margin:.55rem 0 .8rem; }
+.decision-guidance { display:grid; gap:.65rem; margin:.8rem 0; }
+.decision-guidance > div {
+  padding:.75rem;
+  border:1px solid var(--line);
+  border-radius:.75rem;
+  background:color-mix(in srgb,var(--surface) 88%,var(--brand) 12%);
+}
+.decision-guidance span {
+  display:block;
+  margin-bottom:.2rem;
+  color:var(--muted);
+  font-size:.68rem;
+  font-weight:750;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.decision-guidance b { display:block; font-size:.9rem; line-height:1.4; }
+body.dark .decision-guidance > div { background:#111b32; border-color:#334155; }
