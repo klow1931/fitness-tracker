@@ -105,11 +105,14 @@
       warningMisses:{count:warningMisses.length,total:watched.length,rate:watched.length?round(warningMisses.length/watched.length*100):null}
     };
   }
-  function run(state,{from,to,lifts=Object.keys(Readiness.LIFTS),retrospective=false,horizonDays=42,policy}={}){
+  function run(state,{from,to,lifts=Object.keys(Readiness.LIFTS),retrospective=false,horizonDays=42,policy,cutoffs}={}){
     const rows=[];
-    for(const lift of lifts)for(const asOf of candidateDates(state,lift,{from,to,retrospective}))rows.push(row(state,lift,asOf,{retrospective,horizonDays,policy}));
+    for(const lift of lifts){
+      const dates=Array.isArray(cutoffs)?[...new Set(cutoffs.filter(Blocks.date))].filter(day=>(!from||day>=from)&&(!to||day<=to)).sort():candidateDates(state,lift,{from,to,retrospective});
+      for(const asOf of dates)rows.push(row(state,lift,asOf,{retrospective,horizonDays,policy}));
+    }
     rows.sort((a,b)=>a.asOf.localeCompare(b.asOf)||a.lift.localeCompare(b.lift));
-    return {version:VERSION,mode:retrospective?'current-corrected':'as-recorded',readOnly:true,horizonDays,policy:Decisions.policy(policy),rows,summary:summarize(rows)};
+    return {version:VERSION,mode:retrospective?'current-corrected':'as-recorded',readOnly:true,horizonDays,cutoffMode:Array.isArray(cutoffs)?'explicit':'exposure-dates',policy:Decisions.policy(policy),rows,summary:summarize(rows)};
   }
   function sensitivity(state,variants,options={}){
     const list=Array.isArray(variants)?variants:[];
