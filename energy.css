@@ -323,5 +323,7 @@ body.dark .decision-feedback,body.dark .decision-modify-form { background:#111b3
   .decision-feedback-heading,.decision-history-list article > div { align-items:flex-start; flex-direction:column; gap:.2rem; }
   .decision-feedback-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
   .decision-feedback-actions > .btn-secondary,.decision-modify > summary { width:100%; justify-content:center; }
-  .decision-modify-form { position:absolute; left:1rem; right:1rem; z-index:2; box-shadow:0 8px 24px #0002; }
+  .decision-modify { min-width:0; }
+  .decision-modify[open] { grid-column:1/-1; }
+  .decision-modify-form { position:static; width:100%; max-width:100%; box-shadow:none; }
 }
