@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 15;
+  const SCHEMA_VERSION = 16;
   const RELEASE_VERSION = '1.17.0';
 
   function clone(value) {
@@ -22,7 +22,7 @@
   const DEFAULT_COLLECTIONS = [
     'workouts', 'nutrition', 'prs', 'goals', 'programs', 'templates',
     'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews',
-    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles'
+    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles', 'decisionEvents'
   ];
 
   function normalizeState(input, defaults) {
@@ -157,6 +157,14 @@
     state.productVersion=17;
     if(state.scheduledSessions===undefined)state.scheduledSessions=[];
     if(Number(state.schemaVersion||1)<15)state.schemaVersion=15;
+    // v15 → v16: add local decision-feedback history without rewriting training data.
+    if(Number(state.schemaVersion||1)<16){
+      if(!Array.isArray(state.decisionEvents))state.decisionEvents=[];
+      state.decisionFeedbackVersion=1;state.schemaVersion=16;
+    }else{
+      if(!Array.isArray(state.decisionEvents))state.decisionEvents=[];
+      state.decisionFeedbackVersion=state.decisionFeedbackVersion||1;
+    }
     return state;
   }
 
