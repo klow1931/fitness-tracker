@@ -1,3 +1,13 @@
+# v2.2.0 — Decision workflow
+
+- Extended each squat, bench and deadlift decision with deterministic **Next exposure** guidance.
+- Added a **Watch next** condition that explains what future evidence would support changing direction.
+- Kept exact loading outside the decision engine so demonstrated capacity stays separate from programming prescription.
+- Updated the Decision Center to show action guidance before deeper evidence.
+- Versioned the decision-engine output contract to 3.
+- Rolled the service-worker cache to v2.2.0.
+- No stored-schema migration or automatic workout/program changes.
+
 # v2.1.4 — iOS date input fix
 
 - Reset iOS Safari's intrinsic date-input width so date controls stay inside cards and grid columns.
