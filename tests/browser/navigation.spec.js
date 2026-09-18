@@ -62,3 +62,22 @@ test('v2.1 primary navigation centers Train Progress and Decisions',async({page}
  await expect(page.locator('#training-review')).toBeVisible();
  expect(await page.locator('#panel-dashboard #training-review').count()).toBe(0);
 });
+
+test('visible form controls stay inside cards and viewport on mobile',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ const panels=['dashboard','workouts','nutrition','prs','measures','photos','coach','tools'];
+ for(const panel of panels){
+   await page.evaluate(panel=>showTab(panel),panel);
+   await page.evaluate(()=>{
+     document.querySelectorAll('details').forEach(d=>{if(!d.closest('.hidden'))d.open=true;});
+   });
+   const offenders=await page.locator('input:not([type=checkbox]):not([type=radio]), select, textarea').evaluateAll(nodes=>nodes.filter(el=>{
+     const style=getComputedStyle(el),r=el.getBoundingClientRect();
+     if(style.display==='none'||style.visibility==='hidden'||r.width===0||r.height===0)return false;
+     const card=el.closest('.card,.session-review,.mobile-more-panel,section');
+     const cr=card?.getBoundingClientRect();
+     return r.right>innerWidth+1||r.left<-1||(cr&&(r.right>cr.right+1||r.left<cr.left-1));
+   }).map(el=>({id:el.id,cls:el.className,tag:el.tagName,rect:el.getBoundingClientRect().toJSON()})));
+   expect(offenders, panel+' overflowing controls').toEqual([]);
+ }
+});
