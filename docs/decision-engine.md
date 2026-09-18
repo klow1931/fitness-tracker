@@ -13,7 +13,15 @@ For each confirmed competition lift, the engine returns one of four outcomes:
 
 A directional decision is allowed only when the existing Decision Readiness snapshot is `ready`. The engine currently requires at least three usable capacity-evidence days and never turns submaximal singles into RPE-adjusted capacity estimates.
 
-The initial rules use recent demonstrated-capacity direction, RPE, and training-block context. Conservative return/re-entry context acts as a guard against interpreting planned load increases as equivalent strength gains or accelerating progression from stable evidence alone.
+The rules use recent demonstrated-capacity direction, exposure-to-exposure consistency, RPE direction, evidence freshness, and training-block context. Decision evidence is bounded to the same active-block or rolling analysis window used by Decision Readiness so older history cannot silently enter a current recommendation.
+
+A directional recommendation is withheld when the latest usable competition-lift evidence is more than 28 days old. This is an evidence-freshness guard, not an injury or detraining claim.
+
+An `increase` requires an overall positive capacity trend, controlled effort, and no meaningful decline across either of the two recent exposure-to-exposure intervals. A positive first-to-last endpoint with a contradictory middle exposure is held instead of being treated as a clean upward trend. A sharp first-to-latest RPE increase also blocks an increase even when loads or estimated capacity rose.
+
+A `reduce` requires both a meaningful overall capacity decline and high latest effort, with both recent intervals non-increasing within a small noise tolerance. Mixed patterns are held rather than escalated into a reduction.
+
+Conservative return/re-entry context remains a guard against interpreting planned load increases as equivalent strength gains or accelerating progression from stable evidence alone.
 
 ## Boundaries
 
@@ -26,7 +34,7 @@ The initial rules use recent demonstrated-capacity direction, RPE, and training-
 
 ## Next v2 work
 
-1. Add a read-only Next Decision UI.
-2. Add walk-forward backtesting that evaluates historical decisions against subsequent observed performance without future-data leakage.
-3. Define outcome/error metrics before adding confidence calibration.
+1. Add walk-forward backtesting that evaluates historical decisions against subsequent observed performance without future-data leakage.
+2. Define outcome/error metrics before adding confidence calibration.
+3. Add a read-only Next Decision UI that exposes outcome, reason, freshness and supporting evidence without automatic changes.
 4. Validate the rules against real athlete exports without committing personal training data to the repository.
