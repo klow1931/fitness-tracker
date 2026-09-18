@@ -18,7 +18,7 @@
       { id:'prescription', label:'Planned versus completed training', ok:Number(d.schemaVersion || 0) >= 14 && Number(d.prescriptionVersion || 0) >= 1 },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 15 }
     ];
-    return { version:'2.0.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'2.0.1', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });
