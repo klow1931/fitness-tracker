@@ -1,3 +1,11 @@
+# v2.0.1 — Browser decision integration
+
+- Loaded the v2 decision engine in the browser and added it to the offline app-shell cache.
+- Added a read-only Next Decision section to Coach → Programs using the same analysis date and replay mode as Decision Readiness.
+- Show Increase, Hold, Reduce, or Insufficient evidence with plain-language reasons, latest evidence and expandable supporting signals.
+- Rolled the service-worker cache so installed clients can detect and apply the update.
+- No automatic workout, schedule or program changes.
+
 # v2.0.0 — Decision engine and Training Review UX
 
 - Added the first deterministic, read-only Training Decision Engine for confirmed competition squat, bench press and deadlift evidence, returning Increase, Hold, Reduce or Insufficient evidence with explicit reasons.
