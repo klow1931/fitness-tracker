@@ -7,7 +7,9 @@ test.beforeEach(async({page})=>{
   for(const w of ws)w.sessionIntent=LoadnoteIntent.context({prescription:LoadnoteIntent.createPrescription(w.exercises,{type:'manual'},w.date+'T10:00:00.000Z')});
   data.workouts=ws;data.trainingBlocks=LoadnoteBlocks.upsert([],{name:'Return block',startDate:'2026-06-01',endDate:'2026-09-01',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp'},{now:'2026-09-01T18:00:00.000Z'});
   showTab('dashboard');renderTrainingReview();
- });await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
+ });
+ await page.locator('#training-review-panel > summary').click();
+ await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
 });
 test('review separates trends, escapes evidence without changing saved workouts',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify(data.workouts));
@@ -63,6 +65,7 @@ test('low RPE and submaximal singles have distinct explanations',async({page})=>
 });
 
 test('review stays compact until opened and filters exercises',async({page})=>{
+ await page.locator('#training-review-panel > summary').click();
  await expect(page.locator('#training-review-panel')).not.toHaveAttribute('open','');
  await page.locator('#training-review-panel > summary').click();
  await expect(page.locator('#training-review-panel')).toHaveAttribute('open','');
