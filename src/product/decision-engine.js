@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness){
   'use strict';
   if(!Core||!Blocks||!Readiness)throw Error('Loadnote decision engine dependencies are required');
-  const VERSION=2;
+  const VERSION=3;
   const MAX_EVIDENCE_AGE_DAYS=28;
   const round=(n,d=1)=>Core.round(Number(n)||0,d);
   const daysBetween=(a,b)=>Math.floor((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000);
