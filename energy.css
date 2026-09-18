@@ -211,3 +211,30 @@ body.dark #review-error { color:#fca5a5; }
  .progress-overview-card { padding:1rem; }
  .decision-answer-first .readiness-grid { grid-template-columns:1fr; }
 }
+
+
+/* v2.1.3 Responsive form-control contract.
+   Controls may fill their container, but never make the container wider. */
+:where(input:not([type="checkbox"]):not([type="radio"]),select,textarea,.input) {
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+}
+textarea.input { width:100%; resize:vertical; }
+:where(.card,.sub-panel,.more-columns,.more-form-grid,.block-fields,.measure-fields,.progress-controls,.readiness-controls,.training-review-controls,.training-rest-controls,.logger-set,.cardio-fields,.flex,.grid) > * {
+  min-width:0;
+}
+:where(label,.measure-input-wrap,.training-review-controls label,.progress-controls label,.readiness-controls label) {
+  min-width:0;
+  max-width:100%;
+}
+:where(.input.w-auto,.input.w-40,.input.w-24,.input.w-20,.input.w-16) {
+  max-width:100%;
+}
+@media(max-width:480px) {
+  .more-form-grid,.block-fields,.readiness-controls { grid-template-columns:minmax(0,1fr); }
+  .progress-controls { align-items:stretch; }
+  .progress-controls > label { flex:1 1 100%; }
+  #template-select { width:100%; }
+  #history-search { width:100%; }
+}

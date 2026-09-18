@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.1.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.1.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.1.3 Responsive form controls
+
+Form controls now follow a shared responsive layout contract so inputs, selects and textareas cannot force cards or panels wider than the viewport. Flex and grid form children are allowed to shrink correctly, while compact workout-set controls keep their intended sizing.
+
+A mobile browser regression now checks visible form controls across the main app destinations for card and viewport overflow.
 
 ## v2.1.2 More and disclosure polish
 
