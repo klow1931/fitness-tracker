@@ -177,3 +177,14 @@ body.dark #review-error { color:#fca5a5; }
 .cleanup-single-table { width:100%; text-align:left; font-size:.875rem; }
 .cleanup-single-table td,.cleanup-single-table th { padding:.35rem; }
 @media(max-width:600px) { .cleanup-columns { grid-template-columns:1fr; } }
+
+/* v2 Training Review progressive disclosure. */
+#training-review-panel > summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; list-style:none; }
+#training-review-panel > summary::-webkit-details-marker { display:none; }
+#training-review-panel > summary::after { content:'Show'; color:var(--brand); font-size:.8rem; font-weight:700; }
+#training-review-panel[open] > summary::after { content:'Hide'; }
+#training-review-panel > summary span { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+#training-review-panel > summary small,.training-review-controls small { color:var(--muted); font-weight:400; }
+.training-review-body { border-top:1px solid var(--line); padding-top:.5rem; }
+#review-exercises { min-height:7.5rem; }
+@media(max-width:480px) { #training-review-panel > summary small { max-width:28ch; } }
