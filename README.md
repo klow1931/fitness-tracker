@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.1.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.1.4 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.1.4 iOS date inputs
+
+iOS Safari date controls now have their native intrinsic width explicitly reset so date fields stay inside narrow cards and two-column mobile forms. The fix preserves the date picker while preventing the browser's built-in control width from overflowing its container.
 
 ## v2.1.3 Responsive form controls
 

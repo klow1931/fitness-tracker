@@ -1,3 +1,11 @@
+# v2.1.4 — iOS date input fix
+
+- Reset iOS Safari's intrinsic date-input width so date controls stay inside cards and grid columns.
+- Preserve native date-picking behavior while capping logical width to the parent container.
+- Add a mobile regression for visible date inputs across workout, progress, measurements, decisions and tools screens.
+- Roll the service-worker cache to v2.1.4.
+- No stored-schema migration or data rewrite.
+
 # v2.1.3 — Responsive form controls
 
 - Added a shared max-width/min-width contract for inputs, selects and textareas so controls cannot overflow their cards.
