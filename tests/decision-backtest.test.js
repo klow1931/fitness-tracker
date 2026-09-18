@@ -63,7 +63,7 @@ assert.equal(sensitivity.length,2);
 assert.ok(sensitivity[0].summary.counts.increase>sensitivity[1].summary.counts.increase);
 assert.ok(sensitivity[1].summary.counts.hold>sensitivity[0].summary.counts.hold);
 
-const stale=Backtest.run(state,{lifts:['squat'],cutoffs:['2026-02-28'],horizonDays:14});
+const stale=Backtest.run(state,{lifts:['squat'],cutoffs:['2026-03-05'],horizonDays:14});
 assert.equal(stale.cutoffMode,'explicit');
 assert.equal(stale.rows.length,1);
 assert.equal(stale.rows[0].decision,'insufficient-evidence');
