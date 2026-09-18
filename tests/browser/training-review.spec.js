@@ -7,7 +7,9 @@ test.beforeEach(async({page})=>{
   for(const w of ws)w.sessionIntent=LoadnoteIntent.context({prescription:LoadnoteIntent.createPrescription(w.exercises,{type:'manual'},w.date+'T10:00:00.000Z')});
   data.workouts=ws;data.trainingBlocks=LoadnoteBlocks.upsert([],{name:'Return block',startDate:'2026-06-01',endDate:'2026-09-01',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp'},{now:'2026-09-01T18:00:00.000Z'});
   showTab('dashboard');renderTrainingReview();
- });await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
+ });
+ await page.locator('#training-review-panel > summary').click();
+ await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
 });
 test('review separates trends, escapes evidence without changing saved workouts',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify(data.workouts));
@@ -27,6 +29,7 @@ test('review loads offline in dark mode and converts display without rewriting k
  await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);});
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('dashboard');renderTrainingReview();});
+ await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();await page.locator('.review-lift summary').click();
  await expect(page.locator('.review-lift')).toContainText('lb');
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
@@ -59,4 +62,18 @@ test('low RPE and submaximal singles have distinct explanations',async({page})=>
  await page.locator('[data-review-edit]').first().click();
  await expect(page.locator('#wo-date')).toHaveValue('2026-06-10');
  expect(await page.evaluate(()=>workoutEdit.id)).toBe('review-0');
+});
+
+test('review stays compact until opened and filters exercises',async({page})=>{
+ await page.locator('#training-review-panel > summary').click();
+ await expect(page.locator('#training-review-panel')).not.toHaveAttribute('open','');
+ await page.locator('#training-review-panel > summary').click();
+ await expect(page.locator('#training-review-panel')).toHaveAttribute('open','');
+ await page.evaluate(()=>{
+   const w=data.workouts[2];w.exercises.push({exerciseId:'row',name:'Row',sets:[{weight:60,reps:8,rpe:8}]});renderTrainingReview();
+ });
+ await page.locator('#review-exercises').selectOption({label:'Squat <test>'});
+ await expect(page.locator('.review-lift')).toHaveCount(1);
+ await expect(page.locator('.review-lift summary')).toContainText('Squat <test>');
+ await expect(page.locator('#training-review-results')).not.toContainText('Row ·');
 });
