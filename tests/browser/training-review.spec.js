@@ -6,7 +6,7 @@ test.beforeEach(async({page})=>{
   const ws=['2026-06-10','2026-07-10','2026-08-10'].map((date,i)=>({id:'review-'+i,date,createdAt:date+'T18:00:00.000Z',exercises:[{exerciseId:'sq',name:'Squat <test>',sets:[{weight:100+i*10,reps:5,rpe:i===2?9.5:6}]}]}));
   for(const w of ws)w.sessionIntent=LoadnoteIntent.context({prescription:LoadnoteIntent.createPrescription(w.exercises,{type:'manual'},w.date+'T10:00:00.000Z')});
   data.workouts=ws;data.trainingBlocks=LoadnoteBlocks.upsert([],{name:'Return block',startDate:'2026-06-01',endDate:'2026-09-01',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp'},{now:'2026-09-01T18:00:00.000Z'});
-  showTab('dashboard');renderTrainingReview();
+  showTab('prs');renderTrainingReview();
  });
  await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
@@ -28,7 +28,7 @@ test('review separates trends, escapes evidence without changing saved workouts'
 test('review loads offline in dark mode and converts display without rewriting kg',async({page,context})=>{
  await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);});
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
- await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('dashboard');renderTrainingReview();});
+ await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('prs');renderTrainingReview();});
  await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();await page.locator('.review-lift summary').click();
  await expect(page.locator('.review-lift')).toContainText('lb');

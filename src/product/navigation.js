@@ -1,5 +1,5 @@
 /* Session-local navigation state. No workout/nutrition schema changes. */
-const LoadnoteNavigation={active:null,sub:{workouts:'wo-log',nutrition:'nu-today',coach:'co-insights'},scroll:{},revision:0,rendered:{},frame:0,metrics:{renders:0,skips:0}};
+const LoadnoteNavigation={active:null,sub:{workouts:'wo-log',nutrition:'nu-today',coach:'co-programs'},scroll:{},revision:0,rendered:{},frame:0,metrics:{renders:0,skips:0}};
 function invalidateViews() { LoadnoteNavigation.revision++; }
 function navigationKey(panel) {return panel+':'+(LoadnoteNavigation.sub[panel] || 'main');}
 function renderVisibleView(panel,sub) {
@@ -17,7 +17,7 @@ function renderVisibleView(panel,sub) {
     if(sub==='nu-library')renderFoodLibrary();
     if(sub==='nu-history')renderNutritionHistory();
   }
-  else if(panel==='prs')renderPRs();
+  else if(panel==='prs'){renderPRs();window.renderTrainingReview?.();}
   else if(panel==='measures')renderMeasures();
   else if(panel==='photos')renderPhotos();
   else if(panel==='coach')renderCoach();
@@ -43,7 +43,7 @@ function navigateTab(name) {
     const tab=document.getElementById('tab-'+panel);if(tab){tab.classList.toggle('nav-active',panel===name);tab.setAttribute('aria-pressed',String(panel===name));}
   }
   document.querySelectorAll('.mobile-nav-btn').forEach(btn=>{
-    const selected=btn.dataset.tab===name || btn.dataset.tab==='more'&&!['dashboard','workouts','nutrition','coach'].includes(name);
+    const selected=btn.dataset.tab===name || btn.dataset.tab==='more'&&!['dashboard','workouts','prs','coach'].includes(name);
     btn.classList.toggle('nav-active',selected);btn.setAttribute('aria-pressed',String(selected));
   });
   if(nav.sub[name])navigateSubTab(name,nav.sub[name],true);else renderVisibleView(name);
