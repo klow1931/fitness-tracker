@@ -5,8 +5,25 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness){
   'use strict';
   if(!Core||!Blocks||!Readiness)throw Error('Loadnote decision engine dependencies are required');
-  const VERSION=3;
-  const MAX_EVIDENCE_AGE_DAYS=28;
+  const VERSION=4;
+  const DEFAULT_POLICY=Object.freeze({
+    maxEvidenceAgeDays:28,
+    intervalTolerancePct:0.5,
+    rpeRiseGuard:1.5,
+    reduceTrendPct:-3,
+    increaseTrendPct:1,
+    conservativeIncreaseTrendPct:2,
+    highEffortRpe:9,
+    reduceEffortRpe:8.5,
+    increaseMaxRpe:8.5
+  });
+  const MAX_EVIDENCE_AGE_DAYS=DEFAULT_POLICY.maxEvidenceAgeDays;
+  function policy(input={}){
+    const next={...DEFAULT_POLICY,...(input||{})};
+    for(const [key,value] of Object.entries(next))if(!Number.isFinite(Number(value)))throw Error('Invalid decision policy: '+key);
+    if(next.maxEvidenceAgeDays<1||next.intervalTolerancePct<0||next.increaseTrendPct<0||next.conservativeIncreaseTrendPct<next.increaseTrendPct)throw Error('Invalid decision policy thresholds.');
+    return next;
+  }
   const round=(n,d=1)=>Core.round(Number(n)||0,d);
   const daysBetween=(a,b)=>Math.floor((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000);
   function competitionEvidence(state,lift,asOf,{retrospective=true,knownAt,startDate}={}){
@@ -33,6 +50,7 @@
     const asOf=options.asOf;
     if(!Blocks.date(asOf))throw Error('An explicit analysis date is required.');
     const retrospective=options.retrospective!==false;
+    const P=policy(options.policy);
     const readinessSnapshot=Readiness.snapshot(state,{asOf,knownAt:options.knownAt,retrospective});
     const readiness=readinessSnapshot.lifts[lift];
     if(!readiness)throw Error('Unknown competition lift.');
@@ -54,8 +72,8 @@
     const recent=evidence.slice(-3),first=recent[0],last=recent[2];
     const trend=first.estimatedCapacity>0?(last.estimatedCapacity-first.estimatedCapacity)/first.estimatedCapacity*100:0;
     const intervalTrends=recent.slice(1).map((row,i)=>(row.estimatedCapacity-recent[i].estimatedCapacity)/recent[i].estimatedCapacity*100);
-    const nonDecliningIntervals=intervalTrends.filter(value=>value>=-0.5).length;
-    const nonIncreasingIntervals=intervalTrends.filter(value=>value<=0.5).length;
+    const nonDecliningIntervals=intervalTrends.filter(value=>value>=-P.intervalTolerancePct).length;
+    const nonIncreasingIntervals=intervalTrends.filter(value=>value<=P.intervalTolerancePct).length;
     const avgRpe=recent.reduce((s,row)=>s+row.rpe,0)/recent.length;
     const latestRpe=last.rpe;
     const rpeChange=latestRpe-first.rpe;
@@ -69,36 +87,36 @@
       `Latest usable evidence is ${evidenceAgeDays} day${evidenceAgeDays===1?'':'s'} old.`,
       conservative?'Current block context is intentionally conservative.':'Current block does not carry a conservative-return guard.'
     ];
-    if(evidenceAgeDays>MAX_EVIDENCE_AGE_DAYS){
+    if(evidenceAgeDays>P.maxEvidenceAgeDays){
       base.reason=`Latest usable competition-lift evidence is ${evidenceAgeDays} days old. A directional recommendation is withheld until fresher evidence is available.`;
       base.nextExposure='Use the planned session as a fresh evidence opportunity rather than changing direction from stale data.';
       base.watchNext='Record a new usable competition-lift exposure; freshness is restored once current evidence enters the window.';
       return base;
     }
     base.decisionAllowed=true;
-    if(trend<=-3&&latestRpe>=8.5&&nonIncreasingIntervals===2){
+    if(trend<=P.reduceTrendPct&&latestRpe>=P.reduceEffortRpe&&nonIncreasingIntervals===2){
       base.decision='reduce';
       base.reason='Demonstrated capacity declined across the last three usable exposures while the latest evidence set was high effort.';
       base.nextExposure='Use a lower-stress next exposure or reduce the planned loading direction rather than pushing progression.';
       base.watchNext='Look for capacity to stabilize or rebound at lower effort before resuming progression.';
-    }else if(trend<0||latestRpe>=9||rpeChange>=1.5){
+    }else if(trend<0||latestRpe>=P.highEffortRpe||rpeChange>=P.rpeRiseGuard){
       base.decision='hold';
-      base.reason=rpeChange>=1.5?'Recent capacity does not justify an increase because effort rose sharply across the same evidence window.':'Recent evidence does not support increasing the next exposure: capacity is flat/down or the latest evidence set is already high effort.';
+      base.reason=rpeChange>=P.rpeRiseGuard?'Recent capacity does not justify an increase because effort rose sharply across the same evidence window.':'Recent evidence does not support increasing the next exposure: capacity is flat/down or the latest evidence set is already high effort.';
       base.nextExposure='Keep the current loading direction instead of adding a new progression step.';
       base.watchNext=rpeChange>=1.5?'Watch whether effort settles at the same or better demonstrated capacity.':'Watch for a clearer capacity improvement at controlled effort before increasing.';
-    }else if(conservative&&trend<2){
+    }else if(conservative&&trend<P.conservativeIncreaseTrendPct){
       base.decision='hold';
       base.reason='Performance is stable, but the block is intentionally conservative and the evidence does not justify accelerating its progression.';
       base.nextExposure='Stay with the conservative block progression rather than accelerating the planned loading direction.';
       base.watchNext='Require a clearer improvement in demonstrated capacity at controlled effort before accelerating.';
-    }else if(trend>=1&&avgRpe<=8.5&&latestRpe<=8.5&&nonDecliningIntervals===2){
+    }else if(trend>=P.increaseTrendPct&&avgRpe<=P.increaseMaxRpe&&latestRpe<=P.increaseMaxRpe&&nonDecliningIntervals===2){
       base.decision='increase';
       base.reason=conservative?'Demonstrated capacity improved across recent exposures at controlled effort; a conservative progression is supported without treating planned load increases as strength gains.':'Demonstrated capacity improved across recent exposures while effort remained controlled.';
       base.nextExposure=conservative?'A modest progression is supported if it fits the conservative block plan; do not treat this as a new tested max.':'A modest progression is supported if it fits the current program; exact loading remains a programming choice.';
       base.watchNext='Confirm the next exposure maintains controlled effort without reversing the recent capacity direction.';
     }else{
       base.decision='hold';
-      base.reason=trend>=1&&nonDecliningIntervals<2
+      base.reason=trend>=P.increaseTrendPct&&nonDecliningIntervals<2
         ?'Overall capacity is higher, but the exposure-to-exposure pattern is inconsistent. Hold until the direction is confirmed.'
         :'The evidence supports continuing the current progression without a directional load change.';
       base.nextExposure='Keep the current loading direction and use the next exposure to confirm the trend.';
@@ -111,7 +129,7 @@
     if(!Blocks.date(asOf))throw Error('An explicit analysis date is required.');
     const lifts={};
     for(const lift of Object.keys(Readiness.LIFTS))lifts[lift]=decisionForLift(state,lift,options);
-    return {version:VERSION,asOf,mode:options.retrospective===false?'as-recorded':'current-corrected',readOnly:true,automaticChanges:false,lifts};
+    return {version:VERSION,asOf,mode:options.retrospective===false?'as-recorded':'current-corrected',readOnly:true,automaticChanges:false,policy:policy(options.policy),lifts};
   }
-  return {VERSION,MAX_EVIDENCE_AGE_DAYS,competitionEvidence,decisionForLift,snapshot};
+  return {VERSION,DEFAULT_POLICY,MAX_EVIDENCE_AGE_DAYS,policy,competitionEvidence,decisionForLift,snapshot};
 });

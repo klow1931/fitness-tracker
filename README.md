@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.2.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.3.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.3 Decision backtesting
+
+v2.3 adds walk-forward historical validation for the Decision Engine. Historical decisions are replayed at explicit cutoff dates using only information available at that point, then compared with the next usable competition-lift exposure.
+
+The report measures observed outcomes rather than treating historical programming choices as a correct-answer label. It includes abstention rate, outcome coverage, next-exposure capacity response, Increase/Reduce follow-up behavior, warning misses, and side-by-side threshold sensitivity.
+
+Decision thresholds are now explicit and testable, but v2.3 still does not automatically optimize them, assign a confidence percentage, or choose exact kilograms.
 
 ## v2.2 Decision workflow
 

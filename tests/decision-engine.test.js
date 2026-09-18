@@ -15,8 +15,10 @@ const dead=[w('d1','2026-01-07','d',150,5,8),w('d2','2026-01-14','d',145,5,8.5),
 const old=w('old','2025-12-15','s',95,5,8);
 const state={exerciseCatalog:catalog,exerciseRoles:roles,trainingBlocks:blocks,workouts:[old,...squat,...bench,...dead],workoutRevisions:[]};
 const snap=Decisions.snapshot(state,{asOf:'2026-01-31',retrospective:true});
+assert.equal(snap.policy.maxEvidenceAgeDays,28);assert.equal(Object.isFrozen(Decisions.DEFAULT_POLICY),true);
 assert.equal(snap.readOnly,true);assert.equal(snap.automaticChanges,false);
-assert.equal(snap.lifts.squat.decision,'increase');assert.equal(snap.lifts.squat.decisionAllowed,true);assert.match(snap.lifts.squat.reason,/conservative progression/);assert.match(snap.lifts.squat.nextExposure,/modest progression/);assert.match(snap.lifts.squat.watchNext,/controlled effort/);
+assert.equal(snap.lifts.squat.decision,'increase');
+const stricter=Decisions.decisionForLift(state,'squat',{asOf:'2026-01-31',retrospective:true,policy:{conservativeIncreaseTrendPct:20}});assert.equal(stricter.decision,'hold');assert.equal(snap.lifts.squat.decisionAllowed,true);assert.match(snap.lifts.squat.reason,/conservative progression/);assert.match(snap.lifts.squat.nextExposure,/modest progression/);assert.match(snap.lifts.squat.watchNext,/controlled effort/);
 assert.equal(snap.lifts.squat.evidenceWindowStart,'2026-01-01');assert.equal(snap.lifts.squat.evidence.some(row=>row.date==='2025-12-15'),false,'decision evidence must stay inside the readiness window');
 assert.equal(snap.lifts.bench.decision,'hold');assert.match(snap.lifts.bench.reason,/intentionally conservative/);assert.match(snap.lifts.bench.nextExposure,/conservative block progression/);
 assert.equal(snap.lifts.deadlift.decision,'reduce');assert.match(snap.lifts.deadlift.reason,/declined/);assert.match(snap.lifts.deadlift.nextExposure,/lower-stress/);assert.match(snap.lifts.deadlift.watchNext,/stabilize or rebound/);
