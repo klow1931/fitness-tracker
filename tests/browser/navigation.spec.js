@@ -81,3 +81,17 @@ test('visible form controls stay inside cards and viewport on mobile',async({pag
    expect(offenders, panel+' overflowing controls').toEqual([]);
  }
 });
+
+test('date inputs stay inside mobile grid columns',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ for(const panel of ['workouts','prs','measures','coach','tools']){
+   await page.evaluate(panel=>showTab(panel),panel);
+   const offenders=await page.locator('input[type=date]').evaluateAll(nodes=>nodes.filter(el=>{
+     const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+     if(style.display==='none'||style.visibility==='hidden'||r.width===0||r.height===0)return false;
+     const parent=el.parentElement?.getBoundingClientRect();
+     return r.right>innerWidth+1||r.left<-1||(parent&&(r.right>parent.right+1||r.left<parent.left-1));
+   }).map(el=>({id:el.id,rect:el.getBoundingClientRect().toJSON(),parent:el.parentElement?.getBoundingClientRect().toJSON()})));
+   expect(offenders,panel+' date input overflow').toEqual([]);
+ }
+});
