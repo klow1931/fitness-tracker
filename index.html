@@ -1360,13 +1360,21 @@
         <h2>Everything else, when you need it.</h2>
         <p>Nutrition, planning, body progress, tools and app controls stay one tap away without crowding the main navigation.</p>
       </div>
-      <div class="mobile-more-grid">
-        <button type="button" class="mobile-more-item" onclick="showTab('nutrition'); toggleMobileMore(false)"><span class="mobile-more-icon">🍽️</span><span><b>Food</b><small>Nutrition log and targets</small></span></button>
-        <button type="button" class="mobile-more-item" onclick="showTab('calendar'); toggleMobileMore(false)"><span class="mobile-more-icon">📅</span><span><b>Calendar</b><small>Plan and review training days</small></span></button>
-        <button type="button" class="mobile-more-item" onclick="showTab('measures'); toggleMobileMore(false)"><span class="mobile-more-icon">📏</span><span><b>Measurements</b><small>Body check-ins and trends</small></span></button>
-        <button type="button" class="mobile-more-item" onclick="showTab('photos'); toggleMobileMore(false)"><span class="mobile-more-icon">📷</span><span><b>Photos</b><small>Progress photo check-ins</small></span></button>
-        <button type="button" class="mobile-more-item" onclick="showTab('tools'); toggleMobileMore(false)"><span class="mobile-more-icon">🛠️</span><span><b>Tools</b><small>Calculators, backups and settings</small></span></button>
-        <button type="button" class="mobile-more-item" onclick="toggleGymMode(); toggleMobileMore(false)"><span class="mobile-more-icon">🏋️</span><span><b>Gym mode</b><small>Toggle larger training controls</small></span></button>
+      <div class="mobile-more-groups">
+        <button type="button" class="mobile-more-item" onclick="showTab('nutrition');toggleMobileMore(false)"><span class="mobile-more-icon">🍽️</span><span><b>Food</b><small>Log food and check daily targets</small></span></button>
+        <details class="mobile-more-group"><summary><b>Planning &amp; body progress</b><small>Calendar, measurements and photos</small></summary>
+          <div class="mobile-more-grid">
+            <button type="button" class="mobile-more-item" onclick="showTab('calendar');toggleMobileMore(false)"><span class="mobile-more-icon">📅</span><span><b>Calendar</b><small>Plan training days</small></span></button>
+            <button type="button" class="mobile-more-item" onclick="showTab('measures');toggleMobileMore(false)"><span class="mobile-more-icon">📏</span><span><b>Measurements</b><small>Body check-ins</small></span></button>
+            <button type="button" class="mobile-more-item" onclick="showTab('photos');toggleMobileMore(false)"><span class="mobile-more-icon">📷</span><span><b>Photos</b><small>Photo check-ins</small></span></button>
+          </div>
+        </details>
+        <details class="mobile-more-group"><summary><b>Tools &amp; preferences</b><small>Calculators, backups and Gym mode</small></summary>
+          <div class="mobile-more-grid">
+            <button type="button" class="mobile-more-item" onclick="showTab('tools');toggleMobileMore(false)"><span class="mobile-more-icon">🛠️</span><span><b>Tools</b><small>Calculators, backups and settings</small></span></button>
+            <button type="button" class="mobile-more-item" onclick="toggleGymMode();toggleMobileMore(false)"><span class="mobile-more-icon">🏋️</span><span><b>Gym mode</b><small>Larger training controls</small></span></button>
+          </div>
+        </details>
       </div>
       <button type="button" class="btn-secondary w-full mobile-more-close" onclick="toggleMobileMore(false)">Close</button>
     </div>
