@@ -354,3 +354,61 @@ body.dark .decision-performance-metrics > div,body.dark .decision-performance-re
 
 /* v2.5.3 — highlight exact workout when navigating from a decision outcome. */
 .history-session.decision-evidence-target { outline:2px solid var(--brand); outline-offset:2px; scroll-margin-top:5rem; }
+
+
+/* v2.5.4 — quieter first view and task-focused menus. */
+.desktop-more { position:relative; z-index:15; }
+.desktop-more > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:.45rem; min-height:40px; }
+.desktop-more > summary::-webkit-details-marker { display:none; }
+.desktop-more > summary span { transition:transform .15s; }
+.desktop-more[open] > summary span { transform:rotate(180deg); }
+.desktop-more-menu {
+  position:absolute; top:calc(100% + .5rem); right:0; z-index:30;
+  width:min(245px,calc(100vw - 2rem)); padding:.55rem; border:1px solid var(--line);
+  border-radius:1rem; background:var(--surface); box-shadow:0 15px 35px #0f172a29;
+  display:grid; gap:.2rem; color:var(--ink);
+}
+.desktop-more-label { padding:.55rem .65rem .15rem; font-size:.65rem; font-weight:800; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
+.desktop-more-menu button { display:block; width:100%; min-height:44px; text-align:left; padding:.55rem .7rem; border-radius:.55rem; font-weight:650; }
+.desktop-more-menu button:hover,.desktop-more-menu button.nav-active { background:color-mix(in srgb,var(--surface) 86%,var(--brand) 14%); }
+.desktop-more.nav-active > summary { box-shadow:inset 0 -3px 0 var(--brand); }
+.home-details { margin-top:1rem; min-width:0; }
+.home-details > summary,.coach-programming-details > summary {
+  cursor:pointer; list-style:none; min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+}
+.home-details > summary::-webkit-details-marker,.coach-programming-details > summary::-webkit-details-marker { display:none; }
+.home-details > summary::after,.coach-programming-details > summary::after { content:'⌄'; font-size:1.3rem; color:var(--muted); transition:transform .15s; }
+.home-details[open] > summary::after,.coach-programming-details[open] > summary::after { transform:rotate(180deg); }
+.home-details summary span,.coach-programming-details summary span { min-width:0; display:grid; gap:.2rem; }
+.home-details summary small,.coach-programming-details summary small { color:var(--muted); font-size:.78rem; font-weight:450; }
+.home-details-content,.coach-programming-content { min-width:0; margin-top:1rem; }
+.home-details-content > * { margin-bottom:1rem; }
+.coach-programming-details { margin-top:1rem; }
+.coach-safety-details > summary { cursor:pointer; font-size:.8rem; }
+.mobile-more-group { min-width:0; border-top:1px solid var(--line); }
+.mobile-more-group > summary { list-style:none; min-height:58px; padding:.65rem .5rem; display:grid; align-content:center; gap:.2rem; cursor:pointer; }
+.mobile-more-group > summary::-webkit-details-marker { display:none; }
+.mobile-more-group > summary::after { content:'⌄'; float:right; }
+.mobile-more-group > summary small { display:block; color:var(--muted); font-size:.72rem; }
+.mobile-more-group .mobile-more-grid { padding-left:.55rem; border-left:2px solid var(--line); }
+.decision-lift { padding:0; overflow:visible; }
+.decision-lift > summary { list-style:none; cursor:pointer; padding:1rem; display:block; }
+.decision-lift > summary::-webkit-details-marker { display:none; }
+.decision-lift-summary .readiness-heading { gap:.65rem; }
+.decision-lift-summary .decision-reason { margin:.55rem 0; font-size:.8rem; line-height:1.45; }
+.decision-open-hint { display:inline-flex; align-items:center; gap:.4rem; font-size:.72rem; font-weight:750; color:var(--brand); }
+.decision-open-hint span { transition:transform .15s; }
+.decision-lift[open] .decision-open-hint span { transform:rotate(180deg); }
+.decision-lift-body { padding:0 1rem 1rem; border-top:1px solid var(--line); }
+.decision-date-tools > summary { cursor:pointer; font-size:.8rem; }
+.decision-date-tools .readiness-controls { margin-top:.6rem; }
+body.dark .desktop-more-menu { background:#1e293b; border-color:#334155; }
+body.dark .decision-open-hint { color:#a5b4fc; }
+@media(max-width:480px){
+ .decision-lift-summary .readiness-status { white-space:normal; text-align:right; }
+ .mobile-more-panel { max-height:calc(100dvh - 4rem); overflow-y:auto; }
+}
+
+/* Empty training log: expanded Home reports must still explain what comes next. */
+.home-more-empty { padding:.85rem; border:1px dashed var(--line); border-radius:.75rem; color:var(--muted); line-height:1.5; }
+.home-more-empty[hidden] { display:none; }

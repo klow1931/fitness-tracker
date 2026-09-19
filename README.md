@@ -1,6 +1,13 @@
 # Loadnote
 
-**v2.5.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.5.4 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.5.4 — Simpler first view
+
+- The five main navigation destinations are Home, Train, Progress, Decisions and More; desktop and mobile secondary destinations are grouped by task.
+- Home starts with the training command, plan and weekly rhythm; quick-start links, six metrics and detailed reports remain under **More from your training**.
+- Decisions starts with three compact lift recommendations. Expand a lift for next-exposure guidance, the optional athlete response, and audit evidence; historical date/replay controls and legacy programming setup stay under labeled dropdowns.
+- Navigation and form state remain local. No logged workouts, programs, decision logic or storage schema are changed.
 
 ## v2.5.1–v2.5.3 Feedback analysis completion
 

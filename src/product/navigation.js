@@ -42,6 +42,9 @@ function navigateTab(name) {
     document.getElementById('panel-'+panel)?.classList.toggle('hidden',panel!==name);
     const tab=document.getElementById('tab-'+panel);if(tab){tab.classList.toggle('nav-active',panel===name);tab.setAttribute('aria-pressed',String(panel===name));}
   }
+  const desktopMore=document.getElementById('desktop-more');
+  desktopMore?.classList.toggle('nav-active',!['dashboard','workouts','prs','coach'].includes(name));
+  if(desktopMore && !['dashboard','workouts','prs','coach'].includes(name))desktopMore.open=false;
   document.querySelectorAll('.mobile-nav-btn').forEach(btn=>{
     const selected=btn.dataset.tab===name || btn.dataset.tab==='more'&&!['dashboard','workouts','prs','coach'].includes(name);
     btn.classList.toggle('nav-active',selected);btn.setAttribute('aria-pressed',String(selected));
@@ -69,3 +72,7 @@ function updateFoodEntrySummary() {
   const t=sumDayFoods(dayFoods);
   node.textContent=(document.getElementById('nu-date').value || today())+' · '+(t.calories ?? 'Unknown')+' kcal · '+(t.protein ?? 'Unknown')+'g protein · '+dayFoods.length+' foods';
 }
+
+// Native dropdown stays keyboard-accessible and closes when leaving its menu.
+document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.getElementById('desktop-more');if(menu?.open){menu.open=false;menu.querySelector('summary')?.focus();}}});

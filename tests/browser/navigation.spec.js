@@ -95,3 +95,43 @@ test('date inputs stay inside mobile grid columns',async({page})=>{
    expect(offenders,panel+' date input overflow').toEqual([]);
  }
 });
+
+test('primary navigation and Home hide secondary tools without removing them',async({page})=>{
+ if(page.viewportSize().width<760){
+  await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
+  await page.locator('#home-details > summary').click();
+  await expect(page.locator('#home-details')).toHaveAttribute('open','');
+  return;
+ }
+ await expect(page.locator('#desktop-more')).toBeVisible();
+ expect(await page.locator('.desktop-tabs > button').allTextContents()).toEqual(['Home','Train','Progress','Decisions']);
+ await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
+ await expect(page.locator('#athlete-home-command')).toBeVisible();
+ await expect(page.locator('#week-plan')).toBeVisible();
+ await page.locator('#home-details > summary').click();
+ await expect(page.locator('.home-details-content')).toBeVisible();
+ await expect(page.locator('#home-more-empty')).toContainText('after you log your first session');
+ await page.evaluate(()=>{data.workouts=[{id:'ui-home-smoke',date:today(),exercises:[]}];invalidateViews();renderDashboard();});
+ await expect(page.locator('#home-more-empty')).toBeHidden();
+ await expect(page.locator('#home-stats-grid')).toBeVisible();
+ await page.locator('#desktop-more > summary').click();
+ await expect(page.locator('#desktop-more')).toHaveAttribute('open','');
+ await page.locator('#tab-calendar').click();
+ await expect(page.locator('#panel-calendar')).toBeVisible();
+ await expect(page.locator('#desktop-more')).not.toHaveAttribute('open','');
+ await page.evaluate(()=>showTab('coach'));
+ await expect(page.locator('.coach-programming-details')).not.toHaveAttribute('open','');
+ await expect(page.locator('#decision-readiness-card')).toBeVisible();
+ await page.locator('.coach-programming-details > summary').click();
+ await expect(page.locator('#athlete-profile-card')).toBeVisible();
+});
+test('mobile More groups secondary destinations',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('#mobile-nav [data-tab="more"]').click();
+ await expect(page.locator('#mobile-more-sheet')).toBeVisible();
+ await expect(page.locator('.mobile-more-group[open]')).toHaveCount(0);
+ await page.locator('.mobile-more-group').first().locator('summary').click();
+ await page.locator('.mobile-more-group').first().getByRole('button',{name:/Calendar/}).click();
+ await expect(page.locator('#panel-calendar')).toBeVisible();
+ await expect(page.locator('#mobile-more-sheet')).toBeHidden();
+});

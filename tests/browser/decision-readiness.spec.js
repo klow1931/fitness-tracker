@@ -16,10 +16,11 @@ test.beforeEach(async({page})=>{
 });
 test('confirmed roles create separated evidence without enabling decisions',async({page})=>{
  const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
- await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.5 Decision Center');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
+ await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.5.4 Decision Center');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
 });
 test('historical as-recorded replay withholds later block and mapping knowledge',async({page})=>{
  const card=page.locator('#decision-readiness-card');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
+ await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');await page.locator('#readiness-as-recorded').check();await expect(card).toContainText('Historical as-recorded replay');await expect(card).toContainText('No active block on this date');await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Competition lift not mapped');
 });
 
@@ -29,12 +30,15 @@ test('live decisions record athlete feedback while historical replay stays read-
  await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();
  await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
  const squat=card.locator('.decision-answer-first .readiness-lift').filter({hasText:'Squat'}).first();
+ await expect(squat).not.toHaveAttribute('open','');
+ await squat.locator('summary.decision-lift-summary').click();
  await expect(squat).toContainText('Athlete response');
  await squat.getByRole('button',{name:'Accept',exact:true}).click();
  await expect.poll(()=>page.evaluate(()=>data.decisionEvents?.length||0)).toBe(1);
  await expect(squat).toContainText('Accepted');
  const saved=await page.evaluate(()=>data.decisionEvents[0]);
  expect(saved.response).toBe('accept');expect(saved.snapshot.lift).toBe('squat');
+ await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');
  await expect(card).toContainText('Athlete feedback is recorded only for today');
  expect(await card.getByRole('button',{name:'Accept',exact:true}).count()).toBe(0);
@@ -66,4 +70,19 @@ test('Decision Performance attributes one follow-up once and filters lifts',asyn
  await observed.getByRole('button',{name:'View exact workout in Train'}).click();
  await expect(page.locator('[data-hist-id="s3"]')).toBeVisible();
  await expect(page.locator('[data-hist-id="s3"]')).toHaveClass(/decision-evidence-target/);
+});
+
+test('decision summaries stay compact and expand one lift at a time',async({page})=>{
+ const card=page.locator('#decision-readiness-card');
+ await expect(card.locator('.decision-lift')).toHaveCount(3);
+ await expect(card.locator('.decision-lift[open]')).toHaveCount(0);
+ await expect(card.locator('.decision-date-tools')).not.toHaveAttribute('open','');
+ const squat=card.locator('[data-decision-lift="squat"]');
+ await squat.locator('summary.decision-lift-summary').click();
+ await expect(squat).toHaveAttribute('open','');
+ await expect(squat.locator('.decision-feedback')).toBeVisible();
+ const bench=card.locator('[data-decision-lift="bench"]');
+ await bench.locator('summary.decision-lift-summary').click();
+ await expect(bench).toHaveAttribute('open','');
+ await expect(squat).not.toHaveAttribute('open','');
 });
