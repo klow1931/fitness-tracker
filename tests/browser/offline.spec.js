@@ -46,7 +46,7 @@ test('Returning to an installed app checks for a waiting update without reloadin
  await ready(page);
  await page.locator('.ex-name').fill('Keep My Draft');
  revision++;
- await page.evaluate(()=>{document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));});
+ await page.evaluate(()=>{const clock=Date.now;Date.now=()=>clock()+61000;window.dispatchEvent(new Event('focus'));});
  await expect(page.locator('#app-update')).toBeVisible();
  await expect(page.locator('#app-update-status')).toContainText('newer Loadnote version');
  await expect(page.locator('.ex-name')).toHaveValue('Keep My Draft');
