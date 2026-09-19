@@ -90,7 +90,7 @@ test('decision summaries stay compact and expand one lift at a time',async({page
 test('v2.6 shows explicit testing intent without pretending a general block is strength',async({page})=>{
  await page.evaluate(()=>{
   const current=LoadnoteBlocks.list(data.trainingBlocks)[0];
-  data.trainingBlocks=LoadnoteBlocks.upsert(data.trainingBlocks,{...current,blockType:'general',progressionIntent:'testing',dataCompleteness:'unknown'},{id:current.id,now:'2026-09-03T00:00:00.000Z'});
+  data.trainingBlocks=LoadnoteBlocks.upsert(data.trainingBlocks,{...current,blockType:'general',progressionIntent:'testing',dataCompleteness:'unknown',trainingMaxes:[],known1RMs:[]},{id:current.id,now:'2026-09-03T00:00:00.000Z'});
   invalidateViews();window.renderDecisionReadiness();
  });
  const card=page.locator('#decision-readiness-card');
