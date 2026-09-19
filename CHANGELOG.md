@@ -1,3 +1,10 @@
+# v2.5.5 — Installed-app update visibility
+
+- Ensure app version is consistently displayed in footer, release metadata and offline cache.
+- Check for a waiting app update on startup, when returning to the tab and when connectivity returns (throttled to once per minute).
+- Keep update application opt-in after draft/data persistence, without disrupting an active workout.
+- Add automated coverage for update detection on tab resume.
+
 # v2.5.4 — Quiet first view and progressive navigation
 
 - Keep five primary destinations: Home, Train, Progress, Decisions and More.
