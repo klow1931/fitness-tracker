@@ -1,3 +1,15 @@
+# v2.5.0 — Decision performance and attribution
+
+- Added a read-only, lift-filtered Decision Performance dashboard for live athlete feedback.
+- Report acceptance, modification, ignore and uniquely observed next-exposure coverage.
+- Compare observed capacity and effort by recorded response without implying causation.
+- Surface recommendation-to-chosen-direction patterns and original evidence/workout links.
+- Deduplicate multiple decisions leading to the same lift/workout: latest prior decision gets the outcome; overlapping events remain auditable but are not independent results.
+- Show pending, beyond-window and overlapping events separately with descriptive data-coverage labels.
+- Exclude future-dated feedback and workouts from as-of analysis.
+- Add synthetic tests and browser coverage for overlapping decisions and lift filtering.
+- Roll the offline cache to v2.5.0; no stored-schema migration or automated training changes.
+
 # v2.4.0 — Athlete decision feedback
 
 - Added Accept / Modify / Ignore controls to today's live Decision Center recommendations.

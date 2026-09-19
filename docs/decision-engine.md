@@ -76,3 +76,14 @@ Feedback is only recordable for today's current-corrected decision. Historical r
 Outcome linkage is identity-based: the saved evidence exercise IDs are used to find the next usable competition-lift exposure after the decision. A later exercise-name match alone cannot rewrite the outcome relationship.
 
 v2.4 does not learn from this data yet. The event history is evidence for a later feedback/outcome analysis layer; thresholds and programs remain unchanged.
+
+
+## v2.5 Outcome attribution and feedback analysis
+
+The athlete-feedback report is observational. It summarizes response counts, intended directions, unique observed next-exposure outcomes, and capacity/RPE associations by response and lift. An athlete's intended action is not independently verified as their executed programming. The report does not compare counterfactual outcomes.
+
+A saved event is assessed against the first subsequent usable competition-lift workout within 42 days using stable exercise IDs from the original evidence snapshot. Where multiple events point to the same lift/date/workout, the most recent analysis date takes attribution (created-at breaks ties). Earlier events remain in history but are marked overlapping and excluded from the independent observed count. No one workout is counted repeatedly as several successes. Unobserved events are separated into awaiting outcome and ended window as of the reporting date; future-dated events/workouts are excluded.
+
+Data-coverage descriptions: 0–2 uniquely attributed follow-ups = Collecting feedback; 3–9 = Early pattern; 10+ = Reviewable history. These are descriptive sample-size bands, not probabilistic confidence scores or validation of causal efficacy.
+
+Outcome categories are improved (capacity change ≥1%), declined (≤−1%), or stable (between those thresholds). Lift and response strata show their sample sizes and do not display numeric means when there are no observations.

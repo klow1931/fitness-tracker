@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.4.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.5.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.5 Decision performance and outcome attribution
+
+Decisions now includes an expandable, lift-filtered **Decision performance** report: Accept / Modify / Ignore rates; uniquely observed next exposures; pending, expired and overlapping feedback; capacity/RPE summaries by response; and direction-override patterns with auditable workout evidence.
+
+Attribution rule: a squat/bench/deadlift workout contributes only one outcome for that lift. If multiple saved decisions lead to that same next usable exposure, the latest preceding decision receives the attributed outcome; earlier events remain visible but are marked overlapping and excluded from independent outcome statistics. This does not prove a choice caused a performance change. At under three unique follow-ups the view says Collecting feedback; three to nine says Early pattern; ten or more says Reviewable history. These are coverage descriptions, not confidence scores.
+
+The release is read-only analytics. No automatic learning, rewritten training logs, exact load advice or stored-state migration.
 
 ## v2.4 Athlete decision feedback
 
