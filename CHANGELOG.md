@@ -1,3 +1,12 @@
+# v2.5.4 — Quiet first view and progressive navigation
+
+- Keep five primary destinations: Home, Train, Progress, Decisions and More.
+- Group secondary desktop destinations and collapse mobile More options by task.
+- Show Home's training command and weekly rhythm before optional metrics and reports.
+- Collapse lift details, athlete-response actions, historical controls, programming tools and coaching safety detail until requested.
+- Keep workout, coach, nutrition and decision data unchanged.
+- Expand navigation and Decision Center browser coverage, including mobile More.
+
 # v2.5.3 — Feedback analysis completion (v2.5.1–v2.5.3)
 
 - v2.5.1: distinguish recorded recommendation overrides from unique observed follow-ups; show sample counts and follow-up outcome breakdowns.
