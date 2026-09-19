@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.5.4 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.5.5 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.5.5 — Update visibility patch
+
+An installed Loadnote page now checks for updated app assets when opened and when returning to the foreground (at most once per minute). A newer version shows a save-before-update banner; an active workout is not silently reloaded. The visible footer, release metadata, package version and offline cache are synchronized.
 
 ## v2.5.4 — Simpler first view
 
