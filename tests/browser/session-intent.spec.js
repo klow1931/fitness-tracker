@@ -24,7 +24,10 @@ test('modified planned session persists its reason and survives draft refresh',a
   await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await page.locator('#session-deviation-reason').selectOption('fatigue');await page.locator('#session-deviation-notes').fill('Readiness was lower than expected');
   await page.reload();await page.evaluate(()=>showTab('workouts'));await expect(page.locator('#session-role')).toHaveValue('technique');await expect(page.locator('#session-deviation-reason')).toHaveValue('fatigue');await expect(page.locator('#planned-work-summary')).toContainText('2 planned sets');
   await page.locator('.set-rpe').fill('8');await page.getByRole('button',{name:'Review workout',exact:true}).click();await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');await expect(page.locator('#workout-review-content')).toContainText('Fatigue / readiness');
-  await page.getByRole('button',{name:'Save workout',exact:true}).click();const comparison=await page.evaluate(()=>LoadnoteIntent.compare(data.workouts[0]));expect(comparison.status).toBe('modified');expect(comparison.hasExplanation).toBe(true);
+  await page.getByRole('button',{name:'Save workout',exact:true}).click();
+ await expect(page.locator('#workout-review')).not.toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>LoadnoteIntent.compare(data.workouts[0])?.status)).toBe('modified');
+ expect(await page.evaluate(()=>LoadnoteIntent.compare(data.workouts[0])?.hasExplanation)).toBe(true);
 });
 test('templates automatically become provenance-labelled plans',async({page})=>{
   await page.evaluate(()=>{data.templates=[{id:'template-1',name:'Squat volume',created:'2026-09-14',exercises:[{name:'Back Squat',type:'strength',sets:[{reps:5,weight:120}]}]}];renderTemplates();});
