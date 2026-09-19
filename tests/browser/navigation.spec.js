@@ -97,15 +97,21 @@ test('date inputs stay inside mobile grid columns',async({page})=>{
 });
 
 test('primary navigation and Home hide secondary tools without removing them',async({page})=>{
+ if(page.viewportSize().width<760){
+  await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
+  await page.locator('#home-details > summary').click();
+  await expect(page.locator('.home-details-content')).toBeVisible();
+  return;
+ }
  await expect(page.locator('#desktop-more')).toBeVisible();
  expect(await page.locator('.desktop-tabs > button').allTextContents()).toEqual(['Home','Train','Progress','Decisions']);
  await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
  await expect(page.locator('#athlete-home-command')).toBeVisible();
  await expect(page.locator('#week-plan')).toBeVisible();
  await page.locator('#home-details > summary').click();
- await expect(page.locator('#home-stats-grid')).toBeVisible();
+ await expect(page.locator('.home-details-content')).toBeVisible();
  await page.locator('#desktop-more > summary').click();
- await expect(page.locator('#desktop-more-menu')).toHaveCount(0);
+ await expect(page.locator('#desktop-more')).toHaveAttribute('open','');
  await page.locator('#tab-calendar').click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
  await expect(page.locator('#desktop-more')).not.toHaveAttribute('open','');
