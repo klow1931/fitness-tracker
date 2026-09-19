@@ -5,20 +5,23 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Feedback){
   'use strict';
   if(!Core||!Feedback)throw Error('Decision performance dependencies are required');
-  const VERSION=1,LIFTS=['squat','bench','deadlift'];
+  const VERSION=2,LIFTS=['squat','bench','deadlift'];
   const pct=(n,d)=>d?Core.round(n/d*100,1):null;
   const mean=values=>values.length?Core.round(values.reduce((a,b)=>a+b,0)/values.length,1):null;
   const chosen=e=>e.response==='ignore'?null:e.response==='modify'?e.chosenDirection:e.snapshot.decisionAllowed?e.snapshot.decision:null;
   const direction=d=>['increase','hold','reduce'].includes(d)?d:null;
+  const hasBaseline=e=>e.snapshot?.evidence?.at(-1)?.estimatedCapacity>0&&e.snapshot.evidence.some(row=>row.exerciseId);
+  const asDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T12:00:00Z'))&&new Date(d+'T12:00:00Z').toISOString().slice(0,10)===d;
   const kind=change=>change==null?'unobserved':change>=1?'improved':change<=-1?'declined':'stable';
   const after=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
   function analyze(state,{horizonDays=42,asOf}={}){
     if(!Number.isInteger(horizonDays)||horizonDays<1||horizonDays>365)throw Error('Invalid outcome horizon.');
     const today=asOf||new Date().toISOString().slice(0,10);
-    const observedState={...state,workouts:(state?.workouts||[]).filter(w=>w.date<=today),decisionEvents:(state?.decisionEvents||[]).filter(e=>e.snapshot?.asOf<=today)};
+    if(!asDate(today))throw Error('Invalid report date.');
+    const observedState={...state,workouts:(state?.workouts||[]).filter(w=>w.date<=today),decisionEvents:(state?.decisionEvents||[]).filter(e=>e.snapshot?.asOf<=today&&e.createdAt.slice(0,10)<=today)};
     const rows=Feedback.history(observedState,{horizonDays}).map(event=>({
       ...event,chosenDirection:chosen(event),outcomeClass:kind(event.outcome?.capacityChangePct??null),
-      attribution:event.outcome?'attributed':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
+      attribution:event.outcome?'attributed':!hasBaseline(event)?'missing-baseline':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
     }));
     // A workout is one observed outcome per lift, even if several decisions preceded it.
     // Attribute to the latest decision made for that lift before the exposure.
@@ -50,22 +53,31 @@
     const overlapping=rows.filter(row=>row.attribution==='overlapping').length;
     const pending=rows.filter(row=>row.attribution==='awaiting-outcome').length;
     const expired=rows.filter(row=>row.attribution==='window-ended').length;
+    const missingBaseline=rows.filter(row=>row.attribution==='missing-baseline').length;
+    const eligible=count-missingBaseline-overlapping;
+    const outcomesWithCapacity=observed.filter(row=>Number.isFinite(row.outcome.capacityChangePct));
     const byResponse=Object.fromEntries(Object.keys(responses).map(response=>{
       const matches=observed.filter(row=>row.response===response);
       return [response,{observed:matches.length,meanCapacityChangePct:mean(matches.map(row=>row.outcome.capacityChangePct).filter(Number.isFinite)),meanRpeChange:mean(matches.map(row=>row.outcome.rpeChange).filter(Number.isFinite)),outcomes:{improved:matches.filter(row=>row.outcomeClass==='improved').length,stable:matches.filter(row=>row.outcomeClass==='stable').length,declined:matches.filter(row=>row.outcomeClass==='declined').length}}];
     }));
-    const overrides=observed.filter(row=>row.response==='modify'&&direction(row.chosenDirection)&&row.chosenDirection!==row.snapshot.decision);
+    const overrides=rows.filter(row=>row.response==='modify'&&direction(row.chosenDirection)&&row.chosenDirection!==row.snapshot.decision);
     const overridePatterns={};
     for(const row of overrides){
       const k=row.snapshot.decision+' → '+row.chosenDirection;
-      const entry=overridePatterns[k]||(overridePatterns[k]={count:0,improved:0,stable:0,declined:0});
-      entry.count++;entry[row.outcomeClass]++;
+      const entry=overridePatterns[k]||(overridePatterns[k]={recorded:0,observed:0,overlapping:0,pending:0,expired:0,missingBaseline:0,improved:0,stable:0,declined:0});
+      entry.recorded++;
+      if(row.attribution==='attributed'){entry.observed++;entry[row.outcomeClass]++;}
+      else if(row.attribution==='overlapping')entry.overlapping++;
+      else if(row.attribution==='awaiting-outcome')entry.pending++;
+      else if(row.attribution==='window-ended')entry.expired++;
+      else if(row.attribution==='missing-baseline')entry.missingBaseline++;
     }
     return {
       count,responses,decisions,choices,acceptanceRate:pct(responses.accept,count),
       modificationRate:pct(responses.modify,count),ignoreRate:pct(responses.ignore,count),
-      uniqueObserved:observed.length,overlapping,pending,expired,
-      outcomeCoverage:pct(observed.length,count),byResponse,overridePatterns,
+      uniqueObserved:observed.length,overlapping,pending,expired,missingBaseline,eligible,
+      outcomeCoverage:pct(observed.length,count),eligibleOutcomeCoverage:pct(observed.length,eligible),
+      outcomesWithCapacity:outcomesWithCapacity.length,byResponse,overridePatterns,
       evidenceStatus:observed.length<3?'collecting':observed.length<10?'early-pattern':'reviewable-history'
     };
   }
