@@ -285,3 +285,45 @@ input[type="date"].input::-webkit-date-and-time-value {
 }
 .decision-guidance b { display:block; font-size:.9rem; line-height:1.4; }
 body.dark .decision-guidance > div { background:#111b32; border-color:#334155; }
+
+
+/* v2.4 athlete decision feedback. */
+.decision-feedback {
+  margin-top:.9rem;
+  padding:.8rem;
+  border:1px solid var(--line);
+  border-radius:.8rem;
+  background:color-mix(in srgb,var(--surface) 94%,var(--brand) 6%);
+}
+.decision-feedback-heading { display:flex; justify-content:space-between; gap:.75rem; align-items:baseline; }
+.decision-feedback-heading > span { font-size:.7rem; font-weight:750; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.decision-feedback-heading small { color:var(--muted); }
+.decision-feedback-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.65rem; align-items:flex-start; }
+.decision-feedback-actions > .btn-secondary,.decision-modify > summary { min-height:40px; }
+.decision-modify > summary { list-style:none; cursor:pointer; display:inline-flex; align-items:center; }
+.decision-modify > summary::-webkit-details-marker { display:none; }
+.decision-modify-form {
+  display:grid;
+  gap:.65rem;
+  margin-top:.55rem;
+  padding:.75rem;
+  border:1px solid var(--line);
+  border-radius:.7rem;
+  background:var(--surface);
+}
+.decision-modify-form label { display:grid; gap:.3rem; font-size:.75rem; color:var(--muted); }
+.decision-feedback-note,.decision-feedback-disabled { margin:.65rem 0 0; font-size:.75rem; color:var(--muted); }
+.decision-history-list { display:grid; gap:.65rem; margin-top:.75rem; }
+.decision-history-list article { padding:.75rem; border:1px solid var(--line); border-radius:.7rem; }
+.decision-history-list article > div { display:flex; justify-content:space-between; gap:.75rem; }
+.decision-history-list article span,.decision-history-list article small { color:var(--muted); font-size:.75rem; }
+.decision-history-list article p { margin:.35rem 0; }
+body.dark .decision-feedback,body.dark .decision-modify-form { background:#111b32; border-color:#334155; }
+@media(max-width:480px){
+  .decision-feedback-heading,.decision-history-list article > div { align-items:flex-start; flex-direction:column; gap:.2rem; }
+  .decision-feedback-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .decision-feedback-actions > .btn-secondary,.decision-modify > summary { width:100%; justify-content:center; }
+  .decision-modify { min-width:0; }
+  .decision-modify[open] { grid-column:1/-1; }
+  .decision-modify-form { position:static; width:100%; max-width:100%; box-shadow:none; }
+}

@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.3.0';
+const CACHE = 'loadnote-v2.4.0';
 const ASSETS = [
   './',
   './index.html',
@@ -36,6 +36,7 @@ const ASSETS = [
   './src/product/decision-readiness.js',
   './src/product/decision-engine.js',
   './src/product/decision-backtest.js',
+  './src/product/decision-feedback.js',
   './src/product/history-cleanup.js',
   './src/product/history-cleanup-ui.js',
   './src/product/training-review.js',

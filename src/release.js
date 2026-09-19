@@ -16,9 +16,10 @@
       { id:'integrity', label:'Training data integrity', ok:Number(d.schemaVersion || 0) >= 12 && Array.isArray(d.workoutRevisions) && Array.isArray(d.exerciseCatalog) },
       { id:'readiness', label:'Decision-readiness evidence', ok:Number(d.schemaVersion || 0) >= 13 && Array.isArray(d.exerciseRoles) },
       { id:'prescription', label:'Planned versus completed training', ok:Number(d.schemaVersion || 0) >= 14 && Number(d.prescriptionVersion || 0) >= 1 },
-      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 15 }
+      { id:'feedback', label:'Decision feedback history', ok:Number(d.schemaVersion || 0) >= 16 && Array.isArray(d.decisionEvents) },
+      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 16 }
     ];
-    return { version:'2.3.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'2.4.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });

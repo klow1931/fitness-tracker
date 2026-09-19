@@ -35,9 +35,9 @@ Conservative return/re-entry context remains a guard against interpreting planne
 
 ## Next v2 work
 
-1. Validate v2.3 backtest behavior against real athlete exports without committing personal data to the repository.
-2. Review threshold sensitivity before changing the default policy.
-3. Add athlete Accept / Modify / Ignore feedback only after the historical backtest is stable.
+1. Validate v2.3/v2.4 behavior against real athlete exports without committing personal data to the repository.
+2. Analyze athlete response versus observed next-exposure outcomes without assuming the athlete or engine was inherently correct.
+3. Review threshold sensitivity alongside live Accept / Modify / Ignore patterns before changing the default policy.
 4. Use historical and live feedback together before considering numeric confidence or exact load recommendations.
 
 
@@ -59,3 +59,20 @@ Reported metrics include:
 Policy thresholds are now explicit and can be replayed side-by-side through sensitivity analysis. This is intended for validation and calibration, not automatic optimization.
 
 As-recorded mode is the default for backtesting. Current-corrected replay remains available for diagnosis, but it should not be confused with what the engine actually could have known at the historical cutoff.
+
+
+## v2.4 Athlete feedback contract
+
+Live Decision Center recommendations can now record one athlete response per exact decision snapshot:
+
+- `accept`: the athlete intends to follow the displayed recommendation.
+- `modify`: the athlete chooses Increase, Hold, or Reduce instead, with an optional note.
+- `ignore`: the athlete intentionally does not use the recommendation.
+
+The event stores the decision snapshot shown at the time of response rather than recomputing it later. This includes the engine version, analysis date, decision, rationale, next-exposure guidance, watch-next guidance and recent evidence rows.
+
+Feedback is only recordable for today's current-corrected decision. Historical replay is read-only to avoid hindsight contamination.
+
+Outcome linkage is identity-based: the saved evidence exercise IDs are used to find the next usable competition-lift exposure after the decision. A later exercise-name match alone cannot rewrite the outcome relationship.
+
+v2.4 does not learn from this data yet. The event history is evidence for a later feedback/outcome analysis layer; thresholds and programs remain unchanged.

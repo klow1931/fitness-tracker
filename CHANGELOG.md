@@ -1,3 +1,17 @@
+# v2.4.0 — Athlete decision feedback
+
+- Added Accept / Modify / Ignore controls to today's live Decision Center recommendations.
+- Modify records the athlete's chosen Increase / Hold / Reduce direction plus an optional reason.
+- Added a local `decisionEvents` history with schema v16 migration.
+- Preserve the recommendation snapshot shown at response time for later auditing.
+- Automatically link saved responses to the next usable exposure for the same saved competition-lift identity.
+- Added expandable Decision history with observed next-exposure capacity and RPE outcomes.
+- Historical replay does not allow feedback entry, protecting the dataset from hindsight contamination.
+- Added unit and browser tests for feedback recording, response updates, outcome identity linkage and historical read-only behavior.
+- Updated the in-app privacy summary to include decision responses/history as local data.
+- Rolled the service-worker cache to v2.4.0.
+- No automatic threshold learning, confidence score, program rewrite or exact-load recommendation.
+
 # v2.3.0 — Decision backtesting and calibration foundation
 
 - Added a read-only walk-forward backtest engine for historical decision replay.

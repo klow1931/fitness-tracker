@@ -5,7 +5,7 @@ const original={schemaVersion:11,workouts:[
  {id:'b',date:'2026-08-08',exercises:[{name:'Tricep Push Down',sets:[{weight:45,reps:10,rpe:8}]},{name:'Hip Adduction',sets:[{weight:55,reps:10,rpe:8}]}]}
 ],prs:[],templates:[],trainingBlocks:[]};
 const snapshot=JSON.stringify(original),migrated=Integrity.normalizeState(Core.normalizeState(original,{}));
-assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,15);assert.equal(migrated.releaseVersion,'1.17.0');
+assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,16);assert.equal(migrated.releaseVersion,'1.17.0');
 assert.equal(migrated.workouts[0].exercises[0].exerciseId,migrated.workouts[1].exercises[0].exerciseId,'compact spelling variants share identity');
 assert.notEqual(migrated.workouts[0].exercises[1].exerciseId,migrated.workouts[1].exercises[1].exerciseId,'semantic aliases require explicit merge');
 const source=migrated.workouts[0].exercises[1].exerciseId,target=migrated.workouts[1].exercises[1].exerciseId,merged=Integrity.mergeExercises(migrated,source,target);
@@ -22,8 +22,8 @@ state=Integrity.undoWorkoutRevision(state,state.workoutRevisions[0].id,{now:'202
 state=Session.remove(state,'workout',(w,r)=>w*(1+r/30),()=> 'delete-revision','2026-09-02T00:00:00.000Z');assert.equal(state.workouts.length,0);assert.equal(Integrity.undoableWorkoutRevisions(state)[0].action,'delete');
 state=Integrity.undoWorkoutRevision(state,'delete-revision',{now:'2026-09-02T00:00:01.000Z',id:'restore'});assert.equal(state.workouts[0].id,'workout');
 
-const preview=Integrity.previewImport({workouts:[{id:'1',x:1},{id:'2'}],trainingBlocks:[],templates:[]},{workouts:[{id:'1',x:2},{id:'3'}],trainingBlocks:[],templates:[]});
-assert.deepEqual(preview.workouts,{before:2,after:2,added:1,changed:1,removed:1});
+const preview=Integrity.previewImport({workouts:[{id:'1',x:1},{id:'2'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'accept'}]},{workouts:[{id:'1',x:2},{id:'3'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'modify'},{id:'d2',response:'ignore'}]});
+assert.deepEqual(preview.workouts,{before:2,after:2,added:1,changed:1,removed:1});assert.deepEqual(preview.decisionEvents,{before:1,after:2,added:1,changed:1,removed:0});
 const withRecovery=Integrity.addRecoverySnapshot({workouts:[]},{workouts:[before],recoverySnapshots:[{id:'old'}]},'Before import',{now:'2026-09-03T00:00:00.000Z',id:'snapshot'});
 assert.equal(withRecovery.recoverySnapshots.length,1);assert.equal(Integrity.restoreRecoverySnapshot(withRecovery,'snapshot').workouts[0].id,'workout');
 
