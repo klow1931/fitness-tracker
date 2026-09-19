@@ -96,3 +96,12 @@ The direction-override table now distinguishes **recorded** Modify directions fr
 Evidence links now filter Train history to the outcome date and highlight the card matching the exact saved workout ID. Deletions or revised history may make the historical record unavailable; in that case the UI does not substitute a different workout on that date.
 
 The report separates events lacking a usable capacity baseline or saved exercise identity from events that are still awaiting an exposure or passed the observation horizon. Overall outcome coverage uses all recorded responses in the date scope; comparable outcome coverage excludes missing-baseline, overlapping, and feedback edited on/after the observed workout date. A last edit on or after an outcome cannot be interpreted as a prospective athlete choice. Future-dated feedback/workouts are excluded from earlier as-of reports. None of these categories represents statistical significance, causal attribution or a confidence probability.
+
+
+## v2.6.0 — Explicit block-context guard
+
+The block-aware context module interprets recorded `blockType`, `progressionIntent`, and `loadStrategy` at the decision date using existing readiness/block history replay. No phase is inferred from `name`, `primaryGoal`, heavy singles, or missing historical data. An explicitly saved Testing/Deload/Return intent takes precedence over a general block type, with that basis shown on the card. Conflicting Testing and Deload (or Peaking and Deload) fields withhold directional recommendations for clarification.
+
+When evidence otherwise supports an Increase in Testing, Deload, or Peaking, the model instead says Hold the saved plan and explicitly states that Hold is not an instruction to skip a planned test, taper, or recovery exposure. A Reduce direction retains its evidence-based warning and asks for athlete review of the planned exposure, not an automatic program edit. A return ramp or accumulation phase qualifies Increase guidance to the existing plan. Missing block training maxes/known tested 1RMs and unknown coverage appear as explanatory limitations rather than invented benchmarks.
+
+This phase layer is descriptive, deterministic and read-only. It does not learn from saved Accept/Modify/Ignore responses or modify historical workouts, training blocks or the decision policy.

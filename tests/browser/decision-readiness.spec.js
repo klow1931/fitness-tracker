@@ -16,7 +16,7 @@ test.beforeEach(async({page})=>{
 });
 test('confirmed roles create separated evidence without enabling decisions',async({page})=>{
  const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
- await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.5.4 Decision Center');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
+ await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.6 Decision Center');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
 });
 test('historical as-recorded replay withholds later block and mapping knowledge',async({page})=>{
  const card=page.locator('#decision-readiness-card');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
@@ -85,4 +85,20 @@ test('decision summaries stay compact and expand one lift at a time',async({page
  await bench.locator('summary.decision-lift-summary').click();
  await expect(bench).toHaveAttribute('open','');
  await expect(squat).not.toHaveAttribute('open','');
+});
+
+test('v2.6 shows explicit testing intent without pretending a general block is strength',async({page})=>{
+ await page.evaluate(()=>{
+  const current=LoadnoteBlocks.list(data.trainingBlocks)[0];
+  data.trainingBlocks=LoadnoteBlocks.upsert(data.trainingBlocks,{...current,blockType:'general',progressionIntent:'testing',dataCompleteness:'unknown',trainingMaxes:[],known1RMs:[]},{id:current.id,now:'2026-09-03T00:00:00.000Z'});
+  invalidateViews();window.renderDecisionReadiness();
+ });
+ const card=page.locator('#decision-readiness-card');
+ await expect(card.locator('.decision-phase-label').first()).toContainText('Block: Testing');
+ await expect(card.locator('.decision-phase-label').first()).toContainText('progression intent: testing');
+ const squat=card.locator('.decision-lift[data-decision-lift="squat"]');
+ await squat.locator('summary.decision-lift-summary').click();
+ await squat.locator('.decision-block-context > summary').click();
+ await expect(squat).toContainText('No block training max is recorded');
+ await expect(squat).toContainText('more specific than the general block type');
 });
