@@ -41,3 +41,13 @@ test('Update waits, blocks another tab and restores an entered draft',async({pag
  await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await page.evaluate(()=>showTab('workouts'));
  await expect(page.locator('.ex-name')).toHaveValue('Update Bench');await expect(page.locator('.set-reps')).toHaveValue('6');
 });
+
+test('Returning to an installed app checks for a waiting update without reloading a draft',async({page})=>{
+ await ready(page);
+ await page.locator('.ex-name').fill('Keep My Draft');
+ revision++;
+ await page.evaluate(()=>{document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));});
+ await expect(page.locator('#app-update')).toBeVisible();
+ await expect(page.locator('#app-update-status')).toContainText('newer Loadnote version');
+ await expect(page.locator('.ex-name')).toHaveValue('Keep My Draft');
+});
