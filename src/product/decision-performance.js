@@ -21,7 +21,7 @@
     const observedState={...state,workouts:(state?.workouts||[]).filter(w=>w.date<=today),decisionEvents:(state?.decisionEvents||[]).filter(e=>e.snapshot?.asOf<=today&&e.createdAt.slice(0,10)<=today)};
     const rows=Feedback.history(observedState,{horizonDays}).map(event=>({
       ...event,chosenDirection:chosen(event),outcomeClass:kind(event.outcome?.capacityChangePct??null),
-      attribution:event.outcome?(event.createdAt.slice(0,10)>=event.outcome.date?'late-response':'attributed'):!hasBaseline(event)?'missing-baseline':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
+      attribution:event.outcome?(event.updatedAt.slice(0,10)>=event.outcome.date?'late-response':'attributed'):!hasBaseline(event)?'missing-baseline':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
     }));
     // A workout is one observed outcome per lift, even if several decisions preceded it.
     // Attribute to the latest decision made for that lift before the exposure.
