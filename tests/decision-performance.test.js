@@ -75,4 +75,11 @@ const lateReport=Performance.analyze({...state,decisionEvents:late,workouts:[]},
 assert.equal(lateReport.summary.overridePatterns['hold → reduce'].recorded,1);
 assert.equal(lateReport.summary.overridePatterns['hold → reduce'].observed,0);
 assert.equal(lateReport.summary.overridePatterns['hold → reduce'].pending,1);
+const postWorkout=Feedback.record([],decision('bench','2026-09-02','b'),{response:'accept'},{now:'2026-09-10T12:00:00.000Z',id:'post-workout'});
+const postReport=Performance.analyze({...state,decisionEvents:postWorkout},{asOf:'2026-09-19'});
+assert.equal(postReport.summary.lateResponse,1,'a response entered after the workout is not prospective');
+assert.equal(postReport.summary.uniqueObserved,0);
+assert.equal(postReport.summary.eligibleOutcomeCoverage,null);
+const chronological=Feedback.record([],decision('bench','2026-09-02','b'),{response:'accept'},{now:'2026-09-03T12:00:00.000Z',id:'before-workout'});
+assert.equal(Performance.analyze({...state,decisionEvents:chronological},{asOf:'2026-09-19'}).summary.uniqueObserved,1);
 console.log('v2.5 outcome deduplication, lift patterns, coverage and insufficiency guards passed');
