@@ -408,3 +408,7 @@ body.dark .decision-open-hint { color:#a5b4fc; }
  .decision-lift-summary .readiness-status { white-space:normal; text-align:right; }
  .mobile-more-panel { max-height:calc(100dvh - 4rem); overflow-y:auto; }
 }
+
+/* Empty training log: expanded Home reports must still explain what comes next. */
+.home-more-empty { padding:.85rem; border:1px dashed var(--line); border-radius:.75rem; color:var(--muted); line-height:1.5; }
+.home-more-empty[hidden] { display:none; }
