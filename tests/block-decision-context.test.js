@@ -1,13 +1,13 @@
 const assert=require('node:assert/strict');
 const Core=require('../src/core/loadnote-core'),Blocks=require('../src/product/training-blocks');
-const Readiness=require('../src/product/decision-readiness'),Decisions=require('../src/product/decision-engine');
+const Readiness=require('../src/product/decision-readiness'),Decisions=require('../src/product/decision-engine'),Intent=require('../src/product/session-intent');
 const Context=require('../src/product/block-decision-context');
 
 const base={name:'Training',startDate:'2026-05-01',endDate:'2026-06-30',blockType:'strength',primaryGoal:'Build strength',loadStrategy:'performance-based',progressionIntent:'performance',dataCompleteness:'complete',trainingMaxes:[],known1RMs:[]};
 function block(fields={}){return Blocks.upsert([],{...base,...fields},{now:'2026-05-01T00:00:00.000Z'});}
 const ids=['s','b','d'];
 let n=0;const roles=Readiness.replace([],ids.map((id,i)=>({exerciseId:id,role:'competition',competitionLift:['squat','bench','deadlift'][i]})),{now:'2026-05-01T00:00:00.000Z',createId:()=>String(++n)});
-const workout=(id,date,exerciseId,weight,rpe=8)=>({id,date,createdAt:date+'T18:00:00.000Z',exercises:[{exerciseId,name:exerciseId,sets:[{reps:5,weight,rpe}]}]});
+const workout=(id,date,exerciseId,weight,rpe=8)=>{const exercises=[{exerciseId,name:exerciseId,sets:[{reps:5,weight,rpe}]}];return {id,date,createdAt:date+'T18:00:00.000Z',sessionIntent:Intent.context({role:'heavy-exposure',prescription:Intent.createPrescription(exercises,{type:'manual'},date+'T17:00:00.000Z')}),exercises};};
 const workouts=[workout('s1','2026-05-05','s',100),workout('s2','2026-05-12','s',105),workout('s3','2026-05-19','s',110)];
 const state=(fields={})=>({trainingBlocks:block(fields),exerciseRoles:roles,workouts,exerciseCatalog:ids.map(id=>({id,name:id,aliases:[]})),workoutRevisions:[]});
 function decide(fields={},retrospective=true){return Decisions.decisionForLift(state(fields),'squat',{asOf:'2026-05-21',retrospective});}
