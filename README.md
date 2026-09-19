@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.5.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.5.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.5.1–v2.5.3 Feedback analysis completion
+
+v2.5.1 distinguishes how many directional overrides were **recorded** versus how many have a unique observed next exposure. The report exposes separate denominators, outcomes and still-pending/overlapping cases; it does not infer that the athlete followed the intended direction.
+
+v2.5.2 gives lift-filtered decision/evidence trails with exact workout-ID navigation into Train history, rather than stopping at a shared workout date. The linked card is highlighted when the workout still exists.
+
+v2.5.3 separates missing baseline evidence from pending or beyond-window outcomes; shows both all-feedback outcome coverage and comparable coverage; excludes future-dated activity and feedback saved or edited on/after the outcome workout from independent prospective outcome counts. Descriptive coverage labels are not statistical confidence scores.
+
+This is one cumulative v2.5.3 code release. No storage migration, automatic threshold update or change to prescribed training.
 
 ## v2.5 Decision performance and outcome attribution
 

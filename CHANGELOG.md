@@ -1,3 +1,13 @@
+# v2.5.3 — Feedback analysis completion (v2.5.1–v2.5.3)
+
+- v2.5.1: distinguish recorded recommendation overrides from unique observed follow-ups; show sample counts and follow-up outcome breakdowns.
+- v2.5.2: link decision evidence to the exact workout ID, open and highlight its Train history card.
+- v2.5.3: distinguish missing baseline, awaiting outcome, expired observation window, overlapping decisions and late-edited feedback.
+- Show overall and comparable outcome coverage with explicit denominators.
+- Exclude feedback edited on/after the workout from prospective outcome attribution and continue to exclude future-dated records.
+- Expand synthetic and browser regressions for identity navigation and honest data coverage.
+- No stored-schema migration, automated learning or program changes.
+
 # v2.5.0 — Decision performance and attribution
 
 - Added a read-only, lift-filtered Decision Performance dashboard for live athlete feedback.

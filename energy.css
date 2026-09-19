@@ -351,3 +351,6 @@ body.dark .decision-performance-metrics > div,body.dark .decision-performance-re
  background:#111b32; border-color:#334155;
 }
 @media(max-width:380px){.decision-performance-metrics {grid-template-columns:minmax(0,1fr);} }
+
+/* v2.5.3 — highlight exact workout when navigating from a decision outcome. */
+.history-session.decision-evidence-target { outline:2px solid var(--brand); outline-offset:2px; scroll-margin-top:5rem; }

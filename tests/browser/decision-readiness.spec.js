@@ -59,4 +59,11 @@ test('Decision Performance attributes one follow-up once and filters lifts',asyn
  await panel.locator('#decision-performance-lift').selectOption('squat');
  await expect(panel).toContainText('Overlapping · excluded');
  await expect(panel).toContainText('hold → increase');
+ const audit=panel.locator('details').filter({has:page.locator('summary',{hasText:'Audit decision and workout evidence'})}).first();
+ await audit.locator('summary').first().click();
+ const observed=audit.locator('.decision-performance-rows article').filter({hasText:'Unique follow-up'}).first();
+ await observed.locator('summary',{hasText:'Evidence and original recommendation'}).click();
+ await observed.getByRole('button',{name:'View exact workout in Train'}).click();
+ await expect(page.locator('[data-hist-id="s3"]')).toBeVisible();
+ await expect(page.locator('[data-hist-id="s3"]')).toHaveClass(/decision-evidence-target/);
 });
