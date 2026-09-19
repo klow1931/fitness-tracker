@@ -34,7 +34,7 @@
    let report;try{report=model.analyze(state,{asOf:window.today?.()||new Date().toISOString().slice(0,10)});}catch(error){host.textContent=error.message;return;}
    host.innerHTML=`<label class="decision-performance-filter">Lift<select id="decision-performance-lift" class="input"><option value="all">All lifts</option>${model.LIFTS.map(lift=>`<option value="${lift}" ${selected===lift?'selected':''}>${title[lift]}</option>`).join('')}</select></label><div id="decision-performance-body">${markup(report,selected)}</div>`;
    host.querySelector('#decision-performance-lift')?.addEventListener('change',event=>{selected=event.target.value;const body=host.querySelector('#decision-performance-body');if(body)body.innerHTML=markup(report,selected);});
-   host.addEventListener('click',event=>{
+   host.onclick=event=>{
      const button=event.target.closest('[data-performance-workout-date]');if(!button)return;
      const date=button.dataset.performanceWorkoutDate;
      window.showTab?.('workouts');window.showSubTab?.('workouts','wo-history');
@@ -42,7 +42,7 @@
      if(search)search.value='';if(from)from.value=date;if(to)to.value=date;
      window.renderWorkoutHistory?.();
      document.getElementById('workout-history')?.scrollIntoView({block:'start'});
-   });
+   };
  }
  window.LoadnoteDecisionPerformanceUI={render};
 })();
