@@ -34,6 +34,7 @@ assert.equal(report.summary.overlapping,1,'old squat response cannot reuse same 
 assert.equal(report.summary.pending,1);
 assert.equal(report.summary.expired,1);
 assert.equal(report.summary.outcomeCoverage,40);
+assert.equal(report.summary.eligibleOutcomeCoverage,50);
 assert.equal(report.lifts.squat.uniqueObserved,1);
 assert.equal(report.lifts.squat.overlapping,1);
 assert.equal(report.lifts.squat.pending,1);
@@ -41,15 +42,37 @@ assert.equal(report.lifts.bench.uniqueObserved,1);
 assert.equal(report.lifts.deadlift.expired,1);
 assert.equal(report.summary.byResponse.modify.observed,1);
 assert.equal(report.summary.byResponse.accept.observed,0,'overlap is not counted for accepted response');
-assert.equal(report.summary.overridePatterns['hold → increase'].count,1);
+assert.equal(report.summary.overridePatterns['hold → increase'].recorded,1);
+assert.equal(report.summary.overridePatterns['hold → increase'].observed,1);
 assert.equal(report.rows.find(r=>r.id==='e1').attribution,'overlapping');
 assert.equal(report.rows.find(r=>r.id==='e2').attribution,'attributed');
 assert.equal(report.rows.find(r=>r.id==='e3').chosenDirection,null);
 assert.equal(report.rows.find(r=>r.id==='e3').outcomeClass,'declined');
 assert.equal(report.summary.evidenceStatus,'collecting');
+assert.equal(report.summary.missingBaseline,0);
 const stateUnobserved={...state,workouts:[]};
 assert.equal(Performance.analyze(stateUnobserved,{asOf:'2026-09-19'}).summary.outcomeCoverage,0);
 assert.equal(Performance.analyze({decisionEvents:[],workouts:[]},{asOf:'2026-09-19'}).summary.acceptanceRate,null);
 assert.throws(()=>Performance.analyze(state,{horizonDays:0}),/horizon/);
 assert.equal(Performance.analyze(state,{asOf:'2026-09-19',horizonDays:3}).summary.uniqueObserved,0);
+
+const missing=Feedback.record(events,{
+ version:4,lift:'bench',label:'Bench',asOf:'2026-09-10',
+ decision:'insufficient-evidence',decisionAllowed:false,reason:'Unmapped',evidence:[]
+},{response:'ignore'},{now:'2026-09-10T12:00:00.000Z',id:'no-baseline'});
+const withMissing=Performance.analyze({...state,decisionEvents:missing},{asOf:'2026-09-19'});
+assert.equal(withMissing.summary.count,6);
+assert.equal(withMissing.summary.missingBaseline,1);
+assert.equal(withMissing.summary.expired,1,'missing evidence must not be marked as simply overdue');
+assert.equal(withMissing.summary.outcomeCoverage,33.3);
+assert.equal(withMissing.summary.eligibleOutcomeCoverage,50);
+assert.equal(withMissing.rows.find(r=>r.id==='no-baseline').attribution,'missing-baseline');
+const futureRecord=Feedback.record(missing,decision('bench','2026-09-21','b'),{response:'accept'},{now:'2026-09-21T12:00:00.000Z',id:'future'});
+assert.equal(Performance.analyze({...state,decisionEvents:futureRecord},{asOf:'2026-09-19'}).summary.count,6,'future response excluded');
+assert.throws(()=>Performance.analyze(state,{asOf:'2026-02-30'}),/Invalid report date/);
+const late=Feedback.record([],decision('squat','2026-09-02','s'),{response:'modify',chosenDirection:'reduce'},{now:'2026-09-02T12:00:00.000Z',id:'late'});
+const lateReport=Performance.analyze({...state,decisionEvents:late,workouts:[]},{asOf:'2026-09-19'});
+assert.equal(lateReport.summary.overridePatterns['hold → reduce'].recorded,1);
+assert.equal(lateReport.summary.overridePatterns['hold → reduce'].observed,0);
+assert.equal(lateReport.summary.overridePatterns['hold → reduce'].pending,1);
 console.log('v2.5 outcome deduplication, lift patterns, coverage and insufficiency guards passed');
