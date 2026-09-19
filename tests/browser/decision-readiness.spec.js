@@ -38,6 +38,7 @@ test('live decisions record athlete feedback while historical replay stays read-
  await expect(squat).toContainText('Accepted');
  const saved=await page.evaluate(()=>data.decisionEvents[0]);
  expect(saved.response).toBe('accept');expect(saved.snapshot.lift).toBe('squat');
+ await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');
  await expect(card).toContainText('Athlete feedback is recorded only for today');
  expect(await card.getByRole('button',{name:'Accept',exact:true}).count()).toBe(0);
