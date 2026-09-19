@@ -21,13 +21,13 @@
     const observedState={...state,workouts:(state?.workouts||[]).filter(w=>w.date<=today),decisionEvents:(state?.decisionEvents||[]).filter(e=>e.snapshot?.asOf<=today&&e.createdAt.slice(0,10)<=today)};
     const rows=Feedback.history(observedState,{horizonDays}).map(event=>({
       ...event,chosenDirection:chosen(event),outcomeClass:kind(event.outcome?.capacityChangePct??null),
-      attribution:event.outcome?'attributed':!hasBaseline(event)?'missing-baseline':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
+      attribution:event.outcome?(event.createdAt.slice(0,10)>=event.outcome.date?'late-response':'attributed'):!hasBaseline(event)?'missing-baseline':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
     }));
     // A workout is one observed outcome per lift, even if several decisions preceded it.
     // Attribute to the latest decision made for that lift before the exposure.
     const groups=new Map();
     for(const row of rows){
-      if(!row.outcome)continue;
+      if(row.attribution!=='attributed')continue;
       const key=[row.snapshot.lift,row.outcome.date,row.outcome.workoutId].join('|');
       if(!groups.has(key))groups.set(key,[]);
       groups.get(key).push(row);
@@ -54,7 +54,8 @@
     const pending=rows.filter(row=>row.attribution==='awaiting-outcome').length;
     const expired=rows.filter(row=>row.attribution==='window-ended').length;
     const missingBaseline=rows.filter(row=>row.attribution==='missing-baseline').length;
-    const eligible=count-missingBaseline-overlapping;
+    const lateResponse=rows.filter(row=>row.attribution==='late-response').length;
+    const eligible=count-missingBaseline-overlapping-lateResponse;
     const outcomesWithCapacity=observed.filter(row=>Number.isFinite(row.outcome.capacityChangePct));
     const byResponse=Object.fromEntries(Object.keys(responses).map(response=>{
       const matches=observed.filter(row=>row.response===response);
@@ -64,18 +65,19 @@
     const overridePatterns={};
     for(const row of overrides){
       const k=row.snapshot.decision+' → '+row.chosenDirection;
-      const entry=overridePatterns[k]||(overridePatterns[k]={recorded:0,observed:0,overlapping:0,pending:0,expired:0,missingBaseline:0,improved:0,stable:0,declined:0});
+      const entry=overridePatterns[k]||(overridePatterns[k]={recorded:0,observed:0,overlapping:0,pending:0,expired:0,missingBaseline:0,lateResponse:0,improved:0,stable:0,declined:0});
       entry.recorded++;
       if(row.attribution==='attributed'){entry.observed++;entry[row.outcomeClass]++;}
       else if(row.attribution==='overlapping')entry.overlapping++;
       else if(row.attribution==='awaiting-outcome')entry.pending++;
       else if(row.attribution==='window-ended')entry.expired++;
       else if(row.attribution==='missing-baseline')entry.missingBaseline++;
+      else if(row.attribution==='late-response')entry.lateResponse++;
     }
     return {
       count,responses,decisions,choices,acceptanceRate:pct(responses.accept,count),
       modificationRate:pct(responses.modify,count),ignoreRate:pct(responses.ignore,count),
-      uniqueObserved:observed.length,overlapping,pending,expired,missingBaseline,eligible,
+      uniqueObserved:observed.length,overlapping,pending,expired,missingBaseline,lateResponse,eligible,
       outcomeCoverage:pct(observed.length,count),eligibleOutcomeCoverage:pct(observed.length,eligible),
       outcomesWithCapacity:outcomesWithCapacity.length,byResponse,overridePatterns,
       evidenceStatus:observed.length<3?'collecting':observed.length<10?'early-pattern':'reviewable-history'
