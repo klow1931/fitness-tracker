@@ -35,7 +35,7 @@ assert.match(testing.nextExposure,/saved testing plan/);
 for(const type of ['peaking','deload']){
  const d=decide({blockType:type,progressionIntent:'performance'});
  assert.equal(d.decision,'hold');assert.equal(d.blockContext.phase,type);
- assert.match(d.nextExposure,new RegExp('saved '+type+' plan'));
+ assert.match(d.nextExposure,new RegExp('saved '+(type==='deload'?'recovery':type)+' plan'));
 }
 const accum=decide({blockType:'accumulation'});assert.equal(accum.decision,'increase');assert.match(accum.nextExposure,/accumulation plan/);
 const returning=decide({blockType:'return-reentry',progressionIntent:'return-ramp'});assert.equal(returning.decision,'increase');assert.match(returning.nextExposure,/restored capacity/);
