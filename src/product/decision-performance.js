@@ -15,7 +15,8 @@
   function analyze(state,{horizonDays=42,asOf}={}){
     if(!Number.isInteger(horizonDays)||horizonDays<1||horizonDays>365)throw Error('Invalid outcome horizon.');
     const today=asOf||new Date().toISOString().slice(0,10);
-    const rows=Feedback.history(state,{horizonDays}).map(event=>({
+    const observedState={...state,workouts:(state?.workouts||[]).filter(w=>w.date<=today)};
+    const rows=Feedback.history(observedState,{horizonDays}).map(event=>({
       ...event,chosenDirection:chosen(event),outcomeClass:kind(event.outcome?.capacityChangePct??null),
       attribution:event.outcome?'attributed':after(event.snapshot.asOf,horizonDays)<today?'window-ended':'awaiting-outcome'
     }));
