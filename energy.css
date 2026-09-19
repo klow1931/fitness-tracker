@@ -412,3 +412,9 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 /* Empty training log: expanded Home reports must still explain what comes next. */
 .home-more-empty { padding:.85rem; border:1px dashed var(--line); border-radius:.75rem; color:var(--muted); line-height:1.5; }
 .home-more-empty[hidden] { display:none; }
+
+/* v2.6 Part 1: compact, auditable block context in Decision cards. */
+.decision-phase-label { font-size:.72rem; color:var(--muted); line-height:1.45; margin:.2rem 0 .35rem; overflow-wrap:anywhere; }
+.decision-block-context { margin:.5rem 0 .8rem; }
+.decision-block-context > summary { cursor:pointer; font-size:.82rem; }
+.decision-block-context p { font-size:.78rem; margin:.5rem 0; line-height:1.5; overflow-wrap:anywhere; }

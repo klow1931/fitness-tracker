@@ -1,11 +1,11 @@
 /* Loadnote v2 decision engine — deterministic, read-only, evidence-backed. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./decision-readiness'));
-  else root.LoadnoteDecisionEngine=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteReadiness);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./decision-readiness'),require('./block-decision-context'));
+  else root.LoadnoteDecisionEngine=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteReadiness,root.LoadnoteBlockDecisionContext);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness,BlockContext){
   'use strict';
-  if(!Core||!Blocks||!Readiness)throw Error('Loadnote decision engine dependencies are required');
-  const VERSION=4;
+  if(!Core||!Blocks||!Readiness||!BlockContext)throw Error('Loadnote decision engine dependencies are required');
+  const VERSION=5;
   const DEFAULT_POLICY=Object.freeze({
     maxEvidenceAgeDays:28,
     intervalTolerancePct:0.5,
@@ -55,19 +55,20 @@
     const readiness=readinessSnapshot.lifts[lift];
     if(!readiness)throw Error('Unknown competition lift.');
     const evidence=competitionEvidence(state,lift,asOf,{retrospective,knownAt:options.knownAt,startDate:readinessSnapshot.windowStart});
+    const finish=value=>BlockContext.contextualize(value,readinessSnapshot.block);
     const base={version:VERSION,lift,label:readiness.label,asOf,mode:retrospective?'current-corrected':'as-recorded',readiness:readiness.status,decision:'insufficient-evidence',decisionAllowed:false,reason:'',nextExposure:'Collect more evidence before making a directional training change.',watchNext:'Complete a fresh, well-mapped competition-lift exposure with usable load, reps and RPE.',evidenceWindowStart:readinessSnapshot.windowStart,evidence:evidence.slice(-3),signals:[]};
     if(readiness.status!=='ready'){
       base.reason=readiness.reasons[0]||'Decision readiness requirements are not met.';
       base.nextExposure='Keep the current plan unchanged by this model until the missing readiness evidence is resolved.';
       base.watchNext=readiness.reasons[0]||'Add enough current, mapped evidence for Decision Readiness to become ready.';
       base.signals=readiness.reasons.slice();
-      return base;
+      return finish(base);
     }
     if(evidence.length<3){
       base.reason='At least three capacity-evidence days are required before making a training decision.';
       base.nextExposure='Keep the current plan unchanged by this model while another usable exposure is collected.';
       base.watchNext='Reach at least three distinct capacity-evidence days in the active analysis window.';
-      return base;
+      return finish(base);
     }
     const recent=evidence.slice(-3),first=recent[0],last=recent[2];
     const trend=first.estimatedCapacity>0?(last.estimatedCapacity-first.estimatedCapacity)/first.estimatedCapacity*100:0;
@@ -91,7 +92,7 @@
       base.reason=`Latest usable competition-lift evidence is ${evidenceAgeDays} days old. A directional recommendation is withheld until fresher evidence is available.`;
       base.nextExposure='Use the planned session as a fresh evidence opportunity rather than changing direction from stale data.';
       base.watchNext='Record a new usable competition-lift exposure; freshness is restored once current evidence enters the window.';
-      return base;
+      return finish(base);
     }
     base.decisionAllowed=true;
     if(trend<=P.reduceTrendPct&&latestRpe>=P.reduceEffortRpe&&nonIncreasingIntervals===2){
@@ -122,7 +123,7 @@
       base.nextExposure='Keep the current loading direction and use the next exposure to confirm the trend.';
       base.watchNext=trend>=1&&nonDecliningIntervals<2?'Watch for a second consecutive non-declining exposure before progressing.':'Watch for a clear capacity rise at controlled effort before changing direction.';
     }
-    return base;
+    return finish(base);
   }
   function snapshot(state,options={}){
     const asOf=options.asOf;

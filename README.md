@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.5.5 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.6.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.6.0 — Block-aware decisions (Part 1)
+
+Decisions now explains the **recorded training-block phase** beside each compact squat/bench/deadlift card. It uses explicit block type and progression intent, not a guess from the block name, goal text or a single heavy set. A General block with Testing intent is interpreted as Testing, with its provenance displayed. Return, Accumulation, Strength, Peaking, Testing and Deload have phase-aware plan-preserving guidance.
+
+A testing/deload/peaking block prevents an unplanned Increase suggestion from overriding the saved plan. Contradictory explicit phases withhold direction for review. Missing training maxes, known 1RMs and incomplete history are displayed as limitations, never silently inferred or backfilled. The existing competition-lift exercise mapping and RPE-aware evidence remain the basis of trends, and submaximal singles are not relabeled tested 1RMs.
+
+This is **Part 1 only**: no personalization from feedback, automatic threshold tuning, editing recorded blocks, program changes or data migration.
 
 ## v2.5.5 — Update visibility patch
 
