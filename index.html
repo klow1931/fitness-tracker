@@ -62,16 +62,22 @@
           <button id="unit-lb" onclick="setUnit('lb')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">lb</button>
         </div>
         <button onclick="toggleGymMode()" id="gym-mode-btn" class="btn-secondary text-sm px-3 py-1.5" title="Gym mode: larger controls">🏋️ Gym</button>
-        <div class="desktop-tabs flex gap-2 flex-wrap items-center">
+        <div class="desktop-tabs flex gap-2 flex-wrap items-center" aria-label="Primary navigation">
           <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Home</button>
-          <button onclick="showTab('calendar')" id="tab-calendar" class="tab-btn">Calendar</button>
           <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Train</button>
-          <button onclick="showTab('nutrition')" id="tab-nutrition" class="tab-btn">Food</button>
           <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">Progress</button>
-          <button onclick="showTab('measures')" id="tab-measures" class="tab-btn">Measurements</button>
-          <button onclick="showTab('photos')" id="tab-photos" class="tab-btn">Photos</button>
           <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">Decisions</button>
-          <button onclick="showTab('tools')" id="tab-tools" class="tab-btn">Tools</button>
+          <details id="desktop-more" class="desktop-more"><summary class="tab-btn" aria-label="More destinations">More <span aria-hidden="true">⌄</span></summary>
+            <div class="desktop-more-menu" aria-label="More destinations">
+              <span class="desktop-more-label">Plan &amp; track</span>
+              <button type="button" onclick="showTab('calendar');document.getElementById('desktop-more').open=false" id="tab-calendar">Calendar</button>
+              <button type="button" onclick="showTab('nutrition');document.getElementById('desktop-more').open=false" id="tab-nutrition">Food</button>
+              <button type="button" onclick="showTab('measures');document.getElementById('desktop-more').open=false" id="tab-measures">Measurements</button>
+              <button type="button" onclick="showTab('photos');document.getElementById('desktop-more').open=false" id="tab-photos">Photos</button>
+              <span class="desktop-more-label">App &amp; data</span>
+              <button type="button" onclick="showTab('tools');document.getElementById('desktop-more').open=false" id="tab-tools">Tools &amp; backups</button>
+            </div>
+          </details>
         </div>
       </div>
     </header>
@@ -152,6 +158,7 @@
         <p class="text-xs text-slate-500">Tip: turn on <b>Gym mode</b> (header) for bigger controls between sets.</p>
       </div>
 
+      <details id="home-details" class="card home-details"><summary><span><b>More from your training</b><small>Reports, records and quick links</small></span></summary><div class="home-details-content">
       <div class="card start-here-card" id="start-here-card">
         <h2 class="font-semibold mb-1">Start here</h2>
         <p class="text-xs text-slate-500 mb-3">You don’t need every feature. Pick one:</p>
@@ -289,6 +296,7 @@
         <div id="recent-activity" class="space-y-2 text-sm"></div>
       </div>
       </div><!-- /home-insights -->
+      </div></details><!-- /home-details -->
     </section>
 
     <!-- BODY MEASUREMENTS -->
@@ -873,13 +881,13 @@
       </div>
       <p class="text-xs text-slate-500 -mt-3">Start with <b>Decisions</b>. Open deeper coaching tools only when you need them.</p>
 
-      <div class="card border-slate-300 bg-slate-50">
+      <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
         <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
         <p class="text-xs text-slate-600">
           Loadnote's Decisions, Insights, chat, deload suggestions, and generated programs are <b>training-support tools, not medical care</b>. Recommendations are based on the training data and context available in the app and may be incomplete or wrong.
           They do not diagnose injuries, prescribe treatment, or replace a qualified coach or healthcare professional. Use your own judgment, especially when pain, illness, injury, medication, or a health condition could affect training.
         </p>
-      </div>
+      </details>
 
       <div class="sub-panel hidden" data-panel="coach" data-sub="co-insights">
       <!-- v0.5 Proactive Coach -->
@@ -995,7 +1003,7 @@
 
       <div class="sub-panel" data-panel="coach" data-sub="co-programs">
       <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
-      <div class="grid md:grid-cols-1 gap-6">
+      <details class="card coach-programming-details"><summary><span><b>Programming &amp; athlete setup</b><small>Profile, program generator and your program library</small></span></summary><div class="grid md:grid-cols-1 gap-6 coach-programming-content">
         <!-- v0.7 Athlete Profile -->
         <div class="card" id="athlete-profile-card">
           <div class="flex items-start justify-between gap-3 mb-4">
@@ -1097,6 +1105,7 @@
         <h2 class="font-semibold mb-3">Program Library</h2>
         <div id="programs-list" class="space-y-2 text-sm"></div>
       </div>
+      </details>
       </div><!-- /co-programs -->
     </section>
 
