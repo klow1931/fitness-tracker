@@ -327,3 +327,27 @@ body.dark .decision-feedback,body.dark .decision-modify-form { background:#111b3
   .decision-modify[open] { grid-column:1/-1; }
   .decision-modify-form { position:static; width:100%; max-width:100%; box-shadow:none; }
 }
+
+
+/* v2.5 — evidence-first Decision Performance report. */
+.decision-performance-filter { display:grid; gap:.35rem; max-width:18rem; font-size:.78rem; font-weight:700; }
+.decision-performance-status { margin:.8rem 0; font-size:.85rem; }
+.decision-performance-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem; margin:.7rem 0; }
+.decision-performance-metrics > div,.decision-performance-response > div,.decision-performance-rows > article {
+  min-width:0; padding:.75rem; border:1px solid var(--line); border-radius:.75rem; background:var(--surface);
+}
+.decision-performance-metrics span,.decision-performance-response span,.decision-performance-response small {
+  display:block; color:var(--muted); font-size:.72rem; overflow-wrap:anywhere;
+}
+.decision-performance-metrics b { display:block; margin-top:.2rem; font-size:1rem; overflow-wrap:anywhere; }
+.decision-performance-response,.decision-performance-rows { display:grid; gap:.55rem; margin:.8rem 0; }
+.decision-performance-response b { display:block; margin-bottom:.2rem; font-size:.85rem; }
+.decision-performance-row-heading { display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+.decision-performance-row-heading small { color:var(--muted); }
+.decision-performance-rows p { margin:.4rem 0; font-size:.78rem; overflow-wrap:anywhere; }
+.decision-performance-rows details summary { font-size:.78rem; cursor:pointer; }
+.decision-performance-rows button { margin-top:.55rem; max-width:100%; }
+body.dark .decision-performance-metrics > div,body.dark .decision-performance-response > div,body.dark .decision-performance-rows > article {
+ background:#111b32; border-color:#334155;
+}
+@media(max-width:380px){.decision-performance-metrics {grid-template-columns:minmax(0,1fr);} }
