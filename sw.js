@@ -37,6 +37,8 @@ const ASSETS = [
   './src/product/decision-engine.js',
   './src/product/decision-backtest.js',
   './src/product/decision-feedback.js',
+  './src/product/decision-performance.js',
+  './src/product/decision-performance-ui.js',
   './src/product/history-cleanup.js',
   './src/product/history-cleanup-ui.js',
   './src/product/training-review.js',
