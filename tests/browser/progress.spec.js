@@ -36,6 +36,7 @@ test('Deleting a record source recalculates PRs; failed deletion preserves both'
 });
 test('Chart range and metric controls use filtered actual data',async({page})=>{
  await page.evaluate(()=>{showTab('dashboard');document.getElementById('progress-exercise').value='Bench';renderProgressChart();});
+ await page.locator('#home-details > summary').click();
  await page.locator('#progress-metric').selectOption('load');await expect(page.locator('#progress-description')).toContainText('Heaviest actual set');
  await page.locator('#progress-range').selectOption('4');await expect(page.locator('#progress-description')).toContainText('No rep-based strength data');
 });
