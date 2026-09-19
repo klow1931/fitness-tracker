@@ -100,7 +100,7 @@ test('primary navigation and Home hide secondary tools without removing them',as
  if(page.viewportSize().width<760){
   await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
   await page.locator('#home-details > summary').click();
-  await expect(page.locator('.home-details-content')).toBeVisible();
+  await expect(page.locator('#home-details')).toHaveAttribute('open','');
   return;
  }
  await expect(page.locator('#desktop-more')).toBeVisible();
