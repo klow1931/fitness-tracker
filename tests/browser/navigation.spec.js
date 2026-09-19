@@ -110,6 +110,10 @@ test('primary navigation and Home hide secondary tools without removing them',as
  await expect(page.locator('#week-plan')).toBeVisible();
  await page.locator('#home-details > summary').click();
  await expect(page.locator('.home-details-content')).toBeVisible();
+ await expect(page.locator('#home-more-empty')).toContainText('after you log your first session');
+ await page.evaluate(()=>{data.workouts=[{id:'ui-home-smoke',date:today(),exercises:[]}];invalidateViews();renderDashboard();});
+ await expect(page.locator('#home-more-empty')).toBeHidden();
+ await expect(page.locator('#home-stats-grid')).toBeVisible();
  await page.locator('#desktop-more > summary').click();
  await expect(page.locator('#desktop-more')).toHaveAttribute('open','');
  await page.locator('#tab-calendar').click();
