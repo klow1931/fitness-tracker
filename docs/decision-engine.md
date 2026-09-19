@@ -87,3 +87,12 @@ A saved event is assessed against the first subsequent usable competition-lift w
 Data-coverage descriptions: 0–2 uniquely attributed follow-ups = Collecting feedback; 3–9 = Early pattern; 10+ = Reviewable history. These are descriptive sample-size bands, not probabilistic confidence scores or validation of causal efficacy.
 
 Outcome categories are improved (capacity change ≥1%), declined (≤−1%), or stable (between those thresholds). Lift and response strata show their sample sizes and do not display numeric means when there are no observations.
+
+
+## v2.5.1–v2.5.3 Feedback completion
+
+The direction-override table now distinguishes **recorded** Modify directions from **uniquely observed** subsequent exposures. Its outcome categories count only uniquely attributed observations; missing, expired, overlapping and awaiting events remain separate, including when there is no observed override. Mean capacity and effort by response similarly show denominators. Recorded athlete choice is an intention, not a verified program change.
+
+Evidence links now filter Train history to the outcome date and highlight the card matching the exact saved workout ID. Deletions or revised history may make the historical record unavailable; in that case the UI does not substitute a different workout on that date.
+
+The report separates events lacking a usable capacity baseline or saved exercise identity from events that are still awaiting an exposure or passed the observation horizon. Overall outcome coverage uses all recorded responses in the date scope; comparable outcome coverage excludes missing-baseline, overlapping, and feedback edited on/after the observed workout date. A last edit on or after an outcome cannot be interpreted as a prospective athlete choice. Future-dated feedback/workouts are excluded from earlier as-of reports. None of these categories represents statistical significance, causal attribution or a confidence probability.
