@@ -1,3 +1,13 @@
+# v2.6.0 — Block-aware decision intelligence (Part 1)
+
+- Interpret explicitly saved phase and progression intent; show provenance beside compact lift decisions.
+- Add plan-preserving guards for testing, deload and peaking without silently changing workout programming.
+- Preserve return ramps and accumulation intent when competition-lift capacity improves.
+- Withhold direction when recorded block type and intent conflict about the intended phase.
+- Clearly distinguish missing training maxes/known 1RMs and unknown block history coverage from observed RPE capacity.
+- Keep historical replay, mapped exercise IDs, RPE evidence, athlete control and local-first storage intact.
+- Add phase-specific unit and browser tests and cache new module offline. No feedback-derived personalization or schema migration.
+
 # v2.5.5 — Installed-app update visibility
 
 - Ensure app version is consistently displayed in footer, release metadata and offline cache.
