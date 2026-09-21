@@ -24,6 +24,7 @@ test('Weekly rhythm reflects saved sessions and opens their calendar day',async(
 });
 test('New PR feedback distinguishes improvement from correction',async({page})=>{
  await page.evaluate(()=>showTab('prs'));
+ await page.locator('#pr-entry > summary').click();
  for(const [weight,expected] of [['100','New personal best'],['90','PR updated']]){
    await page.locator('#pr-exercise').fill('Bench Press');await page.locator('#pr-weight').fill(weight);
    await page.getByRole('button',{name:'Save PR',exact:true}).click();

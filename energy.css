@@ -462,3 +462,36 @@ body.dark .decision-open-hint { color:#a5b4fc; }
  #panel-coach > .section-tabs { margin-bottom:.1rem; }
  #panel-coach > .section-tabs + p { display:none; }
 }
+
+/* v2.6.2: compact, searchable Progress records without changing saved PRs. */
+.progress-overview-compact { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.7rem; }
+.progress-overview-compact .progress-overview-card { padding:1rem; }
+.progress-quick-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin:.75rem 0 1rem; }
+.progress-quick-actions button { min-height:44px; }
+.pr-entry > summary { cursor:pointer; min-height:44px; display:flex; flex-wrap:wrap; align-items:center; gap:.7rem; font-weight:700; }
+.pr-entry > summary .more-hint { font-weight:400; }
+.pr-entry[open] > summary { margin-bottom:1rem; }
+.pr-search { width:100%; margin-bottom:.4rem; }
+.record-list { display:flex; flex-direction:column; gap:.55rem; }
+.record-list .pr-record { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.75rem .9rem; border:1px solid var(--line); border-left:3px solid var(--brand); border-radius:.8rem; min-width:0; }
+.pr-record-main { min-width:0; flex:1; overflow-wrap:anywhere; }
+.record-list .pr-record-name { display:block; font-size:1rem; line-height:1.3; }
+.pr-record-performance { font-size:.85rem; margin:.3rem 0 .15rem; }
+.pr-record-meta { font-size:.75rem; color:var(--muted); }
+.pr-record-actions { position:relative; flex:none; align-self:flex-start; }
+.pr-record-actions > summary { display:grid; place-items:center; cursor:pointer; min-width:44px; min-height:44px; border-radius:.6rem; border:1px solid var(--line); list-style:none; font-size:1.25rem; line-height:1; }
+.pr-record-actions > summary::-webkit-details-marker { display:none; }
+.pr-record-actions[open] > summary { background:var(--surface); }
+.pr-record-menu { position:absolute; z-index:5; right:0; top:calc(100% + .3rem); padding:.55rem; border:1px solid var(--line); border-radius:.65rem; background:var(--surface); box-shadow:0 8px 24px #0003; min-width:150px; }
+.pr-record-menu button { min-height:44px; width:100%; }
+@media(max-width:480px) {
+ .progress-overview-compact .progress-overview-card { padding:.8rem; }
+ .progress-overview-compact .progress-overview-card > b { font-size:1rem; }
+ .pr-record-separator { display:none; }
+ .pr-record-performance { line-height:1.4; }
+}
+
+/* Keep the Progress introduction brief so records appear sooner on phones. */
+#panel-prs .measure-hero { padding:1.1rem 1.3rem; }
+#panel-prs .measure-hero h1 { font-size:clamp(1.4rem,4.8vw,2rem); line-height:1.15; margin:.3rem 0; }
+#panel-prs .measure-hero p:not(.measure-eyebrow) { font-size:.84rem; line-height:1.4; }

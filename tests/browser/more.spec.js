@@ -16,9 +16,10 @@ test('Calendar month controls and keyboard day selection',async({page})=>{
 });
 test('PR entry and record cards remain usable',async({page})=>{
  await page.evaluate(()=>showTab('prs'));
+ await page.locator('#pr-entry > summary').click();
  await page.locator('#pr-exercise').fill('Bench Press');await page.locator('#pr-weight').fill('100');await page.getByRole('button',{name:'Save PR',exact:true}).click();
  await expect(page.locator('#pr-list')).toContainText('Bench Press');
- page.once('dialog',d=>d.accept());await page.locator('#pr-list').getByRole('button',{name:'Delete'}).click();await expect(page.locator('#pr-list')).toContainText('No personal records');
+ page.once('dialog',d=>d.accept());await page.locator('#pr-list .pr-record-actions summary').click();await page.locator('#pr-list').getByRole('button',{name:'Delete record'}).click();await expect(page.locator('#pr-list')).toContainText('No personal records');
 });
 test('Photo journal comparison and safe notes',async({page})=>{
  await page.evaluate(()=>{data.progressPhotos=[{id:1,date:'2026-09-01',tag:'front',note:'<img src=x> Check-in',dataUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6qS8AAAAASUVORK5CYII='}];showTab('photos');});

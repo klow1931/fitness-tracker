@@ -1,3 +1,11 @@
+# v2.6.2 — Compact Progress & Records
+
+- Reduce Progress overview to two compact summary cards with body-progress quick actions.
+- Collapse Add PR and search the record book without changing saved records.
+- Distinguish an actual single from a calculated estimated 1RM in compact rows.
+- Place Delete behind a per-record actions menu and retain confirmation.
+- Add mobile browser regression coverage; bump app version and offline cache.
+
 # v2.6.1 — Focused training experience
 
 - Make Home action-first: start/continue workout, view plan, compact training summary.

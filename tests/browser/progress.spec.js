@@ -59,3 +59,33 @@ test('New lifter dashboard avoids premature fatigue and plateau signals and agre
  });
  await expect(page.locator('#training-intelligence-lifts')).toContainText('possible plateau');
 });
+
+test('Progress record book searches compact rows and hides destructive action',async({page})=>{
+ await page.evaluate(()=>{
+  data.prs=[
+   {id:'bench-one',exercise:'Competition Bench Press',weight:120,reps:1,date:'2026-01-02',estimated1RM:120},
+   {id:'squat-three',exercise:'Competition Back Squat',weight:150,reps:3,date:'2026-01-01',estimated1RM:165}
+  ];showTab('prs');renderPRs();
+ });
+ await expect(page.locator('#progress-workouts-count')).toContainText('sessions');
+ await expect(page.locator('#progress-pr-count')).toHaveText('2 records');
+ await expect(page.locator('#pr-entry')).not.toHaveAttribute('open','');
+ await expect(page.locator('#pr-list .pr-record')).toHaveCount(2);
+ await expect(page.locator('#pr-list')).toContainText('Actual single');
+ await expect(page.locator('#pr-list')).toContainText('Multi-rep record');
+ await expect(page.locator('#pr-list')).toContainText('Est. 1RM');
+ await expect(page.locator('#pr-list .btn-danger').first()).not.toBeVisible();
+ await page.locator('#pr-search').fill('BENCH');
+ await expect(page.locator('#pr-list .pr-record')).toHaveCount(1);
+ await expect(page.locator('#pr-search-count')).toHaveText('1 of 2 records');
+ await expect(page.locator('#pr-list')).toContainText('Competition Bench Press');
+ await page.locator('#pr-list .pr-record-actions summary').click();
+ await expect(page.locator('#pr-list .btn-danger')).toBeVisible();
+ await page.locator('#pr-search').fill('not here');
+ await expect(page.locator('#pr-list')).toContainText('No records match');
+ await page.locator('#pr-search').fill('');
+ await expect(page.locator('#pr-list .pr-record')).toHaveCount(2);
+ await page.locator('#pr-entry > summary').click();
+ await expect(page.locator('#pr-exercise')).toBeVisible();
+ expect(await page.evaluate(()=>data.prs.map(p=>p.id))).toEqual(['bench-one','squat-three']);
+});

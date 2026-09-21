@@ -228,27 +228,41 @@
 
     function renderPRs() {
       const el = document.getElementById('pr-list');
+      if (!el) return;
       const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);const cutoffStr=cutoff.toISOString().slice(0,10);
       const recent=(data.workouts||[]).filter(w=>w.date>=cutoffStr).sort((a,b)=>a.date.localeCompare(b.date));
       const workoutsCount=document.getElementById('progress-workouts-count'),latestSession=document.getElementById('progress-latest-session'),prCount=document.getElementById('progress-pr-count');
       if(workoutsCount)workoutsCount.textContent=recent.length+' session'+(recent.length===1?'':'s');
       if(latestSession)latestSession.textContent=recent.length?'Latest: '+formatDate(recent.at(-1).date):'No recent training yet';
-      if(prCount)prCount.textContent=(data.prs||[]).length+' record'+((data.prs||[]).length===1?'':'s');
-      if (!data.prs.length) {
+      const records=data.prs||[],query=(document.getElementById('pr-search')?.value||'').trim().toLocaleLowerCase();
+      if(prCount)prCount.textContent=records.length+' record'+(records.length===1?'':'s');
+      const matches=query?records.filter(p=>String(p.exercise||'').toLocaleLowerCase().includes(query)):records;
+      const count=document.getElementById('pr-search-count');
+      if(count)count.textContent=query?matches.length+' of '+records.length+' records':records.length+' saved record'+(records.length===1?'':'s');
+      if (!records.length) {
         el.innerHTML = '<p class="text-slate-500">No personal records yet. Log workouts or add them manually.</p>';
         return;
       }
-      el.innerHTML = data.prs.map(p => `
-        <div class="flex justify-between items-center border border-slate-200 rounded-lg px-4 py-3">
-          <div>
-            <span class="font-medium">${escapeHtml(p.exercise)}</span>
-            <span class="text-slate-600 ml-2">${toDisplay(p.weight)} ${unitLabel()} × ${p.reps}</span>
-            <span class="text-slate-400 text-sm ml-2">(est. 1RM: ${toDisplay(p.estimated1RM)} ${unitLabel()})</span>
-            <div class="text-xs text-slate-500">${formatDate(p.date)}</div>
-          </div>
-          <button data-pr-id="${escapeHtml(p.id)}" onclick="deletePR(this.dataset.prId)" class="btn-danger">Delete</button>
-        </div>
-      `).join('');
+      if (!matches.length) {
+        el.innerHTML = '<p class="text-slate-500">No records match your search. Try another exercise name.</p>';
+        return;
+      }
+      el.innerHTML = matches.map(p => {
+        const single=Number(p.reps)===1;
+        const actual=toDisplay(p.weight)+' '+unitLabel()+' × '+escapeHtml(p.reps);
+        const estimate=Number.isFinite(Number(p.estimated1RM))?'Est. 1RM '+toDisplay(p.estimated1RM)+' '+unitLabel():'No estimated 1RM';
+        return `
+          <article class="pr-record">
+            <div class="pr-record-main">
+              <b class="pr-record-name">${escapeHtml(p.exercise)}</b>
+              <p class="pr-record-performance">${actual}<span class="pr-record-separator"> · </span>${single?'Actual single':'Multi-rep record'}</p>
+              <p class="pr-record-meta">${estimate} <span aria-hidden="true">·</span> ${formatDate(p.date)}</p>
+            </div>
+            <details class="pr-record-actions"><summary aria-label="Actions for ${escapeHtml(p.exercise)}">⋯</summary>
+              <div class="pr-record-menu"><button type="button" data-pr-id="${escapeHtml(p.id)}" onclick="deletePR(this.dataset.prId)" class="btn-danger text-sm">Delete record</button></div>
+            </details>
+          </article>`;
+      }).join('');
     }
 
     // ========== Dashboard & Charts ==========
