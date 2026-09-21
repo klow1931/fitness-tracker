@@ -15,18 +15,18 @@ test.beforeEach(async({page})=>{
  });
 });
 test('confirmed roles create separated evidence without enabling decisions',async({page})=>{
- const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
- await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.6 Decision Center');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
+ const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
+ await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('v2.6.1 Decisions');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
 });
 test('historical as-recorded replay withholds later block and mapping knowledge',async({page})=>{
- const card=page.locator('#decision-readiness-card');await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
+ const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
  await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');await page.locator('#readiness-as-recorded').check();await expect(card).toContainText('Historical as-recorded replay');await expect(card).toContainText('No active block on this date');await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Competition lift not mapped');
 });
 
 test('live decisions record athlete feedback while historical replay stays read-only',async({page})=>{
  const card=page.locator('#decision-readiness-card');
- await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
+ await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
  await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();
  await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
  const squat=card.locator('.decision-answer-first .readiness-lift').filter({hasText:'Squat'}).first();
@@ -54,6 +54,7 @@ test('Decision Performance attributes one follow-up once and filters lifts',asyn
   data.decisionEvents=ev;invalidateViews();window.renderDecisionReadiness?.();
  });
  const card=page.locator('#decision-readiness-card');
+ await card.locator('.decision-review-tools > summary').click();
  const panel=card.locator('.decision-performance');await expect(panel).toBeVisible();await panel.locator('summary').first().click();
  await expect(panel).toContainText('Unique follow-ups');
  await expect(panel).toContainText('1 / 2');
@@ -101,4 +102,20 @@ test('v2.6 shows explicit testing intent without pretending a general block is s
  await squat.locator('.decision-block-context > summary').click();
  await expect(squat).toContainText('No block training max is recorded');
  await expect(squat).toContainText('more specific than the general block type');
+});
+
+test('v2.6.1 puts all three recommendations ahead of diagnostic tools',async({page})=>{
+ const card=page.locator('#decision-readiness-card');
+ await expect(card.locator('.decision-lift')).toHaveCount(3);
+ await expect(card.locator('.decision-review-tools')).not.toHaveAttribute('open','');
+ await expect(card.locator('.decision-date-tools')).not.toBeVisible();
+ await expect(card.locator('.decision-answer-first')).toBeVisible();
+ const order=await card.evaluate(node=>[...node.querySelectorAll('.decision-answer-first,.decision-review-tools')].map(el=>el.classList.contains('decision-answer-first')?'lifts':'tools'));
+ expect(order).toEqual(['lifts','tools']);
+ const squat=card.locator('[data-decision-lift="squat"]');
+ await expect(squat.locator('.decision-unlock')).toBeVisible();
+ await squat.locator('summary.decision-lift-summary').click();
+ await expect(squat.locator('.decision-unlock-detail')).toBeVisible();
+ await card.locator('.decision-review-tools > summary').click();
+ await expect(card.locator('.decision-date-tools')).toBeVisible();
 });
