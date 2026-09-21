@@ -1,8 +1,8 @@
 # Loadnote
 
-**v2.6.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.6.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
-## v2.6.1 — Focused training experience
+## v2.6.2 — Focused training experience
 
 - Home starts with the workout action, an optional plan preview and a concise 30-day training summary; session/status detail remains expandable.
 - Device connection and export controls are collapsed behind a compact Device & backup control; the backup reminder remains visible but expands for its explanation and actions.
