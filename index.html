@@ -18,11 +18,15 @@
   <link rel="stylesheet" href="energy.css" />
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
-<div class="device-status" aria-label="Device and connection status">
-  <span id="device-save-status" role="status">Data stays on this device</span>
-  <span id="connection-status" role="status"></span>
-  <button type="button" class="btn-secondary" onclick="exportData()">Export backup</button>
-</div>
+<details id="device-status-details" class="device-status" aria-label="Device and connection status">
+  <summary>Device &amp; backup <span aria-hidden="true">⌄</span></summary>
+  <div class="device-status-content">
+    <span id="device-save-status" role="status">Data stays on this device</span>
+    <span id="connection-status" role="status"></span>
+    <button type="button" class="btn-secondary" onclick="exportData()">Export backup</button>
+    <button type="button" class="btn-secondary" onclick="showTab('tools');document.getElementById('tools-data')?.scrollIntoView({block:'start'})">Manage data</button>
+  </div>
+</details>
 <div id="app-update" class="device-status" hidden>
   <span id="app-update-status" role="status">Update available. Your workout can wait until you are ready.</span>
   <button type="button" id="apply-app-update" class="btn-secondary">Save and update</button>
@@ -41,13 +45,14 @@
     </div>
   </div>
   <div id="toast-host" class="toast-host" aria-live="polite"></div>
-  <div id="backup-banner" class="hidden backup-banner">
-    <span id="backup-banner-text">You haven’t exported a backup recently.</span>
+  <details id="backup-banner" class="hidden backup-banner">
+    <summary>Backup recommended <span aria-hidden="true">⌄</span></summary>
+    <div class="backup-banner-content"><span id="backup-banner-text">You haven’t exported a backup recently.</span>
     <div class="flex gap-2">
       <button onclick="exportData()" class="btn-primary text-sm py-1 px-3">Export JSON</button>
       <button onclick="dismissBackupBanner()" class="btn-secondary text-sm py-1 px-3">Dismiss</button>
-    </div>
-  </div>
+    </div></div>
+  </details>
   <div class="max-w-6xl mx-auto px-4 py-6 app-shell">
     <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -110,6 +115,7 @@
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
       <div id="athlete-home-command" class="card v1-command-card"></div>
+      <details id="home-week-plan" class="card home-week-plan"><summary><b>Today's plan &amp; weekly rhythm</b><small>Preview your plan and training calendar</small></summary>
       <div id="week-plan" class="card"></div>
       <div class="card home-week">
         <div class="home-week-heading"><h2>This week's rhythm</h2><span>MON — SUN</span></div>
@@ -117,6 +123,7 @@
         <div id="home-week-days" aria-label="This week's training"></div>
         <p class="home-week-key">✓ Session logged · — Recovery · Tap a day to view your calendar</p>
       </div>
+      </details>
       <!-- Shown when the user has no workouts/nutrition yet -->
       <div id="home-empty" class="card home-empty-card hidden">
         <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-1">Welcome to Loadnote</p>
@@ -882,13 +889,7 @@
       </div>
       <p class="text-xs text-slate-500 -mt-3">Start with <b>Decisions</b>. Open deeper coaching tools only when you need them.</p>
 
-      <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
-        <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
-        <p class="text-xs text-slate-600">
-          Loadnote's Decisions, Insights, chat, deload suggestions, and generated programs are <b>training-support tools, not medical care</b>. Recommendations are based on the training data and context available in the app and may be incomplete or wrong.
-          They do not diagnose injuries, prescribe treatment, or replace a qualified coach or healthcare professional. Use your own judgment, especially when pain, illness, injury, medication, or a health condition could affect training.
-        </p>
-      </details>
+
 
       <div class="sub-panel hidden" data-panel="coach" data-sub="co-insights">
       <!-- v0.5 Proactive Coach -->
@@ -1004,6 +1005,13 @@
 
       <div class="sub-panel" data-panel="coach" data-sub="co-programs">
       <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
+      <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
+        <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
+        <p class="text-xs text-slate-600">
+          Loadnote's Decisions, Insights, chat, deload suggestions, and generated programs are <b>training-support tools, not medical care</b>. Recommendations are based on the training data and context available in the app and may be incomplete or wrong.
+          They do not diagnose injuries, prescribe treatment, or replace a qualified coach or healthcare professional. Use your own judgment, especially when pain, illness, injury, medication, or a health condition could affect training.
+        </p>
+      </details>
       <details class="card coach-programming-details"><summary><span><b>Programming &amp; athlete setup</b><small>Profile, program generator and your program library</small></span></summary><div class="grid md:grid-cols-1 gap-6 coach-programming-content">
         <!-- v0.7 Athlete Profile -->
         <div class="card" id="athlete-profile-card">
