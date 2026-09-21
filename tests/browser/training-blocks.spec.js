@@ -20,6 +20,7 @@ test('Block CRUD preserves historical workouts, draft and lb benchmarks offline'
 test('Backup roundtrip, overlap validation, old imports and failed writes',async({page})=>{
  await create(page);await page.getByRole('button',{name:'Save block',exact:true}).click();await expect(page.locator('#block-dialog')).not.toBeVisible();
  const records=await page.evaluate(()=>JSON.stringify(data.trainingBlocks));
+ await page.locator('#device-status-details > summary').click();
  const downloaded=page.waitForEvent('download');await page.getByRole('button',{name:'Export backup',exact:true}).click();const backup=fs.readFileSync(await (await downloaded).path(),'utf8');expect(JSON.stringify(JSON.parse(backup).trainingBlocks)).toBe(records);
  await create(page,'Conflicting');await page.getByRole('button',{name:'Save block',exact:true}).click();await expect(page.locator('#block-error')).toContainText('overlap');await page.locator('#block-cancel').click();
  await page.locator('[data-block-edit]').click();await page.locator('#block-name').fill('Failed edit');await page.evaluate(()=>{window.originalPersist=persistNow;persistNow=async()=>{throw Error('Storage full');};});await page.getByRole('button',{name:'Save block',exact:true}).click();await expect(page.locator('#block-error')).toContainText('Storage full');expect(await page.evaluate(()=>JSON.stringify(data.trainingBlocks))).toBe(records);await page.locator('#block-cancel').click();await page.evaluate(()=>{persistNow=window.originalPersist;});
