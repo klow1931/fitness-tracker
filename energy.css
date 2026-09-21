@@ -418,3 +418,47 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 .decision-block-context { margin:.5rem 0 .8rem; }
 .decision-block-context > summary { cursor:pointer; font-size:.82rem; }
 .decision-block-context p { font-size:.78rem; margin:.5rem 0; line-height:1.5; overflow-wrap:anywhere; }
+
+/* v2.6.1 — action-first home, compact backup and recommendation-first Decisions. */
+#device-status-details { display:block; padding:.45rem max(1rem,env(safe-area-inset-left)); }
+#device-status-details > summary { display:list-item; width:max-content; min-height:36px; cursor:pointer; font-size:.76rem; font-weight:700; }
+#device-status-details:not([open]) .device-status-content { display:none; }
+.device-status-content { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; padding:.55rem 0; }
+#backup-banner { padding:.55rem 1rem; }
+#backup-banner > summary { cursor:pointer; font-size:.85rem; font-weight:750; min-height:36px; }
+.backup-banner-content { display:flex; flex-wrap:wrap; align-items:center; gap:.7rem; padding:.55rem 0 .2rem; }
+#backup-banner:not([open]) .backup-banner-content { display:none; }
+#backup-banner.hidden { display:none!important; }
+#athlete-home-command { padding:clamp(1rem,3vw,1.55rem); }
+#athlete-home-command .v1-command-title { font-size:clamp(1.6rem,5vw,2.35rem); max-width:none; margin:.4rem 0 .7rem; }
+#athlete-home-command .home-workout-actions { margin-top:.95rem; gap:.55rem; }
+#athlete-home-command .home-workout-actions button { min-height:48px; }
+.focused-home-status { margin:.8rem 0 0; color:#dce5ff; font-size:.8rem; }
+.focused-home-insights { margin-top:.8rem; border-top:1px solid #a5b4fc50; padding-top:.55rem; }
+.focused-home-insights > summary { cursor:pointer; font-size:.8rem; min-height:38px; }
+.focused-home-insights .v1-status-panel { margin-top:.55rem; }
+.home-week-plan { scroll-margin-top:4rem; }
+.home-week-plan > summary { cursor:pointer; display:flex; flex-direction:column; gap:.1rem; min-height:44px; }
+.home-week-plan > summary small { font-size:.72rem; color:var(--muted); }
+.home-week-plan > #week-plan { margin:.7rem 0; }
+.home-week-plan > .home-week { margin:0; }
+.decision-title { margin:0 0 .45rem; }
+.decision-title h2 { font-size:clamp(1.1rem,4vw,1.4rem); }
+.decision-answer-first { margin:.35rem 0 .75rem; }
+.decision-review-tools > summary { font-weight:750; min-height:44px; cursor:pointer; }
+.decision-review-tools > details { margin:.7rem 0; }
+.decision-reason { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:.82rem; }
+.decision-full-reason { font-size:.84rem; margin:.4rem 0 .65rem; }
+.decision-unlock { font-size:.75rem; line-height:1.4; margin:.3rem 0 .55rem; color:var(--muted); }
+.decision-unlock-detail { font-size:.8rem; margin:.5rem 0; }
+@media(max-width:640px) {
+ .app-shell > header { gap:.5rem; margin-bottom:.7rem; }
+ .app-shell > header h1 { font-size:1.55rem; }
+ .app-shell > header p { display:none; }
+ .app-shell > header > div:nth-child(2) { gap:.4rem; }
+ #athlete-home-command .home-workout-actions { display:grid; grid-template-columns:minmax(0,1fr); }
+ #athlete-home-command .home-workout-actions button { width:100%; }
+ #panel-dashboard { gap:.8rem; }
+ #panel-coach > .section-tabs { margin-bottom:.1rem; }
+ #panel-coach > .section-tabs + p { display:none; }
+}
