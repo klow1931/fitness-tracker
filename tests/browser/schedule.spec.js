@@ -1,7 +1,7 @@
 const {test,expect}=require('playwright/test');
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(()=>{data.templates=[{id:'t',name:'Squat day',exercises:[{name:'Squat',type:'strength',sets:[{weight:100,reps:5,rpe:7}]}]}];showTab('dashboard');});});
-async function schedule(page){await page.locator('#week-plan [data-new-session]').click();await page.locator('#schedule-name').fill('Planned squat');await page.locator('#schedule-source').selectOption('template:0');await page.getByRole('button',{name:'Save schedule',exact:true}).click();await expect(page.locator('#schedule-dialog')).not.toBeVisible();}
+async function schedule(page){await page.locator('#home-week-plan > summary').click();await page.locator('#week-plan [data-new-session]').click();await page.locator('#schedule-name').fill('Planned squat');await page.locator('#schedule-source').selectOption('template:0');await page.getByRole('button',{name:'Save schedule',exact:true}).click();await expect(page.locator('#schedule-dialog')).not.toBeVisible();}
 test('offline planned draft survives reload and completes only after saving',async({page,context})=>{
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await schedule(page);
  await page.locator('#week-plan [data-start]').click();await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');

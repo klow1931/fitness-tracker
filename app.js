@@ -386,22 +386,26 @@
         const load = ex.weight != null ? `${escapeHtml(String(toDisplay(ex.weight)))} ${unitLabel()}` : 'Auto';
         return `<div class="v1-session-row"><span>${escapeHtml(ex.name)}</span><b>${load} · ${ex.sets} × ${ex.reps}${ex.targetRPE ? ` · RPE ${ex.targetRPE}` : ''}</b></div>`;
       }).join('');
-      const startButton = session ? `<button class="btn-primary text-sm" onclick="startNextAdaptiveWorkout()">Start today's workout</button>` : `<button class="btn-primary text-sm" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">Open workout logger</button><button class="btn-secondary text-sm" onclick="showTab('coach'); showSubTab('coach','co-programs')">Build a program</button>`;
+      const startButton = session ? `<button class="btn-primary text-sm" onclick="startNextAdaptiveWorkout()">Start today's workout</button>` : `<button class="btn-primary text-sm" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">Start / continue workout</button>`;
+      const viewPlan = `<button class="btn-secondary text-sm" onclick="document.getElementById('home-week-plan').open=true;document.getElementById('home-week-plan').scrollIntoView({block:'start',behavior:'smooth'})">View today's plan</button>`;
+      const count30=(data.workouts||[]).filter(w=>w.date>=new Date(Date.now()-30*86400000).toISOString().slice(0,10)).length;
+      const trendLabel=trend==='improving'?'Trending up':trend==='declining'?'Needs attention':trend==='stable'?'Stable':'Not enough data';
       el.innerHTML = `
-        <div class="v1-command-grid">
-          <div>
-            <span class="eyebrow">TRAIN. LOG. BUILD.</span>
-            <h2 class="v1-command-title">${active ? escapeHtml(session?.dayName || 'Next session') : 'Your next session starts here.'}</h2>
-            <p class="text-sm text-slate-600 mt-1">${active ? `Week ${session?.week || 1} · Block ${session?.blockIndex || 1} · ${escapeHtml(profile?.goal || 'strength')}` : 'Pick up your log, find your rhythm, and make each set count.'}</p>
-            ${exerciseRows ? `<div class="v1-session-list mt-4">${exerciseRows}</div>` : `<p class="v1-empty-note mt-4">Train your way, or build a program for a guided session.</p>`}
-            <div class="home-workout-actions">${startButton}</div>
-          </div>
-          <div class="v1-status-panel">
-            <div class="v1-status-item"><span>Training status</span><b>${statusLabel}</b></div>
-            <div class="v1-status-item"><span>Performance</span><b>${trend === 'improving' ? 'Trending up' : trend === 'declining' ? 'Needs attention' : trend === 'stable' ? 'Stable' : 'Not enough data'}</b></div>
-            <div class="v1-status-item"><span>30-day workouts</span><b>${data.workouts.filter(w => w.date >= new Date(Date.now()-30*86400000).toISOString().slice(0,10)).length}</b></div>
-            ${fatigue?.recommendation ? `<p class="text-xs text-slate-500 mt-3">${escapeHtml(fatigue.recommendation)}</p>` : ''}
-          </div>
+        <div class="focused-home">
+          <span class="eyebrow">YOUR TRAINING</span>
+          <h2 class="v1-command-title">${active ? escapeHtml(session?.dayName || 'Next session') : 'Ready to train?'}</h2>
+          ${active ? `<p class="text-sm text-slate-600 mt-1">Week ${session?.week || 1} · Block ${session?.blockIndex || 1} · ${escapeHtml(profile?.goal || 'strength')}</p>` : ''}
+          <div class="home-workout-actions">${startButton}${viewPlan}</div>
+          <p class="focused-home-status" aria-label="Training summary">${count30} workouts in 30 days <span aria-hidden="true">·</span> ${escapeHtml(trendLabel)}</p>
+          <details class="focused-home-insights"><summary>Training status &amp; session preview</summary>
+            ${exerciseRows ? `<div class="v1-session-list mt-4">${exerciseRows}</div>` : ''}
+            <div class="v1-status-panel">
+              <div class="v1-status-item"><span>Training status</span><b>${statusLabel}</b></div>
+              <div class="v1-status-item"><span>Performance</span><b>${trendLabel}</b></div>
+              <div class="v1-status-item"><span>30-day workouts</span><b>${count30}</b></div>
+              ${fatigue?.recommendation ? `<p class="text-xs text-slate-500 mt-3">${escapeHtml(fatigue.recommendation)}</p>` : ''}
+            </div>
+          </details>
         </div>`;
     }
 

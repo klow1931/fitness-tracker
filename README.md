@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.6.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.6.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.6.1 — Focused training experience
+
+- Home starts with the workout action, an optional plan preview and a concise 30-day training summary; session/status detail remains expandable.
+- Device connection and export controls are collapsed behind a compact Device & backup control; the backup reminder remains visible but expands for its explanation and actions.
+- Decision Center shows Squat, Bench and Deadlift recommendations first; historical review, readiness, mapping and outcome reports are grouped under Decision settings & evidence.
+- Each withheld decision displays the actual recorded evidence blocker and next step; the engine's evidence requirements and historical attribution remain unchanged.
+- Training safety remains available on the Decisions screen. No data migration or coaching policy change.
 
 ## v2.6.0 — Block-aware decisions (Part 1)
 

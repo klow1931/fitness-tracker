@@ -1,3 +1,13 @@
+# v2.6.1 — Focused training experience
+
+- Make Home action-first: start/continue workout, view plan, compact training summary.
+- Collapse training status/session preview and weekly plan without removing their functionality.
+- Move device connection/export controls and backup reminder actions behind compact disclosures.
+- Show squat/bench/deadlift decisions before analysis tools; group history, mappings, readiness and feedback in Decision settings & evidence.
+- Surface missing evidence and next step per withheld lift; preserve strict decision rules and safety guidance.
+- Add browser coverage for the default mobile-first organization and existing expanded flows.
+- No workout, block or feedback schema changes.
+
 # v2.6.0 — Block-aware decision intelligence (Part 1)
 
 - Interpret explicitly saved phase and progression intent; show provenance beside compact lift decisions.

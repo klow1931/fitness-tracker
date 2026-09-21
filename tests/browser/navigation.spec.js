@@ -107,6 +107,8 @@ test('primary navigation and Home hide secondary tools without removing them',as
  expect(await page.locator('.desktop-tabs > button').allTextContents()).toEqual(['Home','Train','Progress','Decisions']);
  await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
  await expect(page.locator('#athlete-home-command')).toBeVisible();
+ await expect(page.locator('#home-week-plan')).not.toHaveAttribute('open','');
+ await page.locator('#athlete-home-command').getByRole('button',{name:"View today's plan"}).click();
  await expect(page.locator('#week-plan')).toBeVisible();
  await page.locator('#home-details > summary').click();
  await expect(page.locator('.home-details-content')).toBeVisible();
@@ -134,4 +136,18 @@ test('mobile More groups secondary destinations',async({page})=>{
  await page.locator('.mobile-more-group').first().getByRole('button',{name:/Calendar/}).click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
  await expect(page.locator('#mobile-more-sheet')).toBeHidden();
+});
+
+test('focused Home and backup are compact until requested',async({page})=>{
+ await expect(page.locator('#device-status-details')).not.toHaveAttribute('open','');
+ await expect(page.locator('#athlete-home-command')).toContainText('Ready to train?');
+ await expect(page.locator('#athlete-home-command')).toContainText('workouts in 30 days');
+ await expect(page.locator('#athlete-home-command .focused-home-insights')).not.toHaveAttribute('open','');
+ await expect(page.locator('#home-week-plan')).not.toHaveAttribute('open','');
+ await page.locator('#athlete-home-command').getByRole('button',{name:'Start / continue workout'}).click();
+ await expect(page.locator('#panel-workouts')).toBeVisible();
+ await page.evaluate(()=>showTab('dashboard'));
+ await page.locator('#device-status-details > summary').click();
+ await expect(page.locator('#device-save-status')).toBeVisible();
+ await expect(page.locator('#device-status-details').getByRole('button',{name:'Export backup'})).toBeVisible();
 });
