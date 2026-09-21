@@ -10,13 +10,14 @@ test('Home logger shortcut preserves an unfinished session',async({page})=>{
  await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});
  await page.locator('#exercise-rows .ex-name').first().fill('Bench Press');
  await page.evaluate(()=>showTab('dashboard'));
- await page.getByRole('button',{name:'Open workout logger',exact:true}).click();
+ await page.getByRole('button',{name:'Start / continue workout',exact:true}).click();
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Bench Press');
 });
 test('Weekly rhythm reflects saved sessions and opens their calendar day',async({page})=>{
  await page.evaluate(()=>{const key=homeActivityWeek([],[]).days.find(d=>d.today).date;data.workouts=[{id:'rhythm',date:key,exercises:[]}];renderHomeActivity();});
  await expect(page.locator('#home-week-summary')).toContainText('1 session logged');
  await expect(page.locator('#home-week-days button')).toHaveCount(7);
+ await page.locator('#home-week-plan > summary').click();
  await page.locator('#home-week-days [aria-current="date"]').click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
  await expect(page.locator('#calendar-grid [aria-pressed="true"]')).toHaveCount(1);
