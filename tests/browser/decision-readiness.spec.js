@@ -20,6 +20,7 @@ test('confirmed roles create separated evidence without enabling decisions',asyn
 });
 test('historical as-recorded replay withholds later block and mapping knowledge',async({page})=>{
  const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
+ await card.locator('.decision-review-tools > summary').click();
  await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');await page.locator('#readiness-as-recorded').check();await expect(card).toContainText('Historical as-recorded replay');await expect(card).toContainText('No active block on this date');await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Competition lift not mapped');
 });
@@ -38,6 +39,7 @@ test('live decisions record athlete feedback while historical replay stays read-
  await expect(squat).toContainText('Accepted');
  const saved=await page.evaluate(()=>data.decisionEvents[0]);
  expect(saved.response).toBe('accept');expect(saved.snapshot.lift).toBe('squat');
+ await card.locator('.decision-review-tools > summary').click();
  await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');
  await expect(card).toContainText('Athlete feedback is recorded only for today');
