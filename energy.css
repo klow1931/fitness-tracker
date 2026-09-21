@@ -490,3 +490,8 @@ body.dark .decision-open-hint { color:#a5b4fc; }
  .pr-record-separator { display:none; }
  .pr-record-performance { line-height:1.4; }
 }
+
+/* Keep the Progress introduction brief so records appear sooner on phones. */
+#panel-prs .measure-hero { padding:1.1rem 1.3rem; }
+#panel-prs .measure-hero h1 { font-size:clamp(1.4rem,4.8vw,2rem); line-height:1.15; margin:.3rem 0; }
+#panel-prs .measure-hero p:not(.measure-eyebrow) { font-size:.84rem; line-height:1.4; }
