@@ -1,3 +1,10 @@
+# v2.8.1 — Competition lift names
+
+- Recognize competition, comp and meet prefixes plus sumo/conventional deadlift names in exercise-role suggestions.
+- Explain custom-name mapping and retain athlete confirmation; no automatic history renaming or identity merging.
+- Keep variations separate and retain chronological mapping history for backtesting.
+- Add custom-name mapping, variation exclusion and desktop/mobile regression tests.
+
 # v2.8.0 — Plan timing and session provenance
 
 - Add explicit today-only session starts; opening a logger, restoring a draft or editing history never manufactures a start.

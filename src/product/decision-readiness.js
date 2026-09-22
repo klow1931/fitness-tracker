@@ -49,9 +49,12 @@
   }
   function suggestion(label){
     const name=text(label,160).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-    if(['squat','back squat','barbell squat','competition squat'].includes(name))return {role:'competition',competitionLift:'squat'};
-    if(['bench','bench press','barbell bench','barbell bench press','competition bench'].includes(name))return {role:'competition',competitionLift:'bench'};
-    if(['deadlift','barbell deadlift','competition deadlift'].includes(name))return {role:'competition',competitionLift:'deadlift'};
+    // Exact, bounded names only: competition prefixes must not hide variations.
+    // These are suggestions, never automatic identity merges or saved mappings.
+    const base=name.replace(/^(competition|comp|meet) /,'');
+    if(/^(?:(?:barbell )?back |barbell )?squat$/.test(base))return {role:'competition',competitionLift:'squat'};
+    if(/^(?:barbell )?bench(?: press)?$/.test(base))return {role:'competition',competitionLift:'bench'};
+    if(/^(?:barbell )?(?:(?:sumo|conventional) )?deadlift$/.test(base))return {role:'competition',competitionLift:'deadlift'};
     if(/(safety bar|ssb|front squat|pause.*squat|box squat)/.test(name))return {role:'close-variation',competitionLift:'squat'};
     if(/(close grip|incline|spoto|pause.*bench|board press)/.test(name))return {role:'close-variation',competitionLift:'bench'};
     if(/(romanian|rdl|deficit|pause.*deadlift|block pull|rack pull)/.test(name))return {role:'close-variation',competitionLift:'deadlift'};
