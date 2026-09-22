@@ -1,3 +1,11 @@
+# v2.9.0 — Athlete goals and weekly planning
+
+- Add revisioned athlete goals with sport, optional event/date and weight class, available training days, session time, equipment, experience and separate aspirational lift targets stored in kg.
+- Link goals to existing blocks and scheduled sessions without rewriting workouts. Edit, complete or archive goals explicitly.
+- Extend the home weekly planner with goal-scoped schedule counts, recorded RPE, planned-work coverage and guarded performance trends.
+- Migrate to schema 17 without changing legacy goals or workout history; validate athlete goals on load/import and preserve them in backups/recovery snapshots.
+- Keep this release descriptive: no automatic programming changes, inferred achievement or new non-powerlifting decision rules.
+
 # v2.8.1 — Competition lift names
 
 - Recognize competition, comp and meet prefixes plus sumo/conventional deadlift names in exercise-role suggestions.

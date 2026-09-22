@@ -64,7 +64,7 @@
  }
  function previewImport(current,incoming){
   const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
-  return {workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents)};
+  return {athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents)};
  }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid recovery snapshot time.');const next=clone(target)||{},payload=clone(source)||{};delete payload.recoverySnapshots;
