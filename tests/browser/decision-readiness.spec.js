@@ -25,6 +25,21 @@ test('historical as-recorded replay withholds later block and mapping knowledge'
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');await page.locator('#readiness-as-recorded').check();await expect(card).toContainText('Historical as-recorded replay');await expect(card).toContainText('No active block on this date');await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Competition lift not mapped');
 });
 
+test('competition names can be confirmed without renaming workouts',async({page})=>{
+ await page.evaluate(()=>{
+  const names=['Competition Squat','Competition Bench','Competition Sumo Deadlift'];
+  data.exerciseRoles=[];data.exerciseCatalog=[];data.workouts=names.map((name,i)=>({id:'named-'+i,date:'2026-09-20',exercises:[{name,sets:[{weight:100,reps:5,rpe:8}]}]}));
+  data=LoadnoteIntegrity.normalizeState(data);invalidateViews();window.renderDecisionReadiness();
+ });
+ const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
+ await expect(card).toContainText('Your exercise names can be anything');
+ await page.locator('#apply-role-suggestions').click();expect(await page.evaluate(()=>data.exerciseRoles.length)).toBe(0);
+ await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>LoadnoteReadiness.list(data.exerciseRoles).length)).toBe(3);
+ const result=await page.evaluate(()=>{const s=LoadnoteReadiness.snapshot(data,{asOf:'2026-09-22',retrospective:true});return Object.values(s.lifts).map(l=>[l.competitionExercise,l.metrics.sessions]);});
+ expect(result).toEqual([['Competition Squat',1],['Competition Bench',1],['Competition Sumo Deadlift',1]]);
+ expect(await page.evaluate(()=>data.workouts.map(w=>w.exercises[0].name).sort())).toEqual(['Competition Bench','Competition Squat','Competition Sumo Deadlift']);
+});
+
 test('live decisions record athlete feedback while historical replay stays read-only',async({page})=>{
  const card=page.locator('#decision-readiness-card');
  await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
