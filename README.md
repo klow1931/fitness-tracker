@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.7.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.8.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.8 — Plan timing
+
+Use **Start workout now** to explicitly record the start of today's new session. Plan recaptures become timestamped revisions while the original prescription stays intact. Drafts and backups preserve this optional history; legacy records stay unknown. Same-day original plans can qualify in follow-up comparisons when captured before the recorded start. See [provenance and limits](docs/session-timing.md).
 
 ## v2.7 — Using and reviewing decisions
 

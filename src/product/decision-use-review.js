@@ -1,8 +1,8 @@
 /* v2.7: explicit next steps and observational weekly review; never applies a decision. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./training-blocks'),require('./decision-readiness'),require('./decision-performance'));
- else root.LoadnoteDecisionUseReview=factory(root.LoadnoteBlocks,root.LoadnoteReadiness,root.LoadnoteDecisionPerformance);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Blocks,Readiness,Performance){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./training-blocks'),require('./decision-readiness'),require('./decision-performance'),require('./session-intent'));
+ else root.LoadnoteDecisionUseReview=factory(root.LoadnoteBlocks,root.LoadnoteReadiness,root.LoadnoteDecisionPerformance,root.LoadnoteIntent);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Blocks,Readiness,Performance,Intent){
  'use strict';
  function steps(readiness,decision,block){
   const result=[],add=(id,title,detail,target)=>result.push({id,title,detail,target}),m=readiness?.metrics;
@@ -35,7 +35,7 @@
   const completed=direction(sets(before,id,false),sets(after,id,false));
   let planned=direction(sets(before,id,true),sets(after,id,true));
   const p=after?.sessionIntent?.prescription,prior=before?.sessionIntent?.prescription;
-  if(!p?.capturedAt||!prior?.capturedAt||p.capturedAt<row.updatedAt||p.capturedAt.slice(0,10)>=after.date||prior.capturedAt.slice(0,10)>=before.date)planned={direction:null,reason:'Plan timing unavailable: need baseline and follow-up plans captured before their workout dates, with the follow-up plan captured after the response. Same-day timing is uncertain.'};
+  if(!p?.capturedAt||!prior?.capturedAt||p.capturedAt<row.updatedAt||Intent.planTiming(p,after.date,after.sessionIntent?.timing)!=='before-training'||Intent.planTiming(prior,before.date,before.sessionIntent?.timing)!=='before-training')planned={direction:null,reason:'Plan timing unavailable: need original plans captured before training, with the follow-up plan captured after the response. Same-day plans need an explicit recorded start. Revisions do not replace the original plan.'};
   return {intended:chosen,planned,completed,alignment:!chosen||!completed.direction?'unknown':chosen===completed.direction?'same-direction':'different-direction',note:'Direction agreement is descriptive, not proof that advice was followed or caused performance change. Comparisons use saved sets as of the report date, which may include corrections.'};
  }
  function weekly(state,{asOf}={}){
