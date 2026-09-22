@@ -1,3 +1,11 @@
+# v2.6.3 — Context-aware feedback analysis (Part 2)
+
+- Preserve structured block context in new feedback snapshots; older feedback remains context-unavailable, never retroactively filled.
+- Add lift/identity/phase/strategy/intent cohorts, per-event exclusions and three-follow-up guards on response means.
+- Require baseline and outcome to remain in the same known block context; retain unique attribution and late-response exclusions.
+- Add a manual, read-only historical comparison of current and more cautious progression thresholds on identical dates. No learned thresholds or live rule changes.
+- Keep both tools collapsed inside Decision performance; retain kg storage, existing backups and schema 16.
+
 # v2.6.2 — Compact Progress & Records
 
 - Reduce Progress overview to two compact summary cards with body-progress quick actions.

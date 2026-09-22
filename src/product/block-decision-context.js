@@ -41,7 +41,7 @@
      benchmarks:{trainingMaxes:(block.trainingMaxes||[]).length,known1RMs:(block.known1RMs||[]).length}};
  }
  function contextualize(decision,block){
-   const ctx=interpret(block),next={...decision,blockContext:ctx,signals:[...(decision.signals||[])]};
+   const ctx=interpret(block),next={...decision,blockContext:ctx,trainingContext:block?{version:1,blockId:block.id,blockType:block.blockType,phase:ctx.phase,loadStrategy:block.loadStrategy,progressionIntent:block.progressionIntent,conflicted:ctx.conflicts.length>0}:null,signals:[...(decision.signals||[])]};
    next.signals.push('Block phase: '+ctx.phase+' ('+ctx.basis.join('; ')+').');
    next.signals.push(...ctx.conflicts,...ctx.notes.filter(note=>/coverage|training max|known 1RM/.test(note)));
    if(!decision.decisionAllowed)return next;

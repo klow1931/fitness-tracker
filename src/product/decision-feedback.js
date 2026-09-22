@@ -31,6 +31,7 @@
       nextExposure:text(decision.nextExposure,1200),
       watchNext:text(decision.watchNext,1200),
       evidence:clone((decision.evidence||[]).slice(-3)),
+      trainingContext:clone(decision.trainingContext||null),
       decisionKey:key(decision)
     };
   }
