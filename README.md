@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.6.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.6.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.6.3 — Context-aware feedback
+
+Decision performance includes expandable context-matched observations and a read-only rule comparison. New feedback captures block context; older events stay unknown. Counts and exclusion reasons remain visible, with means withheld below three unique follow-ups per response/context. This is not causal evidence, automatic personalization or a policy change. See [definitions and limitations](docs/context-feedback.md).
 
 ## v2.6.2 — Focused training experience
 

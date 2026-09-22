@@ -1,0 +1,31 @@
+const assert=require('node:assert/strict'),C=require('../src/product/decision-context-analysis'),B=require('../src/product/training-blocks'),F=require('../src/product/decision-feedback'),Context=require('../src/product/block-decision-context'),Engine=require('../src/product/decision-engine');
+const now='2026-01-01T00:00:00.000Z';
+const blocks=B.upsert([],{name:'Return',startDate:'2026-01-01',endDate:'2026-02-28',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp',dataCompleteness:'complete'},{now});
+const ctx=Context.contextualize({},B.list(blocks)[0]).trainingContext;
+let events=[];const workouts=[];
+for(let i=0;i<3;i++){
+ const date='2026-01-'+String(2+i*7).padStart(2,'0'),next='2026-01-'+String(3+i*7).padStart(2,'0');
+ const d={version:5,asOf:date,lift:'squat',decision:'hold',decisionAllowed:true,trainingContext:ctx,evidence:[{workoutId:'base'+i,date,exerciseId:'sq',weight:100,reps:5,rpe:8,estimatedCapacity:120}]};
+ events=F.record(events,d,{response:'accept'},{now:date+'T12:00:00.000Z',id:'e'+i});
+ workouts.push({id:'w'+i,date:next,createdAt:next+'T12:00:00.000Z',exercises:[{exerciseId:'sq',sets:[{weight:105,reps:5,rpe:8}]}]});
+}
+const state={trainingBlocks:blocks,decisionEvents:events,workouts},before=JSON.stringify(state),options={asOf:'2026-01-25'};
+let r=C.analyze(state,options);assert.equal(r.cohorts[0].included,3);assert.notEqual(r.cohorts[0].byResponse.accept.meanCapacityChangePct,null);assert.equal(JSON.stringify(state),before);
+assert.deepEqual(C.analyze(JSON.parse(before),options),r);assert.deepEqual(C.analyze({...state,unit:'lb'},options),r);
+let s=structuredClone(state);s.decisionEvents.pop();assert.equal(C.analyze(s,options).cohorts[0].byResponse.accept.meanCapacityChangePct,null);
+s=structuredClone(state);delete s.decisionEvents[0].snapshot.trainingContext;r=C.analyze(s,options);assert(r.rows.some(x=>x.contextStatus==='context-unavailable'));
+s=structuredClone(state);s.decisionEvents[0].snapshot.trainingContext.progressionIntent='performance';assert.equal(C.analyze(s,options).cohorts.length,2);assert(C.analyze(s,options).rows.some(x=>x.contextStatus==='context-changed'));
+s=structuredClone(state);s.trainingBlocks=B.upsert(s.trainingBlocks,{...B.list(blocks)[0],loadStrategy:'performance-based'},{id:blocks[0].id,now:'2026-01-03T00:00:00.000Z'});assert(C.analyze(s,options).rows.every(x=>x.contextStatus==='context-changed'));
+s=structuredClone(state);s.trainingBlocks=B.upsert(s.trainingBlocks,{...B.list(blocks)[0],loadStrategy:'performance-based'},{id:blocks[0].id,now:'2026-02-01T00:00:00.000Z'});assert.equal(C.analyze(s,options).cohorts[0].included,3,'later context edits do not leak backward');
+s=structuredClone(state);s.decisionEvents[0].updatedAt='2026-02-01T00:00:00.000Z';assert.equal(C.analyze(s,options).rows.length,2,'future feedback revisions cannot be reconstructed');
+s=structuredClone(state);s.workouts.push({id:'future',date:'2026-02-01',exercises:[]});assert.deepEqual(C.analyze(s,options),C.analyze(state,options));
+s=structuredClone(state);s.decisionEvents[0].snapshot.evidence[0].estimatedCapacity=null;assert(C.analyze(s,options).rows.some(x=>x.contextStatus==='identity-or-capacity-missing'));
+const policies=JSON.stringify(Engine.DEFAULT_POLICY);const result=C.compare(state,{asOf:'2026-01-25',lift:'squat'});assert.equal(result.automaticChanges,false);assert.equal(result.candidate.increaseTrendPct,result.baseline.increaseTrendPct+1);assert.equal(JSON.stringify(Engine.DEFAULT_POLICY),policies);assert.equal(JSON.stringify(state),before);
+assert.throws(()=>C.compare(state,{asOf:'invalid'}));assert.throws(()=>C.compare(state,{asOf:'2026-01-25',days:181}));assert.equal(C.analyze({},options).cohorts.length,0);
+console.log('Context matching, exclusions, sparse means, timestamps, units, roundtrip and read-only policy passed');
+const Ready=require('../src/product/decision-readiness'),Intent=require('../src/product/session-intent');
+const replayState={...structuredClone(state),exerciseRoles:Ready.upsert([],{exerciseId:'sq',role:'competition',competitionLift:'squat'},{now}),exerciseCatalog:[{id:'sq',name:'Squat',aliases:[]}]};
+for(const w of replayState.workouts)w.sessionIntent=Intent.context({prescription:Intent.createPrescription(w.exercises,{type:'manual'},now)});
+const experiment=C.compare(replayState,{asOf:'2026-01-25'});assert.equal(experiment.rows.length,3);
+const futureState=structuredClone(replayState);futureState.workouts.push({...structuredClone(futureState.workouts[0]),id:'later',date:'2026-02-01',createdAt:'2026-02-01T12:00:00.000Z'});assert.deepEqual(C.compare(futureState,{asOf:'2026-01-25'}),experiment);
+const edited=structuredClone(replayState),old=structuredClone(edited.workouts[1]);edited.workouts[1].exercises[0].sets[0].weight=200;edited.workouts[1].updatedAt='2026-02-01T12:00:00.000Z';edited.workoutRevisions=[{workoutId:old.id,recordedAt:'2026-02-01T12:00:00.000Z',before:old,after:edited.workouts[1]}];assert.deepEqual(C.compare(edited,{asOf:'2026-01-25'}),experiment);
