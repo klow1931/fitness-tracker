@@ -7,7 +7,7 @@ function initWorkoutEvents(){
     review:()=>saveWorkout(),clear:()=>clearWorkoutForm(),'save-template':()=>saveCurrentAsTemplate(),
     'rest-60':()=>startRest(60),'rest-90':()=>startRest(90),'rest-180':()=>startRest(180),'stop-rest':()=>stopRest(),
     'pause-rest':()=>pauseRest(),'add-rest':()=>addRestTime(),
-    'capture-plan':()=>capturePlannedWork(),'clear-plan':()=>clearPlannedWork(),
+    'capture-plan':()=>capturePlannedWork(),'clear-plan':()=>clearPlannedWork(),'start-session':()=>startWorkoutNow(),
     'exercise-detail':el=>openExerciseDetail(el.dataset.exerciseName,el.dataset.tracking),'compare-session':el=>openSessionComparison(el.dataset.workoutId),
     'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),
     'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),

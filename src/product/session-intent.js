@@ -65,13 +65,40 @@
     if(!SOURCE_TYPES.includes(raw.source?.type)||raw.plannedExercises.some(exercise=>!plannedExercise(exercise)))throw Error('Invalid planned-work snapshot.');
     const normalized=createPrescription(raw.plannedExercises,raw.source,raw.capturedAt);if(!normalized)throw Error('Planned work must include at least one exercise.');return normalized;
   }
+  const validDay=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
+  function provenance(raw){
+    if(raw==null)return null;
+    if(raw.version!==1||!Array.isArray(raw.revisions)||raw.revisions.length>200||(raw.startedAt!=null&&!iso(raw.startedAt))||(raw.startedAt!=null&&!validDay(raw.sessionDate))||(raw.startedAt==null&&raw.sessionDate!=null))throw Error('Invalid session timing.');
+    let last='';const revisions=raw.revisions.map(r=>{if(!r||!iso(r.recordedAt)||r.recordedAt<=last)throw Error('Invalid plan revision chronology.');last=r.recordedAt;const plan=prescription(r.plan);if(plan&&plan.capturedAt!==r.recordedAt)throw Error('Plan revision capture time must match.');return {recordedAt:r.recordedAt,plan};});
+    return {version:1,startedAt:raw.startedAt||null,sessionDate:raw.sessionDate||null,revisions};
+  }
+  function startTiming(raw,date,today,{now=new Date().toISOString()}={}){
+    const timing=provenance(raw)||{version:1,startedAt:null,sessionDate:null,revisions:[]};
+    if(!iso(now)||!validDay(date)||date!==today)throw Error('Start time can only be recorded for today’s session.');
+    if(timing.startedAt)throw Error('This session already has a start time.');
+    if(timing.revisions.at(-1)?.recordedAt>now)throw Error('Clock is earlier than the latest plan revision.');
+    return {...timing,startedAt:now,sessionDate:date};
+  }
+  function revisePlan(raw,plan,{now=new Date().toISOString()}={}){
+    const timing=provenance(raw)||{version:1,startedAt:null,sessionDate:null,revisions:[]};
+    if(!iso(now)||now<timing.startedAt||now<=(timing.revisions.at(-1)?.recordedAt||''))throw Error('Clock is earlier than the recorded session history.');
+    return provenance({...timing,revisions:[...timing.revisions,{recordedAt:now,plan}]});
+  }
+  function planTiming(plan,date,raw){
+    if(!plan||!iso(plan.capturedAt))return 'unknown';const timing=provenance(raw);
+    if(timing?.startedAt){if(timing.sessionDate!==date)return 'unknown';return plan.capturedAt<=timing.startedAt?'before-training':'after-start';}
+    if(!validDay(date))return 'unknown';return plan.capturedAt.slice(0,10)<date?'before-training':plan.capturedAt.slice(0,10)>date?'retrospective':'unknown';
+  }
   function context(raw){
     if(raw==null)return null;if(!raw||typeof raw!=='object')throw Error('Invalid session intent.');
     if(raw.role!=null&&!Object.hasOwn(SESSION_ROLES,raw.role))throw Error('Invalid session role.');
     if(raw.deviationReason!=null&&!Object.hasOwn(DEVIATION_REASONS,raw.deviationReason))throw Error('Invalid session deviation reason.');
     const role=Object.hasOwn(SESSION_ROLES,raw.role)?raw.role:'unspecified',goal=text(raw.goal,300),deviationReason=Object.hasOwn(DEVIATION_REASONS,raw.deviationReason)?raw.deviationReason:'none',deviationNotes=text(raw.deviationNotes,500),plan=prescription(raw.prescription);
-    if(role==='unspecified'&&!goal&&!plan&&deviationReason==='none'&&!deviationNotes)return null;
+    const timing=provenance(raw.timing);
+    if(timing?.revisions.length&&(!plan||timing.revisions[0].recordedAt<=plan.capturedAt))throw Error('Plan revisions must follow the original prescription.');
+    if(role==='unspecified'&&!goal&&!plan&&deviationReason==='none'&&!deviationNotes&&!timing)return null;
     const result={version:1,role,goal,prescription:plan,deviationReason,deviationNotes};
+    if(timing)result.timing=timing;
     if(raw.schedule!=null){if(typeof raw.schedule.id!=='string'||!raw.schedule.id||!iso(raw.schedule.revisionAt)||!plan)throw Error('Invalid scheduled-session link');result.schedule={id:raw.schedule.id,revisionAt:raw.schedule.revisionAt};}return result;
   }
   function validateState(input){
@@ -126,5 +153,5 @@
     const rows=(workouts||[]).map(workout=>compare(workout,exerciseIds)).filter(Boolean),plannedSets=rows.reduce((n,row)=>n+row.plannedSets,0),completedSets=rows.reduce((n,row)=>n+row.completedSets,0),exactSets=rows.reduce((n,row)=>n+row.exactSets,0),modified=rows.filter(row=>row.status!=='as-planned').length,targetRpeSets=rows.reduce((n,row)=>n+row.targetRpeSets,0),targetRpeTotal=rows.reduce((n,row)=>n+row.targetRpeTotal,0);
     return {prescribedSessions:rows.length,plannedSets,completedSets,exactSets,prescriptionCoverage:rows.length&&workouts?.length?Math.round(rows.length/workouts.length*1000)/10:null,setCompletionRate:plannedSets?Math.round(completedSets/plannedSets*1000)/10:null,exactCompletionRate:plannedSets?Math.round(exactSets/plannedSets*1000)/10:null,targetRpeCoverage:plannedSets?Math.round(targetRpeSets/plannedSets*1000)/10:null,averageTargetRpe:targetRpeSets?Math.round(targetRpeTotal/targetRpeSets*10)/10:null,modifiedSessions:modified,unexplainedModifiedSessions:rows.filter(row=>row.status!=='as-planned'&&!row.hasExplanation).length};
   }
-  return {SESSION_ROLES,DEVIATION_REASONS,createPrescription,prescription,context,validateState,compare,summarize};
+  return {SESSION_ROLES,DEVIATION_REASONS,createPrescription,prescription,context,validateState,compare,summarize,provenance,startTiming,revisePlan,planTiming};
 });

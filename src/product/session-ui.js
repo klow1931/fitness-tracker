@@ -2,6 +2,7 @@
 let workoutEdit=null;
 let reviewedSession=null;
 function refreshSessionMode(){
+  window.renderPrescriptionSummary?.();
   const banner=document.getElementById('workout-edit-banner');
   if(banner)banner.hidden=!workoutEdit;
   const title=document.getElementById('workout-mode-title');
@@ -41,6 +42,7 @@ function reviewWorkout(){
   document.getElementById('workout-review-title').textContent=workoutEdit?'Review workout changes':'Review your workout';
   add('p',formatDate(workout.date));
   if(workout.sessionIntent){
+    add('p','Original plan timing: '+LoadnoteIntent.planTiming(workout.sessionIntent.prescription,workout.date,workout.sessionIntent.timing)+' · '+(workout.sessionIntent.timing?.revisions.length||0)+' recorded plan changes');
     const role=window.LoadnoteIntent.SESSION_ROLES[workout.sessionIntent.role]||'Not specified';add('p','Session role: '+role+(workout.sessionIntent.goal?' · '+workout.sessionIntent.goal:''));
     const comparison=window.LoadnoteIntent.compare(workout);if(comparison)add('p',`Planned vs completed: ${comparison.completedSets}/${comparison.plannedSets} planned sets represented · ${comparison.exactRate}% unchanged${comparison.status!=='as-planned'&&comparison.hasExplanation?' · change explained':''}.`);
   }

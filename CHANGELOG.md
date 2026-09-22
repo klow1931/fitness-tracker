@@ -1,3 +1,11 @@
+# v2.8.0 — Plan timing and session provenance
+
+- Add explicit today-only session starts; opening a logger, restoring a draft or editing history never manufactures a start.
+- Keep original prescriptions intact and append timestamped plan captures/removals. Later captures preserve entered actual RPE and completion checks.
+- Carry optional validated timing through existing drafts, workout saves, revisions and backups without a schema migration.
+- Classify original/revised plans as before training, after start, retrospective or unknown; date changes invalidate start-based timing for analysis.
+- Permit same-day original plans in weekly follow-up comparisons only when they precede a recorded start; no live policy changes.
+
 # v2.7.0 — Decision use and weekly review
 
 - Add actionable evidence checklists inside withheld lift cards, linked to existing mappings, blocks, history and logger; historical review stays read-only.

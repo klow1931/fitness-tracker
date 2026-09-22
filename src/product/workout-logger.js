@@ -7,7 +7,7 @@ function readLoggerDraft() {
   try { return LoadnoteDraft.normalize(JSON.parse(localStorage.getItem(LOGGER_DRAFT_KEY))); } catch (_) { return null; }
 }
 function loggerHasContent() {
-  return !!pendingPrescription || [...document.querySelectorAll('#exercise-rows input:not([type=checkbox]), #wo-notes, #session-intent input, #session-intent select')].some(i => i.value !== '');
+  return !!pendingPrescription || !!pendingSessionTiming || [...document.querySelectorAll('#exercise-rows input:not([type=checkbox]), #wo-notes, #session-intent input, #session-intent select')].some(i => i.value !== '');
 }
 function captureLoggerDraft() {
   const value = (row, selector) => row.querySelector(selector)?.value || '';
@@ -27,6 +27,7 @@ function saveLoggerDraft() {
     else { localStorage.removeItem(LOGGER_DRAFT_KEY); status.textContent = 'Draft saves on this device as you train.'; }
   } catch (_) { status.textContent = 'Draft could not be saved. Keep this page open and export your data.'; }
   updateLoggerSummary();
+  renderPrescriptionSummary();
   updateSessionComparisons();
 }
 function updateLoggerSummary() {
