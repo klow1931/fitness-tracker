@@ -1,0 +1,15 @@
+const {test,expect}=require('playwright/test');
+test.use({serviceWorkers:'allow'});
+test('goal targets save in kg, survive offline reload and archive with history',async({page,context})=>{
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(()=>{data.unit='lb';showTab('dashboard');renderSchedule();});await page.locator('#home-week-plan > summary').click();await page.locator('#goal-new').click();
+ await page.locator('#goal-name').fill('Return to the platform');await page.locator('#goal-date').fill('2026-12-12');await page.locator('#goal-minutes').fill('90');await page.locator('[data-goal-day][value="0"]').check();await page.locator('#goal-dialog details > summary').click();await page.locator('#goal-squat').fill('446');await page.locator('#goal-dialog button[type=submit]').click();
+ await expect(page.locator('#goal-dialog')).not.toBeVisible();const kg=await page.evaluate(()=>LoadnoteGoals.list(data.athleteGoals)[0].targets[0].kg);expect(kg).toBeCloseTo(446*0.45359237,5);
+ expect(await page.evaluate(()=>JSON.stringify(normalizeDataShape(JSON.parse(JSON.stringify(data))).athleteGoals)===JSON.stringify(data.athleteGoals))).toBe(true);
+ await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(()=>{showTab('dashboard');renderSchedule();document.getElementById('home-week-plan').open=true;});await expect(page.locator('#athlete-goals')).toContainText('Return to the platform');
+ await page.locator('#goal-edit').click();await page.locator('#goal-status').selectOption('archived');await page.locator('#goal-dialog button[type=submit]').click();await expect.poll(()=>page.evaluate(()=>data.athleteGoals[0].revisions.length)).toBe(2);expect(await page.evaluate(()=>LoadnoteGoals.list(data.athleteGoals)[0].status)).toBe('archived');
+ await page.locator('#goal-scope').selectOption('');await expect(page.locator('#goal-scope')).toHaveValue('');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
+test('invalid imported goal is rejected and failed writes do not accept a new goal',async({page})=>{
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);expect(await page.evaluate(()=>{try{normalizeDataShape({athleteGoals:[{id:'broken'}]});return false;}catch(e){return true;}})).toBe(true);
+ await page.evaluate(()=>{showTab('dashboard');renderSchedule();document.getElementById('home-week-plan').open=true;window.savedPersist=persistNow;persistNow=async()=>{throw Error('Storage unavailable');};});await page.locator('#goal-new').click();await page.locator('#goal-name').fill('Unsaved');await page.locator('#goal-dialog button[type=submit]').click();await expect(page.locator('#goal-error')).toContainText('Storage unavailable');expect(await page.evaluate(()=>data.athleteGoals.length)).toBe(0);
+});

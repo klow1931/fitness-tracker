@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),G=require('../src/product/athlete-goals'),Core=require('../src/core/loadnote-core'),B=require('../src/product/training-blocks'),S=require('../src/product/schedule'),I=require('../src/product/session-intent');
+const input={name:'Meet prep',sport:'powerlifting',eventDate:'2026-12-12',targets:[{lift:'squat',kg:200}],availableDays:[0,2,4],sessionMinutes:90};
+let goals=G.upsert([],input,{now:'2026-09-20T10:00:00.000Z'}),id=goals[0].id;
+goals=G.upsert(goals,{...input,name:'Revised goal'},{id,now:'2026-09-22T10:00:00.000Z'});assert.equal(G.list(goals,'2026-09-21T00:00:00.000Z')[0].name,'Meet prep');assert.equal(G.list(goals)[0].name,'Revised goal');assert.deepEqual(G.validate(JSON.parse(JSON.stringify(goals))),goals);
+assert.throws(()=>G.context({...input,eventDate:'2026-02-30'}));assert.throws(()=>G.context({...input,targets:[{lift:'squat',kg:Infinity}]}));assert.throws(()=>G.context({...input,sessionMinutes:-1}));assert.throws(()=>G.validate([...goals,...goals]));assert.throws(()=>G.upsert(goals,input,{id,now:'2026-09-20T00:00:00.000Z'}));
+const old={schemaVersion:16,goals:[{id:'legacy',name:'Legacy goal'}],workouts:[{id:'old',date:'2026-09-01',exercises:[]}]};const migrated=Core.normalizeState(old);assert.equal(migrated.schemaVersion,17);assert.deepEqual(migrated.athleteGoals,[]);assert.deepEqual(migrated.goals,old.goals);assert.deepEqual(migrated.workouts,old.workouts);
+assert.equal(G.context({...input,targets:[{lift:'bench',kg:330*0.45359237}]}).targets[0].kg,330*0.45359237);
+const blocks=B.upsert([],{name:'Strength',startDate:'2026-09-01'},{now:'2026-09-01T00:00:00.000Z'}),bid=blocks[0].id;
+goals=G.upsert([],{...input,blockIds:[bid]},{now:'2026-09-01T00:00:00.000Z'});id=goals[0].id;
+const plan=I.createPrescription([{name:'Squat',sets:[{weight:100,reps:5,rpe:8}]}],{type:'manual'},'2026-09-20T00:00:00.000Z');
+const scheduledSessions=S.create([],{name:'Squat day',date:'2026-09-21',blockId:bid,prescription:plan,role:'volume',reason:''},{id:'scheduled',now:'2026-09-20T00:00:00.000Z'});
+const workouts=[{id:'w',date:'2026-09-21',createdAt:'2026-09-21T19:00:00.000Z',exercises:[{name:'Squat',sets:[{weight:100,reps:5,rpe:8}]}],sessionIntent:{prescription:plan,schedule:{id:'scheduled'}}},{id:'future',date:'2026-09-23',exercises:[{name:'Squat',sets:[{weight:500,reps:5,rpe:10}]}]}];
+const state={athleteGoals:goals,trainingBlocks:blocks,scheduledSessions,workouts};const before=JSON.stringify(state),week=G.week(state,{asOf:'2026-09-22',goalId:id});assert.equal(week.loggedWorkouts,1);assert.equal(week.counts.completed,1);assert.equal(week.adherence,100);assert.equal(week.metrics.exercises[0].estimatedCapacityTrend,null);assert.equal(JSON.stringify(state),before);
+const empty=G.week({}, {asOf:'2026-09-22'});assert.equal(empty.adherence,null);assert.equal(empty.loggedWorkouts,0);
+const direct=G.upsert([],{name:'Other sport',sport:'Custom',sessionIds:['scheduled']},{now:'2026-09-20T00:00:00.000Z'});assert.equal(G.week({...state,athleteGoals:direct},{asOf:'2026-09-22',goalId:direct[0].id}).loggedWorkouts,1);
+assert.throws(()=>G.week({...state,athleteGoals:direct},{asOf:'2026-09-19',goalId:direct[0].id,retrospective:false}));
+const archived=G.upsert(goals,{...G.list(goals)[0],status:'archived'},{id,now:'2026-09-22T12:00:00.000Z'});assert.equal(G.list(archived)[0].status,'archived');assert.equal(G.list(archived,'2026-09-21T00:00:00.000Z')[0].status,'active');
+console.log('Athlete goals CRUD, links, migration, units, weekly evidence, sparse data and chronology passed');

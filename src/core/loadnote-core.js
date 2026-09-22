@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 16;
-  const RELEASE_VERSION = '2.8.1';
+  const SCHEMA_VERSION = 17;
+  const RELEASE_VERSION = '2.9.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -165,6 +165,9 @@
       if(!Array.isArray(state.decisionEvents))state.decisionEvents=[];
       state.decisionFeedbackVersion=state.decisionFeedbackVersion||1;
     }
+    // v16 → v17: independent revisioned athlete goals; keep workout history intact.
+    if(state.athleteGoals===undefined)state.athleteGoals=[];
+    if(Number(state.schemaVersion||1)<17)state.schemaVersion=17;
     return state;
   }
 
