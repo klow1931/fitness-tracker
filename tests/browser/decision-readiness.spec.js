@@ -28,7 +28,7 @@ test('historical as-recorded replay withholds later block and mapping knowledge'
 test('competition names can be confirmed without renaming workouts',async({page})=>{
  await page.evaluate(()=>{
   const names=['Competition Squat','Competition Bench','Competition Sumo Deadlift'];
-  data.exerciseRoles=[];data.exerciseCatalog=[];data.workouts=names.map((name,i)=>({id:'named-'+i,date:'2026-09-20',exercises:[{name,sets:[{weight:100,reps:5,rpe:8}]}]}));
+  data.exerciseRoles=[];data.exerciseCatalog=[];data.trainingBlocks=[];data.workouts=names.map((name,i)=>({id:'named-'+i,date:'2026-09-20',exercises:[{name,sets:[{weight:100,reps:5,rpe:8}]}]}));
   data=LoadnoteIntegrity.normalizeState(data);invalidateViews();window.renderDecisionReadiness();
  });
  const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
