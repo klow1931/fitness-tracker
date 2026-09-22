@@ -8,7 +8,7 @@ const defaults = { workouts: [], nutrition: [], prs: [], goals: [], programs: []
 
 const migrated = Core.normalizeState({ workouts: [{ date: '2026-09-01', exercises: [] }], schemaVersion: 1 }, defaults);
 assert.equal(migrated.schemaVersion, 16);
-assert.equal(migrated.releaseVersion, '1.17.0');
+assert.equal(migrated.releaseVersion, '2.7.0');
 assert.equal(migrated.integrityVersion, 1);
 assert.deepEqual(migrated.exerciseCatalog, []);
 assert.deepEqual(migrated.workoutRevisions, []);

@@ -1,3 +1,11 @@
+# v2.7.0 — Decision use and weekly review
+
+- Add actionable evidence checklists inside withheld lift cards, linked to existing mappings, blocks, history and logger; historical review stays read-only.
+- Separate intended direction, prospectively captured plan-load direction and completed set-load direction; withhold comparisons for missing timing or different set/rep structures.
+- Add collapsed weekly responses and uniquely attributed follow-ups with explicit counts and uncertainty, without confusing load progression with strength gain.
+- Preserve report-date cutoffs, retained workout revisions, sparse data, kg storage and existing feedback attribution. No schema or live decision-policy changes.
+- Align the legacy core export release label with the current release, alongside package/footer/cache metadata.
+
 # v2.6.3 — Context-aware feedback analysis (Part 2)
 
 - Preserve structured block context in new feedback snapshots; older feedback remains context-unavailable, never retroactively filled.

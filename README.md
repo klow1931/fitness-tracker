@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.6.3 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.7.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.7 — Using and reviewing decisions
+
+Withheld lift cards offer an expandable evidence checklist with links to existing editors. Decision settings & evidence includes a collapsed weekly review separating suggested/chosen direction, saved planned loads and completed loads. Different set/rep structures and uncertain plan timing remain unclassified. No recommendation is applied automatically. See [review definitions](docs/decision-use.md).
 
 ## v2.6.3 — Context-aware feedback
 
