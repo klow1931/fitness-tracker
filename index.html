@@ -1010,6 +1010,7 @@
 
       <div class="sub-panel" data-panel="coach" data-sub="co-programs">
       <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
+      <details class="card" id="reviewed-builder-panel"><summary><b>Powerlifting program builder</b><small>Four-week proposals · review before scheduling</small></summary><div id="reviewed-builder"></div></details>
       <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
         <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
         <p class="text-xs text-slate-600">
@@ -1337,7 +1338,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.9.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.10.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1943,6 +1944,8 @@
   <script src="src/product/decision-readiness.js" defer></script>
   <script src="src/product/athlete-goals.js" defer></script>
   <script src="src/product/athlete-goals-ui.js" defer></script>
+  <script src="src/product/program-builder.js" defer></script>
+  <script src="src/product/program-builder-ui.js" defer></script>
   <script src="src/product/block-decision-context.js" defer></script>
   <script src="src/product/decision-engine.js" defer></script>
   <script src="src/product/decision-backtest.js" defer></script>

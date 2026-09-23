@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 17, athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 18, reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -161,6 +161,7 @@
         const normalized=window.LoadnoteCore.normalizeState(d, DEFAULT_DATA);
         const integrity=window.LoadnoteIntegrity?.normalizeState?window.LoadnoteIntegrity.normalizeState(normalized):normalized;
         if(window.LoadnoteGoals)integrity.athleteGoals=window.LoadnoteGoals.validate(integrity.athleteGoals===undefined?[]:integrity.athleteGoals);
+        if(window.LoadnoteBuilder)integrity.reviewedPrograms=window.LoadnoteBuilder.validate(integrity.reviewedPrograms===undefined?[]:integrity.reviewedPrograms);
         return window.LoadnoteIntent?.validateState?window.LoadnoteIntent.validateState(integrity):integrity;
       }
       const base = { ...DEFAULT_DATA, ...(d || {}) };

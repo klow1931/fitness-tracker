@@ -1,3 +1,10 @@
+# v2.10.0 — Reviewed powerlifting program builder
+
+- Add transparent four-week return/base and strength proposals with confirmed lift identities, explicit training maxes, load rounding, effort caps and a planned deload.
+- Apply goal availability, time-budget, equipment, event-date and calendar-conflict checks; show limitations before explicit review/save.
+- Keep saved proposals immutable; schedule separately into the existing Calendar and goal workflow without activating legacy programs or replacing drafts.
+- Add schema 18 reviewed-program validation, backup support and regression tests. Coach review is explicitly user-reported, never automatically claimed.
+
 # v2.9.0 — Athlete goals and weekly planning
 
 - Add revisioned athlete goals with sport, optional event/date and weight class, available training days, session time, equipment, experience and separate aspirational lift targets stored in kg.
