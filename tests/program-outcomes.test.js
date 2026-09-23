@@ -18,6 +18,7 @@ const missingRpe=edit(s=>delete s.workouts[3].exercises[0].sets[0].rpe);assert.e
 const sameDay=edit(s=>{s.workouts[5].date=s.workouts[3].date;s.workouts[5].createdAt=s.workouts[3].createdAt;});assert.equal(report(sameDay).findings.squat.matched,2);assert.equal(report(sameDay).findings.squat.summary,'Not enough comparable data');
 const repeatedReview=edit(s=>s.programReviews.push({...structuredClone(s.programReviews[0]),id:'duplicate-review'}));const repeated=O.analyze(repeatedReview,args).reviews;assert.equal(repeated.reduce((n,r)=>n+r.findings.squat.matched,0),2);
 const later=edit(s=>s.workouts[3].createdAt='2026-09-25T20:00:00.000Z');assert.equal(report(later).findings.squat.matched,1);
+const unknownTime=edit(s=>delete s.workouts[3].createdAt);assert.deepEqual(report(unknownTime).findings.squat.rows[0].actual,[]);
 const revised=edit(s=>{s.scheduledSessions=S.change(s.scheduledSessions,s.scheduledSessions[3].id,{reason:'Changed before training'},'2026-09-14T10:00:00.000Z');s.workouts[3].sessionIntent.schedule.revisionAt='2026-09-14T10:00:00.000Z';});assert.equal(report(revised).findings.squat.rows[0].status,'revised');
 const futureChange=edit(s=>s.scheduledSessions=S.change(s.scheduledSessions,s.scheduledSessions[3].id,{reason:'Later change'},'2026-09-25T10:00:00.000Z'));assert.deepEqual(report(futureChange),result);
 const duplicate=edit(s=>s.workouts.push({...s.workouts[3],id:'duplicate'}));assert.equal(report(duplicate).findings.squat.rows[0].status,'ambiguous');

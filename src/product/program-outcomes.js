@@ -28,7 +28,10 @@
       if(current.context.date<from||current.context.date>to)return finish('outside');
       return finish(current.context.date>=asOf?'pending':'unconfirmed');
     }
-    const w=ws[0];row.workoutId=w.id;row.date=w.date;row.actual=clone((w.exercises||[]).filter(e=>e.exerciseId===exerciseId));
+    const w=ws[0];
+    // A legacy record without a capture timestamp cannot establish what was known then.
+    if(!iso(w.createdAt))return finish('timing');
+    row.workoutId=w.id;row.date=w.date;row.actual=clone((w.exercises||[]).filter(e=>e.exerciseId===exerciseId));
     row.deviationReason=w.sessionIntent?.deviationReason||'none';row.deviationNotes=w.sessionIntent?.deviationNotes||'';
     if(w.date<from||w.date>to)return finish('outside');
     const link=w.sessionIntent?.schedule,linked=record.revisions.find(v=>v.recordedAt===link?.revisionAt);
