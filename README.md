@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.10.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.11.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.11 — Program review and adjustment proposals
+
+In **Decisions → Programs**, review a completed builder-program week, inspect per-lift evidence and recovery context, and preview optional future load reductions. Explicit approval creates schedule revisions while preserving original plans and completed workouts. Sparse or uncertain evidence requests review instead of inventing progress. See [policy, safeguards and limits](docs/program-review.md).
 
 ## v2.8 — Plan timing
 

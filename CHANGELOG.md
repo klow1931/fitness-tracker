@@ -1,3 +1,11 @@
+# v2.11.0 — Program review and adjustment proposals
+
+- Review completed builder-program weeks with separate squat, bench and deadlift findings, recovery context and original/planned/logged evidence.
+- Preview optional next-week load reductions under a documented repeated-effort rule; require explicit approval and a fresh evidence check.
+- Preserve workouts and original programs, append schedule revisions, protect completed sessions and open drafts, and prevent duplicate weekly approvals.
+- Add schema-19 review history to JSON backups/imports, mobile UI and offline cache.
+- No automatic increases or claims of individualized training-dose validation. See [policy and limits](docs/program-review.md).
+
 # v2.10.0 — Reviewed powerlifting program builder
 
 - Add transparent four-week return/base and strength proposals with confirmed lift identities, explicit training maxes, load rounding, effort caps and a planned deload.
