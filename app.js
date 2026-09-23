@@ -2602,6 +2602,7 @@ ${woLines}
     function renderCoach() {
       window.renderPowerliftingBuilder?.();
       window.renderProgramWeekReview?.();
+      window.renderProgramOutcomes?.();
       try { renderAthleteProfile(); } catch (e) { console.warn('Athlete profile render failed', e); }
       try { window.renderDecisionReadiness?.(); } catch (e) { console.warn('Decision readiness render failed', e); }
       // Advice

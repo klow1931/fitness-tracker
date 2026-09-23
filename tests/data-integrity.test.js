@@ -5,7 +5,7 @@ const original={schemaVersion:11,workouts:[
  {id:'b',date:'2026-08-08',exercises:[{name:'Tricep Push Down',sets:[{weight:45,reps:10,rpe:8}]},{name:'Hip Adduction',sets:[{weight:55,reps:10,rpe:8}]}]}
 ],prs:[],templates:[],trainingBlocks:[]};
 const snapshot=JSON.stringify(original),migrated=Integrity.normalizeState(Core.normalizeState(original,{}));
-assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,19);assert.equal(migrated.releaseVersion,'2.11.0');
+assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,19);assert.equal(migrated.releaseVersion,'2.12.0');
 assert.equal(migrated.workouts[0].exercises[0].exerciseId,migrated.workouts[1].exercises[0].exerciseId,'compact spelling variants share identity');
 assert.notEqual(migrated.workouts[0].exercises[1].exerciseId,migrated.workouts[1].exercises[1].exerciseId,'semantic aliases require explicit merge');
 const source=migrated.workouts[0].exercises[1].exerciseId,target=migrated.workouts[1].exercises[1].exerciseId,merged=Integrity.mergeExercises(migrated,source,target);
