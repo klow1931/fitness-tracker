@@ -1,3 +1,11 @@
+# v2.12.0 — Review adjustment outcomes
+
+- Add a compact read-only timeline connecting original programs, approved plans, recorded training and per-lift follow-up observations.
+- Separate completion of prescribed work from RPE-comparable sessions; label changed, skipped, substituted, uncertain and pending work explicitly.
+- Bound follow-up to the next program week with historical knowledge cutoffs, workout revision replay and sparse-data guards.
+- Show recorded recovery check-ins without causal claims, automatic learning or plan changes. Schema remains 19.
+- Synchronize release metadata and offline assets. See [definitions and limits](docs/program-outcomes.md).
+
 # v2.11.0 — Program review and adjustment proposals
 
 - Review completed builder-program weeks with separate squat, bench and deadlift findings, recovery context and original/planned/logged evidence.

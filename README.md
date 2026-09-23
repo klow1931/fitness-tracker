@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.11.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.12.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.12 — What happened after adjustments
+
+**Decisions → Programs → After your adjustments** shows original plans, approved changes and recorded follow-up work. Per-lift counts separate following the plan from having comparable RPE evidence. Missing or changed work stays visible; insufficient data never becomes a success claim. Date filtering respects historical knowledge and the report does not change your data. See [definitions and limits](docs/program-outcomes.md).
 
 ## v2.11 — Program review and adjustment proposals
 

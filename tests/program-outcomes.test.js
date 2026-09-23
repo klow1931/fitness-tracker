@@ -1,0 +1,31 @@
+const assert=require('node:assert/strict'),O=require('../src/product/program-outcomes'),R=require('../src/product/program-review'),Roles=require('../src/product/decision-readiness'),S=require('../src/product/schedule');
+const {outcomesFixture}=require('./fixtures/program-outcomes');
+const args={asOf:'2026-09-20',now:'2026-09-20T22:00:00.000Z'},state=outcomesFixture(),snapshot=JSON.stringify(state);
+const report=s=>O.analyze(s,args).reviews[0],result=report(state);
+assert.equal(result.findings.squat.matched,2);assert.equal(result.findings.squat.withinCap,2);assert.equal(result.findings.squat.summary,'All comparable sessions within RPE caps');
+assert.equal(result.findings.bench.choice,'keep');assert.equal(result.findings.deadlift.summary,'Not enough comparable data');
+assert.equal(result.findings.squat.rows[0].original[0].sets[0].weight>result.findings.squat.rows[0].approved[0].sets[0].weight,true);
+assert.equal(JSON.stringify(state),snapshot);assert.deepEqual(report(JSON.parse(snapshot)),result);assert.deepEqual(O.analyze({},args).reviews,[]);
+assert.equal(O.analyze(state,{...args,asOf:'2026-09-12'}).reviews.length,0);
+assert.equal(O.analyze(state,{...args,asOf:'2026-09-14'}).reviews[0].findings.squat.matched,1);
+const edit=(fn)=>{const copy=structuredClone(state);fn(copy);return copy;};
+for(const [code,fn] of [['sets',w=>w.exercises[0].sets.pop()],['reps',w=>w.exercises[0].sets[0].reps++],['load',w=>w.exercises[0].sets[0].weight+=5],['rpe',w=>delete w.exercises[0].sets[0].rpe],['substituted',w=>w.exercises[0].exerciseId='variation'],['timing',w=>delete w.createdAt],['outside',w=>w.date='2026-09-21']]){
+  const changed=edit(s=>fn(s.workouts[3]));const observed=O.analyze(changed,{asOf:'2026-09-22',now:'2026-09-22T22:00:00.000Z'}).reviews[0].findings.squat;
+  assert.equal(observed.rows[0].status,code,code);assert.equal(observed.summary,'Not enough comparable data');
+}
+const above=edit(s=>s.workouts[3].exercises[0].sets[0].rpe+=.5);assert.equal(report(above).findings.squat.aboveCap,1);
+const missingRpe=edit(s=>delete s.workouts[3].exercises[0].sets[0].rpe);assert.equal(report(missingRpe).findings.squat.followedWork,2);assert.equal(report(missingRpe).findings.squat.matched,1);
+const sameDay=edit(s=>{s.workouts[5].date=s.workouts[3].date;s.workouts[5].createdAt=s.workouts[3].createdAt;});assert.equal(report(sameDay).findings.squat.matched,2);assert.equal(report(sameDay).findings.squat.summary,'Not enough comparable data');
+const repeatedReview=edit(s=>s.programReviews.push({...structuredClone(s.programReviews[0]),id:'duplicate-review'}));const repeated=O.analyze(repeatedReview,args).reviews;assert.equal(repeated.reduce((n,r)=>n+r.findings.squat.matched,0),2);
+const later=edit(s=>s.workouts[3].createdAt='2026-09-25T20:00:00.000Z');assert.equal(report(later).findings.squat.matched,1);
+const revised=edit(s=>{s.scheduledSessions=S.change(s.scheduledSessions,s.scheduledSessions[3].id,{reason:'Changed before training'},'2026-09-14T10:00:00.000Z');s.workouts[3].sessionIntent.schedule.revisionAt='2026-09-14T10:00:00.000Z';});assert.equal(report(revised).findings.squat.rows[0].status,'revised');
+const futureChange=edit(s=>s.scheduledSessions=S.change(s.scheduledSessions,s.scheduledSessions[3].id,{reason:'Later change'},'2026-09-25T10:00:00.000Z'));assert.deepEqual(report(futureChange),result);
+const duplicate=edit(s=>s.workouts.push({...s.workouts[3],id:'duplicate'}));assert.equal(report(duplicate).findings.squat.rows[0].status,'ambiguous');
+const skipped=edit(s=>{s.workouts.splice(3,1);s.scheduledSessions=S.change(s.scheduledSessions,s.scheduledSessions[3].id,{status:'skipped',reason:'Could not train'},'2026-09-14T21:00:00.000Z');});assert.equal(report(skipped).findings.squat.rows[0].status,'skipped');
+const mapping=edit(s=>s.exerciseRoles=Roles.upsert(s.exerciseRoles,{exerciseId:'s',role:'close-variation',competitionLift:'squat'},{now:'2026-09-14T10:00:00.000Z'}));assert.equal(report(mapping).findings.squat.rows[0].status,'mapping');
+const replay=edit(s=>{const before=structuredClone(s.workouts[3]);s.workouts[3].exercises[0].sets[0].weight=999;s.workoutRevisions=[{workoutId:before.id,recordedAt:'2026-09-25T00:00:00.000Z',before,after:s.workouts[3]}];});assert.deepEqual(report(replay),result);
+let follow=structuredClone(state);const reviewArgs={programId:'p',week:2,asOf:args.asOf,now:args.now,recovery:{discomfort:'none',sleep:'worse'}};follow=R.apply(follow,R.analyze(follow,reviewArgs),{squat:'keep',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:args.asOf,now:args.now});
+assert.equal(O.analyze(follow,args).reviews.find(r=>r.week===1).recoveryAfter.value.sleep,'worse');assert.equal(O.analyze(follow,{...args,asOf:'2026-09-19'}).reviews[0].recoveryAfter,null);
+assert.equal(report(edit(s=>s.unit='lb')).findings.squat.matched,2);
+assert.equal(report(edit(s=>s.reviewedPrograms=[])).findings.squat.summary,'Program context unavailable');
+console.log('Program outcomes: matched work, exclusions, recovery, sparse guards, chronology, immutable history and backup replay passed');
