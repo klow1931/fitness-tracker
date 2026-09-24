@@ -1,3 +1,11 @@
+# v2.14.0 — Reviewed phase-based program builder
+
+- Add accumulation → strength → deload sequences with editable durations, independent lift exposures/progression, straight sets and top-set/back-off formats.
+- Require explicit variation choices, separate training maxes and equipment confirmation; preserve profile restrictions and stable exercise mappings.
+- Add time, progression, workload-transition, sparse-history and Calendar checks with expandable weekly previews and separate approval/scheduling.
+- Preserve older four-week programs and reviews; phase sequences use their own schema-21 records, backups and Calendar IDs. No meet peaks or automatic phase adjustments.
+- See [generation rules and limitations](docs/phase-builder.md).
+
 # v2.13.0 — Constraint-aware programming profile
 
 - Add revisioned goals, availability, equipment, exercise preferences/restrictions and reported priorities under Decisions → Programs.

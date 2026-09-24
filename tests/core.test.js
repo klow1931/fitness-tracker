@@ -7,8 +7,8 @@ const Progression = require('../src/training/progression');
 const defaults = { workouts: [], nutrition: [], prs: [], goals: [], programs: [], templates: [], bodyweight: [], foodLibrary: [], restDays: [], progressPhotos: [], measurements: [], formReviews: [], exerciseNotes: {}, unit: 'kg', measureUnit: 'cm', api: {} };
 
 const migrated = Core.normalizeState({ workouts: [{ date: '2026-09-01', exercises: [] }], schemaVersion: 1 }, defaults);
-assert.equal(migrated.schemaVersion,20);
-assert.equal(migrated.releaseVersion, '2.13.0');
+assert.equal(migrated.schemaVersion,21);
+assert.equal(migrated.releaseVersion, '2.14.0');
 assert.equal(migrated.integrityVersion, 1);
 assert.deepEqual(migrated.exerciseCatalog, []);
 assert.deepEqual(migrated.workoutRevisions, []);
