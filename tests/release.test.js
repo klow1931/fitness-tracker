@@ -1,6 +1,6 @@
 const assert = require('assert');
 const Release = require('../src/release');
-const a = Release.assess({schemaVersion:20, workouts:[], programs:[],exerciseCatalog:[],workoutRevisions:[],exerciseRoles:[],prescriptionVersion:1,decisionEvents:[]});
+const a = Release.assess({schemaVersion:21, workouts:[], programs:[],exerciseCatalog:[],workoutRevisions:[],exerciseRoles:[],prescriptionVersion:1,decisionEvents:[]});
 assert.strictEqual(a.version, require('../package.json').version);
 assert.strictEqual(a.ready, true);
 assert.strictEqual(a.completed, a.total);

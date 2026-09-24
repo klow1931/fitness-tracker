@@ -29,6 +29,6 @@ assert.equal(B.analyze(records,workouts,id,{asOf:'2026-06-17',retrospective:true
 const future={date:'2026-12-01',exercises:[{name:'Squat',sets:[{weight:999,reps:5,rpe:6}]}]};
 assert.deepEqual(B.analyze(records,[...workouts,future],id,{asOf:'2026-07-21',retrospective:true}),a);
 const noRPE=structuredClone(workouts);noRPE.forEach(w=>delete w.exercises[0].sets[0].rpe);assert.equal(B.analyze(records,noRPE,id,{asOf:'2026-07-21',retrospective:true}).exercises[0].estimatedCapacityTrend,null);
-const old={schemaVersion:10,workouts,prs:[{id:'pr',weight:150}]};const migrated=Core.normalizeState(old,{});assert.equal(migrated.schemaVersion,20);assert.deepEqual(migrated.trainingBlocks,[]);assert.deepEqual(migrated.workouts,workouts);assert.deepEqual(migrated.prs,old.prs);
+const old={schemaVersion:10,workouts,prs:[{id:'pr',weight:150}]};const migrated=Core.normalizeState(old,{});assert.equal(migrated.schemaVersion,21);assert.deepEqual(migrated.trainingBlocks,[]);assert.deepEqual(migrated.workouts,workouts);assert.deepEqual(migrated.prs,old.prs);
 assert.deepEqual(Core.normalizeState({...old,trainingBlocks:records},{}).trainingBlocks,records);
 console.log('Training block CRUD, timelines, sparse estimates, import and migration passed');
