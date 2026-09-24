@@ -2600,6 +2600,7 @@ ${woLines}
     }
 
     function renderCoach() {
+      window.renderProgrammingProfile?.();
       window.renderPowerliftingBuilder?.();
       window.renderProgramWeekReview?.();
       window.renderProgramOutcomes?.();

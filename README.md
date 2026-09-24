@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.12.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.13.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.13 — Programming constraints
+
+**Decisions → Programs → Programming profile** records your goal, available days, time budget, equipment and exercise restrictions. The builder enforces supported constraints and preserves the profile used in each reviewed proposal. Preferences and reported priorities stay visible without being treated as diagnosed weaknesses. Existing programs and logs are unchanged. See [definitions and limits](docs/programming-profile.md).
 
 ## v2.12 — What happened after adjustments
 

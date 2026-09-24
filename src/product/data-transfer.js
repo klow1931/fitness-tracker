@@ -13,13 +13,14 @@
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
           parsed.scheduledSessions=LoadnoteSchedule.validate(parsed.scheduledSessions??[]);
           parsed.athleteGoals=LoadnoteGoals.validate(parsed.athleteGoals===undefined?[]:parsed.athleteGoals);
+          parsed.programmingProfiles=LoadnoteProgrammingProfile.validate(parsed.programmingProfiles===undefined?[]:parsed.programmingProfiles);
           parsed.reviewedPrograms=LoadnoteBuilder.validate(parsed.reviewedPrograms===undefined?[]:parsed.reviewedPrograms);
           parsed.programReviews=LoadnoteProgramReview.validate(parsed.programReviews===undefined?[]:parsed.programReviews);
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
           const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
-          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Program reviews',preview.programReviews),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'','This replaces current data after creating an automatic recovery snapshot.'];
+          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'','This replaces current data after creating an automatic recovery snapshot.'];
           if (!confirm(message.join('\n'))) return;
           data = LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
           clearTimeout(saveTimer);

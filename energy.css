@@ -17,6 +17,11 @@
 #builder-preview,#reviewed-builder { overflow-wrap:anywhere; }
 #reviewed-builder button { min-height:44px; margin:8px 0; }
 #program-week-review { overflow-wrap:anywhere; }
+#programming-profile,#programming-profile-dialog { overflow-wrap:anywhere; }
+#programming-profile-dialog label { display:block; margin:12px 0; }
+#programming-profile-dialog input:not([type=checkbox]),#programming-profile-dialog select,#programming-profile-dialog textarea { width:100%; max-width:100%; min-width:0; }
+#programming-profile-dialog input[type=checkbox] { width:20px; height:20px; }
+#programming-profile button,#programming-profile-dialog button,#programming-profile summary,#programming-profile-dialog summary { min-height:44px; margin:8px 0; }
 #program-outcomes { overflow-wrap:anywhere; }
 #program-outcomes input { max-width:100%; min-width:0; }
 #program-outcomes summary { min-height:44px; cursor:pointer; }

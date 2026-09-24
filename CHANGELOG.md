@@ -1,3 +1,10 @@
+# v2.13.0 — Constraint-aware programming profile
+
+- Add revisioned goals, availability, equipment, exercise preferences/restrictions and reported priorities under Decisions → Programs.
+- Enforce supported structured constraints during proposal generation and scheduling; unsupported meet/hypertrophy plans are withheld rather than mislabeled.
+- Preserve profile snapshots in reviewed programs; changed context requires a fresh review before scheduling, without rewriting existing training.
+- Add schema-20 migration, JSON backup/import validation and offline assets. See [constraints and limits](docs/programming-profile.md).
+
 # v2.12.0 — Review adjustment outcomes
 
 - Add a compact read-only timeline connecting original programs, approved plans, recorded training and per-lift follow-up observations.
