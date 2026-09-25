@@ -1,3 +1,11 @@
+# v2.17.0 — Per-lift workload response
+
+- Show week-by-week prescribed, logged and strictly matched sets for each lift alongside planned/logged exposure frequency, missing/changed sessions and explicit time constraints.
+- Offer one additional final working set per next-phase lift exposure **only when** a rounded load increase is unavailable and three stable, complete training weeks with at least two weekly exposures, adequate effort/capacity evidence, usual reported recovery and time/set limits permit it. Never modify training days automatically.
+- Preserve independent lift approvals, original prescriptions, drafts, chronological evidence and existing phase-effort-v1/v2 accepted reviews with a versioned phase-effort-v3 policy.
+- No new stored schema (22), no automatic adaptation, and no claims of optimal volume or individual response causality.
+- CI validation and manual iPhone status: see pull request.
+
 # v2.16.0 — Individual lift progression and focused Decisions UX
 
 - Phase review optionally proposes a 2.5% next-phase load increase only after complete matched work stays at least 1 RPE below caps of 7+, and at cap or below when the target is RPE 6 across repeated sessions, dated competition-only capacity evidence spans 14+ days, recovery is reported usual, and exercise-specific training-max ceilings and kg increments permit every target.
