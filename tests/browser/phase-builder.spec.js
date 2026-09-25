@@ -12,3 +12,17 @@ test('reviewed phase plan survives offline and schedules without rewriting histo
 test('changed inputs invalidate previews, time limits block plans and failed writes preserve data',async({page})=>{
  await preview(page);await page.locator('#phase-minutes').fill('30');await expect(page.locator('#phase-preview')).toBeEmpty();await page.locator('#phase-dialog button[type="submit"]').click();await expect(page.locator('#phase-error')).toContainText('needs about');await page.locator('#phase-minutes').fill('90');await page.locator('#phase-dialog button[type="submit"]').click();await page.locator('#phase-confirm').check();await page.evaluate(()=>{persistNow=async()=>{throw Error('Storage full');};});await page.locator('#phase-save').click();await expect(page.locator('#phase-error')).toContainText('Storage full');expect(await page.evaluate(()=>data.phasePrograms.length)).toBe(0);expect(await page.evaluate(()=>data.scheduledSessions.length)).toBe(0);expect(await page.evaluate(()=>document.getElementById('phase-dialog').scrollWidth<=document.getElementById('phase-dialog').clientWidth+1)).toBe(true);
 });
+
+test('meet preparation timeline previews from a reviewed phase without scheduling or editing workouts',async({page})=>{
+ const baseline=await page.evaluate(config=>{const proposal=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});data=LoadnotePhaseBuilder.save(data,proposal,{confirmed:true,notes:'Reviewed for timeline'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'meet-preview'});renderPhaseBuilder();return JSON.stringify({workouts:data.workouts,sessions:data.scheduledSessions,programs:data.phasePrograms});},phaseFixture().config);
+ await page.locator('#phase-builder > details > summary').click();
+ await page.locator('[data-meet-panel] > summary').click();
+ await page.locator('[data-meet-date]').fill('2026-12-19');
+ await page.locator('[data-meet-preview]').click();
+ await expect(page.locator('[data-meet-result]')).toContainText('2026-11-23');
+ await expect(page.locator('[data-meet-result]')).toContainText('taper');
+ await page.locator('[data-meet-date]').fill('2026-11-28');
+ await page.locator('[data-meet-preview]').click();
+ await expect(page.locator('[data-meet-result]')).toContainText('overlaps');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,sessions:data.scheduledSessions,programs:data.phasePrograms}))).toBe(baseline);
+});
