@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.32.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.33.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.33 — Per-lift training response
+
+Decisions now exposes a compact, optional training-response history across completed weeks and phases in a scheduled flexible meet cycle. It separates original squat/bench/deadlift working sets from linked actual work and directly comparable RPE values; an RPE-aware within-phase estimated-capacity comparison appears only with four distinct eligible competition-lift dates spanning 14 days. Unlogged sessions and sparse phases are explicitly identified. These are descriptive training observations, not proof of an optimal program, a recovery measurement or permission to change approved prescriptions.
 
 ## v2.32 — Weekly and phase-transition reviews
 

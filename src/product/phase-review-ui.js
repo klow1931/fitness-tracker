@@ -27,6 +27,7 @@
     window.renderPhaseOutcomes?.();
     decisionSummary(programs);
     window.renderCycleWeekReview?.();
+    window.renderCycleResponse?.();
     const panel=host.querySelector('#phase-review-report'),error=host.querySelector('#phase-review-error');let report=null;
     const invalidate=()=>{report=null;panel.innerHTML='';};host.querySelectorAll('select,textarea').forEach(e=>e.oninput=invalidate);
     const choices=()=>Object.fromEntries([...panel.querySelectorAll('[data-phase-choice]')].map(e=>[e.dataset.phaseChoice,e.value]));

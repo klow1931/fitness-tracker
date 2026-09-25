@@ -639,3 +639,14 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 #cycle-week-review .cycle-review-hint { font-size:.74rem; line-height:1.45; color:var(--muted); }
 #cycle-week-review button { min-height:44px; }
 #cycle-review-error { font-size:.78rem; line-height:1.5; overflow-wrap:anywhere; }
+
+/* v2.33 — optional phase response history, collapsed during active workout planning. */
+#cycle-response { min-width:0; margin:.5rem 0; }
+#cycle-response .cycle-response-panel { padding:.65rem 0; border-top:1px solid var(--line); }
+#cycle-response .cycle-response-panel > summary { min-height:44px; font-weight:750; cursor:pointer; font-size:.83rem; }
+#cycle-response .cycle-response-panel p { font-size:.78rem; line-height:1.5; margin:.48rem 0; overflow-wrap:anywhere; }
+#cycle-response .cycle-response-phase { margin:.7rem 0; padding:.5rem; border:1px solid var(--line); border-radius:.75rem; }
+#cycle-response .cycle-response-phase > summary { cursor:pointer; min-height:44px; font-weight:750; }
+#cycle-response [data-response-lift] { padding:.7rem 0; border-top:1px solid var(--line); }
+#cycle-response [data-response-lift] h4 { font-weight:750; }
+#cycle-response [data-response-lift] small { display:block; font-size:.72rem; color:var(--muted); line-height:1.45; padding:.18rem 0; }

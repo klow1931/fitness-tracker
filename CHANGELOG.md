@@ -1,3 +1,9 @@
+# v2.33.0 — Individual competition-lift response across completed phases
+
+- Add a read-only, dated mock-meet-cycle training-response view for completed weeks grouped by phase, with independent squat, bench and deadlift exposure and set counts, linked logged work, directly comparable RPE-cap exceedances, and transparent unconfirmed/skipped/changed Calendar records.
+- Compare within-phase RPE-aware estimated competition-lift capacity only when four eligible distinct days span at least 14 days. Use the existing capacity-evidence utility, explicit competition exercise identity, validated pre-training schedule links and first-two versus last-two median comparison. Never substitute variations, future imports, or unverified sessions; never imply causal adaptation.
+- Keep unfinished phases and sparse logs clearly labeled. No prescriptions, athlete choices, workout history or state schemas are changed. Add deterministic tests, mobile browser coverage and offline assets.
+
 # v2.32.0 — Reviewed meet-cycle weeks and phase transitions
 
 - Add a read-only, as-known weekly review for any completed week in a scheduled 7–52-week mock-meet cycle. Summarize original per-lift sets and exposures, linked actual work, comparable RPE cap exceedances, unconfirmed sessions and explicit skips.
