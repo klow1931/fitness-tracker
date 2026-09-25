@@ -65,3 +65,21 @@ test('weekly workload reveals frequency, missed work and approved one-set option
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,original:data.scheduledSessions.map(s=>s.revisions[0])}))).toBe(before);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('phase transition comparison reflects selected adjustments and protects deload dates',async({page})=>{
+ await review(page);
+ await expect(page.locator('#phase-transition-preview')).toContainText('Next-phase transition check');
+ await expect(page.locator('#phase-transition-preview')).toContainText('After selected changes:');
+ await page.locator('#phase-transition-preview summary').first().click();
+ await expect(page.locator('#phase-transition-preview')).toContainText('Last reviewed phase, final week prescribed');
+ const values=await page.evaluate(()=>{
+   const report=LoadnotePhaseReview.analyze(data,{programId:'ph',phase:'accumulation',asOf:'2026-10-18',now:'2026-10-18T22:00:00.000Z',recovery:{sleep:'usual',fatigue:'usual',soreness:'usual',discomfort:'none'}});
+   return LoadnotePhaseTransition.assess(report,{squat:'reduce-load',bench:'keep',deadlift:'keep'});
+ });
+ expect(values.findings.squat.nextPhaseWeekAfter.tonnageKg).toBeLessThan(values.findings.squat.nextPhaseWeekBefore.tonnageKg);
+ expect(values.findings.bench.nextPhaseWeekAfter).toEqual(values.findings.bench.nextPhaseWeekBefore);
+ await page.locator('[data-phase-choice="squat"]').selectOption('keep');
+ expect(await page.evaluate(()=>data.phaseReviews.length)).toBe(0);
+ expect(await page.evaluate(()=>data.scheduledSessions.every(s=>s.revisions.length===1))).toBe(true);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
