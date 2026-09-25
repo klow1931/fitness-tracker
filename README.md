@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.23.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.24.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.24 — Phase decision outcomes
+
+**Decisions → Programs → Phase review → Accepted phase decision outcomes** compares confirmed per-lift adjustments with linked next-phase training, effort caps and eligible competition-lift estimated-capacity observations. Review-only and explicitly non-causal; missing or changed sessions withhold comparisons. Existing workouts, approvals and Calendar sessions remain untouched.
 
 ## v2.23 — Competition-lift performance context
 
