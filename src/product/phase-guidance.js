@@ -65,7 +65,7 @@
        lift.validActualSets+=valid.length;
        lift.completedSets+=Math.min(valid.length,originalExercise.sets.length);
        const planned=(trusted.sessionIntent?.prescription?.plannedExercises||[]).filter(e=>e.exerciseId===originalExercise.exerciseId);
-       const originallyPlanned=planned.length===1&&JSON.stringify(planned[0].sets)===JSON.stringify(originalExercise.sets);
+       const originallyPlanned=planned.length===1&&planned[0].sets.length===originalExercise.sets.length&&planned[0].sets.every((set,i)=>{const prior=originalExercise.sets[i];return Math.abs(set.weight-prior.weight)<.02&&set.reps===prior.reps&&(set.targetRpe??null)===(prior.targetRpe??null);});
        const beforeTraining=Intent.planTiming(trusted.sessionIntent.prescription,trusted.date,trusted.sessionIntent.timing)==='before-training';
        for(const [i,s] of valid.entries()){
          if(Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10)lift.rpeSets++;
