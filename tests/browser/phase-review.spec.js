@@ -100,5 +100,13 @@ test('accepted phase decision outcome compares linked next-phase training withou
  await expect(page.locator('#phase-outcomes-report')).toContainText('observed-follow-up');
  await expect(page.locator('[data-phase-outcome-lift="squat"]')).toContainText('reduce-load');
  await expect(page.locator('[data-phase-outcome-lift="squat"]')).toContainText('6/6 matched');
+ await expect(page.locator('[data-phase-feedback-lift="squat"]')).toContainText('review-current-phase');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions,phaseReviews:data.phaseReviews}))).toBe(unchanged);
+});
+
+test('phase review shows previous decision context without replacing independent eligibility',async({page})=>{
+ await review(page);
+ await expect(page.locator('#phase-feedback-review')).toContainText('no-prior-review');
+ await expect(page.locator('[data-phase-choice="squat"] option')).toHaveCount(2);
+ expect(await page.evaluate(()=>data.phaseReviews.length)).toBe(0);
 });

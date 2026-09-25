@@ -1,3 +1,10 @@
+# v2.25.0 — Explainable phase-programming feedback loop
+
+- Connect each accepted phase decision to its linked next-phase observations and to a subsequent phase review, independently by competition lift. Show the prior athlete-approved choice and reason, exactly comparable follow-up exposures, RPE-cap observations and descriptive competition-lift estimated-capacity change.
+- Differentiate pending phases, insufficient/changed evidence, RPE-cap review and estimated-capacity review; do not attribute observed changes to one programming action or infer physiological fatigue.
+- Preserve the existing phase-review engine, decision eligibility, manual approval and immutable data. Feedback cannot write Calendar sessions, automatically progress loads or replace the current phase-review findings.
+- Add model and browser regressions, release metadata and offline asset cache. No user-data migration.
+
 # v2.24.0 — Accepted phase decision outcomes
 
 - Show per-lift follow-up after accepted phase reviews, relating each approved next-phase prescription to linked completed sets and reps, logged RPE versus approved caps, and descriptive early-versus-follow-up estimated capacity where sufficient comparable competition-lift evidence exists.
