@@ -7,6 +7,7 @@ test('set targets and next-set feedback update without revising approved plan or
    data=normalizeDataShape({...data,...seed});
    const review=LoadnotePhaseReview.analyze(data,args);
    data=LoadnotePhaseReview.apply(data,review,{squat:'reduce-load',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:args.asOf,now:args.now});
+   await persistNow(data);
    renderSchedule();
  },{seed:fixture(),args});
  await page.evaluate(()=>document.querySelector('[data-start="phase:ph:w4d0"]').click());

@@ -253,7 +253,7 @@
 
     function addSetRow(btn) {
       const exRow = btn.closest('[data-idx]');
-      const container = btn.previousElementSibling;
+      const container = exRow?.querySelector('.sets-container');
       const trackBy = exRow?.dataset?.trackBy === 'duration' ? 'duration' : 'reps';
       const previous = container.lastElementChild;
       addSetToContainer(container, previous ? { reps: previous.querySelector('.set-reps')?.value || '', duration: previous.querySelector('.set-duration')?.value || '', weight: previous.querySelector('.set-weight')?.value === '' ? '' : toStorage(Number(previous.querySelector('.set-weight')?.value)), rpe: '', showCompletion: !!previous.querySelector('.set-done-check') } : {showCompletion: !!pendingScheduledSession}, trackBy);
