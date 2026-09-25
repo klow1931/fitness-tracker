@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.28.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.29.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.29 — Decisions built around the athlete’s next action
+
+The Decisions overview now prioritizes the current training plan, compact competition-lift summaries, programming reviews, optional program builders and adjustment history. Missing decision evidence links to the existing workout logger. The old v2.7 feature label is gone, accordion titles wrap cleanly on mobile and all existing training logic, past data and athlete approvals are unchanged.
 
 ## v2.28 — Reviewed meet-peak training proposal
 
