@@ -19,7 +19,7 @@ test('Decisions displays separate completed-phase summaries with honest sparse e
  await container.locator('.cycle-response-panel > summary').click();
  await expect(container.locator('[data-response-phase]')).toHaveCount(2);
  await container.locator('[data-response-phase="accumulation"] > summary').click();
- await expect(container.locator('[data-response-lift]')).toHaveCount(3);
+ await expect(container.locator('[data-response-phase="accumulation"] [data-response-lift]')).toHaveCount(3);
  await expect(container).toContainText('No within-phase capacity comparison');
  await expect(container).toContainText('unconfirmed');
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,meetCycles:data.meetCycles,scheduledSessions:data.scheduledSessions}));
