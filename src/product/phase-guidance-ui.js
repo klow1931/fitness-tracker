@@ -20,6 +20,7 @@
        <details class="more-details"><summary>Evidence limitations</summary><ul>${report.warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></details>
        <p class="more-hint">${esc(report.notice)}</p>
      </details>
+     <div id="cycle-week-review"></div>
      <button class="btn-primary" type="button" id="decision-cycle-cta">Open original cycle</button>
    </div>`;
  }

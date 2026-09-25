@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.31.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.32.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.32 — Weekly and phase-transition reviews
+
+In Decisions, a scheduled flexible mock-meet cycle now offers a review for every completed training week. You can inspect linked workout execution and RPE compared to the original prescription, then keep the plan or explicitly approve a narrowly bounded one-set reduction on eligible lifts in the **next week only**. Phase-transition weeks are identified and remain review-first; peak/taper and mock-meet attempts are not automatically altered. Reviews and dated Calendar revisions preserve the original program and historical logs. No new state migration is required.
 
 ## v2.31 — Phase-aware Decisions
 

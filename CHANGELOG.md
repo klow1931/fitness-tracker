@@ -1,3 +1,11 @@
+# v2.32.0 — Reviewed meet-cycle weeks and phase transitions
+
+- Add a read-only, as-known weekly review for any completed week in a scheduled 7–52-week mock-meet cycle. Summarize original per-lift sets and exposures, linked actual work, comparable RPE cap exceedances, unconfirmed sessions and explicit skips.
+- Identify phase-transition weeks and explain upcoming phase priorities without rewriting phase boundaries. Athlete approval can preserve the plan unchanged or remove exactly one working set from each eligible exposure of an independently selected lift in the next week only.
+- The bounded reduction requires two directly comparable above-cap RPE sets, resolved prior-week sessions and untouched future Calendar prescriptions with at least three sets per affected exposure. Peak/taper/mock-meet targets, completed workouts, open drafts and previously revised sessions cannot be changed by this rule.
+- Store an auditable review alongside the original cycle with before/after Calendar revisions and policy metadata. Keep the original cycle and completed history intact; no new top-level schema or automatic progression.
+- Add mobile browser and deterministic review/evidence/approval tests, version metadata and offline assets.
+
 # v2.31.0 — Phase-aware Decisions for flexible meet cycles
 
 - Add deterministic, read-only Decisions context for the active, upcoming or completed scheduled meet cycle. Show current week and phase, phase-week count, mock-meet date, upcoming programmed training, current-week review and phase-transition date.
