@@ -57,6 +57,7 @@
  function prepare(state,source,raw,{asOf,now=new Date().toISOString()}={}){
    if(!Schedule.date(asOf)||!iso(now)||now.slice(0,10)<asOf)throw Error('Choose a valid current review date');
    const result=build(source,raw),c=result.config,base=result.sourceProgram.config,cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
+   if(result.sourceProgram.createdAt>cutoff)throw Error('Reviewed lift setup was not known on this date');
    if(c.startDate<asOf)throw Error('Start the cycle today or later');
    const profile=Profile.current(state.programmingProfiles||[],cutoff);if(!profile)throw Error('Create a programming profile first');
    const p=profile.context;
@@ -86,8 +87,9 @@
      ids.add(r.id);
      const built=build(r.sourceProgram,r.config);
      if(JSON.stringify(built.sessions)!==JSON.stringify(r.sessions)||JSON.stringify(built.weekly)!==JSON.stringify(r.weekly))throw Error('Meet cycle differs from the approved original');
-     if(r.profileSnapshot&&Profile.validate([r.profileSnapshot])[0].recordedAt>r.createdAt)throw Error('Profile was not known at approval');
-     if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt))throw Error('Invalid competition exercise snapshot');
+     if(!r.profileSnapshot||Profile.validate([r.profileSnapshot])[0].recordedAt>r.createdAt)throw Error('Valid profile must be known at approval');
+     const expected=r.sourceProgram.roleSnapshot;
+     if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.length!==expected.length||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt)||expected.some(e=>!r.roleSnapshot.some(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift)))throw Error('Invalid competition exercise snapshot');
      if(r.scheduledAt!=null&&(!iso(r.scheduledAt)||r.scheduledAt<r.createdAt))throw Error('Invalid scheduling timestamp');
      return copy(r);
    });

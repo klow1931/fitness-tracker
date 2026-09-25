@@ -26,7 +26,7 @@ const replay=edit(s=>{const before=structuredClone(s.workouts[0]);s.workouts[0].
 assert.throws(()=>R.analyze(state,{...args,asOf:'2026-10-17'}),/final/);assert.throws(()=>R.analyze(state,{...args,asOf:'2026-09-23',now:'2026-09-23T12:00:00.000Z'}),/known/);
 assert.equal(R.analyze(state,{...args,phase:'strength',asOf:'2026-11-08',now:'2026-11-08T22:00:00.000Z'}).findings.squat.decision,'gather');
 const bad=structuredClone(next.phaseReviews);bad[0].changes[0].after.context.date='2026-10-01';assert.throws(()=>R.validate(bad));assert.throws(()=>R.validate([...next.phaseReviews,...next.phaseReviews]));assert.throws(()=>R.validate(null));
-const old={schemaVersion:21,workouts:state.workouts};assert.deepEqual(Core.normalizeState(old).phaseReviews,[]);assert.equal(Core.normalizeState(old).schemaVersion,22);assert.deepEqual(Core.normalizeState(old).workouts,state.workouts);
+const old={schemaVersion:21,workouts:state.workouts};assert.deepEqual(Core.normalizeState(old).phaseReviews,[]);assert.equal(Core.normalizeState(old).schemaVersion,23);assert.deepEqual(Core.normalizeState(old).workouts,state.workouts);
 assert.deepEqual(R.analyze({...state,unit:'lb'},args),report,'Display unit cannot change kg-based decisions');
 assert.equal(R.analyze(edit(s=>delete s.workouts[0].createdAt),args).findings.squat.decision,'gather');
 assert.equal(R.analyze(edit(s=>s.workouts.push({...structuredClone(s.workouts[0]),id:'duplicate'})),args).findings.squat.decision,'gather');
