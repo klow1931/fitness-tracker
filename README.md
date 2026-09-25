@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.22.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.23.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.23 — Competition-lift performance context
+
+Phase previews and saved-program comparisons include dated, identity-specific estimated-capacity trends for competition squat, bench and deadlift. Each lift's trend supplements workload evidence and explains when more information or an athlete review is needed. Variations, incomplete RPE, and future-edited records do not silently supply competition performance evidence. No existing program or workout is changed.
 
 ## v2.22 — Athlete-reviewed workload choices
 

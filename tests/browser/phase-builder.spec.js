@@ -64,3 +64,26 @@ test('athlete independently reviews and regenerates squat sets without editing s
  await expect(page.locator('#phase-preview')).toContainText('7 weeks · 21 sessions');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(baseline);
 });
+
+test('competition-lift performance context stays separate from variation logs and saved data',async({page})=>{
+ const {config}=phaseFixture(),baseline=await page.evaluate(config=>{
+   const ids=Object.fromEntries(['squat','bench','deadlift'].map(l=>[l,config.lifts[l].exerciseId]));
+   data.workouts=['2026-09-02','2026-09-09','2026-09-16','2026-09-23'].map((date,i)=>({
+      id:'capacity-'+i,date,createdAt:date+'T12:00:00.000Z',
+      exercises:[{exerciseId:ids.squat,type:'strength',trackBy:'reps',sets:[{weight:[120,118,110,109][i],reps:5,rpe:8}]},
+       {exerciseId:'ss',type:'strength',trackBy:'reps',sets:[{weight:500,reps:5,rpe:10}]}]
+    }));
+   data.workoutRevisions=[];
+   const p=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});
+   data=LoadnotePhaseBuilder.save(data,p,{confirmed:true,notes:'Reviewed performance context'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'capacity-preview'});
+   renderPhaseBuilder();
+   return JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,calendar:data.scheduledSessions});
+ },config);
+ await page.locator('#phase-builder > details > summary').click();
+ await page.locator('[data-workload-panel] > summary').click();
+ await page.locator('[data-workload-compare]').click();
+ await expect(page.locator('[data-workload-result]')).toContainText('Competition-lift estimated-capacity context');
+ await expect(page.locator('[data-workload-result]')).toContainText('lower-estimate');
+ await expect(page.locator('[data-workload-result]')).toContainText('Variations are excluded');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,calendar:data.scheduledSessions}))).toBe(baseline);
+});

@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const Workload=require('../src/product/lift-workload'),Review=require('../src/product/workload-review');
+const Workload=require('../src/product/lift-workload'),Review=require('../src/product/workload-review'),Performance=require('../src/product/lift-performance');
 const {phaseFixture}=require('./fixtures/phase-builder');
 const {state,config}=phaseFixture(),original=JSON.stringify(config),stateBefore=JSON.stringify(state);
 const ids={squat:config.lifts.squat.exerciseId,bench:config.lifts.bench.exerciseId,deadlift:config.lifts.deadlift.exerciseId};
@@ -35,3 +35,18 @@ const altered=structuredClone(config);altered.lifts.squat.sets=4;
 assert.throws(()=>Review.assess(evidence,altered),/no longer matches/);
 assert.throws(()=>Review.apply(review,altered,{squat:'keep',bench:'keep',deadlift:'keep'}),/context changed/);
 console.log('Lift-specific workload review tests passed');
+
+const performance=Performance.compare(synthetic,config,args),withPerformance=Review.assess(evidence,config,performance);
+assert.equal(withPerformance.findings.squat.performance.direction,'similar-estimate');
+assert.equal(withPerformance.findings.squat.reductionAvailable,true);
+assert.equal(withPerformance.findings.deadlift.performance.evidenceDays,4);
+const declining=structuredClone(synthetic);
+declining.workouts.forEach((w,i)=>{w.exercises[0].sets.forEach(set=>{set.weight=[125,122,112,110][i];});});
+const lowered=Performance.compare(declining,config,args);
+const reviewed=Review.assess(Workload.compare(declining,config,args),config,lowered);
+assert.equal(reviewed.findings.squat.action,'review-reduction-and-performance');
+assert(reviewed.findings.squat.reasons.some(reason=>reason.includes('does not prove')));
+assert.equal(reviewed.findings.bench.performance.direction,'similar-estimate');
+assert.throws(()=>Review.assess(evidence,config,{...performance,asOf:'2026-09-23'}),/date/);
+const remapped=structuredClone(config);remapped.lifts.squat.exerciseId='different';
+assert.throws(()=>Review.assess(evidence,config,{...performance,lifts:{...performance.lifts,squat:{...performance.lifts.squat,exerciseId:'different'}}}),/competition exercise/);

@@ -1,3 +1,10 @@
+# v2.23.0 — Competition-lift performance context
+
+- Compare early and late recent dated competition-lift estimated-capacity evidence independently for squat, bench and deadlift using existing load/reps/RPE eligibility rules, with four distinct dates spanning 14 days and median-of-two endpoints.
+- Show higher/lower/similar/insufficient evidence context next to proposed workload choices; a lower estimate triggers explicit performance review but never an automatic training reduction or inferred fatigue diagnosis. Variations cannot establish competition-lift strength trends.
+- Keep exercise-identity matching, as-recorded workout revision cutoffs, internal kg and display units separate. Preserve stored plans, calendars and completed workouts; add unit and browser regression coverage.
+- Synchronize app, normalized export, package, footer, changelog and offline release metadata.
+
 # v2.22.0 — Athlete-reviewed per-lift workload choices
 
 - Interpret v2.21 per-lift sets and RPE coverage independently for squat, bench and deadlift. Show why a reduction is available or why more evidence is needed; no inferred optimal dose or unsupported automatic increase.
