@@ -49,6 +49,7 @@ function prescriptionSourceLabel(plan){
   if(!plan)return 'No planned work recorded';const source=plan.source||{},fallback={manual:'Manual plan',template:'Template',program:'Program','repeated-workout':'Repeated workout'}[source.type]||'Recorded plan';return source.label?`${fallback} · ${source.label}`:fallback;
 }
 function renderPrescriptionSummary(){
+  window.LoadnoteTrainingTargetsUI?.current();
   const status=document.getElementById('session-timing-summary');if(status){const t=pendingSessionTiming,date=document.getElementById('wo-date')?.value;status.textContent=(t?.startedAt?'Recorded start: '+t.startedAt+(t.sessionDate!==date?' · workout date changed; timing unknown':''):'Start time not recorded')+' · Original plan: '+LoadnoteIntent.planTiming(pendingPrescription,date,t)+' · '+(t?.revisions.length||0)+' plan revisions';}
   const el=document.getElementById('planned-work-summary');if(!el)return;
   if(!pendingPrescription){el.innerHTML='<p><b>No planned-work snapshot.</b> Completed work will still save normally.</p>';document.getElementById('clear-planned-work').hidden=true;return;}
