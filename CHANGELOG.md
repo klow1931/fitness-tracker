@@ -1,3 +1,10 @@
+# v2.27.0 — In-workout set guidance
+
+- Show each scheduled strength set’s approved load, reps, and RPE cap directly beside the numeric logging controls. After a set is explicitly checked, display the next unchanged approved target and explain logged RPE versus the cap or missing/mismatched data.
+- Enable checked-set controls on scheduled workout entry even when optional checklist mode is off, and carry completion controls into added sets and tracking-mode switches. Preserve fast numeric entry, manual freedom to deviate, draft restoration, existing workout-saving behavior and original Calendar revisions.
+- Keep all weight comparisons in internal kg and convert only displayed targets to the athlete’s selected unit. No automatic load, volume or session changes, and no schema migration.
+- Add deterministic set-feedback tests, mobile/browser regressions and offline assets.
+
 # v2.26.0 — Training targets at workout start
 
 - Add read-only, identity-aware previous-performance and approved-target context for scheduled workouts, available on the weekly/Calendar plan and an expandable “Why this workout?” section in the active workout logger. Keep the primary logging surface uncluttered for unscheduled sessions.

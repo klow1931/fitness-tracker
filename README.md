@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.26.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.27.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.27 — Set-by-set workout guidance
+
+In **Train**, scheduled workouts show each set’s original load/reps/RPE cap and a compact next-set explanation based on the last explicitly checked set. A cap exceedance or modified work triggers review language, not automatic loading or a competing training engine. History and approved plans remain separate and immutable; the existing draft mechanism retains completed-set state.
 
 ## v2.26 — Training targets where you train
 

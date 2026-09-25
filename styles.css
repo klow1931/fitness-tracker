@@ -998,3 +998,9 @@ body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; bo
   body.dark .mobile-more-icon { background:#312e81; }
   .mobile-more-close { margin-top:1rem; min-height:44px; }
 }
+
+/* v2.27 — readable inline approved targets without adding more form controls. */
+#exercise-rows .set-target-note{flex-basis:100%;font-size:.76rem;line-height:1.45;color:var(--muted,#64748b);overflow-wrap:anywhere;margin-left:.15rem}
+#exercise-rows .next-set-guidance{margin:.55rem 0 .15rem;padding:.65rem .8rem;border:1px solid #cbd5e1;border-radius:.65rem;font-size:.85rem;line-height:1.45;overflow-wrap:anywhere;background:rgba(148,163,184,.09)}
+#exercise-rows .next-set-guidance[data-status="above-cap"],#exercise-rows .next-set-guidance[data-status="work-different"]{border-color:#d97706;background:rgba(245,158,11,.1)}
+#exercise-rows .set-done-check{min-width:22px;min-height:22px}

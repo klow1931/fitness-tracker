@@ -29,6 +29,7 @@ function saveLoggerDraft() {
   updateLoggerSummary();
   renderPrescriptionSummary();
   updateSessionComparisons();
+  window.LoadnoteSetGuidanceUI?.render();
 }
 function updateLoggerSummary() {
   let total = 0, done = 0;

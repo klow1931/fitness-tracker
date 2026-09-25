@@ -99,6 +99,7 @@
           <input type="text" class="input ex-note text-sm" value="${escapeHtml(note)}" placeholder="e.g. brace hard, eyes forward…" data-workout-change="exercise-note" />
         </div>
         <div class="sets-container space-y-2"></div>
+        <p class="next-set-guidance text-sm" hidden role="status"></p>
         <button data-workout-action="add-set" class="text-sm text-indigo-600 hover:underline mt-2">+ Add Set</button>
       `;
       container.appendChild(div);
@@ -134,7 +135,8 @@
           ? toStorage(parseFloat(s.querySelector('.set-weight').value) || 0)
           : '',
         rpe: s.querySelector('.set-rpe')?.value || '',
-        done: !!s.querySelector('.set-done-check')?.checked
+        done: !!s.querySelector('.set-done-check')?.checked,
+        showCompletion: !!s.querySelector('.set-done-check')
       }));
       setsContainer.innerHTML = '';
       (prev.length ? prev : [{ reps: '', duration: '', weight: '', rpe: '' }]).forEach(s => {
@@ -235,6 +237,7 @@
         <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" title="Load (0 for bodyweight holds)" />
         <input type="number" class="input set-rpe w-16" placeholder="RPE" min="1" max="10" step="0.5" value="${set.rpe || ''}" title="RPE 1-10" />
         <button type="button" aria-label="Remove set" data-workout-action="remove-set" class="text-red-500 text-sm">✕</button>
+        <small class="set-target-note" hidden></small>
       `;
       const check = row.querySelector('.set-done-check');
       if (check) {
@@ -253,7 +256,7 @@
       const container = btn.previousElementSibling;
       const trackBy = exRow?.dataset?.trackBy === 'duration' ? 'duration' : 'reps';
       const previous = container.lastElementChild;
-      addSetToContainer(container, previous ? { reps: previous.querySelector('.set-reps')?.value || '', duration: previous.querySelector('.set-duration')?.value || '', weight: previous.querySelector('.set-weight')?.value === '' ? '' : toStorage(Number(previous.querySelector('.set-weight')?.value)), rpe: '' } : {}, trackBy);
+      addSetToContainer(container, previous ? { reps: previous.querySelector('.set-reps')?.value || '', duration: previous.querySelector('.set-duration')?.value || '', weight: previous.querySelector('.set-weight')?.value === '' ? '' : toStorage(Number(previous.querySelector('.set-weight')?.value)), rpe: '', showCompletion: !!previous.querySelector('.set-done-check') } : {showCompletion: !!pendingScheduledSession}, trackBy);
     }
 
     function formatStrengthSet(s) {
