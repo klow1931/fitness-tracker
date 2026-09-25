@@ -41,3 +41,27 @@ test('Decisions highlights the plan and routes into a phase review without buryi
  await expect(page.locator('#phase-review-panel')).toHaveAttribute('open','');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('weekly workload reveals frequency, missed work and approved one-set option without changing history',async({page})=>{
+ await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});for(const w of data.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);renderPhaseReview();},fixture());
+ await page.locator('#phase-review-program').selectOption('ph');
+ for(const k of ['sleep','fatigue','soreness'])await page.locator(`[data-phase-check="${k}"]`).selectOption('usual');
+ await page.locator('[data-phase-check="discomfort"]').selectOption('none');
+ await page.locator('#phase-review-generate').click();
+ const bench=page.locator('#phase-review-report article.schedule-row').filter({has:page.locator('[data-phase-choice="bench"]')});
+ await expect(bench.locator('details > summary')).toContainText('Weekly workload');
+ await bench.locator('details > summary').click();
+ await expect(bench).toContainText('9 prescribed / 9 logged / 9 exact');
+ await expect(bench).toContainText('3 planned / 3 logged');
+ await expect(page.locator('[data-phase-choice="bench"] option[value="add-set"]')).toHaveCount(1);
+ const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,original:data.scheduledSessions.map(s=>s.revisions[0])}));
+ await page.locator('[data-phase-choice="bench"]').selectOption('add-set');
+ await expect(page.locator('#phase-review-changes')).toContainText('Exact next-phase changes');
+ await page.locator('#phase-review-confirm').check();
+ await page.locator('#phase-review-apply').click();
+ await expect.poll(()=>page.evaluate(()=>data.phaseReviews.length)).toBe(1);
+ expect(await page.evaluate(()=>data.phaseReviews[0].choices.bench)).toBe('add-set');
+ expect(await page.evaluate(()=>data.scheduledSessions.filter(s=>s.revisions.length===2).length)).toBe(9);
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,original:data.scheduledSessions.map(s=>s.revisions[0])}))).toBe(before);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
