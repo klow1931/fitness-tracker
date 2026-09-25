@@ -56,4 +56,30 @@ const legacyReview=structuredClone(next.phaseReviews);legacyReview[0].policy='ph
 assert.deepEqual(R.validate(legacyReview),legacyReview,'Old accepted reductions remain valid and importable');
 const tamperedIncrease=structuredClone(advanced.phaseReviews);tamperedIncrease[0].changes[0].after.context.prescription.plannedExercises[0].sets[0].weight=1000;
 assert.throws(()=>R.validate(tamperedIncrease),/policy|ceiling|progression/);
+
+// Workload response is an observation, not an inferred individual dose.
+assert.deepEqual(report.findings.bench.weeklyWorkload.map(w=>w.plannedSets),[9,9,9]);
+assert.deepEqual(report.findings.bench.weeklyWorkload.map(w=>w.loggedSets),[9,9,9]);
+assert.deepEqual(report.findings.bench.weeklyWorkload.map(w=>w.plannedFrequency),[3,3,3]);
+assert.deepEqual(report.findings.bench.weeklyWorkload.map(w=>w.matchedSets),[9,9,9]);
+const timeLimited=edit(s=>{s.workouts[0].sessionIntent.deviationReason='time';});
+const timeReport=R.analyze(timeLimited,args);assert.equal(timeReport.findings.bench.weeklyWorkload[0].timeLimitedSessions,1);
+assert.equal(timeReport.findings.bench.decision,'gather','Time constraints must not be interpreted as excess workload');
+const easySets=fixture();for(const w of easySets.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);
+const setProposal=R.analyze(easySets,args);assert.equal(setProposal.findings.bench.decision,'add-set',setProposal.findings.bench.reason);
+const setChoices={squat:'keep',bench:'add-set',deadlift:'keep'},setEdits=R.preview(setProposal,setChoices);
+assert.equal(setEdits.length,9);
+assert(setEdits.every(e=>{const a=e.after.plannedExercises.find(x=>x.exerciseId==='b').sets,b=e.before.prescription.plannedExercises.find(x=>x.exerciseId==='b').sets;return a.length===b.length+1&&a.length<=4&&JSON.stringify(a.at(-1))===JSON.stringify(b.at(-1));}));
+const setApplied=R.apply(easySets,setProposal,setChoices,options);
+assert.equal(setApplied.phaseReviews[0].policy,'phase-effort-v3');
+assert.deepEqual(setApplied.workouts,easySets.workouts);
+assert.deepEqual(setApplied.phasePrograms,easySets.phasePrograms);
+assert.deepEqual(R.validate(JSON.parse(JSON.stringify(setApplied.phaseReviews))),setApplied.phaseReviews);
+const alteredSet=structuredClone(setApplied.phaseReviews);alteredSet[0].changes[0].after.context.prescription.plannedExercises.find(e=>e.exerciseId==='b').sets.at(-1).weight=999;
+assert.throws(()=>R.validate(alteredSet),/policy/);
+assert.throws(()=>R.preview(report,setChoices),/supported/);
+const missedEasy=structuredClone(easySets);missedEasy.workouts.pop();
+assert.notEqual(R.analyze(missedEasy,args).findings.bench.decision,'add-set');
+const poorerEasy=R.analyze(easySets,{...args,recovery:{...args.recovery,fatigue:'worse'}});
+assert.notEqual(poorerEasy.findings.bench.decision,'add-set');
 console.log('Phase review evidence, independent choices, future-only revisions, replay, sparse guards and backups passed');
