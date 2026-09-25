@@ -21,6 +21,11 @@ test('meet preparation timeline previews from a reviewed phase without schedulin
  await page.locator('[data-meet-preview]').click();
  await expect(page.locator('[data-meet-result]')).toContainText('2026-11-23');
  await expect(page.locator('[data-meet-result]')).toContainText('taper');
+ await page.locator('[data-peak-sessions] > summary').click();
+ await expect(page.locator('[data-peak-session="squat"]')).toHaveCount(3);
+ await expect(page.locator('[data-peak-lift="bench"]')).toContainText('competition-lift');
+ await expect(page.locator('[data-peak-sessions]')).toContainText('RPE cap');
+ await expect(page.locator('[data-peak-sessions]')).toContainText('Read-only');
  await page.locator('[data-meet-date]').fill('2026-11-28');
  await page.locator('[data-meet-preview]').click();
  await expect(page.locator('[data-meet-result]')).toContainText('overlaps');
