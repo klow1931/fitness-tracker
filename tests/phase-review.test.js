@@ -38,7 +38,7 @@ const corrupt=structuredClone(next.phaseReviews);corrupt[0].changes[0].after.con
 const invalidChoice={...keep,bench:'reduce-load'};assert.throws(()=>R.preview(report,invalidChoice),/supported/);
 const afterCutoff=edit(s=>{s.scheduledSessions=Schedule.change(s.scheduledSessions,edits[0].id,{date:'2026-10-20',reason:'Later edit'},'2026-10-19T10:00:00.000Z');});assert.deepEqual(R.analyze(afterCutoff,args),report);assert.throws(()=>R.apply(afterCutoff,report,choices,options),/cutoff/);
 const easy=edit(s=>{for(const w of s.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=set.targetRpe-1;});
-const progress=R.analyze(easy,args);assert.equal(progress.findings.bench.decision,'progress');assert.equal(progress.findings.squat.decision,'reduce-load');
+const progress=R.analyze(easy,args);assert.equal(progress.findings.bench.decision,'progress',progress.findings.bench.reason);assert.equal(progress.findings.squat.decision,'reduce-load');
 assert.equal(progress.findings.bench.underCapSessions,progress.findings.bench.expectedSessions);
 const upChoices={squat:'keep',bench:'progress',deadlift:'keep'},upEdits=R.preview(progress,upChoices);
 assert.equal(upEdits.length,9);assert(upEdits.every(e=>e.after.plannedExercises.find(x=>x.exerciseId==='b').sets.every((set,i)=>set.weight>e.before.prescription.plannedExercises.find(x=>x.exerciseId==='b').sets[i].weight)));
