@@ -52,7 +52,7 @@ const worseEasy=R.analyze(easy,{...args,recovery:{...args.recovery,sleep:'worse'
 const highIncrement=structuredClone(progress);
 highIncrement.basis.program.config.incrementKg=100;
 assert.throws(()=>R.preview(highIncrement,upChoices),/increment|ceiling/);
-const legacyReview=structuredClone(next.phaseReviews);legacyReview[0].policy='phase-effort-v1';delete legacyReview[0].trainingMaxKg;
+const legacyReview=structuredClone(next.phaseReviews);legacyReview[0].policy='phase-effort-v1';delete legacyReview[0].trainingMaxKg;for(const change of legacyReview[0].changes)change.after.context.reason='Approved accumulation phase review (phase-effort-v1)';
 assert.deepEqual(R.validate(legacyReview),legacyReview,'Old accepted reductions remain valid and importable');
 const tamperedIncrease=structuredClone(advanced.phaseReviews);tamperedIncrease[0].changes[0].after.context.prescription.plannedExercises[0].sets[0].weight=1000;
 assert.throws(()=>R.validate(tamperedIncrease),/policy|ceiling|progression/);
