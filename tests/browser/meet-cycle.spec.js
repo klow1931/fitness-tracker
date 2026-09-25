@@ -39,6 +39,7 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(1);
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(before);
  const planned=await page.evaluate(()=>data.meetCycles[0].sessions.length);
+ await page.locator('[data-cycle] > summary').click();
  page.once('dialog',dialog=>dialog.accept());
  await page.locator('[data-cycle-schedule]').click();
  await expect.poll(()=>page.evaluate(()=>data.scheduledSessions.length)).toBe(planned);
