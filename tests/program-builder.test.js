@@ -14,5 +14,5 @@ let goals=G.upsert([],{name:'Meet',sport:'Powerlifting',eventDate:'2027-01-01',a
 const changed=G.upsert(goals,{...G.list(goals)[0],name:'Changed'},{id:gid,now:'2026-09-22T10:30:00.000Z'});assert.throws(()=>P.save({...gs,athleteGoals:changed},gp,{confirmed:true},{asOf,now:'2026-09-22T11:00:00.000Z'}));
 const close=G.upsert(goals,{...G.list(goals)[0],eventDate:'2026-10-10'},{id:gid,now});assert.throws(()=>P.prepare({...state,athleteGoals:close},c,{asOf,goalId:gid}));
 const lb=P.build({...c,incrementKg:5*.45359237,lifts:{...lifts,bench:{...lifts.bench,trainingMaxKg:300*.45359237}}});assert(Math.abs(lb.sessions[0].exercises[1].sets[0].weight/.45359237-195)<.02);
-const migrated=Core.normalizeState({schemaVersion:17,workouts:[{id:'w',date:asOf,exercises:[]}]});assert.equal(migrated.schemaVersion,21);assert.deepEqual(migrated.reviewedPrograms,[]);assert.equal(migrated.workouts[0].id,'w');
+const migrated=Core.normalizeState({schemaVersion:17,workouts:[{id:'w',date:asOf,exercises:[]}]});assert.equal(migrated.schemaVersion,22);assert.deepEqual(migrated.reviewedPrograms,[]);assert.equal(migrated.workouts[0].id,'w');
 console.log('Reviewed program templates, bounds, mapping, goals, calendar, duplicate guards, units and migration passed');
