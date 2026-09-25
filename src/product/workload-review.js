@@ -5,9 +5,10 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Phase,Workload){
   'use strict';
   const LIFTS=Phase.LIFTS,copy=x=>JSON.parse(JSON.stringify(x));
-  function assess(report,raw){
+  function assess(report,raw,performance=null){
     const c=Phase.config(raw);
     if(!report||report.version!==1||!report.lifts)throw Error('Generate a fresh workload comparison first');
+    if(performance&&(performance.version!==1||performance.asOf!==report.asOf||!performance.lifts))throw Error('Performance evidence does not match workload review date');
     const findings={};
     for(const lift of LIFTS){
       const row=report.lifts[lift],settings=c.lifts[lift];
@@ -20,12 +21,15 @@
       if(!above)reasons.push('The proposed first-week sets are not more than 25% above the four-week logged weekly average.');
       if(!minimum)reasons.push('The phase builder requires at least two sets per lift exposure.');
       const reductionAvailable=completeWeeks&&rpeOK&&above&&minimum;
-      const action=reductionAvailable?'review-reduction':'keep-or-gather';
+      const perf=performance?.lifts[lift]||null;
+      if(performance&&(!perf||perf.exerciseId!==settings.exerciseId))throw Error('Performance evidence no longer matches the competition exercise');
+      if(perf){reasons.push(...perf.reasons);if(perf.direction==='lower-estimate')reasons.push('A lower estimated-capacity trend calls for technique, effort and training-context review; it does not prove that reducing sets is the correct intervention.');}
+      const action=perf?.direction==='lower-estimate'?(reductionAvailable?'review-reduction-and-performance':'review-performance'):reductionAvailable?'review-reduction':'keep-or-gather';
       findings[lift]={
-        exerciseId:settings.exerciseId,name:settings.name,action,reductionAvailable,plannedWeeklySets:planned,observedWeeklyAverage:average,
+        exerciseId:settings.exerciseId,name:settings.name,action,reductionAvailable,performance:perf?{direction:perf.direction,evidenceDays:perf.evidenceDays,changePct:perf.changePct,baselineEstimateKg:perf.baselineEstimateKg,latestEstimateKg:perf.latestEstimateKg}:null,plannedWeeklySets:planned,observedWeeklyAverage:average,
         existingSetsPerExposure:settings.sets,optionalSetsPerExposure:reductionAvailable?settings.sets-1:null,
         optionalFirstWeekSets:reductionAvailable?planned-settings.exposures.length:null,
-        reasons:reductionAvailable?[`First-week ${planned} sets exceed the logged ${average} weekly average by over 25% across four observed weeks. Review whether a smaller starting dose fits the athlete's constraints; this is not a proven safe limit.`]:reasons
+        reasons:reductionAvailable?[`First-week ${planned} sets exceed the logged ${average} weekly average by over 25% across four observed weeks. Review whether a smaller starting dose fits the athlete's constraints; this is not a proven safe limit.`,...reasons.filter(r=>!!perf)]:reasons
       };
     }
     return {version:1,asOf:report.asOf,findings,disclaimer:'No automatic volume increases, fatigue diagnoses, or changes to stored workouts, approved phase plans or Calendar. Reducing one set changes every non-deload exposure of that lift in a NEW proposal and must be regenerated and reviewed.'};
