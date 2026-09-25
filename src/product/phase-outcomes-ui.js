@@ -1,0 +1,13 @@
+(function(){
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&amp;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  window.renderPhaseOutcomes=function(){
+    const host=document.getElementById('phase-outcomes');if(!host)return;
+    host.innerHTML='<p>See what happened after an accepted phase decision. Follow-up must be linked to the approved Calendar prescription; descriptive outcomes do not establish cause.</p><label>Outcomes through <input class="input" type="date" id="phase-outcomes-date"></label><div id="phase-outcomes-report" aria-live="polite"></div>';
+    const input=host.querySelector('input'),panel=host.querySelector('#phase-outcomes-report');input.value=today();input.max=today();
+    const draw=()=>{try{
+      const report=LoadnotePhaseOutcomes.analyze(data,{asOf:input.value});
+      panel.innerHTML=`<p>${esc(report.notice)}</p>${report.reviews.map(r=>`<details class="more-details"><summary>${esc(r.programName)} · ${esc(r.phase)} decision · ${esc(r.nextPhase||'sequence complete')}</summary><p>Accepted ${esc(r.acceptedAt)} · follow-up ${esc(r.from||'not applicable')} – ${esc(r.through||'not applicable')}</p>${Object.entries(r.findings).map(([lift,f])=>`<article data-phase-outcome-lift="${lift}"><h4>${esc(f.name)} · ${esc(f.choice)}</h4><p>Why: ${esc(f.why)}</p><p>${esc(f.status)} · ${f.completed}/${f.expected} completed · ${f.matched}/${f.expected} matched approved sets, reps and loads · ${f.withinCap} within RPE cap · ${f.aboveCap} above cap.</p><p>${f.observedChangePct==null?'Estimated strength comparison unavailable':`Early estimated capacity ${toDisplay(f.baselineEstimateKg)} → later ${toDisplay(f.followupEstimateKg)} ${unitLabel()} · observed ${f.observedChangePct}%`}</p><p>${esc(f.evidenceNote)}</p><details class="more-details"><summary>Follow-up session evidence</summary>${f.rows.map(row=>`<p>${esc(row.date)} · ${esc(row.status)} · ${row.completedSets}/${row.approvedSets} logged/approved sets ${row.withinCap==null?'':'· '+(row.withinCap?'at or below RPE caps':'above RPE cap')}</p>`).join('')||'<p>No next-phase lift sessions.</p>'}</details></article>`).join('')}</details>`).join('')||'<p>No accepted phase review available by this date. Outcomes appear only after an athlete confirms a phase review and completes linked follow-up sessions.</p>'}`;
+    }catch(err){panel.textContent='Unable to compare phase outcomes: '+err.message;}};
+    input.addEventListener('change',draw);draw();
+  };
+})();

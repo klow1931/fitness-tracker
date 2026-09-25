@@ -83,3 +83,22 @@ test('phase transition comparison reflects selected adjustments and protects del
  expect(await page.evaluate(()=>data.scheduledSessions.every(s=>s.revisions.length===1))).toBe(true);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('accepted phase decision outcome compares linked next-phase training without mutating history',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-11-08T23:00:00.000Z'));
+ const unchanged=await page.evaluate(()=>{
+   const basis=LoadnotePhaseReview.analyze(data,{programId:'ph',phase:'accumulation',asOf:'2026-10-18',now:'2026-10-18T22:00:00.000Z',recovery:{sleep:'usual',fatigue:'usual',soreness:'usual',discomfort:'none'}});
+   data=LoadnotePhaseReview.apply(data,basis,{squat:'reduce-load',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:'2026-10-18',now:'2026-10-18T22:00:00.000Z'});
+   for(const session of data.phasePrograms[0].sessions.filter(s=>s.phase==='strength')){
+     const record=data.scheduledSessions.find(r=>r.id==='phase:ph:'+session.key),rev=record.revisions.at(-1),plan=rev.context.prescription;
+     data.workouts.push({id:'browser-outcome-'+session.key,date:session.date,createdAt:session.date+'T20:00:00.000Z',sessionIntent:{schedule:{id:record.id,revisionAt:rev.recordedAt},prescription:structuredClone(plan)},exercises:plan.plannedExercises.map(ex=>({...ex,sets:ex.sets.map(set=>({...set,rpe:set.targetRpe}))}))});
+   }
+   renderPhaseReview();
+   return JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions,phaseReviews:data.phaseReviews});
+ });
+ await page.locator('#phase-outcomes-panel > summary').click();
+ await expect(page.locator('#phase-outcomes-report')).toContainText('observed-follow-up');
+ await expect(page.locator('[data-phase-outcome-lift="squat"]')).toContainText('reduce-load');
+ await expect(page.locator('[data-phase-outcome-lift="squat"]')).toContainText('6/6 matched');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions,phaseReviews:data.phaseReviews}))).toBe(unchanged);
+});

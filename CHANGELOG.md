@@ -1,3 +1,10 @@
+# v2.24.0 — Accepted phase decision outcomes
+
+- Show per-lift follow-up after accepted phase reviews, relating each approved next-phase prescription to linked completed sets and reps, logged RPE versus approved caps, and descriptive early-versus-follow-up estimated capacity where sufficient comparable competition-lift evidence exists.
+- Preserve exact as-recorded knowledge cutoffs, exercise identities and Calendar revision links. Missing, altered, ambiguous, unconfirmed or RPE-incomplete work is surfaced rather than counted as evidence that an adjustment helped.
+- Keep evaluation read-only; never imply causation, rewrite an approved program, or trigger automatic programming changes. No stored data migration.
+- Add Node and browser regression coverage, synchronize release metadata and offline assets.
+
 # v2.23.0 — Competition-lift performance context
 
 - Compare early and late recent dated competition-lift estimated-capacity evidence independently for squat, bench and deadlift using existing load/reps/RPE eligibility rules, with four distinct dates spanning 14 days and median-of-two endpoints.
