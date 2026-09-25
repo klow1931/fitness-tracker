@@ -1,3 +1,11 @@
+# v2.31.0 — Phase-aware Decisions for flexible meet cycles
+
+- Add deterministic, read-only Decisions context for the active, upcoming or completed scheduled meet cycle. Show current week and phase, phase-week count, mock-meet date, upcoming programmed training, current-week review and phase-transition date.
+- Present different, bounded programming priorities during accumulation, strength, peaking, taper and mock-meet week. Summarize original per-lift planned sets/exposures alongside separately linked actual valid sets, comparable logged RPE and cap exceedances.
+- Distinguish explicitly skipped, cancelled, upcoming, unconfirmed and untrustworthy schedule links; preserve as-recorded knowledge cutoffs and warn when sessions were revised, logs are timestamp-ambiguous or sets changed. Missing logs are never labeled skipped and outcomes are never described as proof of recovery or program effectiveness.
+- Keep the original meet cycle, revisions and workout history unchanged. No automatic future adjustments, meet-attempt prescription or new storage schema; phase-specific approval workflow remains the next milestone.
+- Add Node and mobile/browser regression coverage, release metadata and offline cache assets.
+
 # v2.30.0 — Configurable mock-meet training cycles
 
 - Build reviewed mock-meet cycles from existing reviewed, competition-lift-specific phase setup. Choose 7–52 weeks (presets for 8/12/16/20), 1–4 peak weeks and 1–2 taper weeks; the final week marks a Saturday/Sunday mock meet. Automatically allocate remaining weeks to accumulation and strength (minimum two each).
