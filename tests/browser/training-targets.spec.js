@@ -12,13 +12,13 @@ test.beforeEach(async({page})=>{
  },{seed:fixture(),args});
 });
 test('calendar and active workout show approved per-lift targets, preceding evidence and rationale without editing draft',async({page})=>{
- const target=page.locator('[data-target-panel="phase:ph:w4d0"]');
+ const target=page.locator('#week-plan [data-target-panel="phase:ph:w4d0"]');
  await target.locator('summary').click();
  await expect(target).toContainText('Previous logged (2026-10-12)');
  await expect(target).toContainText('reduce-load');
  await expect(target).toContainText('Approved change');
  const scheduled=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,phaseReviews:data.phaseReviews,scheduledSessions:data.scheduledSessions}));
- await page.locator('[data-start="phase:ph:w4d0"]').click();
+ await page.locator('#week-plan [data-start="phase:ph:w4d0"]').click();
  await expect(page.locator('#workout-plan-context')).toBeVisible();
  await page.locator('#workout-plan-context > summary').click();
  await expect(page.locator('#workout-plan-context-body')).toContainText('Previous logged (2026-10-12)');
