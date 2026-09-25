@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.21.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.22.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.22 — Athlete-reviewed workload choices
+
+**Decisions → Programs → Phase-based program builder** explains independent per-lift workload observations and can regenerate a NEW proposal with an explicitly selected one-set-per-exposure reduction when recent matching training and RPE are sufficiently documented. Keep is the default; no existing approved programs, Calendar sessions or workout history change. No automatic volume increase or validated optimal dose is claimed.
 
 ## v2.21 — Lift-specific workload comparison
 

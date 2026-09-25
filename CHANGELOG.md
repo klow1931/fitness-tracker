@@ -1,3 +1,10 @@
+# v2.22.0 — Athlete-reviewed per-lift workload choices
+
+- Interpret v2.21 per-lift sets and RPE coverage independently for squat, bench and deadlift. Show why a reduction is available or why more evidence is needed; no inferred optimal dose or unsupported automatic increase.
+- Optionally reduce one set per exposure for an eligible lift in a NEW phase proposal only after explicit athlete choice. Regenerate and recheck all phases; keep unchanged as the default, preserve review notes, original programs, scheduled sessions and training history.
+- Require four observed weeks, valid RPE coverage and a >25% proposed-versus-logged weekly set mismatch before offering this conservative review option. Missing logs do not imply low tolerance.
+- Add model and browser regression tests and synchronize version/offline assets.
+
 # v2.21.0 — Lift-specific workload evidence
 
 - Compare each reviewed phase program's original first-week sets and exercise exposure frequency against four observed seven-day windows, separately counting competition lift and explicitly selected variation sets by exercise identity.
