@@ -3,7 +3,7 @@ test.use({serviceWorkers:'allow'});
 test('set targets and next-set feedback update without revising approved plan or workout history',async({page})=>{
  await page.clock.install({time:new Date('2026-10-19T12:00:00.000Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
- await page.evaluate(({seed,args})=>{
+ await page.evaluate(async ({seed,args})=>{
    data=normalizeDataShape({...data,...seed});
    const review=LoadnotePhaseReview.analyze(data,args);
    data=LoadnotePhaseReview.apply(data,review,{squat:'reduce-load',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:args.asOf,now:args.now});
