@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.18.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.20.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.20 — Meet preparation preview
+
+**Decisions → Programs → Phase-based program builder** now offers an optional reviewed competition timeline after an existing phase sequence. It does not prescribe actual peaking workouts, attempts or training loads. Existing workouts, scheduled sessions and reviewed programs are preserved.
 
 ## v2.14 — Phase-based proposals
 
