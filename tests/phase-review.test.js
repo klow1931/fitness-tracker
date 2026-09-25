@@ -37,7 +37,7 @@ const changedRole=edit(s=>s.exerciseRoles.find(r=>r.id==='squat').revisions.at(-
 const corrupt=structuredClone(next.phaseReviews);corrupt[0].changes[0].after.context.prescription.plannedExercises[0].sets[0].weight=999;assert.throws(()=>R.validate(corrupt),/policy/);
 const invalidChoice={...keep,bench:'reduce-load'};assert.throws(()=>R.preview(report,invalidChoice),/supported/);
 const afterCutoff=edit(s=>{s.scheduledSessions=Schedule.change(s.scheduledSessions,edits[0].id,{date:'2026-10-20',reason:'Later edit'},'2026-10-19T10:00:00.000Z');});assert.deepEqual(R.analyze(afterCutoff,args),report);assert.throws(()=>R.apply(afterCutoff,report,choices,options),/cutoff/);
-const easy=edit(s=>{for(const w of s.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);});
+const easy=fixture({incrementKg:.5});for(const w of easy.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);
 const progress=R.analyze(easy,args);assert.equal(progress.findings.bench.decision,'progress',progress.findings.bench.reason);assert.equal(progress.findings.squat.decision,'reduce-load');
 assert.equal(progress.findings.bench.underCapSessions,progress.findings.bench.expectedSessions);
 const upChoices={squat:'keep',bench:'progress',deadlift:'keep'},upEdits=R.preview(progress,upChoices);
@@ -46,7 +46,7 @@ const advanced=R.apply(easy,progress,upChoices,options);assert.equal(advanced.ph
 assert.deepEqual(advanced.workouts,easy.workouts);assert.deepEqual(advanced.phasePrograms,easy.phasePrograms);
 assert.deepEqual(R.validate(JSON.parse(JSON.stringify(advanced.phaseReviews))),advanced.phaseReviews);
 assert.throws(()=>R.preview(progress,{...upChoices,squat:'progress'}),/supported/);
-const changedEasy=edit(s=>{Object.assign(s,easy);s.workouts=structuredClone(easy.workouts);s.workouts[0].exercises.find(e=>e.exerciseId==='b').sets[0].rpe=10;});
+const changedEasy=structuredClone(easy);changedEasy.workouts[0].exercises.find(e=>e.exerciseId==='b').sets[0].rpe=10;
 assert.notEqual(R.analyze(changedEasy,args).findings.bench.decision,'progress');
 const worseEasy=R.analyze(easy,{...args,recovery:{...args.recovery,sleep:'worse'}});assert.notEqual(worseEasy.findings.bench.decision,'progress');
 const highIncrement=structuredClone(progress);
