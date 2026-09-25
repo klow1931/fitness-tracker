@@ -97,7 +97,7 @@
       if(!same(expected,s.prescription)||s.date!==source.date)continue; // Never overwrite manual plan edits or rescheduling.
       const after=copy(s.prescription);let changed=false;
       for(const e of after.plannedExercises){const lift=source.exercises.find(x=>x.exerciseId===e.exerciseId)?.lift,choice=choices[lift];
-        if(choice==='progress'){for(const set of e.sets)set.weight=increased(set.weight,report.basis.program.config.incrementKg,e.trainingMaxKg);changed=true;}
+        if(choice==='progress'){for(const set of e.sets)set.weight=increased(set.weight,report.basis.program.config.incrementKg,source.exercises.find(x=>x.exerciseId===e.exerciseId)?.trainingMaxKg);changed=true;}
         if(choice==='reduce-load'){const inc=report.basis.program.config.incrementKg;for(const set of e.sets){const weight=Core.round(Math.floor((set.weight*.95+1e-9)/inc)*inc,2);if(!(weight>0&&weight<set.weight))throw Error('Rounded load is unusable; review manually');set.weight=weight;}changed=true;}
         if(choice==='reduce-sets'){if(e.sets.length<3)throw Error('Set reduction would leave fewer than two working sets; keep this lift unchanged');e.sets.pop();changed=true;}
       }
