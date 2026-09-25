@@ -1,3 +1,11 @@
+# v2.15.0 — Evidence-based phase reviews
+
+- Per-lift completed-phase findings, recovery context and sparse-data guards.
+- Explicit preview/approval of bounded next-strength-phase load or working-set reductions; planned deloads and completed history preserved.
+- Chronological evidence replay, stale-review and draft protection, immutable originals and Calendar revision audit.
+- Schema 22 phase review backup/import support and desktop/mobile offline regression coverage.
+- No automatic increases, phase extensions, meet peaking or validated individualized coaching claims.
+
 # v2.14.0 — Reviewed phase-based program builder
 
 - Add accumulation → strength → deload sequences with editable durations, independent lift exposures/progression, straight sets and top-set/back-off formats.

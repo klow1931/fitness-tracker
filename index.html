@@ -1013,6 +1013,7 @@
       <details class="card" id="programming-profile-panel"><summary><b>Programming profile</b><small>Your goals, availability and constraints</small></summary><div id="programming-profile"></div></details>
       <details class="card" id="reviewed-builder-panel"><summary><b>Powerlifting program builder</b><small>Four-week proposals · review before scheduling</small></summary><div id="reviewed-builder"></div></details>
       <details class="card" id="phase-builder-panel"><summary><b>Phase-based program builder</b><small>Accumulation → strength → deload · review before scheduling</small></summary><div id="phase-builder"></div></details>
+      <details class="card" id="phase-review-panel"><summary><b>Phase review</b><small>Evidence and approved next-phase adjustments</small></summary><div id="phase-review"></div></details>
       <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Evidence, recovery and approved next-week changes</small></summary><div id="program-week-review"></div></details>
       <details class="card" id="program-outcomes-panel"><summary><b>After your adjustments</b><small>What was planned, what you did, and what followed</small></summary><div id="program-outcomes"></div></details>
       <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
@@ -1342,7 +1343,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.14.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.15.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1956,6 +1957,8 @@
   <script src="src/product/phase-builder-ui.js" defer></script>
   <script src="src/product/program-review.js" defer></script>
   <script src="src/product/program-review-ui.js" defer></script>
+  <script src="src/product/phase-review.js" defer></script>
+  <script src="src/product/phase-review-ui.js" defer></script>
   <script src="src/product/program-outcomes.js" defer></script>
   <script src="src/product/program-outcomes-ui.js" defer></script>
   <script src="src/product/block-decision-context.js" defer></script>

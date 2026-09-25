@@ -3,7 +3,7 @@ const input={name:'Meet prep',sport:'powerlifting',eventDate:'2026-12-12',target
 let goals=G.upsert([],input,{now:'2026-09-20T10:00:00.000Z'}),id=goals[0].id;
 goals=G.upsert(goals,{...input,name:'Revised goal'},{id,now:'2026-09-22T10:00:00.000Z'});assert.equal(G.list(goals,'2026-09-21T00:00:00.000Z')[0].name,'Meet prep');assert.equal(G.list(goals)[0].name,'Revised goal');assert.deepEqual(G.validate(JSON.parse(JSON.stringify(goals))),goals);
 assert.throws(()=>G.context({...input,eventDate:'2026-02-30'}));assert.throws(()=>G.context({...input,targets:[{lift:'squat',kg:Infinity}]}));assert.throws(()=>G.context({...input,sessionMinutes:-1}));assert.throws(()=>G.validate([...goals,...goals]));assert.throws(()=>G.upsert(goals,input,{id,now:'2026-09-20T00:00:00.000Z'}));
-const old={schemaVersion:16,goals:[{id:'legacy',name:'Legacy goal'}],workouts:[{id:'old',date:'2026-09-01',exercises:[]}]};const migrated=Core.normalizeState(old);assert.equal(migrated.schemaVersion,21);assert.deepEqual(migrated.athleteGoals,[]);assert.deepEqual(migrated.goals,old.goals);assert.deepEqual(migrated.workouts,old.workouts);
+const old={schemaVersion:16,goals:[{id:'legacy',name:'Legacy goal'}],workouts:[{id:'old',date:'2026-09-01',exercises:[]}]};const migrated=Core.normalizeState(old);assert.equal(migrated.schemaVersion,22);assert.deepEqual(migrated.athleteGoals,[]);assert.deepEqual(migrated.goals,old.goals);assert.deepEqual(migrated.workouts,old.workouts);
 assert.equal(G.context({...input,targets:[{lift:'bench',kg:330*0.45359237}]}).targets[0].kg,330*0.45359237);
 const blocks=B.upsert([],{name:'Strength',startDate:'2026-09-01'},{now:'2026-09-01T00:00:00.000Z'}),bid=blocks[0].id;
 goals=G.upsert([],{...input,blockIds:[bid]},{now:'2026-09-01T00:00:00.000Z'});id=goals[0].id;

@@ -1,10 +1,12 @@
 # Loadnote
 
-**v2.14.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.15.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.14 — Phase-based proposals
 
-**Decisions → Programs → Phase-based program builder** connects accumulation, strength and deload with independent lift schedules, straight or top/back-off sets, and explicitly selected variations. Inspect quality warnings and every week before saving, then schedule separately. Existing four-week programs remain unchanged; their automatic review rules do not apply to phase sequences. See [rules, safeguards and limits](docs/phase-builder.md).
+**Decisions → Programs → Phase review** compares completed phase evidence and offers independently approved next-phase load or set reductions. Sparse evidence withholds adjustments; original programs, completed workouts and deloads stay intact. No automatic increases or phase extensions. See [rules, safeguards and limits](docs/phase-review.md).
+
+The [phase-based builder](docs/phase-builder.md) connects accumulation, strength and deload with independent lift schedules and explicitly selected variations. Existing four-week programs and their reviews remain separate.
 
 ## v2.13 — Programming constraints
 
