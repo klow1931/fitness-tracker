@@ -20,7 +20,7 @@ for(const weeks of [8,12,16,20,52]){
   assert.equal(Object.keys(r.lifts).length,3);
   if(w.phase==='mock-meet'){assert.equal(r.next,null);assert.equal(r.summary.planned,0);}
  }
- assert.equal(Guidance.inspect(s,{asOf:'2026-09-24',now:args.now}).status,'upcoming');
+ assert.equal(Guidance.inspect(s,{asOf:'2026-09-24',now:'2026-09-24T14:00:00.000Z'}).status,'upcoming');
  assert.equal(Guidance.inspect(s,{asOf:cycle.config.meetDate,now:timestamp(cycle.config.meetDate)}).phase,'mock-meet');
  const after=new Date(cycle.config.meetDate+'T12:00:00Z');after.setUTCDate(after.getUTCDate()+1);
  assert.equal(Guidance.inspect(s,{asOf:after.toISOString().slice(0,10),now:after.toISOString()}).status,'completed');
