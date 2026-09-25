@@ -1,6 +1,6 @@
 # v2.16.0 — Individual lift progression and focused Decisions UX
 
-- Phase review optionally proposes a 2.5% next-phase load increase only after complete matched work stays at least 1 RPE below all caps across repeated sessions, dated competition-only capacity evidence spans 14+ days, recovery is reported usual, and exercise-specific training-max ceilings and kg increments permit every target.
+- Phase review optionally proposes a 2.5% next-phase load increase only after complete matched work stays at least 1 RPE below caps of 7+, and at cap or below when the target is RPE 6 across repeated sessions, dated competition-only capacity evidence spans 14+ days, recovery is reported usual, and exercise-specific training-max ceilings and kg increments permit every target.
 - Load increases, reductions and holds remain independent by lift and require explicit approval. Existing program prescriptions, original Calendar revisions, workout history and drafts remain protected.
 - Decisions now starts with a compact current-plan, next-session and next-review action card; advanced programming tools follow beneath the primary review.
 - Phase-review policy v2 validates the new transformation while preserving imported v1 review history. Schema 22 unchanged, no automatic adaptation or inferred optimum.
