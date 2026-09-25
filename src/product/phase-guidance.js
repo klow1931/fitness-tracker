@@ -16,7 +16,7 @@
  const byId=(state,id)=> (state.scheduledSessions||[]).find(r=>r.id===id);
  const round=x=>Math.round(x*10)/10;
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
- function inspect(state,{asOf,now=new Date().toISOString(),cycleId}={}){
+ function inspect(state,{asOf,now=new Date().toISOString(),cycleId,reviewWeek}={}){
    if(!Schedule.date(asOf)||!iso(now)||asOf>now.slice(0,10))throw Error('Choose a valid phase-guidance review date');
    const cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
    const candidates=Cycle.validate(state.meetCycles||[]).filter(c=>c.scheduledAt&&c.scheduledAt<=cutoff&&(!cycleId||c.id===cycleId));
@@ -27,7 +27,13 @@
    const cycle=cycleId?candidates.find(c=>c.id===cycleId):running[0]||upcoming[0]||previous[0];
    if(!cycle)return null;
    const status=asOf<cycle.config.startDate?'upcoming':asOf>cycle.config.meetDate?'completed':'active';
-   const week=status==='upcoming'?cycle.weekly[0]:status==='completed'?cycle.weekly.at(-1):cycle.weekly.find(w=>w.startDate<=asOf&&w.endDate>=asOf);
+   let week=status==='upcoming'?cycle.weekly[0]:status==='completed'?cycle.weekly.at(-1):cycle.weekly.find(w=>w.startDate<=asOf&&w.endDate>=asOf);
+   if(reviewWeek!=null){
+     if(!Number.isInteger(reviewWeek)||reviewWeek<1||reviewWeek>cycle.config.weeks)throw Error('Choose a valid cycle week');
+     const selected=cycle.weekly.find(w=>w.week===reviewWeek);
+     if(selected.endDate>asOf)throw Error('Review only after the selected week finishes');
+     week=selected;
+   }
    if(!week)throw Error('Original cycle week cannot be resolved');
    const samePhase=cycle.weekly.filter(w=>w.phase===week.phase),phaseEnd=samePhase.at(-1).endDate;
    const current=Schedule.list(state.scheduledSessions||[],cutoff),map=new Map(current.map(s=>[s.id,s]));

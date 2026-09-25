@@ -19,7 +19,7 @@
       { id:'feedback', label:'Decision feedback history', ok:Number(d.schemaVersion || 0) >= 16 && Array.isArray(d.decisionEvents) },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 22 }
     ];
-    return { version:'2.31.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'2.32.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });

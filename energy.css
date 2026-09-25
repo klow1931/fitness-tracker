@@ -623,3 +623,19 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 .phase-guidance-detail li { margin:.4rem 0; }
 #decision-cycle-cta { min-height:44px; }
 @media(max-width:380px){.phase-guidance-head { flex-wrap:wrap; }.phase-guidance-chip { order:-1; }}
+
+/* v2.32 — weekly and phase-transition review, closed by default. */
+#cycle-week-review { margin:.8rem 0; min-width:0; }
+#cycle-week-review .cycle-review-panel { padding:.7rem .1rem; border-top:1px solid var(--line); }
+#cycle-week-review .cycle-review-panel > summary { cursor:pointer; min-height:44px; font-size:.83rem; font-weight:750; }
+#cycle-week-review .cycle-review-panel label { display:grid; gap:.35rem; margin:.8rem 0; min-width:0; font-size:.78rem; }
+#cycle-week-review .cycle-review-choice { padding:.55rem 0; border-top:1px solid var(--line); }
+#cycle-week-review .cycle-review-choice b { font-size:.84rem; }
+#cycle-week-review .cycle-review-choice small { font-size:.75rem; color:var(--muted); line-height:1.4; overflow-wrap:anywhere; }
+#cycle-week-review .cycle-review-meta { padding:.75rem 0; font-size:.79rem; line-height:1.45; }
+#cycle-week-review .cycle-review-meta p { margin:.3rem 0; }
+#cycle-week-review .cycle-review-approval { display:flex; align-items:flex-start; line-height:1.45; }
+#cycle-week-review .cycle-review-approval input { min-width:22px; min-height:22px; }
+#cycle-week-review .cycle-review-hint { font-size:.74rem; line-height:1.45; color:var(--muted); }
+#cycle-week-review button { min-height:44px; }
+#cycle-review-error { font-size:.78rem; line-height:1.5; overflow-wrap:anywhere; }
