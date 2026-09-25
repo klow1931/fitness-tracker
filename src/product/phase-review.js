@@ -62,7 +62,11 @@
       const selected=program.roleSnapshot.filter(r=>ids.has(r.exerciseId)),roleOK=selected.every(r=>roles.some(x=>x.exerciseId===r.exerciseId&&x.role===r.role&&x.competitionLift===r.competitionLift))&&roles.filter(r=>r.role==='competition'&&r.competitionLift===lift).length===1;
       const days=[...new Set(performance.filter(p=>Number.isFinite(p.estimatedCapacity)).map(p=>p.date))].sort();
       // Compare only competition-lift evidence; variations never establish competition capacity.
-      const capacity=days.length>=3&&days.at(-1)>=move(days[0],14)?{firstDate:days[0],lastDate:days.at(-1),firstKg:Math.max(...performance.filter(p=>p.date===days[0]&&p.estimatedCapacity!=null).map(p=>p.estimatedCapacity)),lastKg:Math.max(...performance.filter(p=>p.date===days.at(-1)&&p.estimatedCapacity!=null).map(p=>p.estimatedCapacity))}:null;
+      const eligible=performance.filter(p=>Number.isFinite(p.estimatedCapacity));
+      const firstWeek=eligible.filter(p=>p.date>=from&&p.date<move(from,7)),lastWeek=eligible.filter(p=>p.date>=move(through,-6)&&p.date<=through);
+      const best=rows=>rows.reduce((a,b)=>!a||b.estimatedCapacity>a.estimatedCapacity?b:a,null);
+      const first=best(firstWeek),last=best(lastWeek);
+      const capacity=days.length>=3&&days.at(-1)>=move(days[0],14)&&first&&last?{firstDate:first.date,lastDate:last.date,firstKg:first.estimatedCapacity,lastKg:last.estimatedCapacity}:null;
       const nextSessions=program.sessions.filter(s=>s.phase===nextPhase);
       let canIncrease=nextSessions.some(s=>s.exercises.some(e=>e.lift===lift));
       if(canIncrease)try{for(const s of nextSessions)for(const e of s.exercises.filter(e=>e.lift===lift))for(const set of e.sets)increased(set.weight,program.config.incrementKg,e.trainingMaxKg);}catch(e){canIncrease=false;}
