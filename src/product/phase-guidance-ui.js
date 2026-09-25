@@ -21,6 +21,7 @@
        <p class="more-hint">${esc(report.notice)}</p>
      </details>
      <div id="cycle-week-review"></div>
+     <div id="cycle-response"></div>
      <button class="btn-primary" type="button" id="decision-cycle-cta">Open original cycle</button>
    </div>`;
  }

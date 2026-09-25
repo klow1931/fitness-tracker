@@ -1,0 +1,40 @@
+const assert=require('node:assert/strict'),Response=require('../src/product/cycle-response'),Cycle=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder');
+const {phaseFixture}=require('./fixtures/phase-builder');
+const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
+const setup=Phase.save(state,Phase.prepare(state,config,args),{confirmed:true},{...args,id:'setup'});
+const built=Cycle.prepare(setup,setup.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args);
+const saved=Cycle.save(setup,built,{confirmed:true},{...args,id:'meet12'}),scheduled=Cycle.schedule(saved,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});
+const asOf='2026-11-01',now='2026-11-01T20:00:00.000Z';
+const empty=Response.inspect(scheduled,{cycleId:'meet12',asOf,now});
+assert.equal(empty.completedWeeks,5);assert.equal(empty.phases[0].phase,'accumulation');
+assert.equal(empty.phases[0].plannedSessions,12);assert.equal(empty.phases[0].unconfirmedSessions,12);
+assert.equal(empty.phases[0].lifts.squat.status,'insufficient-evidence');
+assert.equal(empty.phases[0].lifts.squat.observedChangePct,null);
+assert.equal(JSON.stringify(scheduled),JSON.stringify(scheduled));
+const active=structuredClone(scheduled);
+for(const source of built.sessions.filter(s=>s.week<=5)){
+ const rec=scheduled.scheduledSessions.find(x=>x.id==='meet:meet12:'+source.key),plan=rec.revisions[0].context.prescription;
+ active.workouts.push({id:'cycle-'+source.key,date:source.date,createdAt:source.date+'T18:00:00.000Z',sessionIntent:{schedule:{id:rec.id,revisionAt:rec.revisions[0].recordedAt},prescription:structuredClone(plan)},
+   exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map((set,i)=>({...set,rpe:set.targetRpe,weight:set.weight+(e.exerciseId==='s'&&i===0?source.week*2.5:0)}))}))});
+}
+const original=JSON.stringify(active),report=Response.inspect(active,{cycleId:'meet12',asOf,now});
+assert.equal(report.phases[0].linkedSessions,12);assert.equal(report.phases[0].unconfirmedSessions,0);
+assert(report.phases[0].lifts.squat.capacityDates>=4);
+assert.equal(typeof report.phases[0].lifts.squat.observedChangePct,'number');
+assert(report.phases[0].lifts.squat.loggedSets>0);
+assert(report.phases[0].lifts.squat.matchedRpeSets<report.phases[0].lifts.squat.loggedSets,'Modified actual loads are not treated as matching approved sets');
+assert.equal(report.phases[1].lifts.squat.status,'insufficient-evidence','Short strength phase has insufficient dated evidence');
+assert.equal(report.phases[0].lifts.bench.competitionExerciseId,config.lifts.bench.exerciseId);
+assert.equal(JSON.stringify(active),original,'Read-only model');
+const future=structuredClone(active);future.workouts.push({id:'later',date:'2026-11-01',createdAt:'2026-11-02T00:00:00.000Z',exercises:[{exerciseId:'s',sets:[{weight:999,reps:1,rpe:10}]}]});
+assert.deepEqual(Response.inspect(future,{cycleId:'meet12',asOf,now}),report,'Later recorded evidence does not leak backward');
+const mismatched=structuredClone(active);
+for(const w of mismatched.workouts.filter(w=>w.date<='2026-10-25'&&w.exercises.some(e=>e.exerciseId==='s')))w.sessionIntent.schedule.revisionAt='2026-09-25T00:00:00.000Z';
+assert.equal(Response.inspect(mismatched,{cycleId:'meet12',asOf,now}).phases[0].lifts.squat.capacityDates,0,'Unverified session revisions cannot become capacity evidence');
+const mapped=structuredClone(active);mapped.workouts.forEach(w=>(w.exercises||[]).forEach(e=>{if(e.exerciseId==='s')e.exerciseId='ss';}));
+assert.equal(Response.inspect(mapped,{cycleId:'meet12',asOf,now}).phases[0].lifts.squat.capacityDates,0,'Variations never stand in for the competition exercise');
+const before=Response.inspect(active,{cycleId:'meet12',asOf:'2026-10-04',now:'2026-10-04T22:00:00.000Z'});
+assert.equal(before.completedWeeks,1);assert.equal(before.phases.length,1);
+assert.equal(Response.inspect(active,{cycleId:'other',asOf,now}),null);
+assert.throws(()=>Response.inspect(active,{cycleId:'meet12',asOf:'2026-12-31',now}),/valid/);
+console.log('v2.33 individual phase response, sparse evidence, valid dated estimates, identities, as-known cutoff, and immutable history passed');
