@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.29.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.30.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.30 — Flexible mock-meet cycles
+
+**Decisions → Programming → Phase-based program builder → Flexible mock-meet cycles.** Create and save the phase proposal as reviewed lift setup, then choose an 8, 12, 16, 20 or custom **7–52 week** cycle, 1–4 peak weeks, 1–2 taper weeks, and a Saturday/Sunday mock meet in the final week. Accumulation and strength share the remaining weeks. Preview every week and working set, preserve the approved original, and schedule the workouts with an independent athlete confirmation. Original phase programs and completed history are not overwritten. The mock-meet date is a marker; the software never picks maximal attempts. The full-cycle weekly and phase-decision workflow remains a subsequent milestone.
 
 ## v2.29 — Decisions built around the athlete’s next action
 

@@ -4,6 +4,15 @@
   function decisionSummary(programs){
     const target=document.getElementById('decision-action-center');if(!target)return;
     const scheduled=(data.scheduledSessions||[]).flatMap(r=>{const x=r.revisions?.at(-1);return x?.context?.status==='scheduled'&&x.context.date>=today()?[{...x.context,id:r.id}]:[];}).sort((a,b)=>a.date.localeCompare(b.date));
+    const activeCycle=(data.meetCycles||[]).filter(r=>r.scheduledAt&&r.config.startDate<=today()&&r.config.meetDate>=today()).at(-1)
+      ||(data.meetCycles||[]).filter(r=>r.scheduledAt&&r.config.startDate>today()).sort((x,y)=>x.config.startDate.localeCompare(y.config.startDate))[0];
+    if(activeCycle){
+      const c=activeCycle.config,week=activeCycle.weekly.find(w=>w.startDate<=today()&&w.endDate>=today())||activeCycle.weekly[0];
+      const next=scheduled.find(s=>s.id.startsWith('meet:'+activeCycle.id+':'));
+      target.innerHTML=`<div class="card" style="padding:1rem"><span class="eyebrow">CURRENT MOCK-MEET CYCLE</span><h3 style="font-weight:700">${esc(activeCycle.sourceProgram.config.name)} · ${c.weeks} weeks</h3><p>Week ${week.week} of ${c.weeks} · ${esc(week.phase)}</p><p>Mock meet: ${esc(c.meetDate)}</p><p>${next?'Next: '+esc(next.date)+' · '+esc(next.name):'No remaining prescribed training sessions; mock-meet attempts are athlete-selected.'}</p><p style="font-size:.875rem">Original cycle preserved. Weekly and phase-specific automated revisions are not yet available for this flexible cycle; review actual logs before changing future sessions.</p><button class="btn-primary" type="button" id="decision-cycle-cta">See cycle</button></div>`;
+      target.querySelector('#decision-cycle-cta').onclick=()=>{const panel=document.getElementById('phase-builder-panel'),row=document.querySelector('[data-cycle="'+CSS.escape(activeCycle.id)+'"]');if(panel)panel.open=true;if(row)row.open=true;(row||panel)?.scrollIntoView({behavior:'smooth',block:'start'});};
+      return;
+    }
     const upcoming=scheduled[0],program=programs.find(p=>upcoming?.id.startsWith('phase:'+p.id+':'))||programs.at(-1);
     const approved=(data.phaseReviews||[]).filter(r=>r.programId===program?.id).at(-1);
     let phase=null;

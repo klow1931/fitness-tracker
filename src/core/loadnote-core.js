@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 22;
-  const RELEASE_VERSION = '2.29.0';
+  const SCHEMA_VERSION = 23;
+  const RELEASE_VERSION = '2.30.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -178,6 +178,8 @@
     if(Number(state.schemaVersion||1)<21)state.schemaVersion=21;
     if(state.phaseReviews===undefined)state.phaseReviews=[];
     if(Number(state.schemaVersion||1)<22)state.schemaVersion=22;
+    if(state.meetCycles===undefined)state.meetCycles=[];
+    if(Number(state.schemaVersion||1)<23)state.schemaVersion=23;
     return state;
   }
 

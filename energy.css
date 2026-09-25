@@ -581,3 +581,25 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 #panel-coach .decision-evidence-help-body { padding:0 .8rem .8rem; font-size:.77rem; line-height:1.5; }
 #panel-coach .decision-evidence-help-body p { margin:.55rem 0; overflow-wrap:anywhere; }
 #panel-coach .decision-evidence-help-body button { min-height:44px; margin-top:.4rem; }
+
+/* v2.30 — configurable, review-first meet-cycle UX. */
+#meet-cycle { min-width:0; padding:1rem; border:1px solid var(--line); border-radius:1rem; background:var(--surface); }
+#meet-cycle .decision-section-heading { margin:0 0 .8rem; }
+#meet-cycle .decision-section-heading h3 { font-size:1.05rem; font-weight:800; }
+#meet-cycle .decision-section-heading p { color:var(--muted); font-size:.8rem; line-height:1.45; }
+#meet-cycle > label { display:grid; gap:.35rem; font-size:.8rem; }
+#meet-cycle > button { margin:.7rem 0; min-height:44px; }
+#meet-cycle [data-cycle] { border-top:1px solid var(--line); margin-top:.65rem; padding-top:.6rem; }
+#meet-cycle [data-cycle] > summary { min-height:44px; cursor:pointer; overflow-wrap:anywhere; }
+#cycle-dialog { width:min(680px,calc(100% - 20px)); }
+#cycle-dialog h2 { font-size:1.2rem; font-weight:800; }
+#cycle-dialog label { display:grid; gap:.35rem; margin:.85rem 0; font-size:.85rem; }
+#cycle-dialog .cycle-check { display:flex; align-items:flex-start; line-height:1.45; }
+#cycle-dialog .cycle-check input { min-width:22px; min-height:22px; margin-top:.05rem; }
+#cycle-dialog .cycle-presets { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.35rem; }
+#cycle-dialog .cycle-presets button { padding:.55rem .15rem; min-width:0; min-height:44px; font-size:.78rem; }
+#cycle-dialog #cycle-preview { min-width:0; margin:1rem 0; }
+#cycle-dialog #cycle-preview > details { min-width:0; margin:.55rem 0; }
+#cycle-dialog #cycle-preview article { padding:.55rem 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; font-size:.81rem; }
+#cycle-dialog #cycle-preview article p { line-height:1.45; margin:.4rem 0; }
+#cycle-dialog #cycle-error,#meet-cycle #cycle-status { margin:.6rem 0; overflow-wrap:anywhere; }
