@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.27.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.28.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.28 — Reviewed meet-peak training proposal
+
+**Decisions → Programs → existing phase proposal → Meet preparation timeline** now includes an expandable week-by-week competition-lift session example with separate squat, bench and deadlift evidence. Training maxes and the original reviewed primary exposure days determine bounded example targets; recent dated logs flag additional individual review. This does not schedule a peak, infer an athlete's safe maximal single, select meet attempts, or overwrite prior workouts.
 
 ## v2.27 — Set-by-set workout guidance
 

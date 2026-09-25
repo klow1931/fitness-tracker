@@ -1,3 +1,10 @@
+# v2.28.0 — Reviewed meet-peak training proposals
+
+- Extend the existing meet timeline with a bounded, read-only competition-specific weekly session preview for squat, bench and deadlift. Use each confirmed competition exercise, athlete-selected training max, reviewed primary-exposure day and load increment; exclude variation and accessory loads.
+- Include a lower-volume final taper-week example, explicit RPE caps, actual dated competition-lift history and descriptive estimated-capacity context. Flag incomplete evidence, above-RPE-8 logged sets, lower observed estimates and Calendar conflicts for individual review.
+- Preserve the existing phase program and meet timeline, the 85% training-max ceiling, immutable training and athlete approval safeguards. No automatic scheduling, max attempts, opener choice, meet-week doses, or schema migration.
+- Add model and browser tests, release metadata and offline cache.
+
 # v2.27.0 — In-workout set guidance
 
 - Show each scheduled strength set’s approved load, reps, and RPE cap directly beside the numeric logging controls. After a set is explicitly checked, display the next unchanged approved target and explain logged RPE versus the cap or missing/mismatched data.

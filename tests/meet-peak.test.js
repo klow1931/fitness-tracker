@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict'),Peak=require('../src/product/meet-peak'),Builder=require('../src/product/phase-builder');
+const {phaseFixture}=require('./fixtures/phase-builder');
+const {state,config}=phaseFixture(),basis=JSON.stringify(state),raw=JSON.stringify(config);
+const asOf='2026-09-24',now='2026-09-24T12:00:00.000Z',proposal=Builder.prepare(state,config,{asOf,now}),saved=Builder.save(state,proposal,{confirmed:true},{asOf,now,id:'peak'});
+const program=saved.phasePrograms[0],snapshot=JSON.stringify(saved);
+const result=Peak.preview(saved,program,{meetDate:'2026-12-19',peakWeeks:3,asOf,now});
+assert.equal(result.version,1);assert.equal(result.programId,'peak');
+assert.equal(result.entries.length,9);assert.equal(result.timeline.peakStart,'2026-11-23');
+assert.deepEqual(result.entries.filter(e=>e.lift==='squat').map(e=>e.week),[1,2,3]);
+for(const entry of result.entries){assert.equal(entry.exerciseId,config.lifts[entry.lift].exerciseId);assert(entry.sets.length>=1&&entry.sets.length<=2);for(const set of entry.sets){assert(set.weight<=config.lifts[entry.lift].trainingMaxKg*.85+.001);assert(Math.abs(set.weight/config.incrementKg-Math.round(set.weight/config.incrementKg))<.000001);assert(set.targetRpe<=8);}}
+assert.equal(result.entries.filter(e=>e.week===3).every(e=>e.sets.length===1&&e.sets[0].targetRpe===6),true);
+assert(!('scheduledSessions' in result));assert(!('phasePrograms' in result));
+assert.equal(result.evidence.squat.exerciseId,'s');assert.equal(result.evidence.squat.readiness,'individual-review-needed');
+assert.equal(JSON.stringify(saved),snapshot);assert.equal(JSON.stringify(state),basis);assert.equal(JSON.stringify(config),raw);
+const ahead=structuredClone(saved);ahead.workouts.push({id:'not-yet-known',date:'2026-09-23',createdAt:'2026-09-25T12:00:00.000Z',exercises:[{exerciseId:'s',type:'strength',sets:[{weight:500,reps:2,rpe:10}]}]});
+assert.deepEqual(Peak.preview(ahead,program,{meetDate:'2026-12-19',peakWeeks:3,asOf,now}),result);
+const oldRole=structuredClone(saved);oldRole.exerciseRoles=oldRole.exerciseRoles.map(r=>r.revisions?.at(-1)?.context?.exerciseId==='s'?{...r,revisions:[...r.revisions,{recordedAt:'2026-09-24T11:00:00.000Z',context:{exerciseId:'s',role:'assistance',competitionLift:null,notes:''}}],updatedAt:'2026-09-24T11:00:00.000Z'}:r);
+assert.throws(()=>Peak.preview(oldRole,program,{meetDate:'2026-12-19',peakWeeks:3,asOf,now}),/mappings changed/);
+assert.throws(()=>Peak.preview(saved,program,{meetDate:'2026-11-28',peakWeeks:3,asOf,now}),/overlaps/);
+assert.throws(()=>Peak.preview(saved,program,{meetDate:'2026-12-19',peakWeeks:3,asOf:'2026-12-01',now:'2026-12-01T12:00:00.000Z'}),/starts after/);
+assert.throws(()=>Peak.preview(saved,program,{meetDate:'2026-12-19',peakWeeks:3,asOf:'2026-09-25',now}),/valid review date/);
+console.log('Read-only bounded meet peak, per-lift identity, cutoff, constraints and calendar safety passed');
