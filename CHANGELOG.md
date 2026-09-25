@@ -1,4 +1,10 @@
-# v2.18.0 — Explainable phase transitions
+# v2.20.0 — Reviewable meet preparation timeline
+
+- Make the v2.19 review-only meet timeline available inside saved, reviewed phase programs. Display the athlete's competition exercise identities, proposed specificity/peak/taper weeks, event week, and explicit gap/overlap cautions.
+- Keep meet preparation a non-prescriptive preview: no automatically generated heavy singles, attempt selections, set loads, scheduling, or edits to workout history.
+- Add browser regression coverage for valid and conflicting dates, and synchronize offline cache and release metadata. Per-lift dose optimization and outcome validation remain future work.
+
+# v2.20.0 — Explainable phase transitions
 
 - Preview last-phase final-week prescriptions against the first week of the scheduled next phase and the exact impact of selected, approved per-lift adjustments before acceptance.
 - Surface specific Calendar, set, tonnage and frequency transition cautions without claiming a fatigue diagnosis or proven risk threshold.
