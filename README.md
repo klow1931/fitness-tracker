@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.20.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.21.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.21 — Lift-specific workload comparison
+
+**Decisions → Programs → Phase-based program builder** compares reviewed first-week competition and variation sets, workout exposure frequency, and RPE coverage with the past 28 days of logged training. These are evidence and cautions, not optimal-volume or medical fatigue claims; no prescriptions are changed automatically.
 
 ## v2.20 — Meet preparation preview
 

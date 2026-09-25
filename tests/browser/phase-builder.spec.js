@@ -26,3 +26,20 @@ test('meet preparation timeline previews from a reviewed phase without schedulin
  await expect(page.locator('[data-meet-result]')).toContainText('overlaps');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,sessions:data.scheduledSessions,programs:data.phasePrograms}))).toBe(baseline);
 });
+
+test('lift-specific workload preview separates competition and variations without changing history',async({page})=>{
+ const {config}=phaseFixture();
+ const original=await page.evaluate(config=>{
+  const proposal=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});
+  data=LoadnotePhaseBuilder.save(data,proposal,{confirmed:true,notes:'Reviewed'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'workload-preview'});
+  renderPhaseBuilder();
+  return JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions});
+ },config);
+ await page.locator('#phase-builder > details > summary').click();
+ await page.locator('[data-workload-panel] > summary').click();
+ await page.locator('[data-workload-compare]').click();
+ await expect(page.locator('[data-workload-result]')).toContainText('Competition');
+ await expect(page.locator('[data-workload-result]')).toContainText('Valid RPE coverage');
+ await expect(page.locator('[data-workload-result]')).toContainText('logged');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(original);
+});
