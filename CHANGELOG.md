@@ -1,3 +1,9 @@
+# v2.26.0 — Training targets at workout start
+
+- Add read-only, identity-aware previous-performance and approved-target context for scheduled workouts, available on the weekly/Calendar plan and an expandable “Why this workout?” section in the active workout logger. Keep the primary logging surface uncluttered for unscheduled sessions.
+- Explain approved phase-review load/set changes from the existing immutable Calendar revisions and per-lift reasons. Show prescribed load, reps and RPE caps in the display unit, and preserve previous logged RPE distinctly from planned effort.
+- Maintain draft, workout history, original prescriptions and athlete approval safeguards; context never adjusts weights, sets or RPE automatically. Add Node/browser regression tests and offline caching. No data migration.
+
 # v2.25.0 — Explainable phase-programming feedback loop
 
 - Connect each accepted phase decision to its linked next-phase observations and to a subsequent phase review, independently by competition lift. Show the prior athlete-approved choice and reason, exactly comparable follow-up exposures, RPE-cap observations and descriptive competition-lift estimated-capacity change.

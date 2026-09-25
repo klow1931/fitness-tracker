@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.25.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.26.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.26 — Training targets where you train
+
+Scheduled workouts now show the approved prescription, previous exact-identity strength performance and a concise explanation of any approved phase changes in a collapsed “Why this workout?” section on both the weekly plan and active logger. The main logging path remains unchanged; insights do not silently change sets, loads or saved history.
 
 ## v2.25 — Phase-programming feedback loop
 
