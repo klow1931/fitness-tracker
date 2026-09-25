@@ -6,7 +6,7 @@
   'use strict';
 
   const SCHEMA_VERSION = 22;
-  const RELEASE_VERSION = '2.15.0';
+  const RELEASE_VERSION = '2.16.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));

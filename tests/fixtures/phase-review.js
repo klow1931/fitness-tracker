@@ -1,6 +1,7 @@
 const {phaseFixture}=require('./phase-builder'),B=require('../../src/product/phase-builder');
-function fixture(){
+function fixture({incrementKg=2.5}={}){
   let {state,config}=phaseFixture();state.workouts=[];state.reviewedPrograms=[];state.phaseReviews=[];
+  config.incrementKg=incrementKg;
   config.lifts.bench.exposures.forEach(e=>e.format='straight');
   const args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
   state=B.save(state,B.prepare(state,config,args),{confirmed:true},{...args,id:'ph'});state=B.schedule(state,'ph',args);
