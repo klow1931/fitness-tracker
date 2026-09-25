@@ -17,7 +17,7 @@ test('phase preview invalidation, failed storage and draft locks do not revise d
 });
 
 test('supported per-lift progression is optional and retains the unmodified program',async({page})=>{
- await page.evaluate(()=>{for(const w of data.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);renderPhaseReview();});
+ await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});for(const w of data.workouts)for(const e of w.exercises)if(e.exerciseId==='b')for(const set of e.sets)set.rpe=Math.max(6,set.targetRpe-1);renderPhaseReview();},fixture({incrementKg:.5}));
  await page.locator('#phase-review-program').selectOption('ph');
  for(const k of ['sleep','fatigue','soreness'])await page.locator(`[data-phase-check="${k}"]`).selectOption('usual');
  await page.locator('[data-phase-check="discomfort"]').selectOption('none');
