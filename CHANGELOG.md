@@ -1,3 +1,10 @@
+# v2.34.0 — Actual mock-meet attempts and post-cycle recap
+
+- Record up to three athlete-entered squat, bench and deadlift attempts as made, missed, passed or unrecorded on or after the scheduled meet date, with an explicit review confirmation. Store kg internally and convert only numeric display/entry using the existing unit utilities.
+- Keep time-stamped, immutable corrections as revisions on the existing meet-cycle record. The best made attempt is reported per lift; display a three-lift total only when all three lifts have at least one made attempt. No automatic attempt selection or inferred competition results.
+- Show a read-only post-cycle comparison of completed training weeks and linked sessions, original versus actual working sets, and sparse, RPE-aware within-phase estimated-capacity context. These estimates are not meet-day results or proofs of program causation.
+- Preserve all existing original cycles, workouts, prescriptions, weekly reviews, imports, legacy meetCycles and offline behavior; add mock-meet record validation, mobile/browser and deterministic tests, and cache new assets. No top-level schema migration.
+
 # v2.33.0 — Individual competition-lift response across completed phases
 
 - Add a read-only, dated mock-meet-cycle training-response view for completed weeks grouped by phase, with independent squat, bench and deadlift exposure and set counts, linked logged work, directly comparable RPE-cap exceedances, and transparent unconfirmed/skipped/changed Calendar records.

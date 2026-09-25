@@ -27,6 +27,7 @@
     '<p id="cycle-status" role="alert"></p>';
   host.querySelector('#cycle-new')?.addEventListener('click',()=>open(sources.find(p=>p.id===host.querySelector('#cycle-source').value)));
   host.querySelectorAll('[data-cycle-schedule]').forEach(b=>b.addEventListener('click',()=>schedule(b.dataset.cycleSchedule)));
+  window.renderMockMeet?.();
  }
  function open(source){
   if(!source||busy)return;chosenSource=source;preview=null;

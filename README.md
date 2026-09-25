@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.33.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.34.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.34 — Actual mock-meet results and post-program review
+
+A scheduled flexible mock-meet cycle now allows athlete-entered competition squat, bench and deadlift attempt results on the approved event date or later, including passed/missed attempts and auditable corrections. Loadnote reports each lift's best made attempt and only calculates a total when all three lifts have successful results. A compact retrospective training recap keeps verified linked workouts, planned sets and estimated-capacity observations distinct from real meet-day results. No automatic attempt selection or prescription changes.
 
 ## v2.33 — Per-lift training response
 
