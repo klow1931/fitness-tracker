@@ -1,3 +1,10 @@
+# v2.18.0 — Explainable phase transitions
+
+- Preview last-phase final-week prescriptions against the first week of the scheduled next phase and the exact impact of selected, approved per-lift adjustments before acceptance.
+- Surface specific Calendar, set, tonnage and frequency transition cautions without claiming a fatigue diagnosis or proven risk threshold.
+- Keep strength → deload untouched, mark program completion after deload and preserve original programs, completed history, drafts and approval audit. No new stored schema or automatic week/phase extensions.
+- Add pure model and desktop/mobile UI tests, synchronize release and offline assets. CI and physical iPhone status: see PR.
+
 # v2.17.0 — Per-lift workload response
 
 - Show week-by-week prescribed, logged and strictly matched sets for each lift alongside planned/logged exposure frequency, missing/changed sessions and explicit time constraints.

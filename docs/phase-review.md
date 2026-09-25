@@ -1,4 +1,4 @@
-# Phase reviews — v2.17
+# Phase reviews — v2.18
 
 Decisions → Programs → Phase review adds an explicit review to a completed v2.14 phase. It is a conservative, versioned rule (`phase-effort-v3`, retaining validation of accepted `phase-effort-v1` and `phase-effort-v2` history), not validated personalized coaching. No background adaptation occurs.
 
@@ -24,6 +24,14 @@ All future exposures for a selected lift must still be eligible; partial-phase a
 ## Weekly workload response — v2.17
 
 The completed phase review shows weekly, per-lift prescribed sets versus actually logged valid sets versus strictly matched sets; scheduled and linked exposure counts; missing/changed sessions; and explicit time-constraint deviations. They are separate counts, not a recovery score or inference that a missed session indicates intolerable volume. Compare like-for-like exercise identities and real workout timestamps. Variations are counted toward the relevant lift's *workload* but never substituted into competition-lift capacity estimates. No automatic changes to frequency, exercise choice, or Training Blocks. If workload evidence is incomplete, Loadnote shows the missing evidence and maintains the plan.
+
+## Next-phase transition check — v2.18
+
+The existing review now presents a read-only first-week transition comparison before approval. For each lift it shows the **last reviewed phase's final-week prescription**, the **next phase's first-week Calendar prescription**, and the **first next-phase week after the currently selected, rule-approved adjustments**. Exposures, working sets and planned kg × reps are shown separately; they are prescriptions, not results or recovery measurements. The same adjustment preview feeds the exact Calendar before/after display, so the transition card cannot silently apply a different rule.
+
+Warnings are shown when the next phase is missing/changed in Calendar, not all exposures have usable prescriptions, projected tonnage exceeds the last prescribed week by 20%, sets rise by over 25%, or planned exposure frequency increases. They are **review prompts**, not causal fatigue diagnoses or proven risk thresholds. No week is extended or moved, and existing recovery/data-quality guards remain. Strength → deload remains protected; after deload the sequence is complete and the athlete must explicitly review a new plan.
+
+The transition comparison is pure and never changes state. No new schema, backup record or additional approval shortcut is needed: accepted choices still produce the existing immutable review and future-only Calendar revisions. All historical v1/v2/v3 records validate unchanged.
 
 ## Chronology, persistence and audit
 
