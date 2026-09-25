@@ -43,3 +43,24 @@ test('lift-specific workload preview separates competition and variations withou
  await expect(page.locator('[data-workload-result]')).toContainText('logged');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(original);
 });
+
+test('athlete independently reviews and regenerates squat sets without editing stored training',async({page})=>{
+ const baseline=await page.evaluate(()=>{
+  const squat=LoadnoteReadiness.list(data.exerciseRoles).find(r=>r.role==='competition'&&r.competitionLift==='squat').exerciseId;
+  data.workouts=['2026-09-02','2026-09-09','2026-09-16','2026-09-23'].map((date,i)=>({id:'training-'+i,date,createdAt:date+'T12:00:00.000Z',exercises:[{exerciseId:squat,name:'Competition Squat',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,rpe:7},{weight:100,reps:5,rpe:8},{weight:100,reps:5,rpe:8}]}]}));
+  data.workoutRevisions=[];
+  return JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions});
+ });
+ await preview(page);
+ await page.locator('#phase-workload-review > summary').click();
+ await expect(page.locator('[data-workload-choice="squat"] option')).toHaveCount(2);
+ await expect(page.locator('[data-workload-choice="bench"] option')).toHaveCount(1);
+ await page.locator('[data-workload-choice="squat"]').selectOption('reduce-one');
+ await page.locator('#phase-workload-apply').click();
+ await expect(page.locator('#phase-squat-sets')).toHaveValue('2');
+ await expect(page.locator('#phase-bench-sets')).toHaveValue('3');
+ await expect(page.locator('#phase-deadlift-sets')).toHaveValue('3');
+ await expect(page.locator('#phase-notes')).toContainText('athlete chose 3 to 2 sets');
+ await expect(page.locator('#phase-preview')).toContainText('7 weeks · 21 sessions');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(baseline);
+});
