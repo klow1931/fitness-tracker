@@ -48,7 +48,7 @@
    }
    entries.sort((a,b)=>a.date.localeCompare(b.date)||LIFTS.indexOf(a.lift)-LIFTS.indexOf(b.lift));
    const existing=Schedule.list(state.scheduledSessions||[],cutoff).filter(s=>s.status==='scheduled'&&entries.some(e=>e.date===s.date));
-   const warnings=[...timeline.warnings,
+   const warnings=[...timeline.warnings.filter(w=>!w.startsWith('Planning preview only: no sets, loads')),
      'Example training-max percentages are bounded to 80% and do not infer safe near-max singles, meet attempts or actual recovery from the training log.',
      'Only confirmed competition-lift identities and the original primary-exposure days are used. Close variations and accessories are excluded.',
      'This preview is not scheduled or approved. Review each lift, taper timing, session duration and competition-week logistics before using any prescription.',
