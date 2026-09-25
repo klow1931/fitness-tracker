@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.24.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.25.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.25 — Phase-programming feedback loop
+
+**Decisions → Programs → Phase review / Accepted phase decision outcomes** links the previous approved per-lift decision, comparable next-phase training observations and the independent current phase-review finding. Feedback is review-only; the existing adjustment rules and explicit athlete approval remain required. Missing, ambiguous or altered training prevents a favorable-response claim.
 
 ## v2.24 — Phase decision outcomes
 
