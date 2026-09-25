@@ -888,12 +888,12 @@
     <!-- DECISIONS & COACHING -->
     <section id="panel-coach" class="hidden space-y-6">
       <div class="section-tabs" role="tablist" aria-label="Decision and coaching sections">
-        <button type="button" class="section-tab active" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">1. Decisions</button>
-        <button type="button" class="section-tab" data-sub="co-insights" onclick="showSubTab('coach','co-insights')">2. Insights</button>
-        <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">3. Chat</button>
-        <button type="button" class="section-tab" data-sub="co-goals" onclick="showSubTab('coach','co-goals')">4. Goals</button>
+        <button type="button" class="section-tab active" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">Overview</button>
+        <button type="button" class="section-tab" data-sub="co-insights" onclick="showSubTab('coach','co-insights')">Insights</button>
+        <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">Coach</button>
+        <button type="button" class="section-tab" data-sub="co-goals" onclick="showSubTab('coach','co-goals')">Goals</button>
       </div>
-      <p class="text-xs text-slate-500 -mt-3">Start with <b>Decisions</b>. Open deeper coaching tools only when you need them.</p>
+      <p class="text-xs text-slate-500 -mt-3">Your training comes first. Open evidence and coaching details when useful.</p>
 
 
 
@@ -1010,16 +1010,22 @@
       </div><!-- /co-goals -->
 
       <div class="sub-panel" data-panel="coach" data-sub="co-programs">
-      <div class="card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
+      <div class="decision-workspace"><header class="decision-section-heading"><span class="eyebrow">01 · TODAY</span><h2>Your training</h2><p>Current plan and next action, without opening programming tools.</p></header>
       <div id="decision-action-center" aria-label="Current plan and recommended next action"></div>
+      <header class="decision-section-heading"><span class="eyebrow">02 · YOUR LIFTS</span><h2>Lift decisions</h2></header>
+      <div class="card decision-summary-card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
+      <header class="decision-section-heading"><span class="eyebrow">03 · YOUR PROGRAM</span><h2>Programming</h2><p>Review your current training before creating another plan.</p></header>
       <details class="card" id="phase-review-panel"><summary><b>Phase review</b><small>Evidence and approved next-phase adjustments</small></summary><div id="phase-review"></div></details>
-      <p class="text-sm text-slate-500">Advanced program tools · open only when you need to build or change a plan.</p>
+      <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Evidence, recovery and approved next-week changes</small></summary><div id="program-week-review"></div></details>
+      <div class="decision-group-label"><b>Build or change a program</b><small>Optional tools for creating and reviewing a new plan</small></div>
+      <div class="decision-build-tools">
       <details class="card" id="programming-profile-panel"><summary><b>Programming profile</b><small>Your goals, availability and constraints</small></summary><div id="programming-profile"></div></details>
       <details class="card" id="reviewed-builder-panel"><summary><b>Powerlifting program builder</b><small>Four-week proposals · review before scheduling</small></summary><div id="reviewed-builder"></div></details>
       <details class="card" id="phase-builder-panel"><summary><b>Phase-based program builder</b><small>Accumulation → strength → deload · optional meet timeline preview</small></summary><div id="phase-builder"></div></details>
-      
-      <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Evidence, recovery and approved next-week changes</small></summary><div id="program-week-review"></div></details>
+      </div>
+      <header class="decision-section-heading"><span class="eyebrow">04 · WHAT CHANGED</span><h2>Training intelligence</h2><p>Revisit previous program adjustments and observed outcomes.</p></header>
       <details class="card" id="program-outcomes-panel"><summary><b>After your adjustments</b><small>What was planned, what you did, and what followed</small></summary><div id="program-outcomes"></div></details>
+      </div>
       <details class="card border-slate-300 bg-slate-50 coach-safety-details"><summary><b>Training guidance &amp; safety</b></summary>
         <p class="text-sm font-medium text-slate-800 mb-1">Disclaimer</p>
         <p class="text-xs text-slate-600">
@@ -1027,7 +1033,7 @@
           They do not diagnose injuries, prescribe treatment, or replace a qualified coach or healthcare professional. Use your own judgment, especially when pain, illness, injury, medication, or a health condition could affect training.
         </p>
       </details>
-      <details class="card coach-programming-details"><summary><span><b>Programming &amp; athlete setup</b><small>Profile, program generator and your program library</small></span></summary><div class="grid md:grid-cols-1 gap-6 coach-programming-content">
+      <details class="card coach-programming-details"><summary><span><b>Other program tools</b><small>Earlier program generator and library</small></span></summary><div class="grid md:grid-cols-1 gap-6 coach-programming-content">
         <!-- v0.7 Athlete Profile -->
         <div class="card" id="athlete-profile-card">
           <div class="flex items-start justify-between gap-3 mb-4">
@@ -1347,7 +1353,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.28.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.29.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

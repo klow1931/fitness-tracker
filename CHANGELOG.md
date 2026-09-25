@@ -1,3 +1,10 @@
+# v2.29.0 — Decisions mobile UX overhaul
+
+- Reorder Decisions around the current training plan, compact per-lift decisions, programming reviews/builders and adjustment outcomes; preserve the existing model, actions, record identities and manual approval flow.
+- Replace duplicated unavailable-evidence summaries and blank-looking status pills with compact lift cards, meaningful status text and expandable details. Add an optional per-lift evidence-help panel linking directly to the workout logger.
+- Fix wrapped accordion heading/description layout, narrower mobile spacing and dark-mode status contrast. Remove the outdated v2.7 feature label and numbered secondary tabs; keep the active tab and all existing tools.
+- Add desktop/mobile browser regressions. No user data migration or programming-rule change.
+
 # v2.28.0 — Reviewed meet-peak training proposals
 
 - Extend the existing meet timeline with a bounded, read-only competition-specific weekly session preview for squat, bench and deadlift. Use each confirmed competition exercise, athlete-selected training max, reviewed primary-exposure day and load increment; exclude variation and accessory loads.
