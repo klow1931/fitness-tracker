@@ -116,7 +116,7 @@
       const seen=new Set();for(const c of r.changes){
         if(typeof c.id!=='string'||seen.has(c.id)||!c.id.startsWith('phase:'+r.programId+':'))throw Error('Invalid phase review change');seen.add(c.id);Schedule.validate([{id:c.id,revisions:[c.before,c.after]}]);
         if(c.after.recordedAt!==r.createdAt||c.after.context.date<=r.asOf||c.before.context.date!==c.after.context.date||c.after.context.prescription.capturedAt!==r.createdAt||c.before.context.status!=='scheduled')throw Error('Phase changes must affect future sessions only');
-        const expected=copy(c.before.context);let changed=false;expected.reason=`Approved ${r.phase} phase review (${POLICY})`;expected.prescription.capturedAt=r.createdAt;
+        const expected=copy(c.before.context);let changed=false;expected.reason=`Approved ${r.phase} phase review (${r.policy})`;expected.prescription.capturedAt=r.createdAt;
         for(const e of expected.prescription.plannedExercises){const choice=r.choices[r.exerciseLifts[e.exerciseId]];
           if(choice==='progress'){if(r.policy!==POLICY)throw Error('Legacy phase policy cannot progress');for(const s of e.sets){s.weight=increased(s.weight,r.incrementKg,r.trainingMaxKg[e.exerciseId]);}changed=true;}
           if(choice==='reduce-load'){for(const s of e.sets){const weight=Core.round(Math.floor((s.weight*.95+1e-9)/r.incrementKg)*r.incrementKg,2);if(!(weight>0&&weight<s.weight))throw Error('Invalid phase load reduction');s.weight=weight;}changed=true;}
