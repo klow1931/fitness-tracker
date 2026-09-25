@@ -53,7 +53,7 @@
           for(let i=0;i<e.sets.length;i++){
             const t=e.sets[i],s=a?.sets?.[i],r=Number(s?.rpe);
             if(!row.validTiming||!s||!Number.isFinite(s.weight)||s.weight<=0||Math.abs(s.weight-t.weight)>.02||s.reps!==t.reps||s.rpe==null||s.rpe===''||!Number.isFinite(r)||r<6||r>10||!Number.isFinite(t.targetRpe)){complete=false;continue;}
-            comparedSets++;seen++;if(r>t.targetRpe-1)under=false;if(r>=t.targetRpe+1){over=true;overCapSets++;}
+            comparedSets++;seen++;if(r>t.targetRpe-(t.targetRpe>=7?1:0))under=false;if(r>=t.targetRpe+1){over=true;overCapSets++;}
             if(e.exerciseId===main.exerciseId)performance.push({date:row.workout.date,workoutId:row.workout.id,weight:s.weight,reps:s.reps,rpe:r,targetRpe:t.targetRpe,estimatedCapacity:Core.capacityEvidence(s.weight,s.reps,r).estimate});
           }
         }
@@ -74,7 +74,7 @@
       else if(overCapSessions>=2&&overCapSets>=2){decision='reduce-load';reason='At least two matched exposures exceeded their effort caps by at least 1 RPE. A 5% next-phase load reduction is available for review, not a diagnosis of lost strength.';}
       else if(overCapSets){decision='gather';reason='Effort exceeded a cap, but the repeated-exposure rule was not met.';}
       else if(['sleep','fatigue','soreness'].some(k=>ci[k]==='worse')){if(main.sets>=3){decision='reduce-sets';reason='Matched work stayed within caps, but recovery was reported worse. An optional reduction of one final working set per exposure is available; this is a conservative heuristic, not proof of excessive volume.';}else{decision='gather';reason='Recovery needs review, but removing a set would leave fewer than two working sets. Review manually.';}}
-      else if(underCapSessions===rows.length&&capacity&&capacity.lastKg>=capacity.firstKg*.99&&canIncrease){decision='progress';reason='Every matched exposure stayed at least 1 RPE below its cap, with 3+ competition-lift evidence dates across 14+ days and no material decline in the compared capacity endpoints. An optional 2.5% next-phase load increase fits the exercise-specific training-max ceiling. This does not prove strength gains or an optimal dose.';}
+      else if(underCapSessions===rows.length&&capacity&&capacity.lastKg>=capacity.firstKg*.99&&canIncrease){decision='progress';reason='Every matched exposure stayed at least 1 RPE below caps of 7 or more, and at or below any cap of 6, with 3+ competition-lift evidence dates across 14+ days and no material decline in the compared capacity endpoints. An optional 2.5% next-phase load increase fits the exercise-specific training-max ceiling. This does not prove strength gains or an optimal dose.';}
       else if(underCapSessions===rows.length&&!canIncrease){decision='gather';reason='Repeated work was below caps, but the rounded load increase cannot fit the exercise-specific training-max ceiling. Review the load increment and planned progression manually.';}
       else if(underCapSessions===rows.length&&!capacity){decision='gather';reason='Repeated work was below caps, but at least three dated competition-lift capacity observations spanning 14 days are needed before proposing progression.';}
       else if(underCapSessions===rows.length){decision='gather';reason='Comparable effort was below caps, but the earliest and latest eligible capacity endpoints did not meet the conservative progression guard.';}
