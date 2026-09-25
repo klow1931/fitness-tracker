@@ -1,3 +1,11 @@
+# v2.30.0 — Configurable mock-meet training cycles
+
+- Build reviewed mock-meet cycles from existing reviewed, competition-lift-specific phase setup. Choose 7–52 weeks (presets for 8/12/16/20), 1–4 peak weeks and 1–2 taper weeks; the final week marks a Saturday/Sunday mock meet. Automatically allocate remaining weeks to accumulation and strength (minimum two each).
+- Generate and preview every training week and working set using the existing phase-builder’s validated lift identities, exposure days, training maxes and capped strength-loading templates. Supported phase progressions stop after six weeks rather than extrapolating indefinite increases; peak/taper use limited competition-lift examples rather than unsupported maximal attempts.
+- Save immutable original cycle records and source profile/role snapshots; schedule approved training as distinct, revisioned Calendar sessions only after explicit confirmation and conflict checks. Mock-meet day is a dated marker, not an invented attempt prescription.
+- Add active-cycle week/phase context to Decisions, a mobile program-builder entry point, schema-v23 meetCycles migration, import/export compatibility and tests for 8/12/16/20/26/52-week plans, kg-backed loads, conflicts and historical integrity.
+- Subsequent releases will introduce phase-aware guidance and explicit per-phase adjustments for these longer cycles; this release does not automatically alter the approved plan.
+
 # v2.29.0 — Decisions mobile UX overhaul
 
 - Reorder Decisions around the current training plan, compact per-lift decisions, programming reviews/builders and adjustment outcomes; preserve the existing model, actions, record identities and manual approval flow.

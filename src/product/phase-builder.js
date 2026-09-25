@@ -54,9 +54,13 @@
   }
   function constraints(profile,c){
     if(!profile?.context)throw Error('Create a programming profile before using the phase builder');const p=profile.context;
-    Profile.assess(profile,{...c,structure:'strength'});
+    if(p.goal==='meet'){
+      if(c.days.some(day=>!p.availableDays.includes(day))||c.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Lift setup exceeds meet-profile availability, equipment or time budget');
+      if(p.consistency==='returning')throw Error('Returning athletes should use the return/base program');
+      if(LIFTS.some(l=>p.avoidedExerciseIds.includes(c.lifts[l].exerciseId)))throw Error('A competition lift is marked avoided in the meet profile');
+    }else Profile.assess(profile,{...c,structure:'strength'});
     if(LIFTS.some(l=>c.lifts[l].variation&&p.avoidedExerciseIds.includes(c.lifts[l].variation.exerciseId)))throw Error('A selected variation is marked avoided in your profile');
-    const weeks=c.phases.reduce((n,p)=>n+p.weeks,0);if(p.eventDate&&p.eventDate<=move(c.startDate,weeks*7+6))throw Error('This sequence is too close to the meet date. No meet peak is generated.');
+    const weeks=c.phases.reduce((n,p)=>n+p.weeks,0);if(p.eventDate&&p.eventDate<=move(c.startDate,weeks*7+(p.goal==='meet'?-1:6)))throw Error('This base sequence reaches the meet date. Review a different timeline; this proposal has no meet peak.');
   }
   function prepare(state,raw,{asOf,now=new Date().toISOString()}={}){
     if(!Schedule.date(asOf)||!iso(now))throw Error('A valid current date is required');const result=build(raw),c=result.config;if(c.startDate<asOf)throw Error('Choose a start date today or later');const cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
