@@ -9,7 +9,8 @@
     if(activeCycle){
       const c=activeCycle.config,week=activeCycle.weekly.find(w=>w.startDate<=today()&&w.endDate>=today())||activeCycle.weekly[0];
       const next=scheduled.find(s=>s.id.startsWith('meet:'+activeCycle.id+':'));
-      target.innerHTML=`<div class="card" style="padding:1rem"><span class="eyebrow">CURRENT MOCK-MEET CYCLE</span><h3 style="font-weight:700">${esc(activeCycle.sourceProgram.config.name)} · ${c.weeks} weeks</h3><p>Week ${week.week} of ${c.weeks} · ${esc(week.phase)}</p><p>Mock meet: ${esc(c.meetDate)}</p><p>${next?'Next: '+esc(next.date)+' · '+esc(next.name):'No remaining prescribed training sessions; mock-meet attempts are athlete-selected.'}</p><p style="font-size:.875rem">Original cycle preserved. Weekly and phase-specific automated revisions are not yet available for this flexible cycle; review actual logs before changing future sessions.</p><button class="btn-primary" type="button" id="decision-cycle-cta">See cycle</button></div>`;
+      const guide=window.LoadnotePhaseGuidance?.inspect(data,{asOf:today(),cycleId:activeCycle.id});
+      target.innerHTML=window.LoadnotePhaseGuidanceUI?.render(guide)||'<div class="card">Cycle guidance is temporarily unavailable.</div>';
       target.querySelector('#decision-cycle-cta').onclick=()=>{const panel=document.getElementById('phase-builder-panel'),row=document.querySelector('[data-cycle="'+CSS.escape(activeCycle.id)+'"]');if(panel)panel.open=true;if(row)row.open=true;(row||panel)?.scrollIntoView({behavior:'smooth',block:'start'});};
       return;
     }

@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.30.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.31.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.31 — Phase-aware Decisions
+
+An explicitly scheduled mock-meet cycle now guides the athlete through accumulation, strength, peaking, taper and mock-meet weeks. Decisions shows the current week, phase-specific priority, next planned training, review dates and optional per-lift original-versus-linked-actual evidence. Incomplete logging is not a skipped session, and RPE-cap comparisons require unchanged plans recorded before training. This is read-only context; it does not approve or silently rewrite the original program.
 
 ## v2.30 — Flexible mock-meet cycles
 
