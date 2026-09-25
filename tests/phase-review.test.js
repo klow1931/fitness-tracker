@@ -42,7 +42,7 @@ const progress=R.analyze(easy,args);assert.equal(progress.findings.bench.decisio
 assert.equal(progress.findings.bench.underCapSessions,progress.findings.bench.expectedSessions);
 const upChoices={squat:'keep',bench:'progress',deadlift:'keep'},upEdits=R.preview(progress,upChoices);
 assert.equal(upEdits.length,9);assert(upEdits.every(e=>e.after.plannedExercises.find(x=>x.exerciseId==='b').sets.every((set,i)=>set.weight>e.before.prescription.plannedExercises.find(x=>x.exerciseId==='b').sets[i].weight)));
-const advanced=R.apply(easy,progress,upChoices,options);assert.equal(advanced.phaseReviews[0].policy,'phase-effort-v2');
+const advanced=R.apply(easy,progress,upChoices,options);assert.equal(advanced.phaseReviews[0].policy,'phase-effort-v3');
 assert.deepEqual(advanced.workouts,easy.workouts);assert.deepEqual(advanced.phasePrograms,easy.phasePrograms);
 assert.deepEqual(R.validate(JSON.parse(JSON.stringify(advanced.phaseReviews))),advanced.phaseReviews);
 assert.throws(()=>R.preview(progress,{...upChoices,squat:'progress'}),/supported/);
@@ -52,6 +52,9 @@ const worseEasy=R.analyze(easy,{...args,recovery:{...args.recovery,sleep:'worse'
 const highIncrement=structuredClone(progress);
 highIncrement.basis.program.config.incrementKg=100;
 assert.throws(()=>R.preview(highIncrement,upChoices),/increment|ceiling/);
+const previousReview=structuredClone(advanced.phaseReviews);
+previousReview[0].policy='phase-effort-v2';for(const change of previousReview[0].changes)change.after.context.reason='Approved accumulation phase review (phase-effort-v2)';
+assert.deepEqual(R.validate(previousReview),previousReview,'Old v2 approved load progression remains importable');
 const legacyReview=structuredClone(next.phaseReviews);legacyReview[0].policy='phase-effort-v1';delete legacyReview[0].trainingMaxKg;for(const change of legacyReview[0].changes)change.after.context.reason='Approved accumulation phase review (phase-effort-v1)';
 assert.deepEqual(R.validate(legacyReview),legacyReview,'Old accepted reductions remain valid and importable');
 const tamperedIncrease=structuredClone(advanced.phaseReviews);tamperedIncrease[0].changes[0].after.context.prescription.plannedExercises[0].sets[0].weight=1000;
