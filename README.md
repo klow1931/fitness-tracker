@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.34.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.35.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.35 — Mock meet vs competition meet
+
+Meet-prep cycles now explicitly distinguish **Mock meet** from **Competition meet**. Legacy cycles continue to behave as mock meets. New competition cycles require a meet name, keep their results in separate competition-result history, and show competition-specific wording throughout Decisions and the post-cycle recap. Neither event type receives automatic attempt selection; competition results are athlete-entered and are not treated as verified federation records.
 
 ## v2.34 — Actual mock-meet results and post-program review
 

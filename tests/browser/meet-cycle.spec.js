@@ -51,3 +51,23 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();});
  await expect(page.locator('[data-cycle]')).toContainText('Scheduled');
 });
+
+test('builder distinguishes mock meets from named competition meets and supports weekday competition dates',async({page})=>{
+ await page.locator('#cycle-new').click();
+ await expect(page.locator('#cycle-event-type')).toHaveValue('mock');
+ await expect(page.locator('#cycle-event-name-wrap')).toBeHidden();
+ await page.locator('#cycle-event-type').selectOption('competition');
+ await expect(page.locator('#cycle-event-name-wrap')).toBeVisible();
+ await page.locator('#cycle-event-name').fill('State Championships');
+ await page.locator('[data-cycle-preset="12"]').click();
+ await page.locator('#cycle-meet-date').fill('2026-12-16');
+ await page.locator('#cycle-form button[type="submit"]').click();
+ await expect(page.locator('#cycle-preview')).toContainText('State Championships');
+ await expect(page.locator('[data-cycle-week="12"]')).toContainText('State Championships');
+ await page.locator('#cycle-confirm').check();await page.locator('#cycle-save').click();
+ await expect(page.locator('#cycle-dialog')).not.toBeVisible();
+ const stored=await page.evaluate(()=>({type:data.meetCycles[0].config.eventType,name:data.meetCycles[0].config.eventName,phase:data.meetCycles[0].weekly.at(-1).phase}));
+ expect(stored).toEqual({type:'competition',name:'State Championships',phase:'meet'});
+ await expect(page.locator('[data-cycle]').first()).toHaveAttribute('data-event-type','competition');
+ await expect(page.locator('[data-cycle]').first()).toContainText('State Championships');
+});

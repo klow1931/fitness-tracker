@@ -1,3 +1,11 @@
+# v2.35.0 — Distinguish mock meets from competition meets
+
+- Add an explicit meet-event type to flexible meet-prep cycles: **Mock meet** or **Competition meet**. Existing cycles without the field remain mock meets for backward compatibility.
+- Competition cycles require a meet name, may use any date inside the final program week, and end in a distinct `meet` phase. Mock meets retain their Saturday/Sunday final-week rule and `mock-meet` phase.
+- Keep results separate by event type: mock-meet attempts remain in the existing mock-meet revision history; competition-meet attempts use a distinct competition result history. Both retain corrections and nine athlete-entered attempt slots without automatic attempt selection.
+- Update Decisions, cycle cards, result logging and post-cycle language so competition meets are not presented as mock meets. Competition results are explicitly athlete-entered and not verified federation records, placings or weigh-in data.
+- Preserve existing training cycles, approved workouts, result history and state schema. Add deterministic and browser regressions for real-vs-mock event behavior.
+
 # v2.34.0 — Actual mock-meet attempts and post-cycle recap
 
 - Record up to three athlete-entered squat, bench and deadlift attempts as made, missed, passed or unrecorded on or after the scheduled meet date, with an explicit review confirmation. Store kg internally and convert only numeric display/entry using the existing unit utilities.
