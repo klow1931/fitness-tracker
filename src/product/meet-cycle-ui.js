@@ -35,7 +35,7 @@
   let dlg=document.getElementById('cycle-dialog');if(!dlg){dlg=document.createElement('dialog');dlg.id='cycle-dialog';dlg.className='card schedule-dialog';document.body.append(dlg);}
   const start=source.config.startDate;
   dlg.innerHTML='<form id="cycle-form"><h2>Build your meet-prep cycle</h2><p>Using reviewed lift setup: '+esc(source.config.name)+'. Start: '+esc(start)+'. Current work and approved source remain unchanged.</p>'+
-   '<label>Event type<select class="input" id="cycle-event-type"><option value="mock" selected>Mock meet</option><option value="competition">Competition meet</option></select></label><label id="cycle-event-name-wrap" hidden>Competition meet name<input class="input" id="cycle-event-name" maxlength="120" placeholder="Meet name"></label>'+ 
+   '<label>Event type<select class="input" id="cycle-event-type"><option value="mock" selected>Mock meet</option><option value="competition">Competition meet</option></select></label><label id="cycle-event-name-wrap" hidden style="display:none">Competition meet name<input class="input" id="cycle-event-name" maxlength="120" placeholder="Meet name"></label>'+ 
    '<label>Program length (weeks, includes meet week)<input class="input" type="number" id="cycle-weeks" min="7" max="52" step="1" value="12"></label>'+
    '<div class="cycle-presets" role="group" aria-label="Program length presets">'+[8,12,16,20].map(w=>'<button class="btn-secondary" data-cycle-preset="'+w+'" type="button">'+w+' weeks</button>').join('')+'</div>'+
    '<label>Peak duration (weeks)<select class="input" id="cycle-peak"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></label>'+
@@ -45,7 +45,7 @@
    '<button class="btn-primary" type="submit">Preview every week</button><div id="cycle-preview"></div><p id="cycle-error" role="alert"></p><button type="button" id="cycle-close" class="btn-secondary">Close</button></form>';
   const type=dlg.querySelector('#cycle-event-type'),name=dlg.querySelector('#cycle-event-name'),nameWrap=dlg.querySelector('#cycle-event-name-wrap'),dateLabel=dlg.querySelector('#cycle-date-label'),length=dlg.querySelector('#cycle-weeks'),meet=dlg.querySelector('#cycle-meet-date'),output=dlg.querySelector('#cycle-preview'),error=dlg.querySelector('#cycle-error');
   const recalc=()=>meet.value=move(start,(Number(length.value)-1)*7+5);
-  const syncType=()=>{const competition=type.value==='competition';nameWrap.hidden=!competition;name.required=competition;dateLabel.textContent=competition?'Competition meet date (inside the final week)':'Mock meet (Saturday or Sunday of the final week)';if(!competition)name.value='';};
+  const syncType=()=>{const competition=type.value==='competition';nameWrap.hidden=!competition;nameWrap.style.display=competition?'grid':'none';name.required=competition;dateLabel.textContent=competition?'Competition meet date (inside the final week)':'Mock meet (Saturday or Sunday of the final week)';if(!competition)name.value='';};
   recalc();syncType();
   const invalidate=()=>{preview=null;output.replaceChildren();error.textContent='';};
   length.addEventListener('input',()=>{recalc();invalidate();});
