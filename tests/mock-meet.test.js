@@ -60,4 +60,18 @@ const tampered=structuredClone(partial);tampered.meetCycles[0].mockMeet.revision
 assert.throws(()=>Meet.validate(tampered),/Only made|Invalid/);
 const legacy=structuredClone(cycle);assert.deepEqual(Meet.validate(legacy),legacy.meetCycles,'Older cycles without results stay readable');
 const migrated=Core.normalizeState({...legacy,schemaVersion:22});assert.equal(migrated.schemaVersion,23);assert.deepEqual(migrated.meetCycles,legacy.meetCycles);
-console.log('v2.34 all cycle durations, real nine-attempt meet results, partial totals, corrections, cutoff, no historical rewrites and legacy records passed');
+
+const competitionDate=(()=>{const d=new Date(config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(12-1)*7+2);return d.toISOString().slice(0,10);})();
+const competitionPlan=Cycle.prepare(reviewed,reviewed.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'competition',eventName:'State Championships'},args);
+const competitionCycle=Cycle.schedule(Cycle.save(reviewed,competitionPlan,{confirmed:true},{...args,id:'real12'}),'real12',{...args,now:'2026-09-24T13:00:00.000Z'});
+const competitionAttempts=Meet.empty();competitionAttempts.squat[0]={status:'made',weightKg:170};competitionAttempts.bench[0]={status:'made',weightKg:100};competitionAttempts.deadlift[0]={status:'made',weightKg:220};
+const competitionStamp=competitionDate+'T18:00:00.000Z';
+const realResult=Meet.save(competitionCycle,'real12',{date:competitionDate,attempts:competitionAttempts,notes:'Official meet day entry'},{confirmed:true,now:competitionStamp});
+assert.equal(realResult.meetCycles[0].mockMeet,undefined);assert.equal(realResult.meetCycles[0].meetResult.revisions.length,1);
+const realReport=Meet.inspect(realResult,{cycleId:'real12',asOf:competitionDate,now:competitionStamp});
+assert.equal(realReport.eventType,'competition');assert.equal(realReport.eventLabel,'State Championships');assert.equal(realReport.totalKg,490);
+assert(realReport.notice.includes('does not verify federation records'));
+const crossed=structuredClone(realResult);crossed.meetCycles[0].mockMeet=structuredClone(crossed.meetCycles[0].meetResult);
+assert.throws(()=>Meet.validate(crossed),/cannot use mock-meet storage/);
+
+console.log('v2.35 mock and competition result storage, nine-attempt results, partial totals, corrections, cutoff, history and legacy mock records passed');

@@ -5,13 +5,14 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Cycle,Schedule,Readiness,Intent){
  'use strict';
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
- const labels={'accumulation':'Accumulation','strength':'Strength','peaking':'Peaking','taper':'Taper','mock-meet':'Mock meet'};
+ const labels={'accumulation':'Accumulation','strength':'Strength','peaking':'Peaking','taper':'Taper','mock-meet':'Mock meet','meet':'Competition meet'};
  const focus={
   accumulation:['Complete planned work with recorded effort.','Observe per-lift set completion, exposure frequency and RPE without treating tonnage as recovery or capacity.'],
   strength:['Practice competition-specific work while comparing actual effort to planned caps.','Compare completed competition-lift exposures and RPE; inspect missing work before proposing any change.'],
   peaking:['Prioritize the scheduled competition-lift exposures.','Inspect logged execution of the prescribed work; these bounded examples do not validate maximal singles or meet openers.'],
   taper:['Follow the explicitly reviewed lower-volume schedule.','Compare actual exposure and prescribed effort without interpreting fatigue or readiness as medical measurements.'],
-  'mock-meet':['Review the mock-meet date and record actual lift results.','This plan does not prescribe attempts; no readiness prediction or inferred competition result is available.']
+  'mock-meet':['Review the mock-meet date and record actual lift results.','This plan does not prescribe attempts; no readiness prediction or inferred competition result is available.'],
+  meet:['Review the competition meet date and record actual lift results.','This plan does not prescribe attempts or verify official results; no readiness prediction or inferred competition result is available.']
  };
  const byId=(state,id)=> (state.scheduledSessions||[]).find(r=>r.id===id);
  const round=x=>Math.round(x*10)/10;
@@ -89,7 +90,7 @@
    if(summary.unknown)warnings.push(summary.unknown+' current-week session(s) cannot be linked unambiguously to its approved prescription.');
    if(status==='completed')warnings.push('This cycle ended; guidance summarizes its last week rather than claiming an active prescription.');
    const phaseStart=samePhase[0].startDate,phaseLast=phaseEnd;
-   return {version:1,asOf,cutoff,cycleId:cycle.id,cycleName:cycle.sourceProgram.config.name,totalWeeks:cycle.config.weeks,meetDate:cycle.config.meetDate,
+   return {version:1,asOf,cutoff,cycleId:cycle.id,cycleName:cycle.sourceProgram.config.name,totalWeeks:cycle.config.weeks,meetDate:cycle.config.meetDate,eventType:Cycle.eventType(cycle.config),eventName:cycle.config.eventName||null,
      status,week:week.week,phase:week.phase,phaseLabel:labels[week.phase],phaseWeek:week.phaseWeek,phaseWeeks:samePhase.length,phaseStart,phaseEnd:phaseLast,
      phaseFocus:focus[week.phase],nextReview:week.endDate,phaseReviewDate:phaseLast,summary,lifts,details,next:next?{key:next.key,date:next.date,name:next.name}:null,warnings,
      notice:'Read-only training context. Phase descriptions are programming priorities, not proof of adaptation or automatic approval to alter future sessions.'};
