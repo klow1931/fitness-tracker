@@ -650,3 +650,21 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 #cycle-response [data-response-lift] { padding:.7rem 0; border-top:1px solid var(--line); }
 #cycle-response [data-response-lift] h4 { font-weight:750; }
 #cycle-response [data-response-lift] small { display:block; font-size:.72rem; color:var(--muted); line-height:1.45; padding:.18rem 0; }
+
+/* v2.34 — actual meet execution and post-cycle review within existing program cards. */
+#meet-cycle .mock-meet-results { margin:.75rem 0; padding:.65rem .1rem; border-top:1px solid var(--line); min-width:0; }
+#meet-cycle .mock-meet-results > summary { cursor:pointer; min-height:44px; font-weight:750; }
+#meet-cycle .mock-meet-results p { font-size:.79rem; line-height:1.5; margin:.4rem 0; overflow-wrap:anywhere; }
+#meet-cycle .mock-meet-lifts { display:grid; gap:.8rem; margin:.7rem 0; }
+#meet-cycle .mock-meet-lift { min-width:0; border:1px solid var(--line); border-radius:.7rem; padding:.65rem; }
+#meet-cycle .mock-meet-lift h4 { font-size:.88rem; font-weight:800; }
+#meet-cycle .mock-meet-attempt { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.5rem; padding:.45rem 0; }
+#meet-cycle .mock-meet-attempt label { min-width:0; font-size:.74rem; display:grid; gap:.2rem; }
+#meet-cycle .mock-meet-attempt input,#meet-cycle .mock-meet-attempt select { width:100%; min-width:0; min-height:44px; }
+#meet-cycle .mock-meet-note { display:grid; font-size:.78rem; gap:.3rem; }
+#meet-cycle .mock-meet-confirm { display:flex; align-items:flex-start; gap:.5rem; font-size:.76rem; line-height:1.5; margin:.8rem 0; }
+#meet-cycle .mock-meet-confirm input { min-width:22px; min-height:22px; }
+#meet-cycle .mock-meet-total { font-weight:800; }
+#meet-cycle .mock-meet-recap { margin:.7rem 0; }
+#meet-cycle .mock-meet-recap article { padding:.5rem 0; border-top:1px solid var(--line); }
+#meet-cycle [data-meet-error] { font-size:.77rem; }

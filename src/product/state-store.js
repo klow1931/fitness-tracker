@@ -166,6 +166,7 @@
         if(window.LoadnotePhaseBuilder)integrity.phasePrograms=window.LoadnotePhaseBuilder.validate(integrity.phasePrograms===undefined?[]:integrity.phasePrograms);
         if(window.LoadnoteMeetCycle)integrity.meetCycles=window.LoadnoteMeetCycle.validate(integrity.meetCycles===undefined?[]:integrity.meetCycles);
         if(window.LoadnoteCycleReview)integrity.meetCycles=window.LoadnoteCycleReview.validate(integrity);
+        if(window.LoadnoteMockMeet)integrity.meetCycles=window.LoadnoteMockMeet.validate(integrity);
         if(window.LoadnoteBuilder)integrity.reviewedPrograms=window.LoadnoteBuilder.validate(integrity.reviewedPrograms===undefined?[]:integrity.reviewedPrograms);
         if(window.LoadnoteProgramReview)integrity.programReviews=window.LoadnoteProgramReview.validate(integrity.programReviews===undefined?[]:integrity.programReviews);
         return window.LoadnoteIntent?.validateState?window.LoadnoteIntent.validateState(integrity):integrity;
