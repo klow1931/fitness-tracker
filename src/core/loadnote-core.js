@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 23;
-  const RELEASE_VERSION = '2.36.0';
+  const SCHEMA_VERSION = 24;
+  const RELEASE_VERSION = '2.37.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -22,7 +22,7 @@
   const DEFAULT_COLLECTIONS = [
     'workouts', 'nutrition', 'prs', 'goals', 'programs', 'templates',
     'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews',
-    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles', 'decisionEvents'
+    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles', 'decisionEvents', 'adoptedPrograms'
   ];
 
   function normalizeState(input, defaults) {
@@ -180,6 +180,8 @@
     if(Number(state.schemaVersion||1)<22)state.schemaVersion=22;
     if(state.meetCycles===undefined)state.meetCycles=[];
     if(Number(state.schemaVersion||1)<23)state.schemaVersion=23;
+    if(state.adoptedPrograms===undefined)state.adoptedPrograms=[];
+    if(Number(state.schemaVersion||1)<24)state.schemaVersion=24;
     return state;
   }
 
