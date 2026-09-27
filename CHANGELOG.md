@@ -1,3 +1,13 @@
+# v2.37.0 — Adopt user-authored programs into Decisions
+
+- Add an explicit **Adopt an existing program** workflow for programs already saved in the legacy Program Library. Preserve the original user-authored program snapshot instead of pretending Loadnote generated it.
+- Convert parseable set × rep entries into a reviewed, dated 1–52 week execution baseline with athlete-selected weekdays. Exercise identity is reused from the catalog when available.
+- Distinguish authored versus filled context: explicit `@ RPE` remains user-authored; otherwise the athlete approves a default adoption-time RPE cap. Optional recent logged loads are labeled as Loadnote-filled execution targets rather than part of the original program.
+- Allow prescriptions to intentionally omit an exact load. This avoids encoding unknown loads as 0 kg and lets planned-versus-completed comparisons use reps/RPE without inventing weight.
+- Schedule adopted programs only after explicit review and Calendar conflict checks. Preserve the frozen source snapshot and store adoption records in schema v24.
+- Add deterministic adopted-program weekly reviews. Keep remains the default; after a resolved week, an exercise may offer one fewer set on matching next-week exposures only when at least two directly comparable sets exceeded the approved RPE cap and future work is still untouched.
+- Do not automatically increase load, substitute exercises, change frequency, rewrite completed workouts or infer that high RPE is a medical/recovery measurement.
+
 # v2.36.0 — Cycle-level adaptive programming controller
 
 - Add a deterministic per-lift controller for scheduled meet-prep cycles. It combines the existing completed-week prescribed-versus-performed review with within-phase response context and recommends only actions the current bounded review engine can safely execute.
