@@ -69,7 +69,8 @@
    const source=(state.programs||[]).find(p=>key(p.id)===proposal?.sourceProgramId);if(!source)throw Error('Saved program no longer exists');
    const fresh=build(state,source,proposal.config);if(JSON.stringify(fresh.sessions)!==JSON.stringify(proposal.sessions)||JSON.stringify(fresh.sourceSnapshot)!==JSON.stringify(proposal.sourceSnapshot))throw Error('Program or training context changed; preview adoption again');
    const record={...fresh,id:String(id||('adopted_'+Date.now().toString(36))),createdAt:now,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null,weeklyReviews:[]};
-   return {...state,adoptedPrograms:validate([...(state.adoptedPrograms||[]),record])};
+   const catalog=copy(state.exerciseCatalog||[]);for(const session of record.sessions)for(const ex of session.exercises)if(!ex.exerciseId){let exerciseId=Integrity.stableExerciseId(ex.name),n=1;while(catalog.some(row=>row.id===exerciseId&&Integrity.compactKey(row.name)!==Integrity.compactKey(ex.name)))exerciseId=Integrity.stableExerciseId(ex.name)+'_'+n++;if(!catalog.some(row=>row.id===exerciseId))catalog.push({id:exerciseId,name:ex.name,aliases:[]});ex.exerciseId=exerciseId;}
+   return {...state,exerciseCatalog:catalog,adoptedPrograms:validate([...(state.adoptedPrograms||[]),record])};
  }
  function schedule(state,id,{now=new Date().toISOString()}={}){
    const records=validate(state.adoptedPrograms||[]),record=records.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Adopted program unavailable or already scheduled');
