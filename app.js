@@ -2601,6 +2601,7 @@ ${woLines}
 
     function renderCoach() {
       window.renderProgrammingProfile?.();
+      window.renderProgramAdoption?.();
       window.renderPowerliftingBuilder?.();
       window.renderPhaseBuilder?.();
       window.renderPhaseReview?.();
