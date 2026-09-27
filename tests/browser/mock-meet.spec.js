@@ -66,3 +66,27 @@ test('mobile lb entry converts once to stored kg, corrections are auditable, inc
  expect(await page.evaluate(()=>LoadnoteMockMeet.inspect(data,{cycleId:'meet12',asOf:today()}).totalKg)).toBeCloseTo(390,1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('competition meet stays distinct from mock meet in UI and result storage',async({page})=>{
+ await page.evaluate(()=>{
+  const args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
+  data.meetCycles=[];data.scheduledSessions=[];
+  const plan=LoadnoteMeetCycle.prepare(data,data.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-16',eventType:'competition',eventName:'State Championships'},args);
+  data=LoadnoteMeetCycle.save(data,plan,{confirmed:true},{...args,id:'real12'});
+  data=LoadnoteMeetCycle.schedule(data,'real12',{...args,now:'2026-09-24T13:00:00.000Z'});
+  renderMeetCycle();
+ });
+ await page.locator('[data-cycle="real12"] > summary').click();
+ const host=page.locator('[data-meet-result="real12"]');await host.locator('.mock-meet-results > summary').click();
+ await expect(host).toContainText('Competition meet');
+ await expect(host).toContainText('State Championships');
+ await expect(host).toContainText('does not verify official federation results');
+ await host.locator('[data-meet-status="squat-0"]').selectOption('made');await host.locator('[data-meet-weight="squat-0"]').fill('170');
+ await host.locator('[data-meet-status="bench-0"]').selectOption('made');await host.locator('[data-meet-weight="bench-0"]').fill('100');
+ await host.locator('[data-meet-status="deadlift-0"]').selectOption('made');await host.locator('[data-meet-weight="deadlift-0"]').fill('220');
+ await host.locator('[data-meet-confirm]').check();await host.locator('[data-meet-save]').click();
+ await expect.poll(()=>page.evaluate(()=>data.meetCycles[0].meetResult?.revisions.length)).toBe(1);
+ expect(await page.evaluate(()=>data.meetCycles[0].mockMeet)).toBeUndefined();
+ const report=await page.evaluate(()=>LoadnoteMeetResult.inspect(data,{cycleId:'real12',asOf:today()}));
+ expect(report.eventType).toBe('competition');expect(report.eventLabel).toBe('State Championships');expect(report.totalKg).toBe(490);
+});

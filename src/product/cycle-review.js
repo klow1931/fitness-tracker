@@ -42,7 +42,7 @@
    const observed=guidance.lifts[lift],sessions=targets.filter(s=>s.exercises.some(e=>e.lift===lift)),issues=[];
    if(!allResolved)issues.push('Some reviewed-week sessions remain unconfirmed, ambiguous or upcoming.');
    if(observed.comparableRpeSets<2||observed.aboveCap<2)issues.push('At least two comparable sets above their approved RPE caps are required to offer a one-set reduction.');
-   if(!['accumulation','strength'].includes(next.phase))issues.push('Peak, taper and mock-meet prescriptions remain unchanged by this set-reduction rule.');
+   if(!['accumulation','strength'].includes(next.phase))issues.push('Peak, taper and event-week prescriptions remain unchanged by this set-reduction rule.');
    if(!sessions.length)issues.push('No next-week exposure for this lift.');
    for(const s of sessions){
      const id='meet:'+cycleId+':'+s.key,record=calendar.find(row=>row.id===id);

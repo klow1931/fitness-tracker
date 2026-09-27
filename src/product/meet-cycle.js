@@ -8,23 +8,30 @@
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
  const move=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
  const dates=(start,end)=>start<=end;
+ const EVENT_TYPES=['mock','competition'];
+ const eventType=c=>c?.eventType||'mock';
  function config(raw,source){
    const original=Phase.validate([source])[0],base=original.config;
-   if(!raw||raw.version!==1||!Number.isInteger(raw.weeks)||raw.weeks<7||raw.weeks>52)throw Error('Choose 7–52 total weeks, including the mock-meet week');
+   if(!raw||raw.version!==1||!Number.isInteger(raw.weeks)||raw.weeks<7||raw.weeks>52)throw Error('Choose 7–52 total weeks, including the event week');
+   const type=eventType(raw);if(!EVENT_TYPES.includes(type))throw Error('Choose mock meet or competition meet');
+   const eventName=(raw.eventName||'').trim();if(typeof(raw.eventName??'')!=='string'||eventName.length>120||type==='competition'&&!eventName)throw Error('Enter a competition meet name up to 120 characters');
    if(!Number.isInteger(raw.peakWeeks)||raw.peakWeeks<1||raw.peakWeeks>4||!Number.isInteger(raw.taperWeeks)||raw.taperWeeks<1||raw.taperWeeks>2)throw Error('Choose 1–4 peak weeks and 1–2 taper weeks');
    const baseWeeks=raw.weeks-raw.peakWeeks-raw.taperWeeks-1;
    if(baseWeeks<4)throw Error('Reserve at least two accumulation weeks and two strength weeks before peaking');
    const accumulationWeeks=Math.max(2,Math.min(baseWeeks-2,Math.round(baseWeeks*.55))),strengthWeeks=baseWeeks-accumulationWeeks;
    const meetWeekStart=move(base.startDate,(raw.weeks-1)*7),meetDate=raw.meetDate;
-   if(!Schedule.date(meetDate)||meetDate<meetWeekStart||meetDate>move(meetWeekStart,6)||![0,6].includes(new Date(meetDate+'T12:00:00Z').getUTCDay()))throw Error('Mock meet must be Saturday or Sunday of the final program week');
-   if(meetDate<move(base.startDate,6))throw Error('Mock meet is before the base sequence');
-   return {version:1,sourceProgramId:original.id,weeks:raw.weeks,peakWeeks:raw.peakWeeks,taperWeeks:raw.taperWeeks,meetDate,accumulationWeeks,strengthWeeks,startDate:base.startDate};
+   if(!Schedule.date(meetDate)||meetDate<meetWeekStart||meetDate>move(meetWeekStart,6))throw Error('Event date must fall inside the final program week');
+   if(type==='mock'&&![0,6].includes(new Date(meetDate+'T12:00:00Z').getUTCDay()))throw Error('Mock meet must be Saturday or Sunday of the final program week');
+   if(meetDate<move(base.startDate,6))throw Error('Meet is before the base sequence');
+   return {version:1,sourceProgramId:original.id,weeks:raw.weeks,peakWeeks:raw.peakWeeks,taperWeeks:raw.taperWeeks,meetDate,eventType:type,eventName:type==='competition'?eventName:null,accumulationWeeks,strengthWeeks,startDate:base.startDate};
  }
  function build(source,raw){
    const sourceRecord=Phase.validate([source])[0],c=config(raw,sourceRecord),base=sourceRecord.config;
    const prototypes=Phase.build({...base,phases:[{type:'accumulation',weeks:Math.min(c.accumulationWeeks,6)},{type:'strength',weeks:Math.min(c.strengthWeeks,6)},{type:'deload',weeks:1}]});
-   const warnings=['Original reviewed lift identities, variations, working-set counts, days and explicit training maxes are retained in the base weeks.','Weeks beyond the six-week phase engine window hold its last supported prescription; there is no indefinite automatic intensity increase.','Peak and taper examples use competition exercises only. They do not infer readiness for heavy singles, meet attempts or recovery.','Mock-meet day is a dated event marker, not an automatically selected attempt prescription or scheduled training workout.','Each Calendar session requires separate approval through the cycle scheduling action. Future revisions remain separate from this saved original.'];
-   const parts=[['accumulation',c.accumulationWeeks],['strength',c.strengthWeeks],['peaking',c.peakWeeks],['taper',c.taperWeeks],['mock-meet',1]];
+   const endpoint=c.eventType==='competition'?'meet':'mock-meet';
+   const eventLabel=c.eventType==='competition'?'Competition meet':'Mock meet';
+   const warnings=['Original reviewed lift identities, variations, working-set counts, days and explicit training maxes are retained in the base weeks.','Weeks beyond the six-week phase engine window hold its last supported prescription; there is no indefinite automatic intensity increase.','Peak and taper examples use competition exercises only. They do not infer readiness for heavy singles, meet attempts or recovery.',eventLabel+' day is a dated event marker, not an automatically selected attempt prescription or scheduled training workout.','Each Calendar session requires separate approval through the cycle scheduling action. Future revisions remain separate from this saved original.'];
+   const parts=[['accumulation',c.accumulationWeeks],['strength',c.strengthWeeks],['peaking',c.peakWeeks],['taper',c.taperWeeks],[endpoint,1]];
    const sessions=[],weekly=[];let week=0;
    const floor=(tm,pct)=>{const w=Math.round(Math.floor((tm*pct/100+1e-9)/base.incrementKg)*base.incrementKg*100)/100;if(w<=0)throw Error('Load increment is too large for a selected max');return w;};
    for(const [phase,length] of parts)for(let pw=1;pw<=length;pw++){
@@ -33,7 +40,7 @@
      if(phase==='accumulation'||phase==='strength'){
        const templateWeek=Math.min(pw,6),template=prototypes.sessions.filter(s=>s.phase===phase&&s.phaseWeek===Math.min(templateWeek,phase==='accumulation'?Math.min(c.accumulationWeeks,6):Math.min(c.strengthWeeks,6)));
        for(const item of template){const day=base.days.find(d=>item.key.endsWith('d'+d));rows.push({...copy(item),key:'w'+week+'d'+day,date:move(startDate,day),week,phase,phaseWeek:pw,name:'Week '+week+' · '+phase+' · Day '+(day+1)});}
-     }else if(phase!=='mock-meet'){
+     }else if(phase!=='mock-meet'&&phase!=='meet'){
        for(const day of base.days){
          const exercises=[];
          for(const lift of Phase.LIFTS){const l=base.lifts[lift],exp=l.exposures.find(e=>e.day===day&&e.role==='primary');if(!exp)continue;
@@ -48,7 +55,7 @@
        }
      }
      sessions.push(...rows);
-     weekly.push({week,phase,phaseWeek:pw,startDate,endDate,meetDate:phase==='mock-meet'?c.meetDate:null,sessionCount:rows.length,lifts:Object.fromEntries(Phase.LIFTS.map(lift=>{const entries=rows.flatMap(s=>s.exercises.filter(e=>e.lift===lift));return [lift,{exposures:entries.length,sets:entries.reduce((n,e)=>n+e.sets.length,0),volumeKg:Math.round(entries.reduce((n,e)=>n+e.sets.reduce((sum,set)=>sum+set.weight*set.reps,0),0)*100)/100}];}))});
+     weekly.push({week,phase,phaseWeek:pw,startDate,endDate,meetDate:(phase==='mock-meet'||phase==='meet')?c.meetDate:null,sessionCount:rows.length,lifts:Object.fromEntries(Phase.LIFTS.map(lift=>{const entries=rows.flatMap(s=>s.exercises.filter(e=>e.lift===lift));return [lift,{exposures:entries.length,sets:entries.reduce((n,e)=>n+e.sets.length,0),volumeKg:Math.round(entries.reduce((n,e)=>n+e.sets.reduce((sum,set)=>sum+set.weight*set.reps,0),0)*100)/100}];}))});
    }
    if(c.accumulationWeeks>6||c.strengthWeeks>6)warnings.push('An extended phase exceeds six progressive weeks; its final supported training-max target repeats until a reviewed adjustment.');
    if(sourceRecord.scheduledAt)warnings.push('The source phase program is already scheduled; its Calendar sessions must not overlap this new cycle.');
@@ -63,7 +70,7 @@
    const p=profile.context;
    if(!['strength','general','meet'].includes(p.goal)||p.consistency==='returning')throw Error('Choose a suitable strength, general powerlifting or meet preparation profile');
    if(base.days.some(day=>!p.availableDays.includes(day))||base.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Cycle exceeds available days, equipment or time budget');
-   if(p.eventDate&&p.eventDate!==c.meetDate)throw Error('Mock-meet date differs from the profile event date; confirm or update your profile');
+   if(p.eventDate&&p.eventDate!==c.meetDate)throw Error('Meet date differs from the profile event date; confirm or update your profile');
    const roles=Readiness.list(state.exerciseRoles||[],cutoff),snapshot=[];
    for(const lift of Phase.LIFTS){
      const l=base.lifts[lift],matches=roles.filter(r=>r.role==='competition'&&r.competitionLift===lift);
@@ -77,7 +84,7 @@
    }
    const existing=Schedule.list(state.scheduledSessions||[],cutoff).filter(s=>s.status==='scheduled'&&s.date>=c.startDate&&s.date<=c.meetDate);
    if(existing.length)result.warnings.push(existing.length+' existing Calendar session(s) fall within this proposed cycle; conflicts must be resolved before scheduling.');
-   if(result.weekly.some(w=>w.phase==='mock-meet'&&w.sessionCount))throw Error('Mock meet must not receive inferred training attempts');
+   if(result.weekly.some(w=>(w.phase==='mock-meet'||w.phase==='meet')&&w.sessionCount))throw Error('Meet day must not receive inferred training attempts');
    return {...result,profileSnapshot:copy(profile),roleSnapshot:snapshot};
  }
  function validate(records){
@@ -117,5 +124,5 @@
    record.scheduledAt=now;
    return {...state,meetCycles:validate(all),scheduledSessions:sessions};
  }
- return {config,build,prepare,validate,save,schedule};
+ return {EVENT_TYPES,eventType,config,build,prepare,validate,save,schedule};
 });

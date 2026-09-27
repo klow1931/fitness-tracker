@@ -41,4 +41,14 @@ assert.deepEqual(Meet.prepare(tomorrow,source,p.config,args),p,'As-known profile
 const old=Core.normalizeState({schemaVersion:22,workouts:reviewed.workouts,phasePrograms:reviewed.phasePrograms});
 assert.equal(old.schemaVersion,23);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
 assert.deepEqual(Core.normalizeState({...scheduled}).meetCycles,scheduled.meetCycles);
-console.log('Flexible 8/12/16/20/26/52 week meet cycles, time and load caps, saved original, conflicts, kg and migration passed');
+
+const competitionDate=(()=>{const d=new Date(config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(12-1)*7+2);return d.toISOString().slice(0,10);})();
+const competition=Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'competition',eventName:'State Championships'},args);
+assert.equal(competition.config.eventType,'competition');assert.equal(competition.config.eventName,'State Championships');
+assert.equal(competition.weekly.at(-1).phase,'meet');assert.equal(competition.weekly.at(-1).meetDate,competitionDate);
+assert.equal(competition.weekly.at(-1).sessionCount,0);assert(competition.warnings.some(w=>w.includes('Competition meet day')));
+assert.throws(()=>Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'competition',eventName:''},args),/meet name/);
+assert.throws(()=>Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'mock'},args),/Saturday or Sunday/);
+assert.throws(()=>Meet.config({...competition.config,eventType:'unknown'},source),/mock meet or competition meet/);
+
+console.log('Flexible mock/competition meet cycles, 8–52 week duration, event dates, caps, conflicts, kg and legacy migration passed');
