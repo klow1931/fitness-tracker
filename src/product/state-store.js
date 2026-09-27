@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 23, meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 24, adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -167,6 +167,7 @@
         if(window.LoadnoteMeetCycle)integrity.meetCycles=window.LoadnoteMeetCycle.validate(integrity.meetCycles===undefined?[]:integrity.meetCycles);
         if(window.LoadnoteCycleReview)integrity.meetCycles=window.LoadnoteCycleReview.validate(integrity);
         if(window.LoadnoteMockMeet)integrity.meetCycles=window.LoadnoteMockMeet.validate(integrity);
+        if(window.LoadnoteProgramAdoption)integrity.adoptedPrograms=window.LoadnoteProgramAdoption.validate(integrity.adoptedPrograms===undefined?[]:integrity.adoptedPrograms);
         if(window.LoadnoteBuilder)integrity.reviewedPrograms=window.LoadnoteBuilder.validate(integrity.reviewedPrograms===undefined?[]:integrity.reviewedPrograms);
         if(window.LoadnoteProgramReview)integrity.programReviews=window.LoadnoteProgramReview.validate(integrity.programReviews===undefined?[]:integrity.programReviews);
         return window.LoadnoteIntent?.validateState?window.LoadnoteIntent.validateState(integrity):integrity;
