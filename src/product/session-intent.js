@@ -31,7 +31,7 @@
   function plannedSet(raw,trackBy){
     const measure=trackBy==='duration'?'duration':'reps',amount=Number(raw?.[measure]);
     if(!(amount>0)||measure==='reps'&&!Number.isInteger(amount))return null;
-    const set={[measure]:amount,weight:Math.round(Math.max(0,Number(raw?.weight)||0)*100)/100};
+    const set={[measure]:amount};const hasWeight=raw?.weight!==''&&raw?.weight!=null&&Number.isFinite(Number(raw.weight));if(hasWeight)set.weight=Math.round(Math.max(0,Number(raw.weight))*100)/100;
     const target=Number(raw?.targetRpe??raw?.rpe);
     if(target>=1&&target<=10)set.targetRpe=target;
     return set;
@@ -113,7 +113,7 @@
   }
   function sameSet(planned,actual,trackBy){
     const measure=trackBy==='duration'?'duration':'reps';
-    return Number(planned?.[measure])===Number(actual?.[measure])&&Math.abs((Number(planned?.weight)||0)-(Number(actual?.weight)||0))<=0.01;
+    const repsMatch=Number(planned?.[measure])===Number(actual?.[measure]);const loadMatch=!Object.hasOwn(planned||{},'weight')||Math.abs(Number(planned.weight)-Number(actual?.weight))<=0.01;return repsMatch&&loadMatch;
   }
   function compare(workout,exerciseIds){
     const plan=workout?.sessionIntent?.prescription;if(!plan)return null;
