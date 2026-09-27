@@ -1,4 +1,4 @@
-/* v2.32 — deliberate weekly review in Decisions, no extra steps in workout logging. */
+/* v2.36 — weekly review with deterministic cycle-controller recommendations; athlete approval remains required. */
 (function(){
  'use strict';let busy=false,report=null;
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
@@ -21,12 +21,16 @@
  function choices(host){return Object.fromEntries(['squat','bench','deadlift'].map(lift=>[lift,host.querySelector('[data-cycle-review-choice="'+lift+'"]').value]));}
  function show(r,host){
   const el=host.querySelector('#cycle-review-report');
+  let controller=null;
+  try{if(window.LoadnoteCycleAdaptiveController){const response=window.LoadnoteCycleResponse?.inspect(data,{cycleId:r.cycleId,asOf:r.asOf});controller=window.LoadnoteCycleAdaptiveController.recommendFromReports(r,response);}}catch(e){console.warn('Cycle adaptive controller unavailable',e);}
   el.innerHTML='<div class="cycle-review-meta"><b>Week '+r.week+' · '+esc(r.phase)+' → '+esc(r.nextPhase)+'</b><p>'+esc(r.kind==='phase-transition'?'Phase transition review: only the first week of the next phase is eligible for the bounded set rule.':'Weekly review: only the next week is eligible for the bounded set rule.')+'</p><p>Recorded: '+r.guidance.summary.completed+' linked; '+r.guidance.summary.skipped+' skipped; '+r.guidance.summary.unconfirmed+' unconfirmed; '+r.guidance.summary.unknown+' need review.</p></div>'+
-   ['squat','bench','deadlift'].map(l=>{const f=r.findings[l];return '<label class="cycle-review-choice"><b>'+esc(f.name)+'</b><small>'+f.comparableRpeSets+' comparable RPE sets · '+f.aboveCap+' above cap · '+f.plannedNextExposures+' next-week exposures</small><select class="input" data-cycle-review-choice="'+l+'"><option value="keep">Keep the original next-week plan</option>'+(f.canReduceOne?'<option value="reduce-one">Review one fewer set per next-week exposure</option>':'')+'</select><small>'+esc(f.reason)+'</small></label>';}).join('')+
+   ['squat','bench','deadlift'].map(l=>{const f=r.findings[l],s=controller?.lifts?.[l];return '<label class="cycle-review-choice"><b>'+esc(f.name)+'</b><small>'+f.comparableRpeSets+' comparable RPE sets · '+f.aboveCap+' above cap · '+f.plannedNextExposures+' next-week exposures</small>'+(s?'<small><b>Controller:</b> '+esc(s.action==='reduce-one'?'Review one fewer set':'Keep original plan')+' · '+esc(s.confidence)+' confidence. '+esc(s.why)+'</small>':'')+'<select class="input" data-cycle-review-choice="'+l+'"><option value="keep">Keep the original next-week plan</option>'+(f.canReduceOne?'<option value="reduce-one">Review one fewer set per next-week exposure</option>':'')+'</select><small>'+esc(f.reason)+'</small></label>';}).join('')+
+   (controller?'<div class="cycle-controller-summary"><p><b>Adaptive controller:</b> '+esc(controller.summary)+'</p><button type="button" class="btn-secondary" id="cycle-controller-use">Use controller choices</button><details class="more-details"><summary>How the controller decided</summary>'+controller.notes.map(t=>'<p>'+esc(t)+'</p>').join('')+'</details></div>':'')+
    '<details class="more-details"><summary>Evidence limitations and safeguards</summary>'+r.notes.map(t=>'<p>'+esc(t)+'</p>').join('')+r.guidance.warnings.map(t=>'<p>'+esc(t)+'</p>').join('')+'</details>'+
    '<label>Review notes<textarea class="input" id="cycle-review-notes" maxlength="1000" placeholder="Why did you keep or adjust this week?"></textarea></label>'+
    '<label class="cycle-review-approval"><input type="checkbox" id="cycle-review-confirm"> I reviewed the evidence and the proposed next-week changes. Preserve the original cycle.</label>'+
    '<button type="button" class="btn-primary" id="cycle-review-save">Approve review</button><p class="more-hint">No prescription changes until you approve. Keep decisions produce no Calendar revisions.</p>';
+  el.querySelector('#cycle-controller-use')?.addEventListener('click',()=>{for(const l of ['squat','bench','deadlift']){const select=el.querySelector('[data-cycle-review-choice="'+l+'"]'),choice=controller?.choices?.[l];if(select&&choice&&[...select.options].some(o=>o.value===choice))select.value=choice;}});
   el.querySelector('#cycle-review-save').onclick=async()=>{
    if(busy||!report)return;busy=true;
    const error=host.querySelector('#cycle-review-error');error.textContent='';
