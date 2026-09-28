@@ -1,6 +1,6 @@
 # Mobile release foundation
 
-Loadnote v2.54 establishes a reproducible mobile packaging boundary without claiming that App Store / Play Store distribution, accounts, or cloud sync are complete.
+Loadnote v2.54 established a reproducible mobile packaging boundary. v2.56 adds a server-side account/session boundary, but App Store / Play Store distribution, a production identity provider, persistent account storage, and cloud sync are still incomplete.
 
 ## Current mobile shell
 
@@ -67,11 +67,11 @@ npm run test:browser
 
 Also perform the manual iPhone/Android acceptance work documented in `docs/testing.md`. Automated Chromium tests do not prove iOS WebView, Android WebView, signing, store metadata, permissions or physical-device behavior.
 
-## Not completed in v2.54
+## Still not completed after v2.56
 
 This release does **not** implement:
 
-- accounts or authentication
+- production Apple/Google/email sign-in and persistent account storage
 - cloud synchronization
 - subscription/payment infrastructure
 - App Store or Play Store signing
