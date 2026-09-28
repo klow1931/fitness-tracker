@@ -2,6 +2,12 @@
 
 **v2.52.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.52 — Data & Reliability Hardening II
+
+Loadnote now audits whether the records that power adaptation actually agree with one another, not only whether individual loads and RPE values look valid. It checks workout ↔ Calendar links, captured Calendar revision identity, planned-work snapshots, duplicate linked completions and revision-history consistency. Blocking relationship issues are surfaced in Tools and stop next-block handoff rather than letting ambiguous evidence flow into programming.
+
+Routine JSON backups now include a deterministic integrity fingerprint that is verified before replacement import, and new automatic recovery snapshots carry the same kind of accidental-corruption check. Older backups and snapshots remain compatible; they are treated as legacy/unverified rather than rejected. The fingerprint is a corruption check, not cryptographic authentication.
+
 ## v2.51 — Week-to-Week Training Continuity
 
 Saving a workout now closes the loop instead of ending at “workout saved.” Loadnote summarizes the evidence that was actually recorded, preserves partial or shortened sessions without pretending missing work happened, surfaces any unresolved prior scheduled sessions, and shows the next scheduled workout. Home carries that continuity forward after today's training is logged. Past scheduled sessions without a linked workout remain unresolved until the athlete explicitly resolves them; Loadnote does not silently count them as missed or skipped.
