@@ -36,7 +36,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  const apiKey=env.LOADNOTE_AI_API_KEY||'';
  const baseUrl=(env.LOADNOTE_AI_BASE_URL||'https://api.x.ai/v1').replace(/\/$/,'');
  const model=env.LOADNOTE_AI_MODEL||'grok-2-latest';
- const authRequired=env.LOADNOTE_REQUIRE_AUTH==='1';
+ const authRequired=env.LOADNOTE_REQUIRE_AUTH===''||env.LOADNOTE_REQUIRE_AUTH==null?env.NODE_ENV==='production':env.LOADNOTE_REQUIRE_AUTH==='1';
  const secureCookie=env.LOADNOTE_COOKIE_SECURE?env.LOADNOTE_COOKIE_SECURE==='1':env.NODE_ENV==='production';
  const sameSite=env.LOADNOTE_SESSION_SAMESITE||'Strict';
  const auth=createAuth({secret:env.LOADNOTE_AUTH_SECRET||'',ttlSeconds:Number(env.LOADNOTE_SESSION_TTL_SECONDS)||43200,secure:secureCookie,sameSite});
