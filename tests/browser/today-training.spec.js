@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
 async function addToday(page,id='today-session'){
  await page.evaluate(id=>{
   const plan=LoadnoteIntent.createPrescription([{name:'Competition Bench Press',exerciseId:'bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:7},{weight:100,reps:5,targetRpe:7}]}],{type:'manual',label:'Bench day'});
-  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions||[],{name:'Bench day',date:today(),role:'primary',goal:'Build bench strength',prescription:plan},{id});
+  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions||[],{name:'Bench day',date:today(),role:'heavy-exposure',goal:'Build bench strength',prescription:plan},{id});
   renderDashboard();
  },id);
 }
@@ -32,7 +32,7 @@ test('scheduled session must be rescheduled to today before it can start',async(
  await page.evaluate(()=>{
   const d=new Date(today()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);const tomorrow=d.toISOString().slice(0,10);
   const plan=LoadnoteIntent.createPrescription([{name:'Squat',type:'strength',sets:[{weight:100,reps:5,targetRpe:7}]}],{type:'manual',label:'Squat'});
-  data.scheduledSessions=LoadnoteSchedule.create([],{name:'Tomorrow squat',date:tomorrow,role:'primary',goal:'Squat',prescription:plan},{id:'future'});
+  data.scheduledSessions=LoadnoteSchedule.create([],{name:'Tomorrow squat',date:tomorrow,role:'heavy-exposure',goal:'Squat',prescription:plan},{id:'future'});
  });
  await page.evaluate(()=>startScheduledWorkout('future'));
  await expect(page.locator('#toast-host')).toContainText('Reschedule this session to today');
