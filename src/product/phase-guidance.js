@@ -46,7 +46,7 @@
    }
    const summary={planned:0,completed:0,skipped:0,cancelled:0,unconfirmed:0,upcoming:0,revised:0,unknown:0};
    const lifts={};
-   for(const lift of ['squat','bench','deadlift'])lifts[lift]={lift,name:cycle.sourceProgram.config.lifts[lift].name,exerciseId:cycle.sourceProgram.config.lifts[lift].exerciseId,plannedSets:0,completedSets:0,validActualSets:0,plannedExposures:0,loggedExposures:0,rpeSets:0,aboveCap:0,belowCapHalf:0,comparableRpeSets:0,unmatchedSets:0,notes:[]};
+   for(const lift of ['squat','bench','deadlift'])lifts[lift]={lift,name:cycle.sourceProgram.config.lifts[lift].name,exerciseId:cycle.sourceProgram.config.lifts[lift].exerciseId,plannedSets:0,completedSets:0,validActualSets:0,plannedExposures:0,loggedExposures:0,rpeSets:0,aboveCap:0,belowCapHalf:0,comparableRpeSets:0,competitionPlannedSets:0,competitionCompletedSets:0,competitionComparableRpeSets:0,competitionAboveCap:0,competitionBelowCapHalf:0,unmatchedSets:0,notes:[]};
    const details=[];
    for(const original of cycle.sessions.filter(s=>s.week===week.week)){
      const id='meet:'+cycle.id+':'+original.key,record=map.get(id),saved=linked.get(id)||[];
@@ -64,20 +64,21 @@
      summary.planned++;summary[stateName]++;
      for(const originalExercise of original.exercises){
        const lift=lifts[originalExercise.lift];if(!lift)continue;
-       lift.plannedExposures++;lift.plannedSets+=originalExercise.sets.length;
+       const competitionExercise=originalExercise.exerciseId===lift.exerciseId;
+       lift.plannedExposures++;lift.plannedSets+=originalExercise.sets.length;if(competitionExercise)lift.competitionPlannedSets+=originalExercise.sets.length;
        if(!trusted||!match)continue;
        const actual=(trusted.exercises||[]).filter(e=>e.exerciseId===originalExercise.exerciseId&&e.type!=='cardio'&&e.trackBy!=='duration');
        if(!actual.length)continue;lift.loggedExposures++;
        const valid=actual.flatMap(e=>e.sets||[]).filter(s=>Number.isFinite(s.weight)&&s.weight>0&&Number.isInteger(s.reps)&&s.reps>0);
        lift.validActualSets+=valid.length;
-       lift.completedSets+=Math.min(valid.length,originalExercise.sets.length);
+       const completed=Math.min(valid.length,originalExercise.sets.length);lift.completedSets+=completed;if(competitionExercise)lift.competitionCompletedSets+=completed;
        const planned=(trusted.sessionIntent?.prescription?.plannedExercises||[]).filter(e=>e.exerciseId===originalExercise.exerciseId);
        const originallyPlanned=planned.length===1&&planned[0].sets.length===originalExercise.sets.length&&planned[0].sets.every((set,i)=>{const prior=originalExercise.sets[i];return Math.abs(set.weight-prior.weight)<.02&&set.reps===prior.reps&&(set.targetRpe??null)===(prior.targetRpe??null);});
        const beforeTraining=Intent.planTiming(trusted.sessionIntent.prescription,trusted.date,trusted.sessionIntent.timing)==='before-training';
        for(const [i,s] of valid.entries()){
          if(Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10)lift.rpeSets++;
          const target=originalExercise.sets[i],canCompare=originallyPlanned&&beforeTraining&&target&&Math.abs(s.weight-target.weight)<.02&&s.reps===target.reps&&Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10&&Number.isFinite(target.targetRpe);
-         if(canCompare){lift.comparableRpeSets++;if(s.rpe>target.targetRpe)lift.aboveCap++;if(s.rpe<=target.targetRpe-.5)lift.belowCapHalf++;}
+         if(canCompare){lift.comparableRpeSets++;if(s.rpe>target.targetRpe)lift.aboveCap++;if(s.rpe<=target.targetRpe-.5)lift.belowCapHalf++;if(competitionExercise){lift.competitionComparableRpeSets++;if(s.rpe>target.targetRpe)lift.competitionAboveCap++;if(s.rpe<=target.targetRpe-.5)lift.competitionBelowCapHalf++;}}
          else lift.unmatchedSets++;
        }
      }
