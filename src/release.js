@@ -20,7 +20,7 @@
       { id:'adoption', label:'User-authored program adoption', ok:Number(d.schemaVersion || 0) >= 24 && Array.isArray(d.adoptedPrograms) },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 24 }
     ];
-    return { version:'2.37.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'2.38.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });
