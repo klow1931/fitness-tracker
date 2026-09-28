@@ -1,4 +1,4 @@
-/* v2.50 — Today → Train flow with accepted adaptation explanations. */
+/* v2.51 — Today → Train flow with adaptation and week-to-week continuity. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -6,6 +6,8 @@
  function render(){
   const host=document.getElementById('today-training');if(!host||!window.LoadnoteTodayTraining)return;
   const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null,report=LoadnoteTodayTraining.inspect(data,{day:today(),draft});
+  const continuity=window.LoadnoteTrainingContinuity?.inspect(data,{asOf:today()})||null;
+  const continuityHtml=window.LoadnoteTrainingContinuityUI?.home(continuity)||'';
   const active=report.active;
   if(active){
    const exercises=active.exercises.map(e=>'<span>'+esc(e.name)+(e.sets?' · '+e.sets+' set'+(e.sets===1?'':'s'):'')+'</span>').join('');
@@ -18,9 +20,9 @@
   }else if(report.unlinkedDraft){
    host.innerHTML='<p class="eyebrow">Today</p><h2>Workout in progress</h2><p>Your unfinished workout is saved on this device.</p><button type="button" class="btn-primary" data-today-resume>Resume workout</button>';
   }else if(report.completed){
-   host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+report.completed+' scheduled session'+(report.completed===1?' is':'s are')+' complete today.</p><div class="today-training-actions"><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
+   host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+report.completed+' scheduled session'+(report.completed===1?' is':'s are')+' complete today.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
   }else{
-   host.innerHTML='<p class="eyebrow">Today</p><h2>No workout scheduled</h2><p>Train freely or use Calendar to schedule a reviewed plan.</p><div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Log workout</button><button type="button" class="btn-secondary" data-today-calendar>Open calendar</button></div>';
+   host.innerHTML='<p class="eyebrow">Today</p><h2>No workout scheduled</h2><p>Train freely or use Calendar to schedule a reviewed plan.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Log workout</button><button type="button" class="btn-secondary" data-today-calendar>Open calendar</button></div>';
   }
   host.querySelector('[data-today-train]')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.todayTrain;if(active?.draftOpen)goTrain();else window.startScheduledWorkout?.(id);});
   host.querySelector('[data-today-resume]')?.addEventListener('click',goTrain);
