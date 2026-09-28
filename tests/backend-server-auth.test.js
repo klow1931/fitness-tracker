@@ -1,9 +1,12 @@
 const assert=require('node:assert/strict');
+const fs=require('fs'),os=require('os'),path=require('path');
 const {createServer}=require('../backend/server');
 
 (async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'loadnote-server-auth-'));
  const env={
   NODE_ENV:'test',
+  LOADNOTE_ACCOUNT_STORE_PATH:path.join(dir,'accounts.json'),
   LOADNOTE_AUTH_SECRET:'integration-secret-'.padEnd(64,'y'),
   LOADNOTE_REQUIRE_AUTH:'1',
   LOADNOTE_DEV_AUTH:'1',
@@ -63,7 +66,7 @@ const {createServer}=require('../backend/server');
  }finally{await new Promise(resolve=>server.close(resolve));}
 
  assert.throws(()=>createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'1'}}),/AUTH_SECRET/);
- const prod=createServer({env:{NODE_ENV:'production',LOADNOTE_AUTH_SECRET:'prod-secret-'.padEnd(64,'z'),LOADNOTE_DEV_AUTH:'1',LOADNOTE_DEV_AUTH_KEY:'should-never-enable'}});
+ const prod=createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'0',LOADNOTE_AUTH_SECRET:'prod-secret-'.padEnd(64,'z'),LOADNOTE_DEV_AUTH:'1',LOADNOTE_DEV_AUTH_KEY:'should-never-enable'}});
  assert.equal(prod.loadnote.devAuthEnabled,false,'development session issuance must stay disabled in production');
 
  console.log('v2.56 backend session, protected account, CSRF, CORS and production guardrails passed');
