@@ -1,3 +1,19 @@
+# v2.55.0 — Sync-Safe Training Data Foundation
+
+- Add `loadnote-sync-v1`, a deterministic structured-data contract for future account synchronization without adding network sync yet.
+- Define stable-ID sync coverage across workouts, Calendar sessions, workout revisions, training blocks, exercise identity/roles, goals, reviewed/adopted programs, programming profiles, phase/meet records, decision history, templates, PRs, nutrition, bodyweight, measurements and other structured account records.
+- Keep progress-photo binaries, recovery snapshots, API/provider configuration and device/display preferences outside the first structured sync payload.
+- Add deterministic per-record manifests and full-package fingerprints so accidental mutation, truncation or stale package contents can be detected before merge planning. These fingerprints are not cryptographic authentication.
+- Add sync preflight checks that block malformed collections, missing/duplicate record identities and already-broken workout/Calendar relationships instead of silently repairing data.
+- Add a three-way merge planner using shared-base, local and remote state. Safe one-sided changes and identical concurrent changes can merge; divergent concurrent edits, edit-vs-delete and different same-ID creates become explicit conflicts.
+- Do not use timestamp-based last-write-wins for training records.
+- Preserve local record representations during safe merges so legacy ID types are not rewritten merely because a merge was evaluated.
+- Re-run record-link integrity after an otherwise conflict-free merge and reject combinations that would create invalid training relationships.
+- Add deterministic tests for manifest stability, package tamper detection, one-sided changes, concurrent conflicts, deletion conflicts, disjoint creates, duplicate identities and post-merge relationship failures.
+- Add browser coverage proving the sync model can inspect/package current state without mutating local training data.
+- Document the future authenticated sync flow, server revision/base requirements, deletion semantics, conflict policy and remaining non-goals in `docs/sync-architecture.md`.
+- No schema migration, cloud account, authentication, remote storage, background sync or conflict-resolution UI in this release.
+
 # v2.54.0 — Mobile Release Foundation
 
 - Add a real Capacitor application configuration for the Loadnote mobile shell with `www` as the explicit consumer bundle.
