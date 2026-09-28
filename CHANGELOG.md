@@ -1,3 +1,19 @@
+# v2.57.0 — OIDC Identity & Persistent Account Store
+
+- Connect the v2.56 signed-session boundary to a real provider-neutral OpenID Connect authorization-code flow.
+- Add OIDC discovery, S256 PKCE, signed short-lived state/nonce flow cookies, server-side authorization-code exchange, RS256 ID-token verification against provider JWKS, issuer/audience/authorized-party/time/nonce/subject validation, and one-time JWKS refresh for ordinary signing-key rotation.
+- Support confidential clients through advertised `client_secret_basic` or `client_secret_post` methods, while allowing public PKCE clients without a client secret.
+- Add a durable single-instance account/identity store with atomic file replacement, startup validation, restrictive file permissions where supported, stable provider-subject mappings, verified-email handling, display-name/avatar metadata and restart persistence.
+- Require authenticated production deployments to configure an explicit account-store path and OIDC provider instead of silently launching an unusable account boundary.
+- Add `/api/auth/providers`, `/api/auth/login` and `/api/auth/callback`; resolve verified provider identities to Loadnote accounts before issuing the existing application session.
+- Keep provider subjects and provider tokens server-side. Email remains profile metadata, never the account identity key.
+- Add a compact consumer Account section with sign-in, signed-in account status and sign-out while clearly stating that workout history is still local and cloud training sync is not enabled yet.
+- Preserve HttpOnly Loadnote sessions and in-memory CSRF handling; no session credential is written to localStorage.
+- Restrict the built-in backend static server to known consumer assets so environment templates, backend source, tests, docs and local account data are not web-served.
+- Add deterministic unit/integration/browser coverage for durable account resolution, verified profile metadata, OIDC PKCE/state/nonce/JWKS verification, persisted account sessions across server restarts, protected static files and account UI.
+- Add `docs/oidc-account-store.md` and expand backend environment configuration for the provider/account-store boundary.
+- No training-data schema migration, cloud workout storage, automatic sync, account linking, password authentication, multi-instance transactional account database or provider provisioning is introduced in this release.
+
 # v2.56.0 — Account Identity & Authentication Foundation
 
 - Add a server-side account/session layer that separates trusted identity verification, stable Loadnote account identity, Loadnote application sessions and protected account-scoped APIs.
