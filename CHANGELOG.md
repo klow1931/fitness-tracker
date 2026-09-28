@@ -1,3 +1,15 @@
+# v2.49.0 — Workout Logger Speed & Clarity
+
+- Add a focused between-set quick-entry flow for strength sets without changing the stored workout schema.
+- Highlight one active unfinished set at a time and surface a compact **Finish set · RPE** control directly on that set.
+- Add one-tap RPE choices from 6–10 in 0.5 steps. Choosing an RPE records the value, marks the set complete, preserves the existing rest-timer behavior, saves the draft, and advances focus to the next entered unfinished set.
+- Add **Done without RPE** so athletes can finish a set without inventing effort data. Missing RPE remains explicitly missing evidence.
+- Rename **+ Add Set** to **+ Same Set** to match existing behavior: duplicate the prior set’s load/reps while leaving RPE blank.
+- Compact previous-performance context to a visible one-line “Last” summary with the full set-by-set comparison behind an optional disclosure.
+- Keep quick-entry state synchronized with draft saves, focus mode, completion checkboxes, exercise reordering and reload recovery.
+- Add deterministic helper tests plus browser coverage for RPE completion, automatic next-set progression, draft persistence and missing-RPE preservation.
+- Preserve kg/lb conversion, planned-vs-completed snapshots, workout history, revision history and schema v25.
+
 # v2.48.0 — Today → Train first-program flow
 
 - Add a first-class **Today** card at the top of Home so a scheduled reviewed workout is immediately visible without opening Calendar or the full weekly plan.
