@@ -39,10 +39,11 @@ test('linked completed sets offer a bounded independent lift choice without sile
    const record=data.scheduledSessions.find(x=>x.id==='meet:c12:'+row.key),plan=record.revisions[0].context.prescription;
    data.workouts.push({id:'logged-'+row.key,date:row.date,createdAt:row.date+'T17:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map((s,i)=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId==='s'&&i<2?Math.min(10,s.targetRpe+1):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
   }
-  renderPhaseReview();
+  data.unit='lb';renderPhaseReview();
  });
  const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
  await expect(host.locator('[data-cycle-review-choice="squat"] option')).toHaveCount(3);
+ await expect(host.locator('[data-cycle-review-choice="squat"] option[value="reduce-load"]')).toContainText('lb');
  await expect(host.locator('[data-cycle-review-choice="bench"] option')).toHaveCount(1);
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,original:data.meetCycles[0].sessions}));
  await host.locator('[data-cycle-review-choice="squat"]').selectOption('reduce-one');
