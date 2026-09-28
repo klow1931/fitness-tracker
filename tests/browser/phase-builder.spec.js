@@ -1,7 +1,7 @@
 const {test,expect}=require('playwright/test'),{phaseFixture}=require('../fixtures/phase-builder');
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{await page.clock.install({time:new Date('2026-09-24T12:00:00Z')});await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});showTab('coach');showSubTab('coach','co-programs');renderPhaseBuilder();},phaseFixture().state);await page.locator('#phase-builder-panel > summary').click();});
-async function preview(page){await page.locator('#phase-new').click();for(const [i,l]of ['squat','bench','deadlift'].entries()){await page.locator('.phase-lift > summary').nth(i).click();await page.locator('#phase-'+l+'-tm').fill(String([160,120,220][i]));}await page.locator('#phase-dialog button[type="submit"]').click();await expect(page.locator('#phase-preview')).toContainText('7 weeks · 21 sessions');}
+async function preview(page,expected='7 weeks · 21 sessions'){await page.locator('#phase-new').click();for(const [i,l]of ['squat','bench','deadlift'].entries()){await page.locator('.phase-lift > summary').nth(i).click();await page.locator('#phase-'+l+'-tm').fill(String([160,120,220][i]));}await page.locator('#phase-dialog button[type="submit"]').click();await expect(page.locator('#phase-preview')).toContainText(expected);}
 test('reviewed phase plan survives offline and schedules without rewriting history or draft',async({page,context})=>{
  await page.evaluate(()=>{document.querySelector('.ex-name').value='Preserve my draft';saveLoggerDraft();});const draft=await page.evaluate(()=>localStorage.getItem(LOGGER_DRAFT_KEY)),history=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.reviewedPrograms}));
  await preview(page);await page.locator('#phase-save').click();await expect(page.locator('#phase-error')).toContainText('Review every phase');await page.locator('#phase-confirm').check();await page.locator('#phase-save').click();await expect(page.locator('#phase-dialog')).not.toBeVisible();expect(await page.evaluate(()=>data.phasePrograms.length)).toBe(1);expect(await page.evaluate(()=>data.scheduledSessions.length)).toBe(0);expect(await page.evaluate(()=>localStorage.getItem(LOGGER_DRAFT_KEY))).toBe(draft);
@@ -99,7 +99,7 @@ test('phase preview explains date-free strength goals without turning targets in
    {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
   ]},{now:'2026-09-23T09:00:00.000Z'});
  });
- await preview(page);
+ await preview(page,'8 weeks · 24 sessions');
  const previewHost=page.locator('#phase-preview');
  await expect(previewHost).toContainText('Goal programming context');
  await expect(previewHost).toContainText('no target date required');
@@ -110,4 +110,19 @@ test('phase preview explains date-free strength goals without turning targets in
  await expect.poll(()=>page.evaluate(()=>data.phasePrograms[0]?.goalSnapshot?.status)).toBe('ready');
  expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.targetKg)).toBe(220);
  expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.selectedProgramTrainingMaxKg)).not.toBe(220);
+});
+
+test('date-free goal cycle prefills phase shape and withholds horizon until enough completed blocks exist',async({page})=>{
+ await page.evaluate(()=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-23T09:00:00.000Z'});
+ });
+ await page.locator('#phase-new').click();
+ await expect(page.locator('#phase-dialog')).toContainText('Goal-cycle guidance');
+ await expect(page.locator('#phase-dialog')).toContainText('No target date required');
+ await expect(page.locator('#phase-dialog')).toContainText('Need more completed blocks');
+ await expect(page.locator('#phase-accumulation')).toHaveValue('4');
+ await expect(page.locator('#phase-strength')).toHaveValue('3');
+ await expect(page.locator('#phase-dialog')).toContainText('Training maxes, exercises, frequency, sets and weekly adaptations still require normal review');
 });
