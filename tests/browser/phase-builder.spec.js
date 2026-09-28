@@ -164,20 +164,19 @@ test('completed phase program freezes a reviewed transition baseline without rew
 });
 
 test('latest frozen transition drives conservative next-block objectives and reviewed snapshot',async({page})=>{
- const {config}=phaseFixture();
- await page.evaluate(config=>{
+ await page.evaluate(()=>{
   data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
    {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
   ]},{now:'2026-09-01T09:00:00.000Z'});
-  const goal=LoadnoteGoals.list(data.athleteGoals)[0];
+  const goal=LoadnoteGoals.list(data.athleteGoals)[0],roles=LoadnoteReadiness.list(data.exerciseRoles),ids=Object.fromEntries(['squat','bench','deadlift'].map(l=>[l,roles.find(r=>r.role==='competition'&&r.competitionLift===l).exerciseId]));
   data.transitionSnapshots=[{
    version:1,id:'transition-prior',programId:'prior-block',programName:'Prior block',programCreatedAt:'2026-07-01T10:00:00.000Z',programStart:'2026-07-06',programEnd:'2026-08-28',asOf:'2026-08-28',knowledgeCutoff:'2026-08-28T23:00:00.000Z',createdAt:'2026-08-28T23:01:00.000Z',
    goalAtStart:{status:'ready',goal:{id:goal.id,name:goal.name,eventDate:null},lifts:{}},goalAtTransition:{status:'ready'},
    schedule:{expected:24,completed:24,skipped:0,cancelled:0,unconfirmed:0,upcoming:0,adherence:100},
    lifts:{
-    squat:{lift:'squat',exerciseId:config.lifts.squat.exerciseId,changePct:3,recent28d:{averageRpe:8}},
-    bench:{lift:'bench',exerciseId:config.lifts.bench.exerciseId,changePct:.3,recent28d:{averageRpe:8.2}},
-    deadlift:{lift:'deadlift',exerciseId:config.lifts.deadlift.exerciseId,changePct:-2.5,recent28d:{averageRpe:8.7}}
+    squat:{lift:'squat',exerciseId:ids.squat,changePct:3,recent28d:{averageRpe:8}},
+    bench:{lift:'bench',exerciseId:ids.bench,changePct:.3,recent28d:{averageRpe:8.2}},
+    deadlift:{lift:'deadlift',exerciseId:ids.deadlift,changePct:-2.5,recent28d:{averageRpe:8.7}}
    },
    decisionHistory:{phaseReviews:[{id:'r1',phase:'strength',createdAt:'2026-08-20T18:00:00.000Z',choices:{squat:'keep',bench:'keep',deadlift:'reduce-one'},policy:'phase-review-v1'}],count:1},
    review:{confirmed:true,recordedAt:'2026-08-28T23:01:00.000Z',notes:'done'}
