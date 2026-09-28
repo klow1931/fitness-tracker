@@ -10,6 +10,8 @@ const other=auth.accountIdentity({provider:'oidc-test',subject:'provider-user-45
 assert.equal(identity.id,same.id,'trusted provider identity must map to a stable Loadnote account id');
 assert.notEqual(identity.id,other.id);
 assert.equal(identity.provider,'oidc-test');
+const rotated=createAuth({secret:'rotated-session-secret-'.padEnd(64,'r')});
+assert.equal(rotated.accountIdentity({provider:'oidc-test',subject:'provider-user-123'}).id,identity.id,'rotating the session-signing secret must not change account identity');
 
 const issued=auth.issue(identity,{now:Date.parse('2026-09-28T20:00:00.000Z'),sessionId:'session-1'});
 const verified=auth.verify(issued.token,{now:Date.parse('2026-09-28T20:30:00.000Z')});
