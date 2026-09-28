@@ -33,7 +33,7 @@
            if(!record||!raw||ws.length!==1){status='incomplete';continue;}
            const w=ws[0],link=raw.revisions.find(v=>v.recordedAt===w.sessionIntent?.schedule?.revisionAt&&v.recordedAt<=w.createdAt);
            const approved=requireApproved?raw.revisions.find(v=>v.recordedAt===approvedAt):raw.revisions[0];
-           if(!link||!approved||link.recordedAt!==approved.recordedAt||w.date!==approved.context.date||!same(w.sessionIntent?.prescription,approved.context.prescription)||Intent.planTiming(approved.context.prescription,w.date,w.sessionIntent?.timing)!=='before-training'){status='revised-or-deviated';continue;}
+           if(!link||!approved||link.recordedAt!==approved.recordedAt||raw.revisions.some(v=>v.recordedAt>approved.recordedAt&&v.recordedAt<=w.createdAt)||w.date!==approved.context.date||!same(w.sessionIntent?.prescription,approved.context.prescription)||Intent.planTiming(approved.context.prescription,w.date,w.sessionIntent?.timing)!=='before-training'){status='revised-or-deviated';continue;}
            const actual=best(w.exercises,id);if(actual.value==null||actual.count<1){status='missing-rpe';continue;}
            values.push(actual.value);rpes.push(actual.rpe);sets+=actual.count;matched++;
          }
