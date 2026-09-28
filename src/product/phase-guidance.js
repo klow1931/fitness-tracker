@@ -46,7 +46,7 @@
    }
    const summary={planned:0,completed:0,skipped:0,cancelled:0,unconfirmed:0,upcoming:0,revised:0,unknown:0};
    const lifts={};
-   for(const lift of ['squat','bench','deadlift'])lifts[lift]={lift,name:cycle.sourceProgram.config.lifts[lift].name,exerciseId:cycle.sourceProgram.config.lifts[lift].exerciseId,plannedSets:0,completedSets:0,validActualSets:0,plannedExposures:0,loggedExposures:0,rpeSets:0,aboveCap:0,comparableRpeSets:0,unmatchedSets:0,notes:[]};
+   for(const lift of ['squat','bench','deadlift'])lifts[lift]={lift,name:cycle.sourceProgram.config.lifts[lift].name,exerciseId:cycle.sourceProgram.config.lifts[lift].exerciseId,plannedSets:0,completedSets:0,validActualSets:0,plannedExposures:0,loggedExposures:0,rpeSets:0,aboveCap:0,belowCapHalf:0,comparableRpeSets:0,unmatchedSets:0,notes:[]};
    const details=[];
    for(const original of cycle.sessions.filter(s=>s.week===week.week)){
      const id='meet:'+cycle.id+':'+original.key,record=map.get(id),saved=linked.get(id)||[];
@@ -77,7 +77,7 @@
        for(const [i,s] of valid.entries()){
          if(Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10)lift.rpeSets++;
          const target=originalExercise.sets[i],canCompare=originallyPlanned&&beforeTraining&&target&&Math.abs(s.weight-target.weight)<.02&&s.reps===target.reps&&Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10&&Number.isFinite(target.targetRpe);
-         if(canCompare){lift.comparableRpeSets++;if(s.rpe>target.targetRpe)lift.aboveCap++;}
+         if(canCompare){lift.comparableRpeSets++;if(s.rpe>target.targetRpe)lift.aboveCap++;if(s.rpe<=target.targetRpe-.5)lift.belowCapHalf++;}
          else lift.unmatchedSets++;
        }
      }
