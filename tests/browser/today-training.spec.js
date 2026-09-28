@@ -8,7 +8,7 @@ async function addToday(page,id='today-session'){
  await page.evaluate(id=>{
   const plan=LoadnoteIntent.createPrescription([{name:'Competition Bench Press',exerciseId:'bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:7},{weight:100,reps:5,targetRpe:7}]}],{type:'manual',label:'Bench day'});
   data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions||[],{name:'Bench day',date:today(),role:'heavy-exposure',goal:'Build bench strength',prescription:plan},{id});
-  renderDashboard();
+  saveData(data);renderDashboard();
  },id);
 }
 test('Home makes today scheduled training a one-tap start and resumes the draft after reload',async({page})=>{
@@ -41,7 +41,7 @@ test('scheduled session must be rescheduled to today before it can start',async(
 test('Home reports scheduled training as logged after the linked workout is saved',async({page})=>{
  await addToday(page,'complete-me');await page.getByRole('button',{name:'Start workout',exact:true}).click();
  await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7');
- await page.getByRole('button',{name:/Review workout|Finish workout/,exact:true}).click();
+ await page.locator('#workout-actions [data-workout-action="review"]').click();
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  await expect(page.locator('#today-training')).toContainText('Training logged');
