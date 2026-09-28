@@ -198,3 +198,58 @@ test('latest frozen transition drives conservative next-block objectives and rev
  expect(await page.evaluate(()=>data.phasePrograms[0].objectiveSnapshot.lifts.deadlift.nextObjective.code)).toBe('rebuild-tolerance');
  expect(await page.evaluate(()=>data.phasePrograms[0].config.phases.map(p=>p.weeks))).toEqual([4,2,1]);
 });
+
+test('next-program handoff opens reviewed phase builder with frozen evidence prefilled',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-11-14T14:00:00Z'));
+ const {config}=phaseFixture();
+ await page.evaluate(config=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-23T09:00:00.000Z'});
+  const proposal=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});
+  data=LoadnotePhaseBuilder.save(data,proposal,{confirmed:true,notes:'Handoff source'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'handoff-browser'});
+  data=LoadnotePhaseBuilder.schedule(data,'handoff-browser',{asOf:'2026-09-24',now:'2026-09-24T13:00:00.000Z'});
+  const program=data.phasePrograms.find(p=>p.id==='handoff-browser');
+  for(const session of program.sessions){
+   const id='phase:'+program.id+':'+session.key,record=data.scheduledSessions.find(x=>x.id===id),rev=record.revisions[0],plan=rev.context.prescription;
+   data.workouts.push({id:'handoff-'+session.key,date:session.date,createdAt:session.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id,revisionAt:rev.recordedAt},timing:'planned-before-training'}});
+  }
+  const report=LoadnoteTransitionBaseline.preview(data,{programId:'handoff-browser',asOf:'2026-11-13',now:'2026-11-13T21:00:00.000Z'});
+  data=LoadnoteTransitionBaseline.save(data,report,{confirmed:true,notes:'Frozen handoff'},{now:'2026-11-13T21:01:00.000Z',id:'handoff-baseline'});
+  renderPhaseBuilder();
+ },config);
+ const handoff=page.locator('#next-block-handoff');
+ await expect(handoff).toContainText('Next program handoff');
+ await expect(handoff).toContainText('ready for athlete review');
+ await expect(handoff).toContainText('2026-11-16');
+ await expect(handoff).toContainText('What Loadnote carries forward');
+ await handoff.locator('[data-next-block-start]').click();
+ const dialog=page.locator('#phase-dialog');
+ await expect(dialog).toContainText('Started from next-program handoff');
+ await expect(page.locator('#phase-start')).toHaveValue('2026-11-16');
+ const handoffReport=await page.evaluate(()=>LoadnoteNextBlockHandoff.inspect(data,{asOf:'2026-11-14'}));
+ await expect(page.locator('#phase-accumulation')).toHaveValue(String(handoffReport.prefill.accumulationWeeks));
+ await expect(page.locator('#phase-strength')).toHaveValue(String(handoffReport.prefill.strengthWeeks));
+ await expect(page.locator('#phase-squat-tm')).toHaveValue(String(Math.round(handoffReport.prefill.trainingMaxKg.squat*100)/100));
+ await expect(dialog).toContainText('Prior training maxes');
+ expect(await page.evaluate(()=>data.phasePrograms.length)).toBe(1);
+});
+
+test('next-program handoff blocks when an unfinished workout draft exists',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-11-14T14:00:00Z'));
+ const {config}=phaseFixture();
+ await page.evaluate(config=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[{lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}]},{now:'2026-09-23T09:00:00.000Z'});
+  const p=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});
+  data=LoadnotePhaseBuilder.save(data,p,{confirmed:true},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'draft-source'});
+  data=LoadnotePhaseBuilder.schedule(data,'draft-source',{asOf:'2026-09-24',now:'2026-09-24T13:00:00.000Z'});
+  const program=data.phasePrograms[0];
+  for(const s of program.sessions){const id='phase:'+program.id+':'+s.key,r=data.scheduledSessions.find(x=>x.id===id),v=r.revisions[0],plan=v.context.prescription;data.workouts.push({id:'done-'+s.key,date:s.date,createdAt:s.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(x=>({weight:x.weight,reps:x.reps,rpe:x.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id,revisionAt:v.recordedAt},timing:'planned-before-training'}});}
+  const report=LoadnoteTransitionBaseline.preview(data,{programId:'draft-source',asOf:'2026-11-13',now:'2026-11-13T21:00:00.000Z'});data=LoadnoteTransitionBaseline.save(data,report,{confirmed:true},{now:'2026-11-13T21:01:00.000Z',id:'draft-baseline'});
+  localStorage.setItem('loadnote-workout-draft-v1',JSON.stringify({version:3,date:'2026-11-14',notes:'unfinished',unit:'kg',rows:[]}));
+  renderPhaseBuilder();
+ },config);
+ const handoff=page.locator('#next-block-handoff');
+ await expect(handoff).toContainText('unfinished workout draft');
+ await expect(handoff.locator('[data-next-block-start]')).toHaveCount(0);
+});
