@@ -91,7 +91,7 @@ test('learned-history guardrail suppresses controller upward choice without remo
  const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
  const bench=host.locator('[data-cycle-review-choice="bench"]');
  await expect(bench.locator('option[value="increase-load"]')).toHaveCount(1);
- const benchLabel=host.locator('.cycle-review-choice').filter({has:bench});
+ const benchLabel=bench.locator('xpath=..');
  await expect(benchLabel).toContainText('Keep original plan');
  await expect(benchLabel).toContainText('history');
  await expect(benchLabel).toContainText('repeated exact follow-ups');
