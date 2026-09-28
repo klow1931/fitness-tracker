@@ -51,6 +51,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  const auth=createAuth({secret:authSecret,ttlSeconds:Number(env.LOADNOTE_SESSION_TTL_SECONDS)||43200,secure:secureCookie,sameSite});
  const storePath=env.LOADNOTE_ACCOUNT_STORE_PATH||path.join(ROOT,'.loadnote-data','accounts.json');
  const accountStore=createFileAccountStore({filePath:storePath});
+ accountStore.snapshot(); // fail fast on an unreadable/corrupt configured account store
  const oidc=createOidc({
   issuer:env.LOADNOTE_OIDC_ISSUER||'',
   clientId:env.LOADNOTE_OIDC_CLIENT_ID||'',
