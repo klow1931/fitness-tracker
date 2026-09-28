@@ -16,6 +16,7 @@ const ASSETS = [
   './src/product/cycle-review.js',
   './src/product/cycle-review-ui.js',
   './src/product/cycle-response.js',
+  './src/product/adaptive-history-guardrail.js',
   './src/product/cycle-adaptive-controller.js',
   './src/product/program-adoption.js',
   './src/product/program-adoption-ui.js',
