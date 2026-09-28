@@ -50,18 +50,19 @@ test('Home reports scheduled training as logged after the linked workout is save
 
 test('Home explains an athlete-approved scheduled adaptation from exact review evidence',async({page})=>{
  await page.evaluate(()=>{
-  const id='meet:c1:w2d1',day=today();
+  const id='meet:c1:w2d1',day=today(),prior=new Date(day+'T12:00:00Z');prior.setUTCDate(prior.getUTCDate()-1);
+  const beforeAt=prior.toISOString().slice(0,10)+'T08:00:00.000Z',afterAt=day+'T08:00:00.000Z';
   const beforePlan=LoadnoteIntent.createPrescription([{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[
    {weight:150,reps:5,targetRpe:8},{weight:150,reps:5,targetRpe:8},{weight:150,reps:5,targetRpe:8}
-  ]}],{type:'program',label:'Week 2 squat'},'2026-09-27T08:00:00.000Z');
+  ]}],{type:'program',label:'Week 2 squat'},beforeAt);
   const afterPlan=LoadnoteIntent.createPrescription([{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[
    {weight:150,reps:5,targetRpe:8},{weight:150,reps:5,targetRpe:8}
-  ]}],{type:'program',label:'Week 2 squat'},'2026-09-28T08:00:00.000Z');
-  const before={recordedAt:'2026-09-27T08:00:00.000Z',context:{date:day,name:'Squat day',status:'scheduled',reason:'',blockId:null,role:'heavy-exposure',goal:'Build squat strength',prescription:beforePlan}};
-  const after={recordedAt:'2026-09-28T08:00:00.000Z',context:{...before.context,reason:'Athlete-approved week 1 review',prescription:afterPlan}};
+  ]}],{type:'program',label:'Week 2 squat'},afterAt);
+  const before={recordedAt:beforeAt,context:{date:day,name:'Squat day',status:'scheduled',reason:'',blockId:null,role:'heavy-exposure',goal:'Build squat strength',prescription:beforePlan}};
+  const after={recordedAt:afterAt,context:{...before.context,reason:'Athlete-approved week 1 review',prescription:afterPlan}};
   data.scheduledSessions=[{id,revisions:[before,after]}];
   data.meetCycles=[{id:'c1',sessions:[{key:'w2d1',exercises:[{exerciseId:'s',lift:'squat'}]}],weeklyReviews:[{
-   version:3,id:'review-1',cycleId:'c1',week:1,phase:'accumulation',createdAt:'2026-09-28T08:00:00.000Z',
+   version:3,id:'review-1',cycleId:'c1',week:1,phase:'accumulation',createdAt:afterAt,
    choices:{squat:'reduce-one',bench:'keep',deadlift:'keep'},
    report:{findings:{squat:{name:'Competition Squat',exerciseId:'s',comparableRpeSets:4,aboveCap:2},bench:{name:'Bench'},deadlift:{name:'Deadlift'}}},
    changes:[{id,before,after}]
