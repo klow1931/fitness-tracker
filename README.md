@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.42.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.43.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.35 — Mock meet vs competition meet
 
