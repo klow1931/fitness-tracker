@@ -36,6 +36,7 @@ const ASSETS = [
   './src/product/programming-profile.js',
   './src/product/programming-profile-ui.js',
   './src/product/goal-programming.js',
+  './src/product/goal-cycle.js',
   './src/product/program-outcomes.js',
   './src/product/program-outcomes-ui.js',
   './src/product/program-builder.js',
