@@ -21,7 +21,7 @@ test('manual plan keeps target and actual performance separate through save and 
 });
 test('modified planned session persists its reason and survives draft refresh',async({page})=>{
   await enterPlan(page);await page.getByRole('button',{name:'+ Same Set',exact:true}).click();await page.getByRole('button',{name:'Use entered work as plan'}).click();
-  await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await page.locator('#session-deviation-reason').selectOption('fatigue');await page.locator('#session-deviation-notes').fill('Readiness was lower than expected');
+  await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-rpe')).toHaveCount(1);await page.locator('#session-deviation-reason').selectOption('fatigue');await page.locator('#session-deviation-notes').fill('Readiness was lower than expected');
   await page.reload();await page.evaluate(()=>showTab('workouts'));await expect(page.locator('#session-role')).toHaveValue('technique');await expect(page.locator('#session-deviation-reason')).toHaveValue('fatigue');await expect(page.locator('#planned-work-summary')).toContainText('2 planned sets');
   await page.locator('.set-rpe').fill('8');await page.getByRole('button',{name:'Review workout',exact:true}).click();await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');await expect(page.locator('#workout-review-content')).toContainText('Fatigue / readiness');
   await page.getByRole('button',{name:'Save workout',exact:true}).click();
