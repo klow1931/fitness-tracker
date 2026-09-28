@@ -1140,7 +1140,8 @@
 
     <!-- TOOLS -->
     <section id="panel-tools" class="hidden more-page">
-<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING TOOLS</p><h1>Useful tools, when you need them.</h1><p>Calculate your next lift, manage backups, or find app information.</p></div></header><nav class="more-jump-links" aria-label="Tools sections"><a href="#tools-calculators">Calculators</a><a href="#tools-data">Backups & data</a><a href="#tools-about">About & privacy</a></nav>
+<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING TOOLS</p><h1>Useful tools, when you need them.</h1><p>Calculate your next lift, manage backups, or find app information.</p></div></header><nav class="more-jump-links" aria-label="Tools sections"><a href="#tools-account">Account</a><a href="#tools-calculators">Calculators</a><a href="#tools-data">Backups & data</a><a href="#tools-about">About & privacy</a></nav>
+      <div class="card" id="tools-account"><h2 class="font-semibold mb-2">Account</h2><div id="account-status" aria-live="polite"><p class="more-hint">Checking account status…</p></div></div>
       <div class="more-columns" id="tools-calculators">
         <div class="card">
           <h2 class="font-semibold mb-4">1RM Calculator</h2>
@@ -1303,7 +1304,7 @@
         <div class="text-sm text-slate-600 space-y-3">
           <div>
             <p class="font-medium text-slate-800">What Loadnote is</p>
-            <p>Loadnote is a local-first training and decision-support app that runs primarily in your browser. You do not need an account to use the core features.</p>
+            <p>Loadnote is a local-first training and decision-support app. Core training features continue to work without an account. When account sign-in is configured, signing in creates an account identity for future account-scoped services; workout history remains on this device until cloud synchronization is explicitly introduced.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">Data we store on your device</p>
@@ -1913,6 +1914,7 @@
   <script src="src/product/data-integrity.js" defer></script>
   <script src="src/product/sync-model.js" defer></script>
   <script src="src/product/account-session.js" defer></script>
+  <script src="src/product/account-ui.js" defer></script>
   <script src="src/product/session-intent.js" defer></script>
   <script src="src/product/schedule.js" defer></script>
   <script src="src/product/schedule-ui.js" defer></script>
