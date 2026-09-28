@@ -87,7 +87,7 @@ test('learned-history guardrail suppresses controller upward choice without remo
   const real=LoadnoteAdaptiveOutcomeLearning.analyze,realResponse=LoadnoteCycleResponse.inspect;window.__realAdaptiveLearning=real;window.__realCycleResponse=realResponse;
   LoadnoteAdaptiveOutcomeLearning.analyze=()=>({summary:{patterns:[{lift:'bench',action:'increase-load',observed:4,recorded:4,counts:{improved:1,stable:0,declined:3},medianCapacityChangePct:-1.5,evidence:'early-pattern'}]}});
   LoadnoteCycleResponse.inspect=()=>({phases:[{phase:'accumulation',lifts:{squat:{observedChangePct:0},bench:{observedChangePct:2.4},deadlift:{observedChangePct:0}}}]});
-  renderPhaseReview();
+  renderCycleWeekReview();
  });
  const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
  const bench=host.locator('[data-cycle-review-choice="bench"]');
