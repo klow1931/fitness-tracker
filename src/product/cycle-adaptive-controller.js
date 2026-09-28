@@ -1,12 +1,12 @@
 /* v2.39 — deterministic cycle controller with guarded downward and upward load adjustments. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-review'),require('./cycle-response'));
- else root.LoadnoteCycleAdaptiveController=factory(root.LoadnoteCycleReview,root.LoadnoteCycleResponse);
-})(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-review'),require('./cycle-response'),require('./adaptive-outcome-learning'),require('./adaptive-history-guardrail'));
+ else root.LoadnoteCycleAdaptiveController=factory(root.LoadnoteCycleReview,root.LoadnoteCycleResponse,root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteAdaptiveHistoryGuardrail);
+})(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse,OutcomeLearning,HistoryGuardrail){
  'use strict';
  const LIFTS=['squat','bench','deadlift'],POLICY='cycle-adaptive-v3';
  function finite(x){return Number.isFinite(Number(x))?Number(x):null;}
- function recommendFromReports(review,response){
+ function recommendFromReports(review,response,learningSummary=null){
   if(!review||!review.findings||!review.eligibility)throw Error('A completed-week cycle review is required');
   const phase=response?.phases?.find(p=>p.phase===review.phase)||null;
   const lifts={},choices={};
@@ -40,18 +40,21 @@
     signal='phase-guard';confidence='high';
     why='The next phase is '+review.nextPhase+'. The current bounded controller does not alter peak, taper or event-week prescriptions.';
    }
+   const guarded=HistoryGuardrail?.apply?HistoryGuardrail.apply({lift,action,confidence,signal,why},learningSummary):{action,confidence,signal,why,history:{state:'unavailable',pattern:null,changed:false,reason:'Learned-history guardrail unavailable.'}};
+   action=guarded.action;confidence=guarded.confidence;signal=guarded.signal;why=guarded.why;
    choices[lift]=action;
-   lifts[lift]={lift,name:f.name||lift,action,confidence,signal,why,comparableRpeSets:comparable,aboveCapSets:above,observedChangePct:change,eligibleForAdjustment:!!review.eligibility[lift],eligibleForSetReduction:!!f.canReduceOne,eligibleForLoadReduction:!!f.canReduceLoad,eligibleForLoadIncrease:!!f.canIncreaseLoad,belowCapHalfSets:Number(f.belowCapHalf||0),competitionComparableRpeSets:competitionComparable,competitionAboveCapSets:competitionAbove,competitionBelowCapHalfSets:competitionBelow,incrementKg:finite(f.incrementKg)};
+   lifts[lift]={lift,name:f.name||lift,action,confidence,signal,why,history:guarded.history,comparableRpeSets:comparable,aboveCapSets:above,observedChangePct:change,eligibleForAdjustment:!!review.eligibility[lift],eligibleForSetReduction:!!f.canReduceOne,eligibleForLoadReduction:!!f.canReduceLoad,eligibleForLoadIncrease:!!f.canIncreaseLoad,belowCapHalfSets:Number(f.belowCapHalf||0),competitionComparableRpeSets:competitionComparable,competitionAboveCapSets:competitionAbove,competitionBelowCapHalfSets:competitionBelow,incrementKg:finite(f.incrementKg)};
   }
-  return {version:1,policy:POLICY,cycleId:review.cycleId,week:review.week,phase:review.phase,nextPhase:review.nextPhase,nextWeek:review.nextWeek,asOf:review.asOf,choices,lifts,
+  return {version:2,policy:POLICY,cycleId:review.cycleId,week:review.week,phase:review.phase,nextPhase:review.nextPhase,nextWeek:review.nextWeek,asOf:review.asOf,choices,lifts,
    summary:Object.values(lifts).some(x=>x.action==='increase-load')?'A guarded one-increment next-week load increase is supported for at least one competition lift.':Object.values(lifts).some(x=>x.action==='reduce-load')?'A bounded one-increment next-week load reduction is supported for at least one lift.':Object.values(lifts).some(x=>x.action==='reduce-one')?'A bounded next-week set reduction is supported for at least one lift.':'Keep the original next-week plan; no supported bounded adjustment is currently justified.',
-   notes:['Recommendations are deterministic and use only evidence already exposed by the cycle review and response models.','A load reduction requires above-cap effort plus a lower within-phase estimated-capacity comparison.','A load increase has a higher bar: complete competition-lift work, at least four comparable sets, zero above-cap sets, at least two sets 0.5 RPE below cap, and an improving within-phase estimated-capacity comparison of at least +1%.','Upward changes affect only the confirmed competition exercise, use one reviewed program increment, and stay under the existing 85% training-max ceiling.','The controller never changes reps, set count during a load change, exercise selection, frequency, event timing or completed training automatically.','Athlete approval through the existing weekly review is still required before any Calendar revision.','Estimated-capacity trends are descriptive training estimates, not measured recovery or a medical signal.']};
+   notes:['Recommendations are deterministic and first require the live evidence already exposed by the cycle review and response models.','Learned outcome history can support confidence, add caution, or suppress optional upward progression after repeated poor same-lift/same-action follow-up. It cannot create an action, bypass eligibility, or block a current safety-oriented reduction.','A load reduction requires above-cap effort plus a lower within-phase estimated-capacity comparison.','A load increase has a higher bar: complete competition-lift work, at least four comparable sets, zero above-cap sets, at least two sets 0.5 RPE below cap, and an improving within-phase estimated-capacity comparison of at least +1%.','Upward changes affect only the confirmed competition exercise, use one reviewed program increment, and stay under the existing 85% training-max ceiling.','The controller never changes reps, set count during a load change, exercise selection, frequency, event timing or completed training automatically.','Athlete approval through the existing weekly review is still required before any Calendar revision.','Estimated-capacity trends are descriptive training estimates, not measured recovery or a medical signal.']};
  }
  function analyze(state,opts={}){
   const review=CycleReview.analyze(state,opts);
   let response=null;
   try{response=CycleResponse.inspect(state,{cycleId:review.cycleId,asOf:review.asOf,now:opts.now||new Date().toISOString()});}catch(e){response=null;}
-  return recommendFromReports(review,response);
+  let learningSummary=null;try{learningSummary=OutcomeLearning?.analyze(state,{asOf:review.asOf,now:opts.now||new Date().toISOString()})?.summary||null;}catch(e){learningSummary=null;}
+  return recommendFromReports(review,response,learningSummary);
  }
  return {POLICY,recommendFromReports,analyze};
 });
