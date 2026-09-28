@@ -1,3 +1,19 @@
+# v2.46.0 — Next Program Handoff / Start Next Block
+
+- Add a first-class next-program handoff that turns the completed-block evidence chain into one guided transition into the existing reviewed phase builder.
+- Require a frozen v2.42 transition baseline before a handoff can become ready. The handoff uses v2.43 per-lift next-block objectives and current goal context instead of recomputing an undocumented starting point.
+- Add explicit readiness checks for current programming profile, unique competition-lift mappings, resolved prior-program sessions, unfinished workout drafts, newer unscheduled reviewed programs, and overlapping Calendar sessions.
+- Separate blockers from warnings. Pending/unconfirmed sessions, missing mappings, draft conflicts, competing reviewed programs, or Calendar overlap block the launcher; skipped/cancelled prior work and changed competition identities stay visible as warnings/evidence.
+- Propose the next Monday start date and evidence-backed phase duration from the current next-block objective. The handoff does not create or schedule anything itself.
+- Carry prior selected training maxes into the phase builder only as editable review references. Loadnote does not automatically increase them at the handoff.
+- Prefill the existing phase builder with handoff-derived name, start date, accumulation/strength duration, training days, session duration, and prior training-max references.
+- Keep exercise selection, exposure roles, frequency, set counts, weekly step, load increment, variations, training maxes, final prescription review, and Calendar scheduling athlete-controlled.
+- Surface per-lift next objectives, prior-block response context, a proposed handoff window, and a clear “What Loadnote carries forward / what stays athlete-reviewed” explanation.
+- Add a single **Review next program** action only when all blocking readiness checks pass.
+- Detect the existing local workout draft so an unfinished gym session cannot be silently abandoned during program transition.
+- Add deterministic and browser coverage for complete handoff readiness, prior-TM prefill, Monday start-date calculation, competition-role failures, pending prior sessions, Calendar conflicts, and unfinished draft blocking.
+- No top-level schema migration.
+
 # v2.45.0 — Learned-history guardrails for adaptive decisions
 
 - Feed v2.44 adaptive outcome history into the meet-cycle adaptive controller as a guardrail on already-eligible actions.
