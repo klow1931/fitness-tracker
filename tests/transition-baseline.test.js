@@ -42,8 +42,8 @@ assert.throws(()=>Transition.preview(saved,{programId:'phase-transition',asOf:en
 
 const incomplete=structuredClone(state);incomplete.workouts.pop();
 const incompleteReport=Transition.preview(incomplete,{programId:'phase-transition',asOf:end,now:end+'T21:00:00.000Z'});
-assert.equal(incompleteReport.schedule.expected,21);assert.equal(incompleteReport.schedule.completed,20);assert.equal(incompleteReport.schedule.unconfirmed,1);
-assert.match(incompleteReport.notes.join(' '),/Missing, skipped, cancelled or unconfirmed/);
+assert.equal(incompleteReport.schedule.expected,21);assert.equal(incompleteReport.schedule.completed,20);assert.equal(incompleteReport.schedule.unconfirmed,0);assert.equal(incompleteReport.schedule.upcoming,1);
+assert.match(incompleteReport.notes.join(' '),/Missing, skipped, cancelled, pending or unconfirmed/);
 
 const migrated=Core.normalizeState({schemaVersion:24,workouts:base.workouts,phasePrograms:[]});
 assert.equal(migrated.schemaVersion,25);assert.deepEqual(migrated.transitionSnapshots,[]);assert.deepEqual(migrated.workouts,base.workouts);
