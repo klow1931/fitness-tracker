@@ -1040,3 +1040,11 @@ body.dark .quick-rpe-chip,body.dark .quick-done-no-rpe{background:#111827;border
  .quick-rpe-chip{min-width:44px;min-height:40px}
  .quick-done-no-rpe{width:100%;min-height:40px}
 }
+
+
+/* v2.50 — explain accepted programming changes without crowding the training flow. */
+.adaptation-explanation{margin-top:.75rem;border:1px solid rgba(100,116,139,.22);border-radius:.75rem;padding:.65rem .75rem;background:rgba(148,163,184,.06)}
+.adaptation-explanation>summary{cursor:pointer;font-weight:700;font-size:.86rem}
+.adaptation-explanation-lift{margin-top:.65rem;padding-top:.6rem;border-top:1px solid rgba(100,116,139,.18)}
+.adaptation-explanation-lift p{margin:.2rem 0;font-size:.8rem;line-height:1.45}
+body.dark .adaptation-explanation{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.35)}

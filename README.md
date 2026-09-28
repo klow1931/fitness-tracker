@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.49.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.50.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.50 — Adaptation Explanation Layer
+
+Loadnote now connects approved programming changes back to the exact evidence that supported them. When a weekly or phase review changes an upcoming scheduled workout, Home and Decisions can show **What changed & why**: the affected lift, exact set/load change, the accepted review source, and the relevant completed-set/RPE evidence. These explanations are deterministic and reconstructed from the saved review plus Calendar revisions; they do not invent AI rationale or claim that logged performance proves fatigue, recovery, or physiological adaptation.
 
 ## v2.49 — Workout Logger Speed & Clarity
 
