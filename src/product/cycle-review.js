@@ -48,10 +48,10 @@
    if(!sessions.length)futureIssues.push('No next-week exposure for this lift.');
    if(!(incrementKg>0)){reduceLoadIssues.push('The reviewed program has no valid load increment.');increaseIssues.push('The reviewed program has no valid load increment.');}
    if(observed.comparableRpeSets<2||observed.aboveCap<2){setIssues.push('At least two comparable sets above their approved RPE caps are required before a one-set reduction is offered.');reduceLoadIssues.push('At least two comparable sets above their approved RPE caps are required before a load reduction is offered.');}
-   if(observed.validActualSets<observed.plannedSets||observed.completedSets<observed.plannedSets)increaseIssues.push('All planned competition-lift sets must be completed before a load increase is offered.');
-   if(observed.comparableRpeSets<4)increaseIssues.push('At least four directly comparable competition-lift sets are required before a load increase is offered.');
-   if(observed.aboveCap!==0)increaseIssues.push('No comparable set may exceed its approved RPE cap before a load increase is offered.');
-   if(Number(observed.belowCapHalf||0)<2)increaseIssues.push('At least two comparable sets must finish at least 0.5 RPE below their approved cap before a load increase is offered.');
+   if(Number(observed.competitionCompletedSets||0)<Number(observed.competitionPlannedSets||0))increaseIssues.push('All planned competition-lift sets must be completed before a load increase is offered.');
+   if(Number(observed.competitionComparableRpeSets||0)<4)increaseIssues.push('At least four directly comparable competition-lift sets are required before a load increase is offered.');
+   if(Number(observed.competitionAboveCap||0)!==0)increaseIssues.push('No comparable competition-lift set may exceed its approved RPE cap before a load increase is offered.');
+   if(Number(observed.competitionBelowCapHalf||0)<2)increaseIssues.push('At least two comparable competition-lift sets must finish at least 0.5 RPE below their approved cap before a load increase is offered.');
    let competitionNextExposures=0;
    for(const s of sessions){
      const id='meet:'+cycleId+':'+s.key,record=calendar.find(row=>row.id===id);
@@ -73,7 +73,7 @@
    if(!competitionNextExposures)increaseIssues.push('No matching competition-lift exposure exists next week.');
    const shared=[...new Set(futureIssues)],setReasons=[...new Set([...shared,...setIssues])],reduceLoadReasons=[...new Set([...shared,...reduceLoadIssues])],increaseReasons=[...new Set([...shared,...increaseIssues])];
    const canReduceOne=setReasons.length===0,canReduceLoad=reduceLoadReasons.length===0,canIncreaseLoad=increaseReasons.length===0;
-   findings[lift]={name:observed.name,exerciseId:observed.exerciseId,plannedSets:observed.plannedSets,completedSets:observed.completedSets,validActualSets:observed.validActualSets,comparableRpeSets:observed.comparableRpeSets,aboveCap:observed.aboveCap,belowCapHalf:Number(observed.belowCapHalf||0),plannedNextExposures:sessions.length,competitionNextExposures,incrementKg,trainingMaxKg,canReduceOne,canReduceLoad,canIncreaseLoad,
+   findings[lift]={name:observed.name,exerciseId:observed.exerciseId,plannedSets:observed.plannedSets,completedSets:observed.completedSets,validActualSets:observed.validActualSets,comparableRpeSets:observed.comparableRpeSets,aboveCap:observed.aboveCap,belowCapHalf:Number(observed.belowCapHalf||0),competitionPlannedSets:Number(observed.competitionPlannedSets||0),competitionCompletedSets:Number(observed.competitionCompletedSets||0),competitionComparableRpeSets:Number(observed.competitionComparableRpeSets||0),competitionAboveCap:Number(observed.competitionAboveCap||0),competitionBelowCapHalf:Number(observed.competitionBelowCapHalf||0),plannedNextExposures:sessions.length,competitionNextExposures,incrementKg,trainingMaxKg,canReduceOne,canReduceLoad,canIncreaseLoad,
     reason:canReduceOne||canReduceLoad||canIncreaseLoad?'A bounded next-week adjustment is available for athlete review; keep remains the default.':[...new Set([...setReasons,...reduceLoadReasons,...increaseReasons])].join(' '),
     setReason:setReasons.length?setReasons.join(' '):'One fewer set per eligible next-week exposure is available.',
     loadReason:reduceLoadReasons.length?reduceLoadReasons.join(' '):'One program load increment lower on matching next-week sets is available.',
