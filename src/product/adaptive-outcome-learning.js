@@ -52,7 +52,7 @@
      const f=review.findings[lift];if(!f||f.choice==='keep'||f.choice==='gather')continue;
      rows.push({scope:'phase',reviewId:review.reviewId,programId:review.programId,programName:review.programName,lift,exerciseId:f.exerciseId,action:f.choice,acceptedAt:review.acceptedAt,
        baseline:{capacityKg:f.baselineEstimateKg},followup:{capacityKg:f.followupEstimateKg,matched:f.matched,expected:f.expected,withinCap:f.withinCap,aboveCap:f.aboveCap},
-       capacityChangePct:f.observedChangePct,outcomeClass:outcomeClass(f.observedChangePct),status:f.status==='observed-follow-up'?'observed':'unobserved'};
+       capacityChangePct:f.observedChangePct,outcomeClass:outcomeClass(f.observedChangePct),status:f.status==='observed-follow-up'?'observed':'unobserved'});
    }
    return rows;
  }
