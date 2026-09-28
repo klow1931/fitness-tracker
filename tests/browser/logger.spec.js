@@ -14,8 +14,8 @@ async function enter(page,name='Bench Press'){
 }
 test('delegated dynamic controls and templates bind once',async({page})=>{
  await page.evaluate(()=>{initWorkoutEvents();initWorkoutEvents();});
- await enter(page);await page.getByRole('button',{name:'+ Add Set',exact:true}).click();await expect(page.locator('.set-reps')).toHaveCount(2);
- await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);
+ await enter(page);await page.getByRole('button',{name:'+ Same Set',exact:true}).click();await expect(page.locator('.set-reps')).toHaveCount(2);
+ await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);expect((await page.evaluate(()=>readLoggerDraft())).rows[0].sets).toHaveLength(1);
  const dialogs=[];page.on('dialog',d=>{dialogs.push(d.type());return d.accept(d.type()==='prompt'?'Upper body':undefined);});
  await page.getByRole('button',{name:'Save as Template',exact:true}).click();expect(await page.evaluate(()=>data.templates.length)).toBe(1);expect(dialogs.filter(d=>d==='prompt')).toHaveLength(1);
  await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
@@ -89,4 +89,25 @@ test('last weights protects entered sets and clears historical RPE',async({page}
 test('validation blocks bad RPE and unit switching converts draft loads',async({page})=>{
  await enter(page);await page.locator('.set-rpe').fill('11');await page.locator('#workout-actions .btn-primary').click();expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
  await page.evaluate(()=>setUnit('lb'));await expect(page.locator('.set-weight')).toHaveValue('220.46');await page.evaluate(()=>setUnit('kg'));await expect(page.locator('.set-weight')).toHaveValue('100');
+});
+
+test('quick RPE completion advances to the next entered set and survives reload',async({page})=>{
+ await page.locator('#exercise-rows .ex-name').fill('Bench Press');
+ await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('100');
+ await page.getByRole('button',{name:'+ Same Set',exact:true}).click();
+ await expect(page.locator('.set-reps')).toHaveCount(2);
+ await expect(page.locator('.quick-set-entry:visible')).toHaveCount(1);
+ await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
+ await expect(page.locator('.set-rpe').first()).toHaveValue('8');await expect(page.locator('.set-done-check').first()).toBeChecked();
+ await expect(page.locator('.logger-active-set')).toHaveCount(1);await expect(page.locator('.logger-active-set .set-rpe')).toHaveValue('');
+ await page.locator('.quick-set-entry:visible [data-quick-rpe="8.5"]').click();
+ await expect(page.locator('.set-rpe').nth(1)).toHaveValue('8.5');await expect(page.locator('.set-done-check').nth(1)).toBeChecked();
+ await page.reload();await page.evaluate(()=>showTab('workouts'));
+ await expect(page.locator('.set-rpe').first()).toHaveValue('8');await expect(page.locator('.set-rpe').nth(1)).toHaveValue('8.5');
+ await expect(page.locator('.set-done-check')).toHaveCount(2);await expect(page.locator('.set-done-check').first()).toBeChecked();await expect(page.locator('.set-done-check').nth(1)).toBeChecked();
+});
+test('quick done without RPE preserves missing-effort evidence instead of inventing a value',async({page})=>{
+ await page.locator('#exercise-rows .ex-name').fill('Squat');await page.locator('.set-reps').fill('3');await page.locator('.set-weight').fill('140');
+ await page.locator('.quick-set-entry:visible [data-quick-done]').click();
+ await expect(page.locator('.set-rpe')).toHaveValue('');await expect(page.locator('.set-done-check')).toBeChecked();
 });

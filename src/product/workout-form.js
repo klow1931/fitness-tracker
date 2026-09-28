@@ -100,7 +100,7 @@
         </div>
         <div class="sets-container space-y-2"></div>
         <p class="next-set-guidance text-sm" hidden role="status"></p>
-        <button data-workout-action="add-set" class="text-sm text-indigo-600 hover:underline mt-2">+ Add Set</button>
+        <button data-workout-action="add-set" class="text-sm text-indigo-600 hover:underline mt-2" title="Duplicates the previous set load and reps, leaving RPE blank">+ Same Set</button>
       `;
       container.appendChild(div);
       const nameInput = div.querySelector('.ex-name');
@@ -249,6 +249,7 @@
       row.classList.toggle('set-row-done', !!set.done);
       row.querySelectorAll('input[type=number]').forEach(input => { input.setAttribute('aria-label', input.placeholder); input.inputMode = 'decimal'; });
       container.appendChild(row);
+      window.refreshLoggerQuickEntry?.();
     }
 
     function addSetRow(btn) {

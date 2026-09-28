@@ -1015,3 +1015,28 @@ body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; bo
 .today-training-exercises span{display:inline-flex;align-items:center;border:1px solid rgba(100,116,139,.22);border-radius:999px;padding:.38rem .65rem;font-size:.82rem;background:rgba(148,163,184,.08)}
 .today-training-actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.9rem}
 @media(max-width:640px){.today-training-actions>*{flex:1 1 10rem}.today-training-head{gap:.65rem}}
+
+
+/* v2.49 — fast between-set logging. */
+.logger-set{position:relative}
+.logger-active-set{border:1px solid rgba(79,70,229,.35);border-radius:.8rem;padding:.55rem;background:rgba(79,70,229,.045)}
+body.dark .logger-active-set{border-color:rgba(129,140,248,.5);background:rgba(79,70,229,.12)}
+.quick-set-entry{flex-basis:100%;display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-top:.15rem;padding-top:.45rem;border-top:1px dashed rgba(100,116,139,.24)}
+.quick-set-entry[hidden]{display:none}
+.quick-set-label{font-size:.72rem;font-weight:700;color:#475569;white-space:nowrap}
+.quick-rpe-chips{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;max-width:100%;padding:.05rem 0}
+.quick-rpe-chips::-webkit-scrollbar{display:none}
+.quick-rpe-chip,.quick-done-no-rpe{min-height:34px;border:1px solid #cbd5e1;border-radius:.55rem;background:#fff;padding:.35rem .58rem;font-size:.78rem;font-weight:700;color:#334155;white-space:nowrap}
+.quick-rpe-chip:active,.quick-rpe-chip:hover{border-color:#6366f1;background:#eef2ff;color:#3730a3}
+.quick-done-no-rpe{font-weight:600}
+.previous-performance-compact{margin:.2rem 0 .35rem;font-size:.78rem;font-weight:600;color:#475569}
+.previous-performance-detail summary{font-size:.75rem;color:#64748b;cursor:pointer}
+body.dark .quick-set-label,body.dark .previous-performance-compact,body.dark .previous-performance-detail summary{color:#cbd5e1}
+body.dark .quick-rpe-chip,body.dark .quick-done-no-rpe{background:#111827;border-color:#475569;color:#e2e8f0}
+@media(max-width:640px){
+ .logger-active-set{margin-left:-.2rem;margin-right:-.2rem;padding:.5rem}
+ .quick-set-entry{display:grid;grid-template-columns:1fr;gap:.4rem}
+ .quick-rpe-chips{width:100%}
+ .quick-rpe-chip{min-width:44px;min-height:40px}
+ .quick-done-no-rpe{width:100%;min-height:40px}
+}

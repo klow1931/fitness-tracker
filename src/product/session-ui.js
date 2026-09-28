@@ -108,6 +108,8 @@ function updateSessionComparisons(){
     const heading=document.createElement('p');heading.textContent=last?'Previous session · '+formatDate(last.date):'No previous session for this exercise and tracking mode.';panel.appendChild(heading);
     if(!last)continue;
     if(row.dataset.type==='cardio'){const p=document.createElement('p');const e=last.exercise;p.textContent=`${e.duration || 0} min · ${e.distance || 0} ${e.distanceUnit || 'km'}`;panel.appendChild(p);continue;}
+    const compact=document.createElement('p');compact.className='previous-performance-compact';compact.textContent='Last: '+last.exercise.sets.slice(0,3).map(formatStrengthSet).join(' / ')+(last.exercise.sets.length>3?' / …':'');panel.appendChild(compact);
+    const detail=document.createElement('details');detail.className='previous-performance-detail';const summary=document.createElement('summary');summary.textContent='Compare all sets';detail.appendChild(summary);
     const table=document.createElement('table');const header=table.createTHead().insertRow();
     for(const label of ['Set','Previous',workoutEdit?'This session':'Today']){const th=document.createElement('th');th.scope='col';th.textContent=label;header.appendChild(th);}
     const body=table.createTBody();
@@ -115,6 +117,6 @@ function updateSessionComparisons(){
       const s=inputs[i],tr=body.insertRow();const current=s && (s.reps || s.duration)?formatStrengthSet({...s,weight:toStorage(Number(s.weight)||0)}):'—';
       for(const value of [i+1,last.exercise.sets[i]?formatStrengthSet(last.exercise.sets[i]):'—',current])tr.insertCell().textContent=String(value);
     }
-    panel.appendChild(table);
+    detail.appendChild(table);panel.appendChild(detail);
   }
 }

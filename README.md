@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.48.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.49.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.49 — Workout Logger Speed & Clarity
+
+The gym-floor logger now prioritizes the next set instead of making the athlete repeatedly navigate the form. One active unfinished strength set gets a compact one-tap RPE/completion strip, completion advances to the next entered set, and **Done without RPE** preserves honest missing-effort evidence. Adding a set is now labeled **+ Same Set** because it duplicates the prior load/reps and intentionally clears RPE. Previous performance stays visible as a compact summary, with the full comparison available on demand.
 
 ## v2.48 — Today → Train
 
