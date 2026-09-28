@@ -111,3 +111,18 @@ test('phase preview explains date-free strength goals without turning targets in
  expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.targetKg)).toBe(220);
  expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.selectedProgramTrainingMaxKg)).not.toBe(220);
 });
+
+test('date-free goal cycle prefills phase shape and withholds horizon until enough completed blocks exist',async({page})=>{
+ await page.evaluate(()=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-23T09:00:00.000Z'});
+ });
+ await page.locator('#phase-new').click();
+ await expect(page.locator('#phase-dialog')).toContainText('Goal-cycle guidance');
+ await expect(page.locator('#phase-dialog')).toContainText('No target date required');
+ await expect(page.locator('#phase-dialog')).toContainText('Need more completed blocks');
+ await expect(page.locator('#phase-accumulation')).toHaveValue('4');
+ await expect(page.locator('#phase-strength')).toHaveValue('3');
+ await expect(page.locator('#phase-dialog')).toContainText('Training maxes, exercises, frequency, sets and weekly adaptations still require normal review');
+});
