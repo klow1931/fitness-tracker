@@ -18,9 +18,10 @@
       { id:'prescription', label:'Planned versus completed training', ok:Number(d.schemaVersion || 0) >= 14 && Number(d.prescriptionVersion || 0) >= 1 },
       { id:'feedback', label:'Decision feedback history', ok:Number(d.schemaVersion || 0) >= 16 && Array.isArray(d.decisionEvents) },
       { id:'adoption', label:'User-authored program adoption', ok:Number(d.schemaVersion || 0) >= 24 && Array.isArray(d.adoptedPrograms) },
-      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 24 }
+      { id:'transition', label:'End-of-program transition baselines', ok:Number(d.schemaVersion || 0) >= 25 && Array.isArray(d.transitionSnapshots) },
+      { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 25 }
     ];
-    return { version:'2.41.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'2.42.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });

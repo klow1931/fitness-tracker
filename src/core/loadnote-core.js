@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 24;
-  const RELEASE_VERSION = '2.41.0';
+  const SCHEMA_VERSION = 25;
+  const RELEASE_VERSION = '2.42.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -182,6 +182,9 @@
     if(Number(state.schemaVersion||1)<23)state.schemaVersion=23;
     if(state.adoptedPrograms===undefined)state.adoptedPrograms=[];
     if(Number(state.schemaVersion||1)<24)state.schemaVersion=24;
+    // v24 → v25: immutable end-of-program transition baselines; existing training/program data stays unchanged.
+    if(state.transitionSnapshots===undefined)state.transitionSnapshots=[];
+    if(Number(state.schemaVersion||1)<25)state.schemaVersion=25;
     return state;
   }
 

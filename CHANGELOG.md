@@ -1,3 +1,16 @@
+# v2.42.0 — End-of-program transition baseline
+
+- Add an immutable transition baseline for completed, scheduled phase programs so the next block can start from the evidence that actually existed at the handoff.
+- Capture the original goal snapshot plus current goal context, per-lift competition exercise identity, selected training max, current supported capacity/1RM reference, change from the block-start reference, readiness status, and the prior 28 days of exact competition-lift sessions, sets, volume, RPE coverage and logged load.
+- Capture full scheduled-session coverage for the completed program, including completed, skipped, cancelled and unconfirmed sessions plus resolved-session adherence. Incomplete data is preserved as evidence rather than hidden.
+- Preserve phase-review history linked to the completed program so future analysis can distinguish the program itself from athlete-approved mid-block decisions.
+- Require the reviewed program to be scheduled and to have reached its final scheduled date before the snapshot can be created.
+- Save one baseline per program after explicit athlete review. Once saved, the record is read-only and does not rewrite workouts, goals, training maxes, program sessions or Calendar history.
+- Surface the transition review inside the existing saved phase-program card. Before program completion, show the date when the handoff becomes available.
+- Add schema v25 with a backward-compatible empty `transitionSnapshots` collection; no existing workout/program data is rewritten.
+- Include transition snapshots in import-diff previews and release-readiness validation.
+- Add deterministic and browser coverage for complete and incomplete session coverage, goal/training-max context, recent workload/RPE, immutable source history, duplicate protection and schema migration.
+
 # v2.41.0 — Date-free strength-goal cycles and dynamic block horizons
 
 - Add a date-free strength-goal cycle engine that chooses a conservative next phase shape from the current per-lift goal objectives without requiring a meet or PR date.
