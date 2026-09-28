@@ -2,6 +2,10 @@
 
 **v2.47.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.47 — Real-world launch hardening
+
+Before the first full Loadnote-directed training cycle, v2.47 hardens the data path rather than adding another programming layer. Tools now includes a training-data health audit for invalid loads/RPE values, missing-RPE coverage and extreme same-exercise load outliers. Corrected workout revisions stay visible as history but do not replace the active workout record. JSON imports now validate meet-cycle, adopted-program and frozen-transition structures before replacing local data. No new programming action or schema migration is introduced.
+
 ## v2.35 — Mock meet vs competition meet
 
 Meet-prep cycles now explicitly distinguish **Mock meet** from **Competition meet**. Legacy cycles continue to behave as mock meets. New competition cycles require a meet name, keep their results in separate competition-result history, and show competition-specific wording throughout Decisions and the post-cycle recap. Neither event type receives automatic attempt selection; competition results are athlete-entered and are not treated as verified federation records.
