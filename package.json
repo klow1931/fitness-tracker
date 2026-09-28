@@ -15,7 +15,8 @@
     "start:coach": "node backend/server.js",
     "test:browser": "playwright test",
     "serve": "node scripts/serve.js",
-    "build:assets": "node scripts/build-assets.js"
+    "build:assets": "node scripts/build-assets.js",
+    "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
