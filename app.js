@@ -2876,9 +2876,8 @@ async function initApp() {
       initWorkoutLogger();
       hideAppLoader();
 
-      if ('serviceWorker' in navigator) {
-        window.LoadnoteLifecycle?.start();
-      }
+      // Runtime detection also matters in native shells where service workers may be unavailable.
+      window.LoadnoteLifecycle?.start();
 
       // Keep gym-mode preference in sync if user resizes across breakpoint before choosing
       if (window.matchMedia) {

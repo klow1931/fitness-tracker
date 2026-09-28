@@ -151,3 +151,12 @@ test('focused Home and backup are compact until requested',async({page})=>{
  await expect(page.locator('#device-save-status')).toBeVisible();
  await expect(page.locator('#device-status-details').getByRole('button',{name:'Export backup'})).toBeVisible();
 });
+
+test('v2.54 runtime labels the web surface without changing navigation',async({page})=>{
+ await expect.poll(()=>page.evaluate(()=>window.LoadnoteRuntime?.surface)).toBe('browser');
+ expect(await page.evaluate(()=>document.documentElement.dataset.loadnoteSurface)).toBe('browser');
+ expect(await page.evaluate(()=>document.body.classList.contains('runtime-browser'))).toBe(true);
+ await page.setViewportSize({width:390,height:844});
+ const boxes=await page.locator('#mobile-nav .mobile-nav-btn').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().height));
+ expect(boxes.every(height=>height>=44)).toBe(true);
+});

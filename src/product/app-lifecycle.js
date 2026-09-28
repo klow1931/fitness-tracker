@@ -2,6 +2,8 @@
  'use strict';
  function connection(){const el=document.getElementById('connection-status');if(el)el.textContent=navigator.onLine?'Online · food lookup and online coach available':'Offline · log workouts; online coach and food lookup need internet';}
  async function start(){
+  const platform=window.LoadnotePlatform?.detect(window)||{surface:'browser',native:false,nativePlatform:null,standalone:false};
+  window.LoadnoteRuntime=window.LoadnotePlatform?.apply(document,platform)||platform;
   connection();window.addEventListener('online',connection);window.addEventListener('offline',connection);
   if(!('serviceWorker' in navigator))return;
   const banner=document.getElementById('app-update'),status=document.getElementById('app-update-status'),button=document.getElementById('apply-app-update');

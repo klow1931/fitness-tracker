@@ -2,9 +2,9 @@
 
 ## Required checks
 
-Run `npm test` and `npm run check`, then the full `npm run test:browser` suite before merging. GitHub Actions installs Chromium and runs these commands on pushes and pull requests. Check the run for the actual proposed commit; an older passing run does not validate newer changes.
+Run `npm run check`, `npm test`, `npm run check:mobile`, then the full `npm run test:browser` suite before merging. GitHub Actions installs Chromium and runs these commands on pushes and pull requests. Check the run for the actual proposed commit; an older passing run does not validate newer changes.
 
-The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency and module boundaries.
+The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency, mobile runtime detection and module boundaries. `npm run check:mobile` rebuilds the consumer `www/` package and verifies its Capacitor configuration, install manifest, safe-area contract, asset completeness and exclusion of server/development directories.
 
 Browser coverage includes workout/review/edit/reload flows, manual and template-sourced prescriptions, deviation context, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and More pages, Focus mode, timer recovery, dashboard signal guards, decision-readiness mapping confirmation and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
 

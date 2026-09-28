@@ -1087,3 +1087,41 @@ body.dark .progress-analytics-plan,body.dark .progress-analytics-lifts,body.dark
  .progress-analytics-lift-head{align-items:flex-start}
  .progress-analytics-lift-head .btn-secondary{min-height:40px}
 }
+
+
+/* v2.54 — installed/native safe-area handling. */
+:root {
+  --loadnote-safe-top: env(safe-area-inset-top, 0px);
+  --loadnote-safe-right: env(safe-area-inset-right, 0px);
+  --loadnote-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --loadnote-safe-left: env(safe-area-inset-left, 0px);
+}
+.runtime-native .app-shell,
+.runtime-installed-web .app-shell {
+  padding-top: calc(1.5rem + var(--loadnote-safe-top));
+  padding-left: calc(1rem + var(--loadnote-safe-left));
+  padding-right: calc(1rem + var(--loadnote-safe-right));
+}
+.runtime-native .toast-host,
+.runtime-installed-web .toast-host {
+  top: calc(1rem + var(--loadnote-safe-top));
+  right: calc(1rem + var(--loadnote-safe-right));
+}
+@media (max-width:768px) {
+  .runtime-native .app-shell,
+  .runtime-installed-web .app-shell {
+    padding-bottom: calc(5.5rem + var(--loadnote-safe-bottom));
+  }
+  .runtime-native .app-footer,
+  .runtime-installed-web .app-footer {
+    margin-bottom: calc(4.5rem + var(--loadnote-safe-bottom));
+  }
+  body.gym-mode.runtime-native .sticky-save-bar,
+  body.gym-mode.runtime-installed-web .sticky-save-bar {
+    bottom: calc(3.6rem + var(--loadnote-safe-bottom));
+  }
+  body.gym-mode.runtime-native #panel-workouts,
+  body.gym-mode.runtime-installed-web #panel-workouts {
+    padding-bottom: calc(7.5rem + var(--loadnote-safe-bottom));
+  }
+}
