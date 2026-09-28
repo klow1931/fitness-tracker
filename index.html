@@ -1024,6 +1024,7 @@
       <details class="card" id="phase-builder-panel"><summary><b>Phase-based program builder</b><small>Accumulation → strength → deload · optional meet timeline preview</small></summary><div id="phase-builder"></div>
       <div id="meet-cycle" class="mt-4" aria-label="Flexible mock-meet cycles"></div></details>
       </div>
+      <details class="card" id="program-adoption-panel"><summary><b>Adopt an existing program</b><small>Use a saved user program as a reviewed adaptive baseline</small></summary><div id="program-adoption"></div></details>
       <header class="decision-section-heading"><span class="eyebrow">04 · WHAT CHANGED</span><h2>Training intelligence</h2><p>Revisit previous program adjustments and observed outcomes.</p></header>
       <details class="card" id="program-outcomes-panel"><summary><b>After your adjustments</b><small>What was planned, what you did, and what followed</small></summary><div id="program-outcomes"></div></details>
       </div>
@@ -1354,7 +1355,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.36.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.37.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1978,6 +1979,8 @@
   <script src="src/product/cycle-review-ui.js" defer></script>
   <script src="src/product/cycle-response.js" defer></script>
   <script src="src/product/cycle-adaptive-controller.js" defer></script>
+  <script src="src/product/program-adoption.js" defer></script>
+  <script src="src/product/program-adoption-ui.js" defer></script>
   <script src="src/product/cycle-response-ui.js" defer></script>
   <script src="src/product/mock-meet.js" defer></script>
   <script src="src/product/mock-meet-ui.js" defer></script>
