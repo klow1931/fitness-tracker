@@ -27,6 +27,7 @@ function createOidc(options={}){
  const redirectUri=clean(options.redirectUri);
  const providerId=clean(options.providerId||(()=>{try{return new URL(issuer).hostname.toLowerCase().replace(/[^a-z0-9._-]+/g,'-').slice(0,80);}catch{return '';}})());
  const providerName=clean(options.providerName)||'Account provider';
+ if(providerId&&!/^[a-z0-9._-]{2,80}$/.test(providerId))throw Error('OIDC provider id is invalid');
  const authSecret=clean(options.authSecret);
  const secure=options.secure===true;
  const fetchImpl=options.fetchImpl||globalThis.fetch;
@@ -90,8 +91,9 @@ function createOidc(options={}){
   const header=parseJsonSegment(parts[0]),claims=parseJsonSegment(parts[1]);
   if(header.alg!=='RS256'||typeof header.kid!=='string'||!header.kid)throw Error('Unsupported OIDC ID-token signature');
   const disc=await discovery();
-  let keys=await jwks(disc.jwks_uri),jwk=keys.find(key=>key.kid===header.kid&&key.kty==='RSA');
-  if(!jwk){keys=await jwks(disc.jwks_uri,true);jwk=keys.find(key=>key.kid===header.kid&&key.kty==='RSA');}
+  const eligible=key=>key.kid===header.kid&&key.kty==='RSA'&&(!key.use||key.use==='sig')&&(!key.alg||key.alg==='RS256');
+  let keys=await jwks(disc.jwks_uri),jwk=keys.find(eligible);
+  if(!jwk){keys=await jwks(disc.jwks_uri,true);jwk=keys.find(eligible);}
   if(!jwk)throw Error('OIDC signing key was not found');
   let publicKey;
   try{publicKey=crypto.createPublicKey({key:jwk,format:'jwk'});}catch{throw Error('OIDC signing key is invalid');}
