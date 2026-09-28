@@ -239,6 +239,11 @@
         <button type="button" aria-label="Remove set" data-workout-action="remove-set" class="text-red-500 text-sm">✕</button>
         <small class="set-target-note" hidden></small>
       `;
+      const removeButton=row.querySelector('[data-workout-action="remove-set"]');
+      if(removeButton)removeButton.addEventListener('click',event=>{
+        event.preventDefault();event.stopPropagation();
+        row.remove();saveLoggerDraft();updateLoggerSummary();window.refreshLoggerQuickEntry?.();
+      });
       const check = row.querySelector('.set-done-check');
       if (check) {
         check.addEventListener('change', () => {
