@@ -12,12 +12,12 @@
   const lifts={},choices={};
   for(const lift of LIFTS){
    const f=review.findings[lift]||{},trend=phase?.lifts?.[lift]||null;
-   const change=finite(trend?.observedChangePct),above=Number(f.aboveCap||0),comparable=Number(f.comparableRpeSets||0);
+   const change=finite(trend?.observedChangePct),above=Number(f.aboveCap||0),comparable=Number(f.comparableRpeSets||0),competitionComparable=Number(f.competitionComparableRpeSets||0),competitionAbove=Number(f.competitionAboveCap||0),competitionBelow=Number(f.competitionBelowCapHalf||0);
    let action='keep',confidence='low',signal='insufficient-evidence',why='';
    if(review.eligibility[lift]&&f.canReduceLoad&&above>=2&&comparable>=3&&change!=null&&change<=-3){
     action='reduce-load';confidence='high';signal='effort-and-capacity-down';
     why='At least two directly comparable sets exceeded the original RPE caps, at least three comparable sets were logged, and the completed '+review.phase+' phase shows a lower estimated-capacity comparison ('+change+'%). The bounded policy therefore supports reviewing one program load increment lower on matching next-week sets. This does not prove fatigue or causation.';
-   }else if(review.eligibility[lift]&&f.canIncreaseLoad&&above===0&&comparable>=4&&Number(f.belowCapHalf||0)>=2&&change!=null&&change>=1){
+   }else if(review.eligibility[lift]&&f.canIncreaseLoad&&competitionAbove===0&&competitionComparable>=4&&competitionBelow>=2&&change!=null&&change>=1){
     action='increase-load';confidence='high';signal='completed-below-cap-and-improving';
     why='All planned competition-lift work was completed, at least four sets were directly comparable, none exceeded the approved RPE cap, at least two finished 0.5 RPE or more below it, and the completed '+review.phase+' phase shows an improving estimated-capacity comparison ('+change+'%). The bounded policy therefore supports reviewing one program load increment higher on the matching next-week competition exercise.';
    }else if(review.eligibility[lift]&&f.canReduceOne&&above>=2&&comparable>=2){
@@ -36,12 +36,12 @@
     why=f.reason||'There is not enough comparable, resolved prescribed-versus-performed evidence to support changing next week.';
    }
    if(!review.eligibility[lift]&&action!=='keep')action='keep';
-   if(!review.eligibility[lift]&&['peak','taper','mock-meet','meet'].includes(review.nextPhase)){
+   if(!review.eligibility[lift]&&['peak','peaking','taper','mock-meet','meet'].includes(review.nextPhase)){
     signal='phase-guard';confidence='high';
     why='The next phase is '+review.nextPhase+'. The current bounded controller does not alter peak, taper or event-week prescriptions.';
    }
    choices[lift]=action;
-   lifts[lift]={lift,name:f.name||lift,action,confidence,signal,why,comparableRpeSets:comparable,aboveCapSets:above,observedChangePct:change,eligibleForAdjustment:!!review.eligibility[lift],eligibleForSetReduction:!!f.canReduceOne,eligibleForLoadReduction:!!f.canReduceLoad,eligibleForLoadIncrease:!!f.canIncreaseLoad,belowCapHalfSets:Number(f.belowCapHalf||0),incrementKg:finite(f.incrementKg)};
+   lifts[lift]={lift,name:f.name||lift,action,confidence,signal,why,comparableRpeSets:comparable,aboveCapSets:above,observedChangePct:change,eligibleForAdjustment:!!review.eligibility[lift],eligibleForSetReduction:!!f.canReduceOne,eligibleForLoadReduction:!!f.canReduceLoad,eligibleForLoadIncrease:!!f.canIncreaseLoad,belowCapHalfSets:Number(f.belowCapHalf||0),competitionComparableRpeSets:competitionComparable,competitionAboveCapSets:competitionAbove,competitionBelowCapHalfSets:competitionBelow,incrementKg:finite(f.incrementKg)};
   }
   return {version:1,policy:POLICY,cycleId:review.cycleId,week:review.week,phase:review.phase,nextPhase:review.nextPhase,nextWeek:review.nextWeek,asOf:review.asOf,choices,lifts,
    summary:Object.values(lifts).some(x=>x.action==='increase-load')?'A guarded one-increment next-week load increase is supported for at least one competition lift.':Object.values(lifts).some(x=>x.action==='reduce-load')?'A bounded one-increment next-week load reduction is supported for at least one lift.':Object.values(lifts).some(x=>x.action==='reduce-one')?'A bounded next-week set reduction is supported for at least one lift.':'Keep the original next-week plan; no supported bounded adjustment is currently justified.',
