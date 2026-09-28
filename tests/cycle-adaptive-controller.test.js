@@ -5,9 +5,9 @@ function baseReview(){
  return {cycleId:'c1',week:3,phase:'strength',nextPhase:'strength',nextWeek:4,asOf:'2026-09-27',
   eligibility:{squat:true,bench:false,deadlift:true},
   findings:{
-   squat:{name:'Competition Squat',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:false,belowCapHalf:0,incrementKg:2.5,comparableRpeSets:4,aboveCap:3,reason:''},
-   bench:{name:'Competition Bench',canReduceOne:false,canReduceLoad:false,canIncreaseLoad:false,belowCapHalf:0,incrementKg:2.5,comparableRpeSets:3,aboveCap:1,reason:'At least two above-cap sets required.'},
-   deadlift:{name:'Competition Deadlift',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:true,belowCapHalf:3,incrementKg:2.5,comparableRpeSets:4,aboveCap:0,reason:''}
+   squat:{name:'Competition Squat',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:false,belowCapHalf:0,competitionComparableRpeSets:4,competitionAboveCap:3,competitionBelowCapHalf:0,incrementKg:2.5,comparableRpeSets:4,aboveCap:3,reason:''},
+   bench:{name:'Competition Bench',canReduceOne:false,canReduceLoad:false,canIncreaseLoad:false,belowCapHalf:0,competitionComparableRpeSets:3,competitionAboveCap:1,competitionBelowCapHalf:0,incrementKg:2.5,comparableRpeSets:3,aboveCap:1,reason:'At least two above-cap sets required.'},
+   deadlift:{name:'Competition Deadlift',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:true,belowCapHalf:3,competitionComparableRpeSets:4,competitionAboveCap:0,competitionBelowCapHalf:3,incrementKg:2.5,comparableRpeSets:4,aboveCap:0,reason:''}
   }};
 }
 const response={phases:[{phase:'strength',lifts:{
