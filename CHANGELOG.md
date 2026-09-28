@@ -1,3 +1,16 @@
+# v2.40.0 — Goal → Programming bridge
+
+- Connect active powerlifting squat, bench and deadlift targets to reviewed programming context without converting long-term goals into training maxes or direct load prescriptions.
+- Add deterministic per-lift goal context: saved target, current comparison reference when supported, distance to target, readiness status, current/selected training-max context and a block-level objective.
+- Support date-free strength goals explicitly. No calendar deadline is inferred from target distance alone; the goal horizon stays unestimated until later block-response evidence can justify a range.
+- Use evidence-aware objectives such as establish baseline, long-range development, build strength, close the remaining strength gap, verify target-level strength and consolidate target-level strength.
+- Prefer current RPE-aware competition-lift estimated capacity as the comparison reference, then fall back to a known 1RM or profile benchmark. Training maxes and ordinary working loads are not treated as proof of target achievement.
+- Snapshot goal context into newly reviewed phase programs so later analysis can know what targets and evidence were present when the block was approved.
+- If goal context changes before scheduling a newly goal-aware phase program, require a fresh program review instead of silently scheduling stale context. Legacy phase programs without a goal snapshot remain valid.
+- Surface goal context directly in phase-program preview and saved-program review, including a clear statement that targets do not replace training maxes or weekly adaptation rules.
+- Handle multiple active powerlifting goals conservatively by withholding goal-specific programming context until the goal set is disambiguated.
+- Add unit and browser tests covering date-free goals, target/training-max separation, current-capacity comparison, immutable snapshots and browser review flow. No top-level schema migration.
+
 # v2.39.0 — Guarded one-increment upward progression
 
 - Add a fourth meet-cycle weekly review choice: **one program load increment higher** on the confirmed competition exercise for a lift. The change still applies only to the next week and requires explicit athlete approval.
