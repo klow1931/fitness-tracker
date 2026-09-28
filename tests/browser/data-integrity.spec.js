@@ -35,9 +35,10 @@ test('training data health surfaces current outliers without treating corrected 
   data=LoadnoteIntegrity.normalizeState(data);showTab('tools');renderDataIntegrityTools();
  });
  await page.locator('details:has(#training-data-health) > summary').click();
- await expect(page.locator('#training-data-health')).toContainText('No invalid or extreme current entries detected');
+ await expect(page.locator('#training-data-health')).toContainText('Current training data and record links passed the integrity audit');
  await expect(page.locator('#training-data-health')).toContainText('suspicious loads: 0');
- await expect(page.locator('#training-data-health')).toContainText('Historical revision warnings: 1');
+ await expect(page.locator('#training-data-health')).toContainText('Historical suspicious loads: 1');
+ await expect(page.locator('#training-data-health')).toContainText('Corrected revisions remain audit history');
 });
 
 test('replacement import rejects malformed v25 program-transition records before replacing data',async({page})=>{
