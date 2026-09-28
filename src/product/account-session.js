@@ -6,7 +6,7 @@
  else root.LoadnoteAccountSession=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
- const state={status:'unknown',account:null,expiresAt:null,csrf:null,transport:null,authConfigured:null,authRequired:null,lastCheckedAt:null};
+ const state={status:'unknown',account:null,expiresAt:null,csrf:null,transport:null,authConfigured:null,authRequired:null,loginAvailable:false,provider:null,lastCheckedAt:null};
  const clone=value=>JSON.parse(JSON.stringify(value));
  function reset(status='anonymous'){
   state.status=status;state.account=null;state.expiresAt=null;state.csrf=null;state.transport=null;return snapshot();
@@ -16,6 +16,8 @@
   state.lastCheckedAt=new Date().toISOString();
   state.authConfigured=json?.authConfigured??state.authConfigured;
   state.authRequired=json?.authRequired??state.authRequired;
+  state.loginAvailable=json?.loginAvailable===true;
+  state.provider=json?.provider&&typeof json.provider.id==='string'?{id:String(json.provider.id),name:String(json.provider.name||'Sign in')}:null;
   if(json?.authenticated){
    state.status='authenticated';
    state.account=json.account&&typeof json.account.id==='string'?{id:json.account.id,provider:String(json.account.provider||'')}:null;
