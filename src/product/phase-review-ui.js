@@ -11,14 +11,18 @@
       const next=scheduled.find(s=>s.id.startsWith('meet:'+activeCycle.id+':'));
       const guide=window.LoadnotePhaseGuidance?.inspect(data,{asOf:today(),cycleId:activeCycle.id});
       target.innerHTML=window.LoadnotePhaseGuidanceUI?.render(guide)||'<div class="card">Cycle guidance is temporarily unavailable.</div>';
+      const nextExplanation=window.LoadnoteAdaptationExplanation?.forSession(data,next?.id);
+      if(nextExplanation)target.insertAdjacentHTML('beforeend',window.LoadnoteAdaptationExplanationUI?.render(nextExplanation,{summary:'Why the next workout changed'})||'');
       target.querySelector('#decision-cycle-cta').onclick=()=>{const panel=document.getElementById('phase-builder-panel'),row=document.querySelector('[data-cycle="'+CSS.escape(activeCycle.id)+'"]');if(panel)panel.open=true;if(row)row.open=true;(row||panel)?.scrollIntoView({behavior:'smooth',block:'start'});};
       return;
     }
     const upcoming=scheduled[0],program=programs.find(p=>upcoming?.id.startsWith('phase:'+p.id+':'))||programs.at(-1);
+    const upcomingExplanation=window.LoadnoteAdaptationExplanation?.forSession(data,upcoming?.id);
+    const explanationHtml=window.LoadnoteAdaptationExplanationUI?.render(upcomingExplanation,{summary:'Why the next workout changed'})||'';
     const approved=(data.phaseReviews||[]).filter(r=>r.programId===program?.id).at(-1);
     let phase=null;
     if(program){let elapsed=0;for(const p of program.config.phases){elapsed+=p.weeks*7;const end=new Date(program.config.startDate+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+elapsed-1);if(end.toISOString().slice(0,10)<=today()&&!(data.phaseReviews||[]).some(r=>r.programId===program.id&&r.phase===p.type))phase=p.type;}}
-    target.innerHTML=`<div class="card" style="padding:1rem"><h3 style="font-weight:700">Your training plan</h3><p>${program?esc(program.config.name):'No scheduled phase-based plan yet'}</p><p>${upcoming?'Next: '+esc(upcoming.date)+' · '+esc(upcoming.name):'No upcoming phase session scheduled'}</p><p>${approved?'Last decision: '+esc(approved.phase)+' · '+esc(Object.entries(approved.choices).map(([lift,choice])=>lift+' '+choice).join(', ')):'No accepted phase adjustment yet'}</p><p style="font-size:.875rem">Recommendation: ${phase?'A completed phase can be reviewed. Evidence determines whether a bounded adjustment is offered.':'Keep the scheduled plan until a completed phase has enough comparable evidence.'}</p><button class="btn-primary" type="button" id="decision-review-cta">${phase?'Review next phase':'See phase review'}</button></div>`;
+    target.innerHTML=`<div class="card" style="padding:1rem"><h3 style="font-weight:700">Your training plan</h3><p>${program?esc(program.config.name):'No scheduled phase-based plan yet'}</p><p>${upcoming?'Next: '+esc(upcoming.date)+' · '+esc(upcoming.name):'No upcoming phase session scheduled'}</p><p>${approved?'Last decision: '+esc(approved.phase)+' · '+esc(Object.entries(approved.choices).map(([lift,choice])=>lift+' '+choice).join(', ')):'No accepted phase adjustment yet'}</p><p style="font-size:.875rem">Recommendation: ${phase?'A completed phase can be reviewed. Evidence determines whether a bounded adjustment is offered.':'Keep the scheduled plan until a completed phase has enough comparable evidence.'}</p>${explanationHtml}<button class="btn-primary" type="button" id="decision-review-cta">${phase?'Review next phase':'See phase review'}</button></div>`;
     target.querySelector('#decision-review-cta').onclick=()=>{const panel=document.getElementById('phase-review-panel');if(!panel)return;panel.open=true;if(program)document.getElementById('phase-review-program').value=program.id;if(phase)document.getElementById('phase-review-type').value=phase;panel.scrollIntoView({behavior:'smooth',block:'start'});};
   }
   function render(){
