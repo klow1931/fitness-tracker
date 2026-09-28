@@ -5,7 +5,7 @@
   const platform=window.LoadnotePlatform?.detect(window)||{surface:'browser',native:false,nativePlatform:null,standalone:false};
   window.LoadnoteRuntime=window.LoadnotePlatform?.apply(document,platform)||platform;
   connection();window.addEventListener('online',connection);window.addEventListener('offline',connection);
-  const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh();};
+  const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh().then(()=>window.renderAccountStatus?.());};
   refreshAccount();window.addEventListener('online',refreshAccount);
   if(!('serviceWorker' in navigator))return;
   const banner=document.getElementById('app-update'),status=document.getElementById('app-update-status'),button=document.getElementById('apply-app-update');
