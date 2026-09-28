@@ -716,12 +716,6 @@
 
         <!-- Custom food -->
         <div id="food-mode-custom" class="hidden">
-          <div class="card bg-slate-50 border-slate-200 mb-3">
-          <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" id="api-backend-enabled" checked /> Use secure Loadnote backend</label>
-          <label class="label mt-2">Backend coach URL</label>
-          <input type="text" id="api-backend-url" class="input" placeholder="/api/coach" />
-          <p class="text-xs text-slate-500 mt-1">For production, point this at your Loadnote server. The browser never receives the provider secret.</p>
-        </div>
         <div class="grid sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label class="label" for="cf-name">Name</label>
@@ -1918,6 +1912,7 @@
   <script src="src/core/loadnote-core.js" defer></script>
   <script src="src/product/data-integrity.js" defer></script>
   <script src="src/product/sync-model.js" defer></script>
+  <script src="src/product/account-session.js" defer></script>
   <script src="src/product/session-intent.js" defer></script>
   <script src="src/product/schedule.js" defer></script>
   <script src="src/product/schedule-ui.js" defer></script>
