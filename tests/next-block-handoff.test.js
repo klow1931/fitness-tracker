@@ -35,7 +35,7 @@ assert.match(report.summary,/ready for athlete review/);
 const draft=Handoff.inspect(state,{asOf:'2026-11-14',draftOpen:true});
 assert.equal(draft.ready,false);assert(draft.blockers.some(x=>/unfinished workout draft/.test(x)));
 
-const brokenRoles=structuredClone(state);brokenRoles.exerciseRoles=brokenRoles.exerciseRoles.filter(r=>!(r.role==='competition'&&r.competitionLift==='bench'));
+const brokenRoles=structuredClone(state),benchId=report.objectives.lifts.bench.exerciseId;brokenRoles.exerciseCatalog=brokenRoles.exerciseCatalog.filter(e=>e.id!==benchId);
 const broken=Handoff.inspect(brokenRoles,{asOf:'2026-11-14'});
 assert.equal(broken.ready,false);assert(broken.blockers.some(x=>/competition bench exercise mapping/.test(x)));
 
