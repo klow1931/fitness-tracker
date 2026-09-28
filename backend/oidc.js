@@ -134,8 +134,14 @@ function createOidc(options={}){
   const params=new URLSearchParams({grant_type:'authorization_code',code:clean(code),redirect_uri:redirectUri,client_id:clientId,code_verifier:flow.verifier});
   const headers={'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'};
   if(clientSecret){
-   headers.Authorization='Basic '+Buffer.from(clientId+':'+clientSecret).toString('base64');
-   params.delete('client_id');
+   const methods=Array.isArray(disc.token_endpoint_auth_methods_supported)?disc.token_endpoint_auth_methods_supported:['client_secret_basic'];
+   if(methods.includes('client_secret_basic')){
+    const formEncode=value=>new URLSearchParams({v:String(value)}).toString().slice(2);
+    headers.Authorization='Basic '+Buffer.from(formEncode(clientId)+':'+formEncode(clientSecret)).toString('base64');
+    params.delete('client_id');
+   }else if(methods.includes('client_secret_post')){
+    params.set('client_secret',clientSecret);
+   }else throw Error('OIDC provider does not support a configured client authentication method');
   }
   const response=await fetchImpl(disc.token_endpoint,{method:'POST',headers,body:params.toString()});
   if(!response.ok)throw Error('OIDC code exchange failed');
