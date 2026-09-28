@@ -20,13 +20,13 @@ A trusted server-side identity is represented by:
 - provider
 - provider subject
 
-Loadnote derives a stable opaque account ID from those two values.
+In v2.56 the session primitive could derive a deterministic opaque identity for testing the boundary. In v2.57, the persistent account store becomes the authority: provider + provider subject resolve to a durable Loadnote account record with its own opaque account ID.
 
-The Loadnote account ID is intentionally independent of the session-signing secret so routine session-key rotation does not silently create a new account identity.
+The Loadnote account ID is independent of the session-signing secret, so routine session-key rotation does not silently create a new account identity.
 
 Email addresses are **not** treated as the account identity key. Email addresses can change, can be hidden by providers, and should not be trusted as a globally stable account identifier.
 
-Future account linking across identity providers will require explicit server-side account records and linking rules.
+Future account linking across identity providers will require explicit linking rules that attach another verified provider identity to the existing Loadnote account.
 
 ## Session model
 
@@ -197,9 +197,11 @@ The provider token should not become the internal identifier for workouts or syn
 
 v2.55 defined **what** structured data can be safely compared and merged.
 
-v2.56 defines **who** an authenticated server request belongs to.
+v2.56 defined the signed account-session authorization boundary.
 
-A future cloud-sync milestone can combine those two layers:
+v2.57 adds the verified OIDC identity path and durable account mapping.
+
+A future cloud-sync milestone can combine those layers:
 
 - authenticated account identity
 - account-scoped server revision
