@@ -2475,7 +2475,10 @@ ${woLines}
         body = { model: api.model || 'grok-2-latest', messages, temperature: 0.4 };
       }
 
-      const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+      const requestOptions = { method: 'POST', headers, body: JSON.stringify(body) };
+      const res = backendEnabled && window.LoadnoteAccountSession?.request
+        ? await window.LoadnoteAccountSession.request(url, requestOptions)
+        : await fetch(url, requestOptions);
       if (!res.ok) {
         const errText = await res.text().catch(() => '');
         let msg = 'Coach API error ' + res.status;
@@ -2506,7 +2509,9 @@ ${woLines}
       try {
         if (backend) {
           const healthUrl = ((data.api || {}).backendUrl || '/api/coach').replace(/\/coach\/?$/, '/health');
-          const res = await fetch(healthUrl);
+          const res = window.LoadnoteAccountSession?.request
+            ? await window.LoadnoteAccountSession.request(healthUrl)
+            : await fetch(healthUrl);
           if (!res.ok) throw new Error('Backend returned ' + res.status);
           const j = await res.json();
           if (!j.ok) throw new Error('Backend health check failed');
