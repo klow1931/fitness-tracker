@@ -26,3 +26,16 @@ test('exercise alias merge preserves labels and unifies identities',async({page}
  await page.locator('#exercise-alias-source').selectOption({label:'Adduction Machine'});await page.locator('#exercise-alias-target').selectOption({label:'Hip Adduction'});page.once('dialog',d=>d.accept());await page.locator('#merge-exercise-alias').click();
  const result=await page.evaluate(()=>({names:data.workouts.map(w=>w.exercises[0].name),ids:data.workouts.map(w=>w.exercises[0].exerciseId)}));expect(result.names).toEqual(['Adduction Machine','Hip Adduction']);expect(new Set(result.ids).size).toBe(1);await expect(page.locator('#recovery-snapshots')).toContainText('Before exercise identity merge');
 });
+
+test('training data health surfaces current outliers without treating corrected revision history as active',async({page})=>{
+ await page.evaluate(()=>{
+  const bad={id:'bench-outlier',date:'2026-09-14',exercises:[{name:'Competition Bench Press',exerciseId:'bench',type:'strength',sets:[{weight:132.45,reps:1,rpe:8},{weight:119.75,reps:2,rpe:7},{weight:114.76,reps:2,rpe:6.5},{weight:114.76,reps:2,rpe:6.5},{weight:109.77,reps:3,rpe:6},{weight:1016.95,reps:3,rpe:6}]}]};
+  const fixed=JSON.parse(JSON.stringify(bad));fixed.exercises[0].sets[5].weight=109.77;
+  data.workouts=[fixed];data.workoutRevisions=[{id:'fix',workoutId:bad.id,recordedAt:'2026-09-15T00:00:00.000Z',action:'edit',before:bad,after:fixed}];
+  data=LoadnoteIntegrity.normalizeState(data);showTab('tools');renderDataIntegrityTools();
+ });
+ await page.locator('details:has(#training-data-health) > summary').click();
+ await expect(page.locator('#training-data-health')).toContainText('No invalid or extreme current entries detected');
+ await expect(page.locator('#training-data-health')).toContainText('suspicious loads: 0');
+ await expect(page.locator('#training-data-health')).toContainText('Historical revision warnings: 1');
+});
