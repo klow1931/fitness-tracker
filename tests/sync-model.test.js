@@ -70,6 +70,11 @@ merged=Sync.mergeThreeWay(relationBase,relationLocal,relationRemote);
 assert.equal(merged.status,'invalid-merge','individually safe changes must not combine into an orphaned training link');
 assert(merged.relationshipAudit.blocking>0);
 
+const numericId=state({prs:[{id:1,exercise:'Bench',weight:100,reps:1,date:'2026-09-28'}]});
+merged=Sync.mergeThreeWay(numericId,structuredClone(numericId),structuredClone(numericId));
+assert.equal(merged.status,'merged');
+assert.equal(typeof merged.state.prs[0].id,'number','evaluating a merge must not rewrite a legacy id representation');
+
 const duplicate=state({workouts:[workout('dup'),workout('dup')]});
 report=Sync.preflight(duplicate);
 assert.equal(report.status,'blocked');
