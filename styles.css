@@ -1048,3 +1048,12 @@ body.dark .quick-rpe-chip,body.dark .quick-done-no-rpe{background:#111827;border
 .adaptation-explanation-lift{margin-top:.65rem;padding-top:.6rem;border-top:1px solid rgba(100,116,139,.18)}
 .adaptation-explanation-lift p{margin:.2rem 0;font-size:.8rem;line-height:1.45}
 body.dark .adaptation-explanation{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.35)}
+
+
+/* v2.51 — week-to-week training continuity. */
+.training-continuity-recap{margin-top:1rem;padding-top:.9rem;border-top:1px solid rgba(100,116,139,.22)}
+.training-continuity-recap h3{margin:.55rem 0 .2rem;font-weight:700}
+.training-continuity-recap p,.training-continuity-next,.training-continuity-warning{font-size:.84rem;line-height:1.48}
+.training-continuity-next{margin:.55rem 0}
+.training-continuity-warning{margin:.55rem 0;padding:.55rem .65rem;border-radius:.65rem;background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.22)}
+body.dark .training-continuity-warning{background:rgba(245,158,11,.11);border-color:rgba(245,158,11,.3)}
