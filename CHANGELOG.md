@@ -1,3 +1,13 @@
+# v2.38.0 — Bounded load adaptation in meet-cycle Decisions
+
+- Expand the cycle adaptive controller from **keep / one fewer set** to **keep / one fewer set / one program load increment lower** for the next week only, independently for squat, bench and deadlift.
+- Require stronger evidence before the controller recommends a load reduction: at least two directly comparable above-cap RPE sets, at least three comparable sets total, and a within-phase estimated-capacity comparison at or below -3%. High effort without that added signal remains eligible only for the existing bounded set reduction when otherwise supported.
+- Apply load reductions as exactly one reviewed program increment in internal kg to matching next-week sets. Reps, set count, exercise identity, exposure frequency, phase dates and the immutable original cycle remain unchanged.
+- Preserve peak, taper, mock-meet and competition-meet guards. Previously revised, started, logged, rescheduled or draft-locked future sessions remain ineligible.
+- Keep athlete approval mandatory. The controller never increases load, changes reps, swaps exercises, changes frequency or edits completed history automatically.
+- Preserve legacy v2.32–v2.37 `cycle-week-set-v1` review records while new reviews use `cycle-week-adjust-v2`.
+- Add deterministic and browser coverage for load reductions, kg increment integrity, old review compatibility and immutable history. No top-level schema migration.
+
 # v2.37.0 — Adopt user-authored programs into Decisions
 
 - Add an explicit **Adopt an existing program** workflow for programs already saved in the legacy Program Library. Preserve the original user-authored program snapshot instead of pretending Loadnote generated it.
