@@ -29,13 +29,13 @@ assert.equal(report.findings.bench.canReduceOne,false);assert.equal(report.findi
 const strong={...scheduled,workouts:[...scheduled.workouts]};
 for(const row of cycle.sessions.filter(s=>s.week===1)){
  const record=scheduled.scheduledSessions.find(x=>x.id==='meet:c12:'+row.key),plan=record.revisions[0].context.prescription;
- strong.workouts.push({id:'strong-'+row.key,date:row.date,createdAt:row.date+'T17:30:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId===config.lifts.deadlift.exerciseId?Math.max(1,s.targetRpe-.5):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
+ strong.workouts.push({id:'strong-'+row.key,date:row.date,createdAt:row.date+'T17:30:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId===config.lifts.bench.exerciseId?Math.max(1,s.targetRpe-.5):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
 }
 const strongReport=Review.analyze(strong,{cycleId:'c12',week:1,asOf,now});
-assert.equal(strongReport.findings.deadlift.canIncreaseLoad,true);assert.equal(strongReport.findings.deadlift.aboveCap,0);assert(strongReport.findings.deadlift.belowCapHalf>=2);
-const upChoices={...keep,deadlift:'increase-load'},up=Review.apply(strong,strongReport,upChoices,{confirmed:true,asOf,now:'2026-10-04T19:00:30.000Z',id:'approved-deadlift-up'});
+assert.equal(strongReport.findings.bench.canIncreaseLoad,true);assert.equal(strongReport.findings.bench.competitionAboveCap,0);assert(strongReport.findings.bench.competitionBelowCapHalf>=2);assert(strongReport.findings.bench.competitionComparableRpeSets>=4);
+const upChoices={...keep,bench:'increase-load'},up=Review.apply(strong,strongReport,upChoices,{confirmed:true,asOf,now:'2026-10-04T19:00:30.000Z',id:'approved-bench-up'});
 const upReview=up.meetCycles[0].weeklyReviews[0];assert.equal(upReview.version,3);assert.equal(upReview.policy,'cycle-week-adjust-v3');assert(upReview.changes.length>=1);
-for(const edit of upReview.changes){const original=edit.before.context.prescription,updated=edit.after.context.prescription;for(const e of original.plannedExercises){const after=updated.plannedExercises.find(x=>x.exerciseId===e.exerciseId);if(e.exerciseId===config.lifts.deadlift.exerciseId){assert.equal(after.sets.length,e.sets.length);for(let i=0;i<e.sets.length;i++){assert.equal(after.sets[i].reps,e.sets[i].reps);assert.equal(after.sets[i].weight,Math.round((e.sets[i].weight+config.incrementKg)*100)/100);}}else assert.deepEqual(after.sets,e.sets);}}
+for(const edit of upReview.changes){const original=edit.before.context.prescription,updated=edit.after.context.prescription;for(const e of original.plannedExercises){const after=updated.plannedExercises.find(x=>x.exerciseId===e.exerciseId);if(e.exerciseId===config.lifts.bench.exerciseId){assert.equal(after.sets.length,e.sets.length);for(let i=0;i<e.sets.length;i++){assert.equal(after.sets[i].reps,e.sets[i].reps);assert.equal(after.sets[i].weight,Math.round((e.sets[i].weight+config.incrementKg)*100)/100);}}else assert.deepEqual(after.sets,e.sets);}}
 assert.deepEqual(up.meetCycles[0].sessions,strong.meetCycles[0].sessions,'Upward progression keeps original cycle immutable');
 assert.deepEqual(up.workouts,strong.workouts,'Upward progression never rewrites completed workouts');
 
