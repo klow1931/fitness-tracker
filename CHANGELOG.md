@@ -1,3 +1,18 @@
+# v2.44.0 — Adaptive decision outcome learning
+
+- Close the adaptive loop by evaluating what happened after athlete-approved phase and meet-cycle programming adjustments.
+- Attribute a follow-up only when training is linked to the exact approved Calendar prescription, uses the same competition-exercise identity, has valid load/reps/RPE evidence, and has no intervening plan revision.
+- Classify descriptive follow-up as improved, stable, declined or unobserved using competition-lift estimated-capacity change. These labels are observations, not causal claims.
+- Learn separately by lift and action (for example bench increase-load vs squat reduce-load) instead of pooling unlike decisions.
+- Require at least three exact observed follow-ups for the same lift + action before describing a repeated pattern; six or more becomes reviewable history. Sparse evidence remains explicitly “collecting.”
+- Report improved/stable/declined counts plus median observed capacity change for each action pattern.
+- Include approved phase actions (reduce load, reduce sets, add set, progress) and meet-cycle actions (reduce one set, reduce load, increase load). Keep decisions are not treated as intervention outcomes.
+- Exclude follow-ups when plans were later revised, prescriptions deviated, RPE is unusable, exercise identity changed, or the next exposure is incomplete.
+- Surface adaptive outcome learning inside the existing Decision Performance area with the existing per-lift filter instead of adding a competing dashboard.
+- Preserve all existing workout, Calendar, phase-review, meet-cycle and goal history. Outcome learning is read-only and introduces no automatic programming changes.
+- Add deterministic tests for phase and meet-cycle attribution, repeated-pattern thresholds and exclusion after later revisions, plus browser coverage for the Decision Performance learning view.
+- No top-level schema migration.
+
 # v2.43.0 — Transition evidence → next-block objectives
 
 - Add deterministic per-lift next-block objectives that combine long-term goal distance with the latest frozen v2.42 transition baseline.

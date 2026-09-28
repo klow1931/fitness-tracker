@@ -136,3 +136,29 @@ test('v2.6.1 puts all three recommendations ahead of diagnostic tools',async({pa
  await card.locator('.decision-review-tools > summary').click();
  await expect(card.locator('.decision-date-tools')).toBeVisible();
 });
+
+test('Decision Performance shows adaptive decision learning with conservative evidence labels',async({page})=>{
+ await page.evaluate(()=>{
+  const original=LoadnoteAdaptiveOutcomeLearning.analyze;
+  window.__adaptiveOriginal=original;
+  LoadnoteAdaptiveOutcomeLearning.analyze=()=>({version:1,asOf:'2026-09-28',notice:'Descriptive follow-up only. Associations do not prove cause.',summary:{recorded:4,observed:3,unobserved:1,patterns:[
+   {lift:'squat',action:'reduce-load',recorded:4,observed:3,unobserved:1,counts:{improved:2,stable:1,declined:0},medianCapacityChangePct:1.4,evidence:'early-pattern',pattern:'Repeated follow-ups have more improved than declined observations.'}
+  ]},rows:[
+   {scope:'phase',lift:'squat',action:'reduce-load',acceptedAt:'2026-09-01T10:00:00.000Z',status:'observed',capacityChangePct:2,outcomeClass:'improved'},
+   {scope:'cycle',lift:'squat',action:'reduce-load',acceptedAt:'2026-09-08T10:00:00.000Z',status:'observed',capacityChangePct:1.2,outcomeClass:'improved'},
+   {scope:'cycle',lift:'squat',action:'reduce-load',acceptedAt:'2026-09-15T10:00:00.000Z',status:'observed',capacityChangePct:.3,outcomeClass:'stable'},
+   {scope:'cycle',lift:'squat',action:'reduce-load',acceptedAt:'2026-09-22T10:00:00.000Z',status:'unobserved',capacityChangePct:null,outcomeClass:'unobserved'}
+  ]});
+  window.LoadnoteDecisionPerformanceUI.render(data);
+ });
+ const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();
+ const panel=card.locator('.decision-performance');await panel.locator('summary').first().click();
+ await expect(panel.locator('#adaptive-outcome-learning')).toContainText('Adaptive decision outcome learning');
+ await panel.locator('#adaptive-outcome-learning > summary').click();
+ await expect(panel.locator('[data-adaptive-pattern="squat:reduce-load"]')).toContainText('early-pattern');
+ await expect(panel.locator('[data-adaptive-pattern="squat:reduce-load"]')).toContainText('2 improved / 1 stable / 0 declined');
+ await expect(panel.locator('#adaptive-outcome-learning')).toContainText('Associations do not prove cause');
+ await panel.locator('#decision-performance-lift').selectOption('bench');
+ await expect(panel.locator('#adaptive-outcome-learning')).toContainText('No approved adaptive changes recorded for this lift yet');
+ await page.evaluate(()=>{LoadnoteAdaptiveOutcomeLearning.analyze=window.__adaptiveOriginal;});
+});

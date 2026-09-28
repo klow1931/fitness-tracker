@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.43.0';
+const CACHE = 'loadnote-v2.44.0';
 const ASSETS = [
   './src/product/program-review.js',
   './src/product/program-review-ui.js',
@@ -84,6 +84,8 @@ const ASSETS = [
   './src/product/decision-backtest.js',
   './src/product/decision-feedback.js',
   './src/product/decision-performance.js',
+  './src/product/adaptive-outcome-learning.js',
+  './src/product/adaptive-outcome-learning-ui.js',
   './src/product/decision-context-analysis.js',
   './src/product/decision-performance-ui.js',
   './src/product/decision-use-review.js',
