@@ -2,6 +2,12 @@
 
 **v2.55.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.55 — Sync-Safe Training Data Foundation
+
+Loadnote now has a deterministic account-data sync model before any cloud transport is introduced. Structured records are compared by stable identity against a known shared base, allowing safe one-sided changes while turning true concurrent edits into explicit conflicts instead of using last-write-wins. A conflict-free record plan is still rejected if the combined result would break workout/Calendar relationship integrity.
+
+The first sync protocol deliberately excludes progress-photo binaries, local recovery snapshots, device/display preferences and API/provider configuration. It does not create accounts or send data over the network yet; it defines the package, manifest, preflight and three-way merge rules that a later authenticated sync service must honor. See `docs/sync-architecture.md`.
+
 ## v2.54 — Mobile Release Foundation
 
 Loadnote now has an explicit mobile packaging boundary instead of only having Capacitor dependencies installed. The release adds a Capacitor configuration, reproducible `www/` bundle validation, runtime detection for browser/installed/native surfaces, and safe-area handling for mobile navigation and gym controls. CI now builds and checks the mobile bundle so missing assets, version drift, or accidentally packaged server/development directories can fail the release before browser tests.
