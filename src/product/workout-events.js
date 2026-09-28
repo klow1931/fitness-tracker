@@ -32,6 +32,15 @@ function initWorkoutEvents(){
   for(const root of [document.getElementById('panel-workouts'),document.getElementById('workout-review')]){
     if(!root || root.dataset.eventsBound)continue;
     root.dataset.eventsBound='true';
+    if(root.id==='panel-workouts'){
+      root.addEventListener('click',event=>{
+        const button=event.target.closest?.('[data-workout-action="remove-set"]');
+        if(!button||!root.contains(button)||window.loggerSaving)return;
+        event.preventDefault();
+        event.stopPropagation();
+        removeWorkoutSet(button);
+      },true);
+    }
     for(const [eventName,attribute,actions] of [['click','action',click],['change','change',change],['input','input',input]]){
       root.addEventListener(eventName,event=>{
         const target=event.target.closest?.(`[data-workout-${attribute}]`);
