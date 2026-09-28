@@ -160,10 +160,15 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    if(req.method==='GET'&&pathname==='/api/auth/callback'){
     if(!oidc.configured)return send(req,res,503,{error:'Account sign-in is not configured.'});
     if(url.searchParams.get('error'))return send(req,res,400,{error:'Identity provider sign-in was not completed.'},'application/json',{'Set-Cookie':oidc.clearCookie()});
-    const completed=await oidc.complete({code:url.searchParams.get('code'),state:url.searchParams.get('state'),cookieHeader:req.headers.cookie});
-    const resolved=accountStore.resolveIdentity(completed.identity);
-    const issued=auth.issue({id:resolved.account.id,provider:completed.identity.provider});
-    return redirect(req,res,completed.returnTo,[auth.sessionCookie(issued.token),completed.clearCookie]);
+    try{
+     const completed=await oidc.complete({code:url.searchParams.get('code'),state:url.searchParams.get('state'),cookieHeader:req.headers.cookie});
+     const resolved=accountStore.resolveIdentity(completed.identity);
+     const issued=auth.issue({id:resolved.account.id,provider:completed.identity.provider});
+     return redirect(req,res,completed.returnTo,[auth.sessionCookie(issued.token),completed.clearCookie]);
+    }catch(error){
+     const status=/OIDC state|OIDC nonce|sign-in state|authorization code|ID token|audience|issuer|authorized-party|signature|expired/i.test(error.message||'')?400:500;
+     return send(req,res,status,{error:error.message||'Sign-in failed'},'application/json',{'Set-Cookie':oidc.clearCookie()});
+    }
    }
    if(req.method==='GET'&&pathname==='/api/auth/session'){
     const session=loadSession(req);
