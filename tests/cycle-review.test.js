@@ -9,7 +9,7 @@ const scheduled=Cycle.schedule(approved,'c12',{...args,now:'2026-09-24T13:00:00.
 const asOf='2026-10-04',now='2026-10-04T19:00:00.000Z';
 const incomplete=Review.analyze(scheduled,{cycleId:'c12',week:1,asOf,now});
 assert.equal(incomplete.kind,'weekly');assert.equal(incomplete.guidance.summary.unconfirmed,3);
-assert.equal(incomplete.findings.squat.canReduceOne,false);
+assert.equal(incomplete.findings.squat.canReduceOne,false);assert.equal(incomplete.findings.squat.canReduceLoad,false);
 assert.throws(()=>Review.preview(incomplete,{squat:'reduce-one',bench:'keep',deadlift:'keep'}),/not supported/);
 const keep={squat:'keep',bench:'keep',deadlift:'keep'};
 assert.throws(()=>Review.apply(scheduled,incomplete,keep,{confirmed:false,asOf,now}),/Approve/);
@@ -24,7 +24,7 @@ for(const row of cycle.sessions.filter(s=>s.week===1)){
  active.workouts.push({id:'completed-'+row.key,date:row.date,createdAt:row.date+'T17:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map((s,i)=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId===config.lifts.squat.exerciseId&&i<2?Math.min(10,s.targetRpe+1):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
 }
 const report=Review.analyze(active,{cycleId:'c12',week:1,asOf,now});
-assert.equal(report.guidance.summary.completed,3);assert.equal(report.findings.squat.canReduceOne,true);
+assert.equal(report.guidance.summary.completed,3);assert.equal(report.findings.squat.canReduceOne,true);assert.equal(report.findings.squat.canReduceLoad,true);assert.equal(report.findings.squat.incrementKg,config.incrementKg);
 assert.equal(report.findings.bench.canReduceOne,false);assert.equal(report.findings.deadlift.canReduceOne,false);
 const choices={...keep,squat:'reduce-one'},baseline=JSON.stringify(active),changes=Review.apply(active,report,choices,{confirmed:true,asOf,now:'2026-10-04T19:01:00.000Z',id:'approved-squat'});
 const review=changes.meetCycles[0].weeklyReviews[0];
@@ -35,6 +35,12 @@ assert.deepEqual(changes.workouts,active.workouts,'Workout history not rewritten
 assert.deepEqual(changes.scheduledSessions.slice(0,3),active.scheduledSessions.slice(0,3),'Completed week not rewritten');
 assert(review.changes.every(c=>c.after.context.date>asOf&&c.after.context.prescription.capturedAt==='2026-10-04T19:01:00.000Z'));
 for(const edit of review.changes){const original=edit.before.context.prescription,updated=edit.after.context.prescription;for(const e of original.plannedExercises){const after=updated.plannedExercises.find(x=>x.exerciseId===e.exerciseId);if(e.exerciseId===config.lifts.squat.exerciseId||e.exerciseId==='ss')assert.equal(after.sets.length,e.sets.length-1);else assert.deepEqual(after.sets,e.sets);}}
+const loadChoices={...keep,squat:'reduce-load'},loadChanges=Review.apply(active,report,loadChoices,{confirmed:true,asOf,now:'2026-10-04T19:01:30.000Z',id:'approved-squat-load'});
+const loadReview=loadChanges.meetCycles[0].weeklyReviews[0];
+assert.equal(loadReview.version,2);assert.equal(loadReview.policy,'cycle-week-adjust-v2');assert.equal(loadReview.changes.length,2);
+for(const edit of loadReview.changes){const original=edit.before.context.prescription,updated=edit.after.context.prescription;for(const e of original.plannedExercises){const after=updated.plannedExercises.find(x=>x.exerciseId===e.exerciseId);if(e.exerciseId===config.lifts.squat.exerciseId||e.exerciseId==='ss'){assert.equal(after.sets.length,e.sets.length);for(let i=0;i<e.sets.length;i++)assert.equal(after.sets[i].weight,Math.round((e.sets[i].weight-config.incrementKg)*100)/100);}else assert.deepEqual(after.sets,e.sets);}}
+assert.deepEqual(loadChanges.meetCycles[0].sessions,active.meetCycles[0].sessions,'Load adjustment keeps original cycle immutable');
+const legacy=structuredClone(kept);legacy.meetCycles[0].weeklyReviews[0].version=1;legacy.meetCycles[0].weeklyReviews[0].policy='cycle-week-set-v1';assert.deepEqual(Review.validate(legacy),legacy.meetCycles,'Legacy weekly review policy remains valid');
 assert.throws(()=>Review.analyze(changes,{cycleId:'c12',week:1,asOf,now:'2026-10-04T19:02:00.000Z'}),/already has/);
 const stale=structuredClone(active);stale.scheduledSessions=Schedule.change(stale.scheduledSessions,'meet:c12:'+cycle.sessions.find(s=>s.week===2&&s.exercises.some(e=>e.lift==='squat')).key,{status:'skipped',reason:'Unavailable'},'2026-10-04T18:00:00.000Z');
 assert.throws(()=>Review.apply(stale,report,choices,{confirmed:true,asOf,now:'2026-10-04T19:01:00.000Z'}),/changed|regenerate/);
@@ -47,6 +53,6 @@ assert(transitionWeek);const transition=Review.analyze(scheduled,{cycleId:'c12',
 assert.equal(transition.kind,'phase-transition');assert.equal(transition.nextPhase,'strength');
 const peak=cycle.weekly.find(w=>w.phase==='strength'&&cycle.weekly[w.week]?.phase==='peaking');
 const peakReport=Review.analyze(scheduled,{cycleId:'c12',week:peak.week,asOf:peak.endDate,now:peak.endDate+'T23:00:00.000Z'});
-assert.equal(peakReport.nextPhase,'peaking');assert(Object.values(peakReport.findings).every(f=>!f.canReduceOne));
+assert.equal(peakReport.nextPhase,'peaking');assert(Object.values(peakReport.findings).every(f=>!f.canReduceOne&&!f.canReduceLoad));
 const after=JSON.stringify(active);assert.equal(after,baseline);assert.equal(JSON.stringify(scheduled),snapshot);
-console.log('v2.32 weekly and transition review, independent lifts, missing evidence, immutable plans, approved revision audit, stale state, drafts and no peak rewrite passed');
+console.log('v2.38 weekly review supports bounded set/load changes, legacy records, immutable plans, stale-state guards and no peak rewrite');
