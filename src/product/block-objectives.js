@@ -41,7 +41,7 @@
    const transition=latestTransition(state,goal.goal.id,asOf),lifts={};
    for(const lift of LIFTS){
      const current=goal.lifts[lift],prior=transition?.lifts?.[lift]||null,same=!transition||!prior||!config?.lifts?.[lift]?.exerciseId||prior.exerciseId===config.lifts[lift].exerciseId,adjustments=adjustmentCount(transition,lift),nextObjective=responseObjective(current,prior,transition?.schedule,adjustments,{sameExercise:same});
-     lifts[lift]={...copy(current),transition:prior?{programId:transition.programId,programName:transition.programName,asOf:transition.asOf,exerciseId:prior.exerciseId,changePct:prior.changePct,recent28d:copy(prior.recent28d),coverage:copy(transition.schedule),adjustments,sameExercise}:null,nextObjective};
+     lifts[lift]={...copy(current),transition:prior?{programId:transition.programId,programName:transition.programName,asOf:transition.asOf,exerciseId:prior.exerciseId,changePct:prior.changePct,recent28d:copy(prior.recent28d),coverage:copy(transition.schedule),adjustments,sameExercise:same}:null,nextObjective};
    }
    const recommendation=shape(lifts);
    return {version:1,asOf,status:'ready',goalProgramming:goal,transition:transition?{id:transition.id,programId:transition.programId,programName:transition.programName,asOf:transition.asOf,createdAt:transition.createdAt}:null,lifts,recommendation:recommendation?{...recommendation,totalWeeks:recommendation.accumulationWeeks+recommendation.strengthWeeks+recommendation.deloadWeeks,reason:'Whole-program phase duration follows the most conservative unresolved lift objective. Per-lift training maxes, exercises, frequency, sets and weekly changes remain separately reviewed.'}:null,
