@@ -49,3 +49,31 @@ test('replacement import rejects malformed v25 program-transition records before
  expect(message).toContain('Invalid transition baseline');
  expect(await page.evaluate(()=>data.workouts[0].id)).toBe(before);
 });
+
+test('Tools reports broken workout-to-Calendar links without rewriting current training',async({page})=>{
+ await page.evaluate(()=>{
+  const plan=LoadnoteIntent.createPrescription([{name:'Bench Press',exerciseId:'bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:8}]}],{type:'program',label:'Bench plan'});
+  data.workouts=[{id:'orphan-workout',date:today(),exercises:[{name:'Bench Press',exerciseId:'bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,rpe:8}]}],
+   sessionIntent:{version:1,role:'heavy-exposure',goal:'Bench',prescription:plan,deviationReason:'none',deviationNotes:'',schedule:{id:'missing-session',revisionAt:plan.capturedAt}}}];
+  data.scheduledSessions=[];data.workoutRevisions=[];data=LoadnoteIntegrity.normalizeState(data);showTab('tools');renderDataIntegrityTools();
+ });
+ await page.locator('details:has(#training-data-health) > summary').click();
+ const health=page.locator('#training-data-health');
+ await expect(health).toContainText('record-link issues');
+ await expect(health).toContainText('Calendar session that no longer exists');
+ expect(await page.evaluate(()=>data.workouts[0].id)).toBe('orphan-workout');
+});
+
+test('replacement import rejects a tampered v2.52 fingerprint before replacing data',async({page})=>{
+ await save(page,'Bench Press','100');const before=await page.evaluate(()=>data.workouts[0].id);
+ const signed=await page.evaluate(()=>{
+  const payload={...data,recoverySnapshots:[],progressPhotos:(data.progressPhotos||[]).map(p=>({id:p.id,date:p.date,tag:p.tag,note:p.note,hasImage:!!p.dataUrl}))};
+  return LoadnoteIntegrity.addBackupManifest(payload,{exportedAt:'2026-09-28T18:00:00.000Z',releaseVersion:'2.52.0'});
+ });
+ signed.workouts[0].notes='tampered after fingerprint';
+ let message='';page.once('dialog',dialog=>{message=dialog.message();dialog.accept();});
+ await page.locator('#import-file').setInputFiles({name:'tampered-v252.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(signed))});
+ await expect.poll(()=>message).toContain('Backup integrity check failed');
+ expect(message).toContain('contents do not match');
+ expect(await page.evaluate(()=>data.workouts[0].id)).toBe(before);
+});
