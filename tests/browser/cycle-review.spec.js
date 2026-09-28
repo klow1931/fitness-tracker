@@ -42,7 +42,7 @@ test('linked completed sets offer a bounded independent lift choice without sile
   renderPhaseReview();
  });
  const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
- await expect(host.locator('[data-cycle-review-choice="squat"] option')).toHaveCount(2);
+ await expect(host.locator('[data-cycle-review-choice="squat"] option')).toHaveCount(3);
  await expect(host.locator('[data-cycle-review-choice="bench"] option')).toHaveCount(1);
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,original:data.meetCycles[0].sessions}));
  await host.locator('[data-cycle-review-choice="squat"]').selectOption('reduce-one');
