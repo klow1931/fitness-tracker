@@ -162,3 +162,40 @@ test('completed phase program freezes a reviewed transition baseline without rew
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,sessions:data.scheduledSessions}))).toBe(baseline);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('latest frozen transition drives conservative next-block objectives and reviewed snapshot',async({page})=>{
+ const {config}=phaseFixture();
+ await page.evaluate(config=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-01T09:00:00.000Z'});
+  const goal=LoadnoteGoals.list(data.athleteGoals)[0];
+  data.transitionSnapshots=[{
+   version:1,id:'transition-prior',programId:'prior-block',programName:'Prior block',programCreatedAt:'2026-07-01T10:00:00.000Z',programStart:'2026-07-06',programEnd:'2026-08-28',asOf:'2026-08-28',knowledgeCutoff:'2026-08-28T23:00:00.000Z',createdAt:'2026-08-28T23:01:00.000Z',
+   goalAtStart:{status:'ready',goal:{id:goal.id,name:goal.name,eventDate:null},lifts:{}},goalAtTransition:{status:'ready'},
+   schedule:{expected:24,completed:24,skipped:0,cancelled:0,unconfirmed:0,upcoming:0,adherence:100},
+   lifts:{
+    squat:{lift:'squat',exerciseId:config.lifts.squat.exerciseId,changePct:3,recent28d:{averageRpe:8}},
+    bench:{lift:'bench',exerciseId:config.lifts.bench.exerciseId,changePct:.3,recent28d:{averageRpe:8.2}},
+    deadlift:{lift:'deadlift',exerciseId:config.lifts.deadlift.exerciseId,changePct:-2.5,recent28d:{averageRpe:8.7}}
+   },
+   decisionHistory:{phaseReviews:[{id:'r1',phase:'strength',createdAt:'2026-08-20T18:00:00.000Z',choices:{squat:'keep',bench:'keep',deadlift:'reduce-one'},policy:'phase-review-v1'}],count:1},
+   review:{confirmed:true,recordedAt:'2026-08-28T23:01:00.000Z',notes:'done'}
+  }];
+ });
+ await page.locator('#phase-new').click();
+ const dialog=page.locator('#phase-dialog');
+ await expect(dialog).toContainText('Next-block objectives');
+ await expect(dialog).toContainText('Continue productive progression');
+ await expect(dialog).toContainText('Consolidate and reassess');
+ await expect(dialog).toContainText('Rebuild tolerable loading');
+ await expect(page.locator('#phase-accumulation')).toHaveValue('4');
+ await expect(page.locator('#phase-strength')).toHaveValue('2');
+ for(const [i,l]of ['squat','bench','deadlift'].entries()){await page.locator('.phase-lift > summary').nth(i).click();await page.locator('#phase-'+l+'-tm').fill(String([160,120,220][i]));}
+ await page.locator('#phase-dialog button[type="submit"]').click();
+ await expect(page.locator('#phase-preview')).toContainText('7 weeks · 21 sessions');
+ await page.locator('#phase-confirm').check();await page.locator('#phase-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.phasePrograms[0]?.objectiveSnapshot?.transition?.id)).toBe('transition-prior');
+ expect(await page.evaluate(()=>data.phasePrograms[0].objectiveSnapshot.lifts.deadlift.nextObjective.code)).toBe('rebuild-tolerance');
+ expect(await page.evaluate(()=>data.phasePrograms[0].config.phases.map(p=>p.weeks))).toEqual([4,2,1]);
+});
