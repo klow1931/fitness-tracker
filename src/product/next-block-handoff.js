@@ -38,9 +38,11 @@
 
    add('draft','No unfinished workout draft',!draftOpen,draftOpen?'An unfinished workout draft exists on this device. Finish, save, or clear it before starting the next block.':'No unfinished workout draft is blocking the handoff.');
 
-   const health=Integrity.auditTrainingData(state,{asOf}),healthIssues=health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads;
+   const reliability=Integrity.auditReliability(state,{asOf}),health=reliability.training,healthIssues=reliability.trainingBlocking,relationships=reliability.relationships;
    add('data-health','Training data health',healthIssues===0,healthIssues?healthIssues+' current strength-set data issue'+(healthIssues===1?'':'s')+' need review before starting the next block.':'Current strength-set load/RPE integrity checks are clear.');
+   add('record-links','Training record links',relationships.blocking===0,relationships.blocking?relationships.blocking+' blocking workout/Calendar relationship issue'+(relationships.blocking===1?' needs':'s need')+' review before starting the next block.':'Workout, Calendar and planned-work links are internally consistent.');
    if(!healthIssues&&health.history.suspiciousLoads)warnings.push(health.history.suspiciousLoads+' suspicious historical revision load'+(health.history.suspiciousLoads===1?' remains':'s remain')+' in audit history; corrected current workouts are used for launch readiness.');
+   if(!relationships.blocking&&relationships.warnings)warnings.push(relationships.warnings+' workout revision-history warning'+(relationships.warnings===1?' does':'s do')+' not change current workouts but may reduce undo/audit confidence.');
 
    const laterPrograms=(state.phasePrograms||[]).filter(p=>p.createdAt>transition.createdAt&&p.id!==transition.programId),unscheduled=laterPrograms.filter(p=>!p.scheduledAt);
    add('reviewed-conflict','No newer unscheduled reviewed program',unscheduled.length===0,unscheduled.length?'A newer reviewed phase program ('+(unscheduled[0].config?.name||unscheduled[0].id)+') already exists and is not scheduled.':'No newer unscheduled reviewed phase program is competing with this handoff.');
