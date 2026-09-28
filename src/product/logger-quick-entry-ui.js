@@ -37,7 +37,11 @@
   focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
   const next=activeSet();if(next){next.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>next.querySelector('.set-rpe')?.focus({preventScroll:true}),120);}
  }
- document.addEventListener('focusin',event=>{const set=event.target.closest?.('.sets-container > div');if(set){focusedSet=set;refresh();}});
+ document.addEventListener('focusin',event=>{
+  const input=event.target.matches?.('.set-reps,.set-duration,.set-weight,.set-rpe')?event.target:null;
+  const set=input?.closest?.('.sets-container > div');
+  if(set){focusedSet=set;refresh();}
+ });
  document.addEventListener('click',event=>{
   const chip=event.target.closest?.('[data-quick-rpe]');if(chip){const set=chip.closest('.sets-container > div');if(set)complete(set,chip.dataset.quickRpe);return;}
   const done=event.target.closest?.('[data-quick-done]');if(done){const set=done.closest('.sets-container > div');if(set)complete(set,null);}
