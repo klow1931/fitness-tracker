@@ -1,10 +1,10 @@
-/* v2.39 — deterministic cycle controller with guarded downward and upward load adjustments. */
+/* v2.45 — deterministic cycle controller with learned-history guardrails. */
 (function(root,factory){
  if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-review'),require('./cycle-response'),require('./adaptive-outcome-learning'),require('./adaptive-history-guardrail'));
  else root.LoadnoteCycleAdaptiveController=factory(root.LoadnoteCycleReview,root.LoadnoteCycleResponse,root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteAdaptiveHistoryGuardrail);
 })(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse,OutcomeLearning,HistoryGuardrail){
  'use strict';
- const LIFTS=['squat','bench','deadlift'],POLICY='cycle-adaptive-v3';
+ const LIFTS=['squat','bench','deadlift'],POLICY='cycle-adaptive-v4';
  function finite(x){return Number.isFinite(Number(x))?Number(x):null;}
  function recommendFromReports(review,response,learningSummary=null){
   if(!review||!review.findings||!review.eligibility)throw Error('A completed-week cycle review is required');
