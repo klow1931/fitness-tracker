@@ -51,7 +51,8 @@ test('More sheet uses card navigation and updated disclosures',async({page})=>{
  await page.evaluate(()=>showTab('coach'));
  await expect(page.locator('#panel-coach')).toContainText('training-support tools, not medical care');
  await page.evaluate(()=>showTab('tools'));
- await expect(page.locator('#privacy-policy')).toContainText('Last updated: September 18, 2026');
+ await expect(page.locator('#privacy-policy')).toContainText('Last updated: September 28, 2026');
  await expect(page.locator('#privacy-policy')).toContainText('training and decision-support app');
+ await expect(page.locator('#privacy-policy')).toContainText('Account sign-in');
  await expect(page.locator('#privacy-policy')).toContainText('Optional AI features');
 });
