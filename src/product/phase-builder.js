@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'));
-  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'));
+  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming){
   'use strict';
   const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'];
   const clone=x=>JSON.parse(JSON.stringify(x));
@@ -75,7 +75,10 @@
       const count=observations.reduce((n,w)=>n+(w.exercises||[]).filter(e=>ids.has(e.exerciseId)&&e.type!=='cardio'&&e.trackBy!=='duration').reduce((m,e)=>m+(e.sets||[]).filter(s=>Number.isFinite(s.weight)&&s.weight>0&&Number.isInteger(s.reps)&&s.reps>0).length,0),0),average=count/4;
       if(average>0&&result.weekly[0].lifts[lift].sets>average*1.25)result.warnings.push(`${lift}: first-week sets exceed the recorded 28-day weekly average by over 25%. History may be incomplete; review this workload, not a presumed capacity limit.`);
     }
-    return {...result,profileSnapshot,roleSnapshot};
+    const goalSnapshot=GoalProgramming?.inspect?GoalProgramming.inspect(state,{asOf,knownAt:cutoff,config:c}):null;
+    if(goalSnapshot?.status==='ambiguous')result.warnings.push('Multiple active powerlifting goals contain lift targets; select/archive goals before relying on goal-specific program context.');
+    if(goalSnapshot?.status==='ready')for(const lift of LIFTS){const g=goalSnapshot.lifts[lift];if(g?.targetKg)result.warnings.push(`${lift} goal context: ${g.objective.label}. Target distance changes programming context, not the selected training max or weekly loading rules.`);}
+    return {...result,profileSnapshot,roleSnapshot,goalSnapshot};
   }
   function validate(records){
     if(!Array.isArray(records)||records.length>100)throw Error('Invalid phase programs');const ids=new Set();return records.map(r=>{
@@ -86,17 +89,17 @@
       for(const role of r.roleSnapshot){Readiness.context(role);if(!iso(role.updatedAt)||role.updatedAt>r.createdAt)throw Error('Invalid role snapshot');}
       const expected=LIFTS.flatMap(l=>[{exerciseId:built.config.lifts[l].exerciseId,role:'competition',competitionLift:l},...(built.config.lifts[l].variation?[{exerciseId:built.config.lifts[l].variation.exerciseId,role:'close-variation',competitionLift:l}]:[])]);
       if(r.roleSnapshot.length!==expected.length||expected.some(e=>r.roleSnapshot.filter(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift).length!==1))throw Error('Incomplete or conflicting phase exercise-role snapshot');
-      return {version:1,id:r.id,createdAt:r.createdAt,config:built.config,sessions:built.sessions,profileSnapshot:profile,roleSnapshot:clone(r.roleSnapshot),warnings:[...r.warnings],review:clone(r.review),scheduledAt:r.scheduledAt||null};
+      return {version:1,id:r.id,createdAt:r.createdAt,config:built.config,sessions:built.sessions,profileSnapshot:profile,roleSnapshot:clone(r.roleSnapshot),goalSnapshot:r.goalSnapshot===undefined?null:clone(r.goalSnapshot),warnings:[...r.warnings],review:clone(r.review),scheduledAt:r.scheduledAt||null};
     });
   }
   function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
     if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review every phase and quality warning before saving');const fresh=prepare(state,proposal.config,{asOf,now});if(JSON.stringify(fresh)!==JSON.stringify(proposal))throw Error('Profile, exercise context or recent evidence changed; generate a fresh preview');
-    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
     return {...state,phasePrograms:validate([...(state.phasePrograms||[]),record])};
   }
   function schedule(state,id,{asOf,now=new Date().toISOString()}={}){
     const records=validate(state.phasePrograms||[]),record=records.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Phase program unavailable or already scheduled');const fresh=prepare(state,record.config,{asOf,now});
-    if(JSON.stringify(fresh.profileSnapshot)!==JSON.stringify(record.profileSnapshot)||JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot)||JSON.stringify(fresh.warnings)!==JSON.stringify(record.warnings))throw Error('Programming context or evidence changed since review; build and review a fresh proposal');
+    if(JSON.stringify(fresh.profileSnapshot)!==JSON.stringify(record.profileSnapshot)||JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot)||(record.goalSnapshot!==null&&JSON.stringify(fresh.goalSnapshot)!==JSON.stringify(record.goalSnapshot))||JSON.stringify(fresh.warnings)!==JSON.stringify(record.warnings))throw Error('Programming context, goal context or evidence changed since review; build and review a fresh proposal');
     const existing=Schedule.list(state.scheduledSessions||[]);if(existing.some(s=>s.status==='scheduled'&&record.sessions.some(p=>p.date===s.date)))throw Error('Calendar conflict: resolve existing scheduled dates first');
     let sessions=state.scheduledSessions||[];for(const s of record.sessions)sessions=Schedule.create(sessions,{name:record.config.name+' · '+s.name,date:s.date,role:s.phase==='deload'?'deload':'mixed',goal:record.config.name,prescription:Intent.createPrescription(s.exercises,{type:'program',referenceId:record.id,label:record.config.name+' · '+s.name},now)},{id:`phase:${record.id}:${s.key}`,now});
     record.scheduledAt=now;return {...state,phasePrograms:validate(records),scheduledSessions:sessions};
