@@ -56,6 +56,7 @@ const ASSETS = [
   './app.js',
   './assets/tailwind.css',
   './assets/chart.umd.js',
+  './src/product/platform-runtime.js',
   './src/product/app-lifecycle.js',
   './src/product/data-integrity.js',
   './src/product/session-intent.js',
