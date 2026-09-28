@@ -1,3 +1,18 @@
+# v2.43.0 — Transition evidence → next-block objectives
+
+- Add deterministic per-lift next-block objectives that combine long-term goal distance with the latest frozen v2.42 transition baseline.
+- Keep squat, bench and deadlift independent. A lift can continue productive progression while another consolidates or rebuilds tolerable loading.
+- Use completed-session coverage as a guardrail: blocks with poor coverage or unresolved/pending sessions cannot justify aggressive response-based progression.
+- Use frozen competition-lift capacity change and recent 28-day average RPE as descriptive response signals. Negative/very-high-effort blocks favor rebuilding tolerance; flat responses favor consolidation; clearly positive, manageable-effort blocks can continue progression.
+- Ignore prior transition response when the competition-exercise identity changed; fall back to the current goal-distance objective instead of transferring evidence across lifts/exercises.
+- Preserve linked phase-review decisions as context and expose how many mid-block adjustments were needed for each lift.
+- Derive the whole-program phase shape from the most conservative unresolved lift. This can increase development emphasis, but never changes training maxes, exercise selection, frequency, sets or weekly adaptive rules automatically.
+- Surface the per-lift objective, prior-block response and rationale directly in the phase builder.
+- Freeze the complete objective snapshot into newly reviewed phase programs so future analysis can audit what Loadnote believed and why when the block was approved.
+- Transition-derived phase guidance takes priority over the more general date-free goal-cycle default when a valid frozen handoff exists.
+- Add deterministic and browser coverage for mixed lift responses, low coverage, exercise-identity changes, conservative whole-block shaping, objective persistence and unchanged reviewed prescription boundaries.
+- No top-level schema migration.
+
 # v2.42.0 — End-of-program transition baseline
 
 - Add an immutable transition baseline for completed, scheduled phase programs so the next block can start from the evidence that actually existed at the handoff.
