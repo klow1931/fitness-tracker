@@ -1,8 +1,8 @@
 /* v2.45 — deterministic cycle controller with learned-history guardrails. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-review'),require('./cycle-response'),require('./adaptive-outcome-learning'),require('./adaptive-history-guardrail'));
- else root.LoadnoteCycleAdaptiveController=factory(root.LoadnoteCycleReview,root.LoadnoteCycleResponse,root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteAdaptiveHistoryGuardrail);
-})(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse,OutcomeLearning,HistoryGuardrail){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-review'),require('./cycle-response'),require('./adaptive-history-guardrail'));
+ else root.LoadnoteCycleAdaptiveController=factory(root.LoadnoteCycleReview,root.LoadnoteCycleResponse,root.LoadnoteAdaptiveHistoryGuardrail);
+})(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse,HistoryGuardrail){
  'use strict';
  const LIFTS=['squat','bench','deadlift'],POLICY='cycle-adaptive-v4';
  function finite(x){return Number.isFinite(Number(x))?Number(x):null;}
@@ -53,8 +53,7 @@
   const review=CycleReview.analyze(state,opts);
   let response=null;
   try{response=CycleResponse.inspect(state,{cycleId:review.cycleId,asOf:review.asOf,now:opts.now||new Date().toISOString()});}catch(e){response=null;}
-  let learningSummary=null;try{learningSummary=OutcomeLearning?.analyze(state,{asOf:review.asOf,now:opts.now||new Date().toISOString()})?.summary||null;}catch(e){learningSummary=null;}
-  return recommendFromReports(review,response,learningSummary);
+  return recommendFromReports(review,response,opts.learningSummary||null);
  }
  return {POLICY,recommendFromReports,analyze};
 });
