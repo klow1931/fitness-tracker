@@ -126,3 +126,39 @@ test('date-free goal cycle prefills phase shape and withholds horizon until enou
  await expect(page.locator('#phase-strength')).toHaveValue('3');
  await expect(page.locator('#phase-dialog')).toContainText('Training maxes, exercises, frequency, sets and weekly adaptations still require normal review');
 });
+
+test('completed phase program freezes a reviewed transition baseline without rewriting training',async({page})=>{
+ await page.clock.setFixedTime(new Date('2026-11-13T22:00:00Z'));
+ const {config}=phaseFixture();
+ const baseline=await page.evaluate(config=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-23T09:00:00.000Z'});
+  const proposal=LoadnotePhaseBuilder.prepare(data,config,{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'});
+  data=LoadnotePhaseBuilder.save(data,proposal,{confirmed:true,notes:'Transition test'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'transition-browser'});
+  data=LoadnotePhaseBuilder.schedule(data,'transition-browser',{asOf:'2026-09-24',now:'2026-09-24T13:00:00.000Z'});
+  const program=data.phasePrograms.find(p=>p.id==='transition-browser');
+  for(const session of program.sessions){
+   const id='phase:'+program.id+':'+session.key,record=data.scheduledSessions.find(x=>x.id===id),rev=record.revisions[0],plan=rev.context.prescription;
+   data.workouts.push({id:'transition-'+session.key,date:session.date,createdAt:session.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id,revisionAt:rev.recordedAt},timing:'planned-before-training'}});
+  }
+  renderPhaseBuilder();
+  return JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,sessions:data.scheduledSessions});
+ },config);
+ const programCard=page.locator('#phase-builder > details').filter({hasText:'Phased strength'}).first();
+ await programCard.locator(':scope > summary').click();
+ const transition=programCard.locator('[data-transition-card]');
+ await expect(transition.locator(':scope > summary')).toContainText('ready to review');
+ await transition.locator(':scope > summary').click();
+ await transition.locator('[data-transition-review]').click();
+ await expect(transition.locator('[data-transition-result]')).toContainText('Frozen transition baseline');
+ await expect(transition.locator('[data-transition-result]')).toContainText('21/21 scheduled sessions completed');
+ await expect(transition.locator('[data-transition-result]')).toContainText('last 28d');
+ await transition.locator('[data-transition-note]').fill('Reviewed handoff');
+ await transition.locator('[data-transition-confirm]').check();
+ await transition.locator('[data-transition-save]').click();
+ await expect.poll(()=>page.evaluate(()=>data.transitionSnapshots.length)).toBe(1);
+ await expect(page.locator('[data-transition-card]')).toContainText('saved 2026-11-13');
+ expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,sessions:data.scheduledSessions}))).toBe(baseline);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
