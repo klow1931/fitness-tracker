@@ -92,3 +92,22 @@ test('competition-lift performance context stays separate from variation logs an
  await expect(page.locator('[data-workload-result]')).toContainText('Variations are excluded');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,calendar:data.scheduledSessions}))).toBe(baseline);
 });
+
+test('phase preview explains date-free strength goals without turning targets into training maxes',async({page})=>{
+ await page.evaluate(()=>{
+  data.athleteGoals=LoadnoteGoals.upsert([],{name:'SBD goals',sport:'Powerlifting',eventDate:null,targets:[
+   {lift:'squat',kg:220},{lift:'bench',kg:160},{lift:'deadlift',kg:280}
+  ]},{now:'2026-09-23T09:00:00.000Z'});
+ });
+ await preview(page);
+ const previewHost=page.locator('#phase-preview');
+ await expect(previewHost).toContainText('Goal programming context');
+ await expect(previewHost).toContainText('no target date required');
+ await expect(previewHost).toContainText('Goal targets do not replace training maxes');
+ await expect(previewHost).toContainText('target');
+ await page.locator('#phase-confirm').check();
+ await page.locator('#phase-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.phasePrograms[0]?.goalSnapshot?.status)).toBe('ready');
+ expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.targetKg)).toBe(220);
+ expect(await page.evaluate(()=>data.phasePrograms[0].goalSnapshot.lifts.squat.selectedProgramTrainingMaxKg)).not.toBe(220);
+});
