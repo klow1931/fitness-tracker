@@ -24,6 +24,27 @@ assert.strictEqual(r.choices.deadlift,'increase-load');
 assert.strictEqual(r.lifts.deadlift.signal,'completed-below-cap-and-improving');
 assert.strictEqual(r.lifts.deadlift.eligibleForLoadIncrease,true);
 
+
+const negativeIncrease={patterns:[{lift:'deadlift',action:'increase-load',observed:4,recorded:4,counts:{improved:1,stable:0,declined:3},medianCapacityChangePct:-1.4,evidence:'early-pattern'}]};
+const guarded=Controller.recommendFromReports(baseReview(),response,negativeIncrease);
+assert.strictEqual(guarded.choices.deadlift,'keep');
+assert.strictEqual(guarded.lifts.deadlift.signal,'history-caution');
+assert.strictEqual(guarded.lifts.deadlift.history.state,'negative');
+assert.strictEqual(guarded.lifts.deadlift.history.changed,true);
+
+const negativeReduction={patterns:[{lift:'squat',action:'reduce-load',observed:4,recorded:4,counts:{improved:1,stable:1,declined:2},medianCapacityChangePct:-1.3,evidence:'early-pattern'}]};
+const reduced=Controller.recommendFromReports(baseReview(),response,negativeReduction);
+assert.strictEqual(reduced.choices.squat,'reduce-load');
+assert.strictEqual(reduced.lifts.squat.history.state,'negative');
+assert.strictEqual(reduced.lifts.squat.confidence,'medium');
+
+const supportive={patterns:[{lift:'deadlift',action:'increase-load',observed:4,recorded:4,counts:{improved:3,stable:1,declined:0},medianCapacityChangePct:1.7,evidence:'early-pattern'}]};
+const supported=Controller.recommendFromReports(baseReview(),response,supportive);
+assert.strictEqual(supported.choices.deadlift,'increase-load');
+assert.strictEqual(supported.lifts.deadlift.history.state,'supportive');
+assert.strictEqual(supported.version,2);
+assert.strictEqual(Controller.POLICY,'cycle-adaptive-v4');
+
 const noTrend=baseReview();const n=Controller.recommendFromReports(noTrend,{phases:[{phase:'strength',lifts:{squat:{observedChangePct:null},bench:{},deadlift:{observedChangePct:0}}}]});assert.strictEqual(n.choices.squat,'reduce-one');assert.strictEqual(n.choices.deadlift,'keep');
 
 const peak=baseReview();peak.nextPhase='peak';peak.eligibility.squat=false;peak.findings.squat.canReduceOne=false;peak.findings.squat.canReduceLoad=false;peak.findings.squat.canIncreaseLoad=false;peak.findings.squat.reason='Peak stays unchanged.';

@@ -1,3 +1,19 @@
+# v2.45.0 — Learned-history guardrails for adaptive decisions
+
+- Feed v2.44 adaptive outcome history into the meet-cycle adaptive controller as a guardrail on already-eligible actions.
+- Preserve the live deterministic rules as the primary authority. Learned history cannot create an action, bypass evidence/phase/schedule eligibility, or increase the size of an adjustment.
+- Use same-lift + same-action history only. Squat reductions do not influence bench progression, and load changes do not borrow evidence from set changes.
+- Require at least three exact observed follow-ups before learned history can affect a recommendation. Smaller samples remain “collecting.”
+- When repeated same-lift upward progressions have more declined than improved outcomes and a negative median capacity change, suppress the optional controller increase to **keep** while leaving the manually eligible increase visible for athlete review.
+- Never use poor historical outcomes to block a current safety-oriented reduction that is supported by live above-cap/capacity evidence. Instead, downgrade confidence and surface the historical caution.
+- Supportive repeated history can reinforce confidence/explanation but cannot generate progression when the current week does not independently qualify.
+- Mixed/stable repeated history adds caution and can lower controller confidence without changing the underlying eligible action.
+- Add `cycle-adaptive-v4` controller output with per-lift history state and rationale.
+- Update the weekly-review UI so “Use controller choices” reflects the learned-history guardrail while preserving all manual choices allowed by the current live evidence.
+- Keep phase-review eligibility independent to avoid a circular dependency between the phase decision engine and the outcome-learning layer.
+- Add deterministic and browser coverage for suppressed upward progression, preserved safety reductions, supportive history, sparse-history no-op behavior, lift/action isolation, and manual eligibility retention.
+- No top-level schema migration.
+
 # v2.44.0 — Adaptive decision outcome learning
 
 - Close the adaptive loop by evaluating what happened after athlete-approved phase and meet-cycle programming adjustments.

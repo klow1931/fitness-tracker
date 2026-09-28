@@ -77,3 +77,26 @@ test('fully completed below-cap competition bench can approve one-increment upwa
  expect(await page.evaluate(()=>JSON.stringify(data.meetCycles[0].sessions))).toBe(originalCycle);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('learned-history guardrail suppresses controller upward choice without removing live manual eligibility',async({page})=>{
+ await page.evaluate(()=>{
+  for(const row of data.meetCycles[0].sessions.filter(s=>s.week===1)){
+   const record=data.scheduledSessions.find(x=>x.id==='meet:c12:'+row.key),plan=record.revisions[0].context.prescription;
+   data.workouts.push({id:'history-easy-'+row.key,date:row.date,createdAt:row.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId==='b'?Math.max(1,s.targetRpe-.5):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
+  }
+  const real=LoadnoteAdaptiveOutcomeLearning.analyze,realResponse=LoadnoteCycleResponse.inspect;window.__realAdaptiveLearning=real;window.__realCycleResponse=realResponse;
+  LoadnoteAdaptiveOutcomeLearning.analyze=()=>({summary:{patterns:[{lift:'bench',action:'increase-load',observed:4,recorded:4,counts:{improved:1,stable:0,declined:3},medianCapacityChangePct:-1.5,evidence:'early-pattern'}]}});
+  LoadnoteCycleResponse.inspect=()=>({phases:[{phase:'accumulation',lifts:{squat:{observedChangePct:0},bench:{observedChangePct:2.4},deadlift:{observedChangePct:0}}}]});
+  renderCycleWeekReview();
+ });
+ const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
+ const bench=host.locator('[data-cycle-review-choice="bench"]');
+ await expect(bench.locator('option[value="increase-load"]')).toHaveCount(1);
+ const benchLabel=bench.locator('xpath=..');
+ await expect(benchLabel).toContainText('Keep original plan');
+ await expect(benchLabel).toContainText('history');
+ await expect(benchLabel).toContainText('Repeated exact follow-ups');
+ await host.locator('#cycle-controller-use').click();
+ await expect(bench).toHaveValue('keep');
+ await page.evaluate(()=>{LoadnoteAdaptiveOutcomeLearning.analyze=window.__realAdaptiveLearning;LoadnoteCycleResponse.inspect=window.__realCycleResponse;});
+});
