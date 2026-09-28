@@ -1,3 +1,15 @@
+# v2.39.0 — Guarded one-increment upward progression
+
+- Add a fourth meet-cycle weekly review choice: **one program load increment higher** on the confirmed competition exercise for a lift. The change still applies only to the next week and requires explicit athlete approval.
+- Keep the progression evidence stricter than reductions. The reviewed week must resolve cleanly; all planned competition-lift sets must be completed; at least four competition-exercise sets must be directly comparable to their pre-training prescription; none may exceed its RPE cap; and at least two must finish at least 0.5 RPE below cap.
+- The adaptive controller only recommends the increase when the completed phase also shows an estimated-capacity comparison of at least **+1%**. Without that longer-term improving signal, the controller keeps the original load even when the manual review action is structurally available.
+- Separate competition-exercise evidence from variation/light-family evidence so a strong variation cannot earn progression on the competition lift.
+- Apply increases as exactly one reviewed program increment in internal kg, display that increment in the athlete's selected kg/lb unit, preserve reps and set counts, and leave variations unchanged.
+- Refuse increases that would exceed the existing **85% training-max ceiling**, or when future sessions are missing, revised, rescheduled, started, logged or open in a draft.
+- Preserve peak/peaking, taper, mock-meet and competition-meet guards. No exercise swaps, frequency changes, phase changes, event changes or completed-history edits are introduced.
+- Preserve legacy `cycle-week-set-v1` and v2.38 `cycle-week-adjust-v2` review records; new reviews use `cycle-week-adjust-v3`.
+- Add deterministic and browser coverage for competition-only evidence, one-increment kg integrity, lb display, immutable original cycles and unchanged reps/set counts. No top-level schema migration.
+
 # v2.38.0 — Bounded load adaptation in meet-cycle Decisions
 
 - Expand the cycle adaptive controller from **keep / one fewer set** to **keep / one fewer set / one program load increment lower** for the next week only, independently for squat, bench and deadlift.

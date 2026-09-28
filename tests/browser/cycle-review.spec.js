@@ -53,3 +53,27 @@ test('linked completed sets offer a bounded independent lift choice without sile
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,original:data.meetCycles[0].sessions}))).toBe(before);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+test('fully completed below-cap competition bench can approve one-increment upward progression without changing structure',async({page})=>{
+ await page.setViewportSize({width:375,height:812});
+ await page.evaluate(()=>{
+  data.unit='lb';
+  for(const row of data.meetCycles[0].sessions.filter(s=>s.week===1)){
+   const record=data.scheduledSessions.find(x=>x.id==='meet:c12:'+row.key),plan=record.revisions[0].context.prescription;
+   data.workouts.push({id:'easy-'+row.key,date:row.date,createdAt:row.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:e.exerciseId==='b'?Math.max(1,s.targetRpe-.5):s.targetRpe}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
+  }
+  renderPhaseReview();
+ });
+ const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();await host.locator('#cycle-review-analyze').click();
+ const bench=host.locator('[data-cycle-review-choice="bench"]');
+ await expect(bench.locator('option[value="increase-load"]')).toContainText('lb');
+ const originalCycle=await page.evaluate(()=>JSON.stringify(data.meetCycles[0].sessions));
+ const before=await page.evaluate(()=>data.meetCycles[0].sessions.filter(s=>s.week===2).flatMap(s=>s.exercises.filter(e=>e.exerciseId==='b').map(e=>({key:s.key,sets:e.sets.map(x=>({weight:x.weight,reps:x.reps}))}))));
+ await bench.selectOption('increase-load');await host.locator('#cycle-review-confirm').check();await host.locator('#cycle-review-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.meetCycles[0].weeklyReviews?.[0]?.choices?.bench)).toBe('increase-load');
+ const after=await page.evaluate(()=>{const cycle=data.meetCycles[0];return cycle.sessions.filter(s=>s.week===2).flatMap(s=>s.exercises.filter(e=>e.exerciseId==='b').map(e=>{const row=LoadnoteSchedule.list(data.scheduledSessions).find(x=>x.id==='meet:'+cycle.id+':'+s.key),planned=row.prescription.plannedExercises.find(x=>x.exerciseId==='b');return {key:s.key,sets:planned.sets.map(x=>({weight:x.weight,reps:x.reps}))};}));});
+ expect(after.length).toBe(before.length);
+ for(let i=0;i<before.length;i++){expect(after[i].sets.length).toBe(before[i].sets.length);for(let j=0;j<before[i].sets.length;j++){expect(after[i].sets[j].reps).toBe(before[i].sets[j].reps);expect(after[i].sets[j].weight).toBe(Math.round((before[i].sets[j].weight+2.5)*100)/100);}}
+ expect(await page.evaluate(()=>JSON.stringify(data.meetCycles[0].sessions))).toBe(originalCycle);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
