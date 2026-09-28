@@ -1,8 +1,8 @@
 /* v2.46 — next-program handoff readiness and phase-builder launch context. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./transition-baseline'),require('./block-objectives'),require('./schedule'),require('./programming-profile'),require('./decision-readiness'));
- else root.LoadnoteNextBlockHandoff=factory(root.LoadnoteTransitionBaseline,root.LoadnoteBlockObjectives,root.LoadnoteSchedule,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Transition,Objectives,Schedule,Profile,Readiness){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./transition-baseline'),require('./block-objectives'),require('./schedule'),require('./programming-profile'),require('./decision-readiness'),require('./data-integrity'));
+ else root.LoadnoteNextBlockHandoff=factory(root.LoadnoteTransitionBaseline,root.LoadnoteBlockObjectives,root.LoadnoteSchedule,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteIntegrity);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Transition,Objectives,Schedule,Profile,Readiness,Integrity){
  'use strict';
  const LIFTS=['squat','bench','deadlift'];
  const copy=x=>JSON.parse(JSON.stringify(x));
@@ -37,6 +37,10 @@
    if(Number(transition.schedule?.skipped||0)+Number(transition.schedule?.cancelled||0)>0)warnings.push('The prior block contains skipped or cancelled sessions; those remain part of the next-block evidence.');
 
    add('draft','No unfinished workout draft',!draftOpen,draftOpen?'An unfinished workout draft exists on this device. Finish, save, or clear it before starting the next block.':'No unfinished workout draft is blocking the handoff.');
+
+   const health=Integrity.auditTrainingData(state,{asOf}),healthIssues=health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads;
+   add('data-health','Training data health',healthIssues===0,healthIssues?healthIssues+' current strength-set data issue'+(healthIssues===1?'':'s')+' need review before starting the next block.':'Current strength-set load/RPE integrity checks are clear.');
+   if(!healthIssues&&health.history.suspiciousLoads)warnings.push(health.history.suspiciousLoads+' suspicious historical revision load'+(health.history.suspiciousLoads===1?' remains':'s remain')+' in audit history; corrected current workouts are used for launch readiness.');
 
    const laterPrograms=(state.phasePrograms||[]).filter(p=>p.createdAt>transition.createdAt&&p.id!==transition.programId),unscheduled=laterPrograms.filter(p=>!p.scheduledAt);
    add('reviewed-conflict','No newer unscheduled reviewed program',unscheduled.length===0,unscheduled.length?'A newer reviewed phase program ('+(unscheduled[0].config?.name||unscheduled[0].id)+') already exists and is not scheduled.':'No newer unscheduled reviewed phase program is competing with this handoff.');
