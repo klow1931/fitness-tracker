@@ -1,3 +1,16 @@
+# v2.48.0 — Today → Train first-program flow
+
+- Add a first-class **Today** card at the top of Home so a scheduled reviewed workout is immediately visible without opening Calendar or the full weekly plan.
+- Show the scheduled session name, goal, planned exercise count and planned set count, with one primary **Start workout** action.
+- Detect an unfinished draft linked to today’s scheduled session and switch the Home action to **Resume workout** instead of loading a competing copy.
+- Preserve unscheduled training: when no session is scheduled, Home offers a direct **Log workout** action plus Calendar access.
+- After a linked scheduled workout is saved, Home reports today’s training as logged and offers workout-history/Calendar follow-up actions.
+- Make scheduled-session starts date-safe: a session must be scheduled for today before it can be started. Starting a future or stale Calendar date now asks the athlete to reschedule first so planned-versus-performed evidence stays on the correct date.
+- Load the scheduled prescription into the existing logger with the scheduled date, while keeping planned targets separate from actual reps/load/RPE.
+- Add a small deterministic Today-state module rather than adding more logic to the legacy app.js.
+- Add node and Playwright coverage for scheduled-session discovery, one-tap start, draft resume after reload, date mismatch protection and completed-session Home state.
+- No top-level schema migration.
+
 # v2.47.0 — Real-world launch hardening
 
 - Add a deterministic training-data health audit for current strength logs. It reports invalid loads, invalid RPE values, missing-RPE coverage and extreme same-exercise load outliers without rewriting workout history.
