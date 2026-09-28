@@ -1,3 +1,17 @@
+# v2.52.0 — Data & Reliability Hardening II
+
+- Add cross-record integrity checks for current workouts, Calendar sessions, planned-work snapshots and workout revision history.
+- Detect duplicate workout identities, duplicate Calendar identities, orphan scheduled-session links, missing captured Calendar revisions, linked date mismatches, planned-work snapshot mismatches and multiple workouts linked to one scheduled session.
+- Keep workout revision-history problems separate from current training: malformed/duplicate/orphan revision records are warnings unless the current workout/Calendar relationship itself is ambiguous.
+- Extend Tools → Training data health with record-link integrity counts and concrete blocking/warning details.
+- Gate next-block handoff on blocking workout/Calendar relationship issues in addition to current load/RPE integrity.
+- Add deterministic fingerprints to new JSON backups so accidental file corruption or truncation can be detected before replacement import. Legacy backups remain supported and are explicitly labeled as unverified legacy files.
+- Add deterministic fingerprints to new automatic recovery snapshots and verify them before restore. Existing legacy snapshots remain restorable.
+- Expand replacement-import previews to include Calendar sessions, workout revisions, meet cycles, adopted programs and transition baselines.
+- Keep the backup fingerprint explicitly non-cryptographic: it detects accidental corruption but is not authentication or tamper-proof security.
+- Add deterministic and browser regressions for clean/invalid relationship graphs, corrupted backups, recovery-snapshot corruption and Tools visibility.
+- No schema migration; schema remains v25 and no current workout values are rewritten automatically.
+
 # v2.51.0 — Week-to-Week Training Continuity
 
 - Close the core loop after workout save: show what evidence was added, what remains unresolved, and what scheduled session comes next.

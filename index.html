@@ -1282,9 +1282,9 @@
           <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
           <details class="more-demo"><summary>Demo data</summary><p class="more-hint">Use the sample dataset to explore the app. Review the confirmation before replacing existing records.</p><button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button></details>
         </div>
-        <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. Export regularly so you don’t lose history.</p>
-        <p class="more-hint">Your records stay in this browser. Export a backup before changing devices.</p>
-        <details class="more-details"><summary>Training data health</summary><div id="training-data-health" class="more-details-body"></div></details>
+        <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import.</p>
+        <p class="more-hint">Your records stay in this browser. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
+        <details class="more-details"><summary>Training data &amp; record health</summary><div id="training-data-health" class="more-details-body"></div></details>
         <details class="more-details"><summary>Automatic recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
         <details class="more-details"><summary>Exercise identities & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
       </div>
@@ -1357,7 +1357,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.51.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.52.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

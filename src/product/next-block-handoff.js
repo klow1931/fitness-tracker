@@ -38,9 +38,15 @@
 
    add('draft','No unfinished workout draft',!draftOpen,draftOpen?'An unfinished workout draft exists on this device. Finish, save, or clear it before starting the next block.':'No unfinished workout draft is blocking the handoff.');
 
-   const health=Integrity.auditTrainingData(state,{asOf}),healthIssues=health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads;
+   const reliability=Integrity.auditReliability(state,{asOf}),health=reliability.training,healthIssues=reliability.trainingBlocking,relationships=reliability.relationships;
    add('data-health','Training data health',healthIssues===0,healthIssues?healthIssues+' current strength-set data issue'+(healthIssues===1?'':'s')+' need review before starting the next block.':'Current strength-set load/RPE integrity checks are clear.');
+   const programPrefix='phase:'+transition.programId+':',programWorkoutIds=new Set((state.workouts||[]).filter(w=>w.date>=transition.programStart&&w.date<=transition.programEnd).map(w=>String(w.id??'')));
+   const relevantLinkIssues=relationships.issues.filter(i=>i.severity==='blocking'&&((i.scheduleId&&String(i.scheduleId).startsWith(programPrefix))||(i.workoutId&&programWorkoutIds.has(String(i.workoutId)))||(i.workoutIds||[]).some(id=>programWorkoutIds.has(String(id)))));
+   add('record-links','Prior-program training record links',relevantLinkIssues.length===0,relevantLinkIssues.length?relevantLinkIssues.length+' blocking workout/Calendar relationship issue'+(relevantLinkIssues.length===1?' affects':'s affect')+' the completed program and need review before starting the next block.':'Completed-program workout, Calendar and planned-work links are internally consistent.');
    if(!healthIssues&&health.history.suspiciousLoads)warnings.push(health.history.suspiciousLoads+' suspicious historical revision load'+(health.history.suspiciousLoads===1?' remains':'s remain')+' in audit history; corrected current workouts are used for launch readiness.');
+   const unrelatedLinkIssues=relationships.blocking-relevantLinkIssues.length;
+   if(unrelatedLinkIssues>0)warnings.push(unrelatedLinkIssues+' blocking record-link issue'+(unrelatedLinkIssues===1?' exists':'s exist')+' outside the completed program; review it in Tools, but it is not used as this handoff\'s prior-program completion link.');
+   if(relationships.warnings)warnings.push(relationships.warnings+' workout revision-history warning'+(relationships.warnings===1?' does':'s do')+' not change current workouts but may reduce undo/audit confidence.');
 
    const laterPrograms=(state.phasePrograms||[]).filter(p=>p.createdAt>transition.createdAt&&p.id!==transition.programId),unscheduled=laterPrograms.filter(p=>!p.scheduledAt);
    add('reviewed-conflict','No newer unscheduled reviewed program',unscheduled.length===0,unscheduled.length?'A newer reviewed phase program ('+(unscheduled[0].config?.name||unscheduled[0].id)+') already exists and is not scheduled.':'No newer unscheduled reviewed phase program is competing with this handoff.');

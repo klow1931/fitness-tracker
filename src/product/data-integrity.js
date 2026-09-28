@@ -99,16 +99,93 @@
   ]};
  }
 
+ function canonicalStringify(value){
+  if(value===null||typeof value!=='object')return JSON.stringify(value);
+  if(Array.isArray(value))return '['+value.map(canonicalStringify).join(',')+']';
+  return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+canonicalStringify(value[key])).join(',')+'}';
+ }
+ function fingerprint(value){return hash(canonicalStringify(value));}
+ const BACKUP_COLLECTIONS=['workouts','scheduledSessions','workoutRevisions','trainingBlocks','templates','exerciseCatalog','exerciseRoles','athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews','meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents'];
+ function addBackupManifest(input,{exportedAt=new Date().toISOString(),releaseVersion=''}={}){
+  if(!iso(exportedAt))throw Error('Invalid backup export time.');
+  const payload=clone(input)||{};delete payload._loadnoteBackup;
+  const counts={};for(const key of BACKUP_COLLECTIONS)counts[key]=Array.isArray(payload[key])?payload[key].length:0;
+  payload._loadnoteBackup={version:1,algorithm:'fnv1a32-canonical-json',exportedAt,releaseVersion:String(releaseVersion||payload.releaseVersion||''),schemaVersion:Number(payload.schemaVersion)||null,counts,fingerprint:fingerprint(payload),
+   notice:'This fingerprint detects accidental backup corruption or truncation; it is not cryptographic authentication.'};
+  return payload;
+ }
+ function verifyBackupManifest(input){
+  const manifest=input?._loadnoteBackup;
+  if(manifest==null)return {status:'legacy',verified:false,reason:'Legacy backup has no Loadnote v2.52 integrity fingerprint.'};
+  if(!manifest||manifest.version!==1||manifest.algorithm!=='fnv1a32-canonical-json'||!iso(manifest.exportedAt)||typeof manifest.fingerprint!=='string'||!manifest.fingerprint)return {status:'invalid',verified:false,reason:'Backup integrity metadata is malformed.'};
+  const payload=clone(input);delete payload._loadnoteBackup;
+  const expected=fingerprint(payload);
+  if(expected!==manifest.fingerprint)return {status:'invalid',verified:false,reason:'Backup contents do not match the recorded integrity fingerprint.'};
+  if(manifest.schemaVersion!=null&&Number(manifest.schemaVersion)!==Number(payload.schemaVersion))return {status:'invalid',verified:false,reason:'Backup schema metadata does not match the file contents.'};
+  const counts=manifest.counts||{};
+  for(const key of BACKUP_COLLECTIONS)if(Object.hasOwn(counts,key)&&Number(counts[key])!==(Array.isArray(payload[key])?payload[key].length:0))return {status:'invalid',verified:false,reason:'Backup collection counts do not match the file contents.'};
+  return {status:'verified',verified:true,exportedAt:manifest.exportedAt,releaseVersion:manifest.releaseVersion||'',schemaVersion:manifest.schemaVersion??null,fingerprint:manifest.fingerprint};
+ }
+ function planKey(plan){
+  const value=clone(plan);if(!value)return null;
+  for(const exercise of value.plannedExercises||[])delete exercise.exerciseId;
+  return canonicalStringify(value);
+ }
+ function auditRelationships(state){
+  const issues=[];let blocking=0,warnings=0;
+  const add=(code,severity,detail,extra={})=>{issues.push({code,severity,detail,...extra});if(severity==='blocking')blocking++;else warnings++;};
+  const workouts=Array.isArray(state?.workouts)?state.workouts:[],schedules=Array.isArray(state?.scheduledSessions)?state.scheduledSessions:[],revisions=Array.isArray(state?.workoutRevisions)?state.workoutRevisions:[];
+  const workoutIds=new Map();
+  for(const workout of workouts){const id=String(workout?.id??'');if(!id){add('missing-workout-id','blocking','A current workout is missing its identity.');continue;}const list=workoutIds.get(id)||[];list.push(workout);workoutIds.set(id,list);}
+  for(const [id,rows] of workoutIds)if(rows.length>1)add('duplicate-workout-id','blocking','Multiple current workouts share the same identity.',{workoutId:id,count:rows.length});
+  const scheduleIds=new Map();
+  for(const record of schedules){const id=String(record?.id??'');if(!id){add('missing-schedule-id','blocking','A Calendar session is missing its identity.');continue;}const list=scheduleIds.get(id)||[];list.push(record);scheduleIds.set(id,list);}
+  for(const [id,rows] of scheduleIds)if(rows.length>1)add('duplicate-schedule-id','blocking','Multiple Calendar sessions share the same identity.',{scheduleId:id,count:rows.length});
+  const scheduleById=new Map([...scheduleIds].filter(([,rows])=>rows.length===1).map(([id,rows])=>[id,rows[0]])),links=new Map();
+  for(const workout of workouts){
+   const link=workout?.sessionIntent?.schedule;if(!link?.id)continue;const scheduleId=String(link.id),rows=links.get(scheduleId)||[];rows.push(String(workout.id??''));links.set(scheduleId,rows);
+   const record=scheduleById.get(scheduleId);
+   if(!record){add('orphan-schedule-link','blocking','A saved workout links to a Calendar session that no longer exists.',{workoutId:String(workout.id??''),scheduleId});continue;}
+   const revision=(record.revisions||[]).find(row=>row?.recordedAt===link.revisionAt);
+   if(!revision){add('missing-schedule-revision','blocking','A saved workout points to a Calendar revision that cannot be found.',{workoutId:String(workout.id??''),scheduleId,revisionAt:link.revisionAt||null});continue;}
+   if(revision.context?.status!=='scheduled')add('linked-nonscheduled-revision','blocking','A saved workout links to a Calendar revision that was not scheduled.',{workoutId:String(workout.id??''),scheduleId});
+   if(revision.context?.date&&workout?.date&&revision.context.date!==workout.date)add('linked-date-mismatch','blocking','A saved workout date differs from the Calendar date captured when the session was started.',{workoutId:String(workout.id??''),scheduleId,workoutDate:workout.date,scheduleDate:revision.context.date});
+   if(planKey(revision.context?.prescription)!==planKey(workout?.sessionIntent?.prescription))add('linked-plan-mismatch','blocking','A saved workout planned-work snapshot differs from its captured Calendar revision.',{workoutId:String(workout.id??''),scheduleId});
+   const latest=record.revisions?.at(-1);
+   if(latest?.context?.status&&latest.context.status!=='scheduled')add('completed-calendar-status-conflict','blocking','A Calendar session with linked training is currently marked '+latest.context.status+'.',{workoutId:String(workout.id??''),scheduleId,status:latest.context.status});
+  }
+  for(const [scheduleId,ids] of links)if(ids.length>1)add('duplicate-schedule-completion','blocking','More than one saved workout is linked to the same Calendar session.',{scheduleId,workoutIds:ids,count:ids.length});
+  const revisionIds=new Map();
+  for(const revision of revisions){
+   const id=String(revision?.id??'');if(!id){add('missing-revision-id','warning','A workout-history revision is missing its identity.');continue;}
+   const rows=revisionIds.get(id)||[];rows.push(revision);revisionIds.set(id,rows);
+   if(!iso(revision?.recordedAt))add('invalid-revision-time','warning','A workout-history revision has an invalid recorded time.',{revisionId:id,workoutId:String(revision?.workoutId??'')});
+   const workoutId=String(revision?.workoutId??''),beforeId=revision?.before?.id==null?null:String(revision.before.id),afterId=revision?.after?.id==null?null:String(revision.after.id);
+   if(!workoutId||(beforeId&&beforeId!==workoutId)||(afterId&&afterId!==workoutId))add('revision-identity-mismatch','warning','A workout-history revision does not consistently reference one workout identity.',{revisionId:id,workoutId});
+   const shape=revision?.action==='create'?!revision.before&&!!revision.after:revision?.action==='edit'?!!revision.before&&!!revision.after:revision?.action==='delete'?!!revision.before&&!revision.after:revision?.action==='undo'?Object.hasOwn(revision,'targetRevisionId'):false;
+   if(!shape)add('revision-shape-mismatch','warning','A workout-history revision does not match its recorded action.',{revisionId:id,workoutId,action:revision?.action||null});
+  }
+  for(const [id,rows] of revisionIds)if(rows.length>1)add('duplicate-revision-id','warning','Workout-history revisions share an identity, reducing audit-history reliability.',{revisionId:id,count:rows.length});
+  const revisionIdSet=new Set(revisionIds.keys());
+  for(const revision of revisions)if(revision?.action==='undo'&&revision.targetRevisionId&&!revisionIdSet.has(String(revision.targetRevisionId)))add('orphan-undo-target','warning','A workout-history undo points to a revision that is no longer available.',{revisionId:String(revision.id??''),targetRevisionId:String(revision.targetRevisionId)});
+  return {version:1,status:blocking?'review':warnings?'warning':'clean',blocking,warnings,issues,counts:{workouts:workouts.length,scheduledSessions:schedules.length,linkedWorkouts:[...links.values()].reduce((n,ids)=>n+ids.length,0),workoutRevisions:revisions.length},
+   notes:['Blocking relationship issues can make planned-versus-performed evidence ambiguous and should be resolved before adaptive programming relies on it.','Workout revision-history warnings do not replace the current workout record; they indicate reduced audit/undo reliability.']};
+ }
+ function auditReliability(state,{asOf}={}){
+  const training=auditTrainingData(state,{asOf}),relationships=auditRelationships(state),trainingBlocking=training.current.invalidLoad+training.current.invalidRpe+training.current.suspiciousLoads,blocking=trainingBlocking+relationships.blocking;
+  return {version:2,asOf:asOf||null,status:blocking?'review':relationships.warnings?'warning':'clean',blocking,trainingBlocking,relationships,training};
+ }
+
  function previewImport(current,incoming){
   const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
-  return {transitionSnapshots:diff(current?.transitionSnapshots,incoming?.transitionSnapshots),adoptedPrograms:diff(current?.adoptedPrograms,incoming?.adoptedPrograms),phaseReviews:diff(current?.phaseReviews,incoming?.phaseReviews),phasePrograms:diff(current?.phasePrograms,incoming?.phasePrograms),programmingProfiles:diff(current?.programmingProfiles,incoming?.programmingProfiles),programReviews:diff(current?.programReviews,incoming?.programReviews),reviewedPrograms:diff(current?.reviewedPrograms,incoming?.reviewedPrograms),athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents)};
+  return {transitionSnapshots:diff(current?.transitionSnapshots,incoming?.transitionSnapshots),adoptedPrograms:diff(current?.adoptedPrograms,incoming?.adoptedPrograms),meetCycles:diff(current?.meetCycles,incoming?.meetCycles),scheduledSessions:diff(current?.scheduledSessions,incoming?.scheduledSessions),phaseReviews:diff(current?.phaseReviews,incoming?.phaseReviews),phasePrograms:diff(current?.phasePrograms,incoming?.phasePrograms),programmingProfiles:diff(current?.programmingProfiles,incoming?.programmingProfiles),programReviews:diff(current?.programReviews,incoming?.programReviews),reviewedPrograms:diff(current?.reviewedPrograms,incoming?.reviewedPrograms),athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),workoutRevisions:diff(current?.workoutRevisions,incoming?.workoutRevisions),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents)};
  }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid recovery snapshot time.');const next=clone(target)||{},payload=clone(source)||{};delete payload.recoverySnapshots;
-  const snapshot={id:String(id||('recovery_'+hash(now+Math.random()))),createdAt:now,label:name(label)||'Recovery snapshot',payload:JSON.stringify(payload)};
+  const snapshot={id:String(id||('recovery_'+hash(now+Math.random()))),createdAt:now,label:name(label)||'Recovery snapshot',payload:JSON.stringify(payload),fingerprintVersion:1,fingerprint:fingerprint(payload)};
   next.recoverySnapshots=[...(Array.isArray(next.recoverySnapshots)?next.recoverySnapshots:[]),snapshot].slice(-3);return next;
  }
- function restoreRecoverySnapshot(state,id){const snapshot=(state?.recoverySnapshots||[]).find(s=>String(s.id)===String(id));if(!snapshot||typeof snapshot.payload!=='string')throw Error('Recovery snapshot is unavailable.');return JSON.parse(snapshot.payload);}
+ function restoreRecoverySnapshot(state,id){const snapshot=(state?.recoverySnapshots||[]).find(s=>String(s.id)===String(id));if(!snapshot||typeof snapshot.payload!=='string')throw Error('Recovery snapshot is unavailable.');const payload=JSON.parse(snapshot.payload);if(snapshot.fingerprint&&fingerprint(payload)!==snapshot.fingerprint)throw Error('Recovery snapshot integrity check failed.');return payload;}
  function appendWorkoutRevision(list,before,after,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid workout revision time.');const workoutId=String(before?.id??after?.id??'');if(!workoutId||before&&after&&String(before.id)!==String(after.id))throw Error('Invalid workout revision identity.');
   const revision={id:String(id||('revision_'+hash(now+workoutId+Math.random()))),workoutId,recordedAt:now,action:before&&after?'edit':before?'delete':'create',before:clone(before)||null,after:clone(after)||null};
@@ -124,5 +201,5 @@
   state.workouts=(state.workouts||[]).filter(w=>String(w.id)!==String(revision.workoutId));if(revision.before)state.workouts.push(clone(revision.before));state.workouts.sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.id).localeCompare(String(a.id)));
   state.workoutRevisions.push({id:String(id||('revision_'+hash(now+revision.id+Math.random()))),workoutId:revision.workoutId,recordedAt:now,action:'undo',targetRevisionId:revision.id,before:clone(revision.after),after:clone(revision.before)});return state;
  }
- return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,auditTrainingData,previewImport,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
+ return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,auditTrainingData,auditRelationships,auditReliability,addBackupManifest,verifyBackupManifest,previewImport,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
 });
