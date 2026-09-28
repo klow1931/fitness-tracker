@@ -84,6 +84,8 @@ const ASSETS = [
   './src/product/decision-backtest.js',
   './src/product/decision-feedback.js',
   './src/product/decision-performance.js',
+  './src/product/adaptive-outcome-learning.js',
+  './src/product/adaptive-outcome-learning-ui.js',
   './src/product/decision-context-analysis.js',
   './src/product/decision-performance-ui.js',
   './src/product/decision-use-review.js',
