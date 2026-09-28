@@ -1,9 +1,8 @@
 /* Workout-only delegated events. Existing globals remain compatibility entry points. */
 function removeWorkoutSet(button){
   const set=button?.closest?.('.logger-set');
-  const parent=set?.parentNode;
-  if(!set||!parent)return false;
-  parent.removeChild(set);
+  if(!set)return false;
+  set.remove();
   saveLoggerDraft();
   updateLoggerSummary();
   window.refreshLoggerQuickEntry?.();
@@ -22,7 +21,7 @@ function initWorkoutEvents(){
     'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),
     'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),
     'export-json':()=>exportData(),'export-csv':()=>exportCSV(),import:()=>importData(),
-    'remove-exercise':el=>el.closest('[data-idx]')?.remove(),
+    'remove-exercise':el=>el.closest('[data-idx]')?.remove(),'remove-set':el=>removeWorkoutSet(el),
     'track-reps':el=>setExerciseTrackBy(el,'reps'),'track-duration':el=>setExerciseTrackBy(el,'duration'),
     'last-weights':el=>fillLastWeights(el),'jump-weights':el=>fillLastWeights(el,true),'add-set':el=>addSetRow(el),
     edit:el=>editWorkout(el.dataset.workoutId),duplicate:el=>duplicateWorkout(el.dataset.workoutId),'undo-change':el=>undoWorkoutChange(el.dataset.revisionId),'history-template':el=>saveWorkoutAsTemplate(el.dataset.workoutId),delete:el=>deleteWorkout(el.dataset.workoutId),
@@ -32,18 +31,7 @@ function initWorkoutEvents(){
   const change={'history-date':()=>renderWorkoutHistory(),'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el),'session-intent':()=>saveLoggerDraft()};
   const input={'history-search':()=>debouncedHistorySearch()};
   for(const root of [document.getElementById('panel-workouts'),document.getElementById('workout-review')]){
-    if(!root)continue;
-    if(root.id==='panel-workouts'&&!root.dataset.removeSetEventsBound){
-      root.dataset.removeSetEventsBound='true';
-      root.addEventListener('click',event=>{
-        const button=event.target.closest?.('[data-workout-action="remove-set"]');
-        if(!button||!root.contains(button))return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        removeWorkoutSet(button);
-      },true);
-    }
-    if(root.dataset.eventsBound)continue;
+    if(!root || root.dataset.eventsBound)continue;
     root.dataset.eventsBound='true';
     for(const [eventName,attribute,actions] of [['click','action',click],['change','change',change],['input','input',input]]){
       root.addEventListener(eventName,event=>{
