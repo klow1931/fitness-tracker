@@ -68,6 +68,8 @@ const ASSETS = [
   './src/product/today-training.js',
   './src/product/adaptation-explanation.js',
   './src/product/adaptation-explanation-ui.js',
+  './src/product/training-continuity.js',
+  './src/product/training-continuity-ui.js',
   './src/product/today-training-ui.js',
   './src/product/nutrition-model.js',
   './src/product/nutrition-ui.js',
