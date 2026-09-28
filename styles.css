@@ -1057,3 +1057,33 @@ body.dark .adaptation-explanation{border-color:rgba(148,163,184,.24);background:
 .training-continuity-next{margin:.55rem 0}
 .training-continuity-warning{margin:.55rem 0;padding:.55rem .65rem;border-radius:.65rem;background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.22)}
 body.dark .training-continuity-warning{background:rgba(245,158,11,.11);border-color:rgba(245,158,11,.3)}
+
+
+/* v2.53 — compact, evidence-first Progress analytics. */
+.progress-analytics-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}
+.progress-analytics-head h2{margin:.1rem 0 .2rem}
+.progress-analytics-head p{margin:0}
+.progress-analytics-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin-top:1rem}
+.progress-analytics-metrics article{min-width:0;padding:.75rem;border:1px solid rgba(100,116,139,.18);border-radius:.75rem;background:rgba(148,163,184,.05)}
+.progress-analytics-metrics span,.progress-analytics-metrics small{display:block}
+.progress-analytics-metrics span{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.progress-analytics-metrics b{display:block;margin:.12rem 0;font-size:1.25rem}
+.progress-analytics-metrics small{font-size:.76rem;line-height:1.35}
+.progress-analytics-plan,.progress-analytics-lifts{margin-top:1rem;padding-top:.85rem;border-top:1px solid rgba(100,116,139,.18)}
+.progress-analytics-plan h3,.progress-analytics-lifts h3{margin:0 0 .3rem}
+.progress-analytics-lift{padding:.8rem 0;border-top:1px solid rgba(100,116,139,.14)}
+.progress-analytics-lift:first-of-type{margin-top:.55rem}
+.progress-analytics-lift p{margin:.28rem 0;font-size:.84rem;line-height:1.46}
+.progress-analytics-lift-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.progress-analytics-lift-head b,.progress-analytics-lift-head small{display:block}
+.progress-analytics-lift-head small{font-size:.73rem}
+.progress-analytics-change{font-weight:600}
+.progress-analytics-method{margin-top:.75rem}
+.progress-analytics-method p{font-size:.8rem;line-height:1.45}
+body.dark .progress-analytics-metrics article{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.28)}
+body.dark .progress-analytics-plan,body.dark .progress-analytics-lifts,body.dark .progress-analytics-lift{border-color:rgba(148,163,184,.2)}
+@media(max-width:640px){
+ .progress-analytics-metrics{grid-template-columns:1fr}
+ .progress-analytics-lift-head{align-items:flex-start}
+ .progress-analytics-lift-head .btn-secondary{min-height:40px}
+}
