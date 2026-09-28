@@ -22,6 +22,8 @@ assert.equal(pkg.data.recoverySnapshots,undefined);
 assert.equal(pkg.data.api,undefined);
 const tampered=structuredClone(pkg);tampered.data.collections.workouts[0].notes='changed after manifest';
 assert.equal(Sync.verifyPackage(tampered).status,'invalid');
+const metadataTampered=structuredClone(pkg);metadataTampered.schemaVersion=999;
+assert.equal(Sync.verifyPackage(metadataTampered).status,'invalid');
 
 const base=state({workouts:[workout('w','base')]});
 const localSame=structuredClone(base);
