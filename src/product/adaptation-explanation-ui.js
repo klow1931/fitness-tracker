@@ -6,7 +6,7 @@
  const unit=()=>typeof unitLabel==='function'?unitLabel():'kg';
  function deltaText(lift){
   const i=lift.impact||{},d=(i.loadDeltasKg||[]).filter(x=>Math.abs(x)>.0001),sessions=i.sessionCount||0,name=lift.name||lift.lift;
-  if(lift.action==='reduce-one')return name+': one working set removed from each eligible exposure in '+sessions+' upcoming session'+(sessions===1?'':'s')+'.';
+  if(lift.action==='reduce-one'||lift.action==='reduce-sets')return name+': one working set removed from each eligible exposure in '+sessions+' upcoming session'+(sessions===1?'':'s')+'.';
   if(lift.action==='add-set')return name+': one final working set added to each eligible exposure in '+sessions+' upcoming session'+(sessions===1?'':'s')+'.';
   if(d.length){
     const vals=d.map(x=>weight(Math.abs(x))),min=Math.min(...vals),max=Math.max(...vals),dir=d.every(x=>x>0)?'raised':d.every(x=>x<0)?'lowered':'changed';
