@@ -93,8 +93,8 @@
   function createPackage(state,{clientId,createdAt=new Date().toISOString(),releaseVersion}={}){
     if(typeof clientId!=='string'||!clientId.trim()||clientId.length>160)throw Error('A stable sync client id is required');
     if(!iso(createdAt))throw Error('Invalid sync package time');
-    const data=project(state),m=manifestFromProject(data);
-    return {protocol:PROTOCOL,createdAt,clientId:clientId.trim(),schemaVersion:Number(state?.schemaVersion)||null,releaseVersion:String(releaseVersion||state?.releaseVersion||''),manifest:m,data};
+    const data=project(state),m=manifestFromProject(data),meta={protocol:PROTOCOL,createdAt,clientId:clientId.trim(),schemaVersion:Number(state?.schemaVersion)||null,releaseVersion:String(releaseVersion||state?.releaseVersion||''),manifestFingerprint:m.fingerprint};
+    return {...meta,manifest:m,data,packageFingerprint:fingerprint(meta)};
   }
   function verifyPackage(pkg){
     if(!pkg||pkg.protocol!==PROTOCOL)return {status:'invalid',verified:false,reason:'Unsupported sync protocol.'};
@@ -103,7 +103,9 @@
       const actual=manifestFromProject(pkg.data);
       if(!pkg.manifest||pkg.manifest.fingerprint!==actual.fingerprint)return {status:'invalid',verified:false,reason:'Sync package contents do not match the recorded manifest fingerprint.'};
       if(Number(pkg.manifest.records)!==actual.records)return {status:'invalid',verified:false,reason:'Sync package record count does not match its manifest.'};
-      return {status:'verified',verified:true,protocol:PROTOCOL,clientId:pkg.clientId,createdAt:pkg.createdAt,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifest:actual};
+      const meta={protocol:pkg.protocol,createdAt:pkg.createdAt,clientId:pkg.clientId,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifestFingerprint:actual.fingerprint};
+      if(typeof pkg.packageFingerprint!=='string'||pkg.packageFingerprint!==fingerprint(meta))return {status:'invalid',verified:false,reason:'Sync package metadata does not match its recorded fingerprint.'};
+      return {status:'verified',verified:true,protocol:PROTOCOL,clientId:pkg.clientId,createdAt:pkg.createdAt,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifest:actual,packageFingerprint:pkg.packageFingerprint};
     }catch(error){return {status:'invalid',verified:false,reason:error.message||'Invalid sync package.'};}
   }
   const valueFingerprint=value=>value===undefined?'__missing__':fingerprint(value);
