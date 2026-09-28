@@ -48,6 +48,17 @@ const unresolved=structuredClone(state);unresolved.transitionSnapshots[0].schedu
 const pending=Handoff.inspect(unresolved,{asOf:'2026-11-14'});
 assert.equal(pending.ready,false);assert(pending.blockers.some(x=>/pending or unconfirmed/.test(x)));
 
+const dirty=structuredClone(state),benchWorkout=dirty.workouts.find(w=>(w.exercises||[]).some(e=>e.exerciseId===config.lifts.bench.exerciseId));
+const benchExercise=benchWorkout.exercises.find(e=>e.exerciseId===config.lifts.bench.exerciseId);benchExercise.sets[0].weight=9999;
+const dirtyReport=Handoff.inspect(dirty,{asOf:'2026-11-14'});
+assert.equal(dirtyReport.ready,false);assert(dirtyReport.blockers.some(x=>/strength-set data issue/.test(x)));
+
+const historyOnly=structuredClone(state),clean=historyOnly.workouts.find(w=>(w.exercises||[]).some(e=>e.exerciseId===config.lifts.bench.exerciseId)),badBefore=structuredClone(clean);
+badBefore.exercises.find(e=>e.exerciseId===config.lifts.bench.exerciseId).sets[0].weight=9999;
+historyOnly.workoutRevisions=[...(historyOnly.workoutRevisions||[]),{id:'historical-outlier',workoutId:clean.id,recordedAt:'2026-11-13T12:00:00.000Z',action:'edit',before:badBefore,after:structuredClone(clean)}];
+const historyReport=Handoff.inspect(historyOnly,{asOf:'2026-11-14'});
+assert.equal(historyReport.ready,true);assert(historyReport.warnings.some(x=>/historical revision load/.test(x)));
+
 assert.equal(Handoff.mondayOnOrAfter('2026-11-14'),'2026-11-16');
 assert.equal(Handoff.mondayOnOrAfter('2026-11-16'),'2026-11-16');
-console.log('v2.46 next-program handoff readiness, conflicts, draft guard and prefill passed');
+console.log('v2.47 next-program handoff readiness, data-health gate, conflicts, draft guard and prefill passed');

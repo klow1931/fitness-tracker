@@ -2,13 +2,19 @@
  'use strict';
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function render(){
-  const aliases=document.getElementById('exercise-alias-tools'),recovery=document.getElementById('recovery-snapshots');if(!window.LoadnoteIntegrity)return;
+  const aliases=document.getElementById('exercise-alias-tools'),recovery=document.getElementById('recovery-snapshots'),health=document.getElementById('training-data-health');if(!window.LoadnoteIntegrity)return;
   if(aliases){
    const catalog=data.exerciseCatalog||[],options=catalog.map(e=>`<option value="${esc(e.id)}">${esc(e.name)}${e.aliases.length?' · '+esc(e.aliases.join(', ')):''}</option>`).join('');
    aliases.innerHTML=catalog.length<2?'<p>Exercise identities will appear after you log or import workouts.</p>':`<p>${catalog.length} stable exercise identities. Compact spelling variants are linked automatically; merge other aliases here without rewriting workout history.</p><div class="block-fields"><label>Alias / duplicate<select id="exercise-alias-source" class="input">${options}</select></label><label>Canonical exercise<select id="exercise-alias-target" class="input">${options}</select></label></div><button type="button" id="merge-exercise-alias" class="btn-secondary">Merge identities</button><p class="more-hint">Example: merge “Adduction Machine” into “Hip Adduction.” Original labels remain in saved workouts, while analysis uses one identity.</p>`;
    document.getElementById('merge-exercise-alias')?.addEventListener('click',merge);
   }
   if(recovery){const snapshots=(data.recoverySnapshots||[]).slice().reverse();recovery.innerHTML=snapshots.length?snapshots.map(s=>`<article><p><b>${esc(s.label)}</b> · ${esc(new Date(s.createdAt).toLocaleString())}</p><button type="button" class="btn-secondary" data-restore-snapshot="${esc(s.id)}">Restore</button></article>`).join(''):'<p>No automatic recovery snapshots yet. Loadnote creates one before imports and identity merges.</p>';recovery.querySelectorAll('[data-restore-snapshot]').forEach(button=>button.addEventListener('click',()=>restore(button.dataset.restoreSnapshot)));}
+  if(health){
+   const report=LoadnoteIntegrity.auditTrainingData(data),current=report.current,history=report.history,issues=current.issues.slice(0,8);
+   const status=report.status==='clean'?'No invalid or extreme current entries detected.':'Review current training-data issues before relying on adaptive evidence.';
+   const issueHtml=issues.length?'<ul>'+issues.map(i=>`<li><b>${esc(i.date||'Unknown date')} · ${esc(i.exercise||'Exercise')}</b> · set ${esc(i.setIndex)} — ${esc(i.detail)}</li>`).join('')+'</ul>':'<p>No current load/RPE integrity issues detected by this audit.</p>';
+   health.innerHTML=`<p><b>${esc(status)}</b></p><p>Strength sets: ${current.strengthSets} · usable RPE coverage: ${current.rpeCoverage==null?'—':current.rpeCoverage+'%'} · missing RPE: ${current.missingRpe} · invalid RPE: ${current.invalidRpe} · suspicious loads: ${current.suspiciousLoads}.</p>${issueHtml}<p class="more-hint">Historical revision warnings: ${history.suspiciousLoads}. Corrected revisions remain audit history and are not treated as the current workout record.</p>`;
+  }
  }
  async function merge(){
   const source=document.getElementById('exercise-alias-source')?.value,target=document.getElementById('exercise-alias-target')?.value;if(!source||!target)return;if(source===target)return showToast('Choose two different exercise identities.','error');

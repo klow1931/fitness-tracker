@@ -62,6 +62,43 @@
   }
   state.exerciseCatalog=state.exerciseCatalog.filter(e=>e.id!==source.id);return normalizeState(state);
  }
+
+ function median(values){const a=[...values].sort((x,y)=>x-y),n=a.length;return n?n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2:null;}
+ function auditWorkouts(workouts){
+  const groups=new Map(),issues=[];let strengthSets=0,missingRpe=0,invalidRpe=0,invalidLoad=0;
+  for(const workout of Array.isArray(workouts)?workouts:[])for(const exercise of workout?.exercises||[]){
+   if(exercise?.type==='cardio'||exercise?.trackBy==='duration')continue;
+   const key=String(exercise?.exerciseId||compactKey(exercise?.name)||nameKey(exercise?.name)||'unknown'),rows=groups.get(key)||[];
+   for(let i=0;i<(exercise?.sets||[]).length;i++){
+    const set=exercise.sets[i],reps=Number(set?.reps),weight=Number(set?.weight),rawRpe=set?.rpe;
+    if(!Number.isInteger(reps)||reps<1)continue;
+    strengthSets++;
+    if(!Number.isFinite(weight)||weight<0){invalidLoad++;issues.push({code:'invalid-load',workoutId:String(workout?.id||''),date:workout?.date||null,exerciseId:exercise?.exerciseId||null,exercise:name(exercise?.name),setIndex:i+1,detail:'Load is missing, negative, or not numeric.'});}
+    else if(weight>0)rows.push({weight,workoutId:String(workout?.id||''),date:workout?.date||null,exerciseId:exercise?.exerciseId||null,exercise:name(exercise?.name),setIndex:i+1});
+    if(rawRpe==null||rawRpe==='')missingRpe++;
+    else {const rpe=Number(rawRpe);if(!Number.isFinite(rpe)||rpe<1||rpe>10){invalidRpe++;issues.push({code:'invalid-rpe',workoutId:String(workout?.id||''),date:workout?.date||null,exerciseId:exercise?.exerciseId||null,exercise:name(exercise?.name),setIndex:i+1,detail:'RPE must be between 1 and 10 when recorded.'});}}
+   }
+   groups.set(key,rows);
+  }
+  let suspiciousLoads=0;
+  for(const rows of groups.values()){
+   if(rows.length<4)continue;const center=median(rows.map(r=>r.weight));if(!(center>0))continue;
+   for(const row of rows)if(row.weight>=center*3&&row.weight-center>=100){suspiciousLoads++;issues.push({...row,code:'suspicious-load',detail:'Load is at least 3× the median logged load for this exercise. Review the entry before using it as performance evidence.',medianKg:Math.round(center*100)/100});}
+  }
+  const rpeCoverage=strengthSets?Math.round((strengthSets-missingRpe-invalidRpe)/strengthSets*1000)/10:null;
+  return {strengthSets,missingRpe,invalidRpe,invalidLoad,suspiciousLoads,rpeCoverage,issues};
+ }
+ function auditTrainingData(state,{asOf}={}){
+  const current=auditWorkouts((state?.workouts||[]).filter(w=>!asOf||!w?.date||w.date<=asOf)),historical=[];
+  for(const revision of state?.workoutRevisions||[])for(const side of ['before','after'])if(revision?.[side])historical.push(revision[side]);
+  const history=auditWorkouts(historical),blocking=current.invalidLoad+current.invalidRpe+current.suspiciousLoads;
+  return {version:1,asOf:asOf||null,status:blocking?'review':'clean',current,history:{...history,issues:history.issues.slice(0,50)},notes:[
+   'Current-workout issues can affect analytics and adaptive evidence; review them before relying on a new program.',
+   'Missing RPE is allowed and lowers evidence coverage rather than inventing effort.',
+   'Historical revision warnings are audit history only; corrected current workouts remain the active record.'
+  ]};
+ }
+
  function previewImport(current,incoming){
   const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
   return {transitionSnapshots:diff(current?.transitionSnapshots,incoming?.transitionSnapshots),adoptedPrograms:diff(current?.adoptedPrograms,incoming?.adoptedPrograms),phaseReviews:diff(current?.phaseReviews,incoming?.phaseReviews),phasePrograms:diff(current?.phasePrograms,incoming?.phasePrograms),programmingProfiles:diff(current?.programmingProfiles,incoming?.programmingProfiles),programReviews:diff(current?.programReviews,incoming?.programReviews),reviewedPrograms:diff(current?.reviewedPrograms,incoming?.reviewedPrograms),athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents)};
@@ -87,5 +124,5 @@
   state.workouts=(state.workouts||[]).filter(w=>String(w.id)!==String(revision.workoutId));if(revision.before)state.workouts.push(clone(revision.before));state.workouts.sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.id).localeCompare(String(a.id)));
   state.workoutRevisions.push({id:String(id||('revision_'+hash(now+revision.id+Math.random()))),workoutId:revision.workoutId,recordedAt:now,action:'undo',targetRevisionId:revision.id,before:clone(revision.after),after:clone(revision.before)});return state;
  }
- return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,previewImport,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
+ return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,auditTrainingData,previewImport,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
 });

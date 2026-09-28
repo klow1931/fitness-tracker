@@ -18,11 +18,15 @@
           parsed.phasePrograms=LoadnotePhaseBuilder.validate(parsed.phasePrograms===undefined?[]:parsed.phasePrograms);
           parsed.reviewedPrograms=LoadnoteBuilder.validate(parsed.reviewedPrograms===undefined?[]:parsed.reviewedPrograms);
           parsed.programReviews=LoadnoteProgramReview.validate(parsed.programReviews===undefined?[]:parsed.programReviews);
+          parsed.meetCycles=LoadnoteMeetCycle.validate(parsed.meetCycles===undefined?[]:parsed.meetCycles);
+          parsed.adoptedPrograms=LoadnoteProgramAdoption.validate(parsed.adoptedPrograms===undefined?[]:parsed.adoptedPrograms);
+          parsed.transitionSnapshots=LoadnoteTransitionBaseline.validate(parsed.transitionSnapshots===undefined?[]:parsed.transitionSnapshots);
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
-          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
-          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Phase programs',preview.phasePrograms),line('Phase reviews',preview.phaseReviews),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'','This replaces current data after creating an automatic recovery snapshot.'];
+          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),health=LoadnoteIntegrity.auditTrainingData(incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
+          const healthLine=health.status==='clean'?`Training data health: no invalid or extreme current strength-set entries detected · RPE coverage ${health.current.rpeCoverage??'—'}%.`:`Training data health: review ${health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads} current strength-set issue(s) after import · RPE coverage ${health.current.rpeCoverage??'—'}%.`;
+          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Phase programs',preview.phasePrograms),line('Phase reviews',preview.phaseReviews),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'',healthLine,'','This replaces current data after creating an automatic recovery snapshot.'];
           if (!confirm(message.join('\n'))) return;
           data = LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
           clearTimeout(saveTimer);
