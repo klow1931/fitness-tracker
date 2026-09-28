@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.51.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.52.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.51 — Week-to-Week Training Continuity
 
