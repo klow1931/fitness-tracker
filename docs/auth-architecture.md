@@ -1,5 +1,7 @@
 # Account identity and authentication foundation
 
+> **v2.57 update:** The provider-verification and durable-account steps anticipated by this v2.56 document are now implemented through generic OIDC plus the file-backed single-instance account store. See `docs/oidc-account-store.md` for the current flow and its scaling boundary. The session/CSRF rules below remain authoritative.
+
 Loadnote v2.56 establishes the server-side identity/session boundary that later commercial account and cloud-sync work can build on.
 
 This release does **not** add a production identity provider or consumer sign-in screen yet. It intentionally separates:
@@ -175,9 +177,9 @@ Normal consumer requests use the configured Loadnote backend contract.
 
 Development provider/BYO-key plumbing may remain in code for local development, but it should not appear as normal consumer product configuration.
 
-## Future identity-provider integration
+## Identity-provider integration (implemented in v2.57)
 
-A later release can add a production provider such as Apple, Google, or another reviewed identity service.
+v2.57 adds a provider-neutral OIDC implementation. Production deployment still requires provisioning and reviewing a concrete compatible identity provider.
 
 That provider integration should:
 
@@ -207,15 +209,15 @@ A future cloud-sync milestone can combine those two layers:
 
 The server must never accept a client-supplied account ID as authorization on its own. Account scope must come from the verified Loadnote session.
 
-## Not completed in v2.56
+## Still not completed after v2.57
 
 This release does not implement:
 
-- Apple/Google/email production sign-in
+- provider-specific provisioning / store-review configuration where required
 - password storage
 - password reset
 - account recovery
-- persistent server-side account database
+- multi-instance transactional account database (v2.57 currently uses a durable single-instance file adapter)
 - server-side session revocation store
 - refresh tokens
 - account linking
