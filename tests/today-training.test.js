@@ -4,7 +4,7 @@ const Schedule=require('../src/product/schedule');
 const Intent=require('../src/product/session-intent');
 
 const plan=Intent.createPrescription([{name:'Competition Bench Press',exerciseId:'bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:7},{weight:100,reps:5,targetRpe:7}]}],{type:'manual',label:'Bench day'},'2026-09-28T08:00:00.000Z');
-let state={scheduledSessions:Schedule.create([],{name:'Bench day',date:'2026-09-28',role:'primary',goal:'Bench strength',prescription:plan},{id:'today-bench',now:'2026-09-27T12:00:00.000Z'}),workouts:[]};
+let state={scheduledSessions:Schedule.create([],{name:'Bench day',date:'2026-09-28',role:'heavy-exposure',goal:'Bench strength',prescription:plan},{id:'today-bench',now:'2026-09-27T12:00:00.000Z'}),workouts:[]};
 let report=Today.inspect(state,{day:'2026-09-28'});
 assert.equal(report.active.id,'today-bench');assert.equal(report.active.status,'scheduled');assert.equal(report.active.exerciseCount,1);assert.equal(report.active.setCount,2);
 report=Today.inspect(state,{day:'2026-09-28',draft:{rows:[],sessionIntent:{schedule:{id:'today-bench'}}}});
