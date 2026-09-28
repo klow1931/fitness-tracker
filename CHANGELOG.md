@@ -1,3 +1,18 @@
+# v2.51.0 — Week-to-Week Training Continuity
+
+- Close the core loop after workout save: show what evidence was added, what remains unresolved, and what scheduled session comes next.
+- Add a deterministic continuity model that keeps saved training, Calendar state, and planned-versus-performed evidence separate.
+- For linked scheduled workouts, report planned sets represented, valid strength-set RPE coverage, and whether the session was partial or modified.
+- Preserve shortened or partial sessions exactly as logged instead of assuming omitted sets were completed.
+- Carry the athlete's recorded deviation reason into the post-workout continuity summary when one was provided.
+- Treat past scheduled sessions with no linked workout as **unresolved**, not automatically missed or skipped. Skipped and cancelled sessions remain explicitly distinct.
+- Show the next unresolved scheduled workout after save, including exercise/set counts and whether it was rescheduled from another date.
+- Add the same compact next-session / unresolved-session context to Home after today's training is logged or when no workout is scheduled today.
+- Reuse v2.50 accepted-adaptation explanations when the next scheduled workout was already revised by a reviewed decision.
+- Keep all continuity logic read-only: v2.51 does not reschedule sessions, mark sessions skipped, invent RPE, or apply a programming change automatically.
+- Add deterministic unit tests plus browser coverage for shortened-session evidence, deviation context, next-session handoff, and Home continuity.
+- No schema migration; schema remains v25.
+
 # v2.50.0 — Adaptation Explanation Layer
 
 - Add a deterministic explanation layer for athlete-approved weekly and phase programming changes.
