@@ -32,14 +32,15 @@ function createAuth(options={}){
  const sameSite=['Strict','Lax','None'].includes(options.sameSite)?options.sameSite:'Strict';
  if(sameSite==='None'&&!secure)throw Error('SameSite=None requires secure session cookies');
  const key=configured?crypto.createHmac('sha256',secret).update('loadnote-session-signing-v1').digest():null;
- const accountKey=configured?crypto.createHmac('sha256',secret).update('loadnote-account-id-v1').digest():null;
  const sign=input=>crypto.createHmac('sha256',key).update(input).digest('base64url');
 
  function accountIdentity(input){
   if(!configured)throw Error('Account authentication is not configured');
   const provider=clean(input?.provider).toLowerCase(),subject=clean(input?.subject);
   if(!/^[a-z0-9._-]{2,80}$/.test(provider)||!subject||subject.length>512)throw Error('Invalid trusted identity');
-  const id='acct_'+crypto.createHmac('sha256',accountKey).update(provider+'\u0000'+subject).digest('base64url').slice(0,32);
+  // Provider subjects are stable identifiers, not secrets. Keep the Loadnote account id
+  // stable across session-signing-key rotation by deriving it independently of the session secret.
+  const id='acct_'+crypto.createHash('sha256').update(provider+'\u0000'+subject).digest('base64url').slice(0,32);
   return {id,provider};
  }
  function issue(identity,{now=Date.now(),sessionId}={}){
