@@ -2,6 +2,12 @@
 
 **v2.54.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.54 — Mobile Release Foundation
+
+Loadnote now has an explicit mobile packaging boundary instead of only having Capacitor dependencies installed. The release adds a Capacitor configuration, reproducible `www/` bundle validation, runtime detection for browser/installed/native surfaces, and safe-area handling for mobile navigation and gym controls. CI now builds and checks the mobile bundle so missing assets, version drift, or accidentally packaged server/development directories can fail the release before browser tests.
+
+This is infrastructure rather than a claim that Loadnote is already commercially distributed. Native iOS/Android projects, final store identifiers/signing, accounts, cloud sync, subscriptions and production telemetry remain separate milestones. See `docs/mobile-release.md` for the current package contract and acceptance steps.
+
 ## v2.53 — Useful Progress Analytics
 
 Progress now starts with a compact 4-week comparison that answers a few useful questions without turning training into a score: how often you trained, how many strength sets you actually logged, how consistently RPE was recorded, how scheduled sessions resolved, and what your strongest recent performance evidence looks like. Confirmed competition lifts are prioritized; athletes without those mappings see their most-trained rep-based movements instead.
