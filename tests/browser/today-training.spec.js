@@ -78,3 +78,33 @@ test('Home explains an athlete-approved scheduled adaptation from exact review e
  await expect(host).toContainText('2 comparable sets above the approved RPE cap');
  await expect(host).toContainText('does not claim causation');
 });
+
+test('saving a shortened scheduled workout closes the loop to the next session',async({page})=>{
+ await addToday(page,'continuity-today');
+ const tomorrow=await page.evaluate(()=>{
+  const d=new Date(today()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);const day=d.toISOString().slice(0,10);
+  const plan=LoadnoteIntent.createPrescription([{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:140,reps:4,targetRpe:7.5},{weight:140,reps:4,targetRpe:7.5}]}],{type:'program',label:'Next squat'});
+  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions,{name:'Next squat',date:day,role:'volume',goal:'Build squat',prescription:plan},{id:'continuity-next'});
+  saveData(data);renderDashboard();return day;
+ });
+ await page.getByRole('button',{name:'Start workout',exact:true}).click();
+ await page.getByRole('button',{name:'Remove set',exact:true}).last().click();
+ await page.locator('.set-rpe').fill('8');
+ await page.locator('#session-intent > summary').click();
+ await expect(page.locator('#session-deviation-reason')).toBeVisible();
+ await page.locator('#session-deviation-reason').selectOption('time');
+ await page.locator('#session-deviation-notes').fill('Shortened for time');
+ await page.locator('#workout-actions [data-workout-action="review"]').click();
+ await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');
+ await page.getByRole('button',{name:'Save workout',exact:true}).click();
+ const recap=page.locator('#workout-recap .training-continuity-recap');
+ await expect(recap).toContainText('What Loadnote learned');
+ await expect(recap).toContainText('Partial session preserved: 1/2 planned sets represented');
+ await expect(recap).toContainText('Time constraint');
+ await expect(recap).toContainText('Next: '+tomorrow+' · Next squat');
+ await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ const home=page.locator('#today-training');
+ await expect(home).toContainText('Training logged');
+ await expect(home).toContainText('Next scheduled:');
+ await expect(home).toContainText('Next squat');
+});

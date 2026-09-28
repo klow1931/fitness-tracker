@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.50.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.51.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.51 — Week-to-Week Training Continuity
+
+Saving a workout now closes the loop instead of ending at “workout saved.” Loadnote summarizes the evidence that was actually recorded, preserves partial or shortened sessions without pretending missing work happened, surfaces any unresolved prior scheduled sessions, and shows the next scheduled workout. Home carries that continuity forward after today's training is logged. Past scheduled sessions without a linked workout remain unresolved until the athlete explicitly resolves them; Loadnote does not silently count them as missed or skipped.
 
 ## v2.50 — Adaptation Explanation Layer
 

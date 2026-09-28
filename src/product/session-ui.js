@@ -93,6 +93,7 @@ async function commitReviewedWorkout(){
   if(editing)showSubTab('workouts','wo-history');
   showToast(editing?'Workout updated':newBest?'Workout saved · New personal best!':'Workout saved · Session complete',newBest?'milestone':'success');
   if(typeof showWorkoutRecap==='function')showWorkoutRecap(savedWorkout,previousWorkouts,recapPRs,editing);
+  window.LoadnoteTrainingContinuityUI?.renderRecap(savedWorkout,data,{editing,asOf:today()});
 }
 function updateSessionComparisons(){
   const date=document.getElementById('wo-date')?.value;if(!date)return;
