@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.47.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.48.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.48 — Today → Train
+
+Home now puts the next action first. If a reviewed session is scheduled for today, Loadnote shows it in a dedicated Today card with the session goal, exercise/set summary, and one **Start workout** action. An unfinished linked draft becomes **Resume workout** after reload instead of creating a duplicate. Scheduled sessions can only be started on their saved Calendar date; reschedule first when plans change so strict planned-versus-performed evidence remains auditable. Unscheduled logging still works normally.
 
 ## v2.47 — Real-world launch hardening
 
