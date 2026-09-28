@@ -25,7 +25,7 @@
      for(const lift of LIFTS){
        const action=review.choices?.[lift]||'keep';if(action==='keep')continue;
        const id=review.report?.findings?.[lift]?.exerciseId;if(!id)continue;
-       const baseSessions=cycle.sessions.filter(s=>s.week===review.week&&s.exercises.some(e=>e.exerciseId===id)),nextSessions=cycle.sessions.filter(s=>s.week===review.nextWeek&&s.exercises.some(e=>e.exerciseId===id));
+       const baseSessions=cycle.sessions.filter(s=>s.week===review.week&&s.exercises.some(e=>e.exerciseId===id)),nextSessions=cycle.sessions.filter(s=>s.week===review.report?.nextWeek&&s.exercises.some(e=>e.exerciseId===id));
        const collect=(sessions,approvedAt,requireApproved)=>{
          const values=[],rpes=[];let expected=0,matched=0,sets=0,status='observed';
          for(const target of sessions){
