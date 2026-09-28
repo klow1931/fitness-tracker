@@ -4,6 +4,7 @@
 - Treat missing RPE as incomplete evidence rather than an error or invented effort value. RPE coverage is reported separately so programming logic can remain conservative when effort data is sparse.
 - Keep workout revision history auditable while evaluating data health against the corrected current workout record. A bad historical entry can remain visible in revision history without being mistaken for the active workout.
 - Add a Tools → Backups & data → Training data health panel with compact current-data status, RPE coverage and reviewable issue details.
+- Add the same current-data integrity check to the v2.46 next-program handoff: invalid/extreme current strength-set entries block launch until reviewed, while corrected historical revision warnings remain non-blocking audit evidence.
 - Harden JSON replacement imports by validating v25 meet cycles, adopted programs and frozen transition snapshots before current data is replaced. Invalid advanced-program records fail the import and leave the existing state intact.
 - Include training-data health in the import review prompt so suspicious current entries are visible before replacement while still preserving the user's choice to import valid data.
 - Add deterministic regression coverage using a real-world-style corrected 1016.95 kg bench typo, missing/invalid RPE, historical revision isolation and strict malformed-transition import rejection.
