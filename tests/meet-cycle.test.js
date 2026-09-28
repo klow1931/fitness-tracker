@@ -39,7 +39,7 @@ for(const bad of [invalid({weeks:6}),invalid({weeks:53}),invalid({peakWeeks:5}),
 const tomorrow={...reviewed,programmingProfiles:[...reviewed.programmingProfiles,{...reviewed.programmingProfiles[0],id:'later',recordedAt:'2026-09-25T12:00:00.000Z',context:{...reviewed.programmingProfiles[0].context,notes:'Later'}}]};
 assert.deepEqual(Meet.prepare(tomorrow,source,p.config,args),p,'As-known profile cutoff');
 const old=Core.normalizeState({schemaVersion:22,workouts:reviewed.workouts,phasePrograms:reviewed.phasePrograms});
-assert.equal(old.schemaVersion,24);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
+assert.equal(old.schemaVersion,25);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
 assert.deepEqual(Core.normalizeState({...scheduled}).meetCycles,scheduled.meetCycles);
 
 const competitionDate=(()=>{const d=new Date(config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(12-1)*7+2);return d.toISOString().slice(0,10);})();
