@@ -22,9 +22,11 @@
   document.getElementById('schedule-cancel').onclick=()=>dialog.close();dialog.oncancel=e=>{if(busy)e.preventDefault();};dialog.showModal();
  }
  function start(id){try{const s=LoadnoteSchedule.list(data.scheduledSessions||[]).find(s=>s.id===id);if(!s||s.status!=='scheduled')throw Error('Session is not scheduled');if(data.workouts.some(w=>w.sessionIntent?.schedule?.id===id))throw Error('This session already has a saved workout');
+  if(s.date!==today())throw Error('Reschedule this session to today before starting it. This keeps planned-versus-performed evidence on the correct training date.');
+  const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null;if(draft&&draft.sessionIntent?.schedule?.id===id){showTab('workouts');showSubTab('workouts','wo-log');showToast('Resumed scheduled workout draft.','info');return;}
   const intent={role:s.role,goal:s.goal,prescription:s.prescription,schedule:{id:s.id,revisionAt:s.revisionAt}};
   if(fillWorkoutForm(s.prescription.plannedExercises,'Scheduled: '+s.name,false,{restore:intent})===false)return;
-  document.getElementById('wo-date').value=today();showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();showToast('Scheduled plan loaded. Record actual work, then review and save.','success');
+  document.getElementById('wo-date').value=s.date;showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();window.renderTodayTraining?.();showToast('Scheduled plan loaded. Record actual work, then review and save.','success');
  }catch(error){showToast(error.message,'error');}}
- window.renderSchedule=render;
+ window.renderSchedule=render;window.startScheduledWorkout=start;
 })();
