@@ -1125,3 +1125,13 @@ body.dark .progress-analytics-plan,body.dark .progress-analytics-lifts,body.dark
     padding-bottom: calc(7.5rem + var(--loadnote-safe-bottom));
   }
 }
+
+
+/* v2.57 — compact consumer account status. */
+.account-status-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.account-status-head h3{margin:.1rem 0 .2rem;font-size:1rem;font-weight:700}
+.account-status-head .btn-primary,.account-status-head .btn-secondary{flex:0 0 auto;min-height:40px}
+@media(max-width:520px){
+ .account-status-head{align-items:stretch;flex-direction:column}
+ .account-status-head .btn-primary,.account-status-head .btn-secondary{width:100%;text-align:center;min-height:44px}
+}
