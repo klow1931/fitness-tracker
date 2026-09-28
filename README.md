@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.52.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.53.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.52 — Data & Reliability Hardening II
 
