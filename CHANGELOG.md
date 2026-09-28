@@ -1,3 +1,21 @@
+# v2.56.0 — Account Identity & Authentication Foundation
+
+- Add a server-side account/session layer that separates trusted identity verification, stable Loadnote account identity, Loadnote application sessions and protected account-scoped APIs.
+- Derive opaque account IDs from verified provider + provider-subject identity rather than email, and keep account identity stable across session-signing-key rotation.
+- Add short-lived signed Loadnote sessions with audience/version checks, unique session IDs, expiration, HttpOnly web cookies and per-session CSRF tokens.
+- Keep signed session credentials out of localStorage. The browser account-session client stores only non-secret session status and CSRF state in memory.
+- Add `GET /api/auth/session`, `POST /api/auth/logout` and a protected `GET /api/account` boundary.
+- Add cookie-CSRF enforcement for authenticated state-changing requests and prepare bearer-session verification for later native-client work without adding persistent bearer storage.
+- Route secure-backend Coach requests through the account-session client so authenticated deployments automatically include credentials and CSRF protection.
+- Replace wildcard credential CORS with same-host / explicitly allowed-origin rules. Production/native cross-origin callers must be listed in `LOADNOTE_ALLOWED_ORIGINS`.
+- Default production backend deployments to authenticated access. When production authentication is required, refuse startup unless `LOADNOTE_AUTH_SECRET` is at least 32 bytes.
+- Add a development-only session issuer guarded by explicit environment flags and a separate development key; forcibly disable it in production.
+- Remove backend URL / backend-enable controls that had leaked into the consumer custom-food UI. Developer/provider configuration remains implementation/development plumbing rather than normal consumer product UI.
+- Add deterministic tests for identity stability, signed-session tamper/expiry rejection, cookie flags, CSRF, account protection, CORS rejection, production startup guardrails and client session behavior.
+- Add desktop/mobile browser coverage proving authenticated Coach requests receive CSRF without persisting the session token in localStorage.
+- Add `.env.example` plus `docs/auth-architecture.md` documenting production defaults, security boundaries, future identity-provider integration and the relationship to the v2.55 sync protocol.
+- No schema migration, production Apple/Google/email sign-in, password storage, cloud sync, persistent account database, refresh-token store or account-management UI in this release.
+
 # v2.55.0 — Sync-Safe Training Data Foundation
 
 - Add `loadnote-sync-v1`, a deterministic structured-data contract for future account synchronization without adding network sync yet.
