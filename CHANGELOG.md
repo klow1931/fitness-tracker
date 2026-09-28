@@ -1,3 +1,15 @@
+# v2.41.0 — Date-free strength-goal cycles and dynamic block horizons
+
+- Add a date-free strength-goal cycle engine that chooses a conservative next phase shape from the current per-lift goal objectives without requiring a meet or PR date.
+- Express goal horizon in **productive blocks**, not calendar dates. With fewer than two completed comparable goal-aware blocks, Loadnote explicitly withholds a horizon.
+- Require repeated positive comparable block responses before estimating a range. Negative, missing, identity-changed, or non-comparable blocks do not become optimistic progress evidence.
+- Recalculate the block range from the athlete's own completed goal-aware phase programs and current competition-lift capacity evidence; ranges are planning context, not promises.
+- Use objective-aware phase shapes: development, strength-development, specific-strength, or consolidation. Only accumulation/strength duration is prefilled; training maxes, exercises, frequency, sets, and weekly adaptation rules remain separately reviewed.
+- Keep the existing deload boundary and supported phase-duration limits.
+- Surface goal-cycle guidance and per-lift horizon status directly in the phase builder. Date-free goals show that no target date is required.
+- Preserve the v2.40 target/training-max separation. Goal distance never directly sets load.
+- Add deterministic and browser coverage for phase-shape selection, horizon evidence thresholds, immutable source configuration, and date-free phase-builder defaults. No top-level schema migration.
+
 # v2.40.0 — Goal → Programming bridge
 
 - Connect active powerlifting squat, bench and deadlift targets to reviewed programming context without converting long-term goals into training maxes or direct load prescriptions.
