@@ -10,7 +10,7 @@
   }
   function goalCycleContext(cycle){
     if(!cycle||cycle.status!=='ready')return cycle?'<div class="cycle-controller-summary"><p><b>Goal-cycle guidance:</b> '+esc(cycle.summary)+'</p></div>':'';
-    return '<div class="cycle-controller-summary"><p><b>Goal-cycle guidance:</b> '+esc(cycle.summary)+'</p>'+
+    return '<div class="cycle-controller-summary"><p><b>Goal-cycle guidance:</b> '+esc(cycle.summary)+'</p><p>'+esc(cycle.goalProgramming?.goal?.eventDate?'Target date: '+cycle.goalProgramming.goal.eventDate+'.':'No target date required; Loadnote will reassess after each completed block.')+'</p>'+
       LoadnotePhaseBuilder.LIFTS.map(l=>{const g=cycle.lifts[l];if(!g?.targetKg)return '';return '<p><b>'+esc(g.name)+'</b> · '+esc(g.objective.label)+' · horizon: '+esc(g.horizon.label)+'<br><small>'+esc(g.horizon.reason)+'</small></p>';}).join('')+
       '<p class="more-hint">The suggested '+cycle.recommendation.totalWeeks+'-week phase shape changes only accumulation/strength duration. Training maxes, exercises, frequency, sets and weekly adaptations still require normal review.</p></div>';
   }
