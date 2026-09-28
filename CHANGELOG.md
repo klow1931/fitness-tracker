@@ -1,3 +1,17 @@
+# v2.54.0 — Mobile Release Foundation
+
+- Add a real Capacitor application configuration for the Loadnote mobile shell with `www` as the explicit consumer bundle.
+- Add runtime-surface detection that distinguishes regular browser, installed standalone web app and native Capacitor execution without scattering user-agent checks through product code.
+- Initialize runtime detection even on native surfaces where service workers may be unavailable.
+- Opt the app shell into `viewport-fit=cover` and add installed/native safe-area handling for the app shell, toast placement, bottom navigation spacing and gym-mode controls.
+- Tighten the installable web manifest around the Loadnote product identity, stable app scope/id and maskable icon support.
+- Add `npm run check:mobile`: rebuild the `www` bundle, validate Capacitor/manifest configuration, ensure referenced local assets are present, verify release/cache consistency and reject server/development directories from the consumer package.
+- Run the mobile bundle gate in GitHub Actions before Playwright.
+- Add deterministic tests for browser/installed/native runtime detection and static mobile release configuration, plus browser coverage that verifies the active runtime marker and 44px mobile primary-navigation targets.
+- Document the current mobile package boundary, development bundle identifier, native-project generation steps and what remains intentionally incomplete before a commercial store release.
+- Keep AI provider secrets server-side; `backend/`, tests, GitHub workflow files and environment files are not copied into the mobile web bundle.
+- No schema migration and no account, cloud-sync, payment, store-signing or push-notification claim in this release.
+
 # v2.53.0 — Useful Progress Analytics
 
 - Add a compact, evidence-first Training Progress section to Progress instead of another dense dashboard.
