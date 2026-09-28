@@ -24,6 +24,15 @@ state=Integrity.undoWorkoutRevision(state,'delete-revision',{now:'2026-09-02T00:
 
 const preview=Integrity.previewImport({workouts:[{id:'1',x:1},{id:'2'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'accept'}]},{workouts:[{id:'1',x:2},{id:'3'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'modify'},{id:'d2',response:'ignore'}]});
 assert.deepEqual(preview.workouts,{before:2,after:2,added:1,changed:1,removed:1});assert.deepEqual(preview.decisionEvents,{before:1,after:2,added:1,changed:1,removed:0});
+const outlierWorkout={id:'outlier',date:'2026-09-14',exercises:[{name:'Competition Bench Press',exerciseId:'bench',type:'strength',sets:[{weight:132.45,reps:1,rpe:8},{weight:119.75,reps:2,rpe:7},{weight:114.76,reps:2,rpe:6.5},{weight:114.76,reps:2,rpe:6.5},{weight:109.77,reps:3,rpe:6},{weight:1016.95,reps:3,rpe:6}]}]};
+const correctedWorkout=JSON.parse(JSON.stringify(outlierWorkout));correctedWorkout.exercises[0].sets[5].weight=109.77;
+const dirtyAudit=Integrity.auditTrainingData({workouts:[outlierWorkout],workoutRevisions:[]});
+assert.equal(dirtyAudit.status,'review');assert.equal(dirtyAudit.current.suspiciousLoads,1);assert.equal(dirtyAudit.current.rpeCoverage,100);
+const correctedAudit=Integrity.auditTrainingData({workouts:[correctedWorkout],workoutRevisions:[{id:'fix',workoutId:'outlier',recordedAt:'2026-09-15T00:00:00.000Z',action:'edit',before:outlierWorkout,after:correctedWorkout}]});
+assert.equal(correctedAudit.status,'clean','corrected current workout must not be contaminated by a bad historical revision');assert.equal(correctedAudit.current.suspiciousLoads,0);assert(correctedAudit.history.suspiciousLoads>=1,'historical outlier remains visible only as audit history');
+const missingAudit=Integrity.auditTrainingData({workouts:[{id:'rpe',date:'2026-09-15',exercises:[{name:'Bench',sets:[{weight:100,reps:5},{weight:100,reps:5,rpe:11}]}]}]});
+assert.equal(missingAudit.current.missingRpe,1);assert.equal(missingAudit.current.invalidRpe,1);assert.equal(missingAudit.status,'review');
+
 const withRecovery=Integrity.addRecoverySnapshot({workouts:[]},{workouts:[before],recoverySnapshots:[{id:'old'}]},'Before import',{now:'2026-09-03T00:00:00.000Z',id:'snapshot'});
 assert.equal(withRecovery.recoverySnapshots.length,1);assert.equal(Integrity.restoreRecoverySnapshot(withRecovery,'snapshot').workouts[0].id,'workout');
 
@@ -32,4 +41,4 @@ const records=Blocks.upsert([],context,{now:'2026-09-04T00:00:00.000Z'}),analysi
 assert.equal(analysis.frequencyPerWeek,null);assert.equal(analysis.observedFrequencyPerWeek,1.8);assert.equal(Blocks.contextWarnings(context).length,2);
 const mergedAnalysis=Blocks.analyze(records,merged.workouts,records[0].id,{asOf:'2026-08-31',retrospective:true});assert.equal(mergedAnalysis.exercises.length,2);assert.equal(Core.exerciseHistory(merged.workouts,'Hip Adduction').length,2);
 const complete=Blocks.upsert(records,{...context,dataCompleteness:'complete'},{id:records[0].id,now:'2026-09-05T00:00:00.000Z'});assert.equal(Blocks.analyze(complete,migrated.workouts,records[0].id,{asOf:'2026-08-31',retrospective:true}).frequencyPerWeek,0.5);
-console.log('Data integrity migration, aliases, revisions, recovery, previews, and coverage passed');
+console.log('Data integrity migration, aliases, revisions, health audit, recovery, previews, and coverage passed');
