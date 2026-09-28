@@ -39,3 +39,13 @@ test('training data health surfaces current outliers without treating corrected 
  await expect(page.locator('#training-data-health')).toContainText('suspicious loads: 0');
  await expect(page.locator('#training-data-health')).toContainText('Historical revision warnings: 1');
 });
+
+test('replacement import rejects malformed v25 program-transition records before replacing data',async({page})=>{
+ await save(page,'Squat','120');const before=await page.evaluate(()=>data.workouts[0].id);
+ const incoming={schemaVersion:25,workouts:[{id:'replacement',date:'2026-09-01',exercises:[{name:'Deadlift',sets:[{weight:150,reps:3,rpe:7}]}]}],nutrition:[],trainingBlocks:[],transitionSnapshots:[{id:'broken'}]};
+ let message='';page.once('dialog',dialog=>{message=dialog.message();dialog.accept();});
+ await page.locator('#import-file').setInputFiles({name:'malformed.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});
+ await expect.poll(()=>message).toContain('Import failed');
+ expect(message).toContain('Invalid transition baseline');
+ expect(await page.evaluate(()=>data.workouts[0].id)).toBe(before);
+});
