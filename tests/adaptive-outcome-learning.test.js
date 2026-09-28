@@ -38,7 +38,7 @@ for(const row of cycle.sessions.filter(s=>s.week===2)){
 const end=cycle.weekly.find(w=>w.week===2).endDate;
 const learned=Learning.analyze(cycleState,{asOf:end,now:end+'T23:00:00.000Z'});
 const cycleRow=learned.rows.find(r=>r.scope==='cycle'&&r.lift==='squat');
-assert(cycleRow);assert.equal(cycleRow.action,'reduce-load');assert.equal(cycleRow.status,'observed');assert(Number.isFinite(cycleRow.capacityChangePct));
+assert(cycleRow);assert.equal(cycleRow.action,'reduce-load');assert.equal(cycleRow.status,'observed',JSON.stringify(cycleRow));assert(Number.isFinite(cycleRow.capacityChangePct));
 
 const patterns=Learning.summarize([
  {lift:'bench',action:'increase-load',status:'observed',capacityChangePct:2,outcomeClass:'improved'},
