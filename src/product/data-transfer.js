@@ -11,6 +11,9 @@
         try {
           const parsed = JSON.parse(reader.result);
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
+          const backup=LoadnoteIntegrity.verifyBackupManifest(parsed);
+          if(backup.status==='invalid')throw new Error('Backup integrity check failed: '+backup.reason);
+          delete parsed._loadnoteBackup;
           parsed.scheduledSessions=LoadnoteSchedule.validate(parsed.scheduledSessions??[]);
           parsed.athleteGoals=LoadnoteGoals.validate(parsed.athleteGoals===undefined?[]:parsed.athleteGoals);
           parsed.programmingProfiles=LoadnoteProgrammingProfile.validate(parsed.programmingProfiles===undefined?[]:parsed.programmingProfiles);
@@ -24,9 +27,11 @@
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
-          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),health=LoadnoteIntegrity.auditTrainingData(incoming),line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
+          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming),health=reliability.training,relationships=reliability.relationships,line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
+          const backupLine=backup.verified?`Backup integrity: verified · exported ${backup.exportedAt} · schema ${backup.schemaVersion??'—'}.`:'Backup integrity: legacy backup without a v2.52 fingerprint; structural validation will still run.';
           const healthLine=health.status==='clean'?`Training data health: no invalid or extreme current strength-set entries detected · RPE coverage ${health.current.rpeCoverage??'—'}%.`:`Training data health: review ${health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads} current strength-set issue(s) after import · RPE coverage ${health.current.rpeCoverage??'—'}%.`;
-          const message=['Review import changes',line('Workouts',preview.workouts),line('Training blocks',preview.trainingBlocks),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Phase programs',preview.phasePrograms),line('Phase reviews',preview.phaseReviews),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'',healthLine,'','This replaces current data after creating an automatic recovery snapshot.'];
+          const relationshipLine=relationships.blocking?`Record links: review ${relationships.blocking} blocking relationship issue(s) before relying on adaptive evidence.`:relationships.warnings?`Record links: core workout/Calendar links are clear · ${relationships.warnings} revision-history warning(s).`:'Record links: workout, Calendar and planned-work references are internally consistent.';
+          const message=['Review import changes',backupLine,line('Workouts',preview.workouts),line('Calendar sessions',preview.scheduledSessions),line('Workout revisions',preview.workoutRevisions),line('Training blocks',preview.trainingBlocks),line('Meet cycles',preview.meetCycles),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Phase programs',preview.phasePrograms),line('Phase reviews',preview.phaseReviews),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Adopted programs',preview.adoptedPrograms),line('Transition baselines',preview.transitionSnapshots),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'',healthLine,relationshipLine,'','This replaces current data after creating an automatic recovery snapshot.'];
           if (!confirm(message.join('\n'))) return;
           data = LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
           clearTimeout(saveTimer);
@@ -47,9 +52,10 @@
 
     function exportData() {
       // Strip large photo binaries from routine backup
-      const payload = { ...data, recoverySnapshots:[], progressPhotos: (data.progressPhotos || []).map(p => ({
+      const rawPayload = { ...data, recoverySnapshots:[], progressPhotos: (data.progressPhotos || []).map(p => ({
         id: p.id, date: p.date, tag: p.tag, note: p.note, hasImage: !!p.dataUrl
       })) };
+      const payload=LoadnoteIntegrity.addBackupManifest(rawPayload,{releaseVersion:window.LoadnoteCore?.RELEASE_VERSION||data.releaseVersion||''});
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -61,7 +67,7 @@
       data.backupBannerDismissed = null;
       saveData(data);
       updateBackupBanner();
-      showToast('JSON backup downloaded (photos excluded — use Photos tab to export them)', 'success');
+      showToast('Verified JSON backup downloaded (photos excluded — use Photos tab to export them)', 'success');
     }
 
     function exportPhotosBackup() {
