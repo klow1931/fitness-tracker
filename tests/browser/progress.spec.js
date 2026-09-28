@@ -89,3 +89,25 @@ test('Progress record book searches compact rows and hides destructive action',a
  await expect(page.locator('#pr-exercise')).toBeVisible();
  expect(await page.evaluate(()=>data.prs.map(p=>p.id))).toEqual(['bench-one','squat-three']);
 });
+
+test('Progress compares useful 4-week evidence without turning sparse data into a score',async({page})=>{
+ await page.evaluate(()=>{
+  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+  const asOf=today(),dates=[move(asOf,-49),move(asOf,-35),move(asOf,-21),move(asOf,-7)];
+  data.exerciseCatalog=[{id:'s',name:'Competition Squat',aliases:[]}];
+  data.exerciseRoles=LoadnoteReadiness.replace([],[{exerciseId:'s',role:'competition',competitionLift:'squat'}],{now:dates[0]+'T00:00:00.000Z',createId:()=> 'progress-role'});
+  data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*2.5,reps:5,rpe:8}]}]}));
+  data.scheduledSessions=[];data.prs=[];invalidateViews();showTab('prs');
+ });
+ const host=page.locator('#progress-analytics');
+ await expect(host).toContainText('Training progress');
+ await expect(host).toContainText('Confirmed competition lift');
+ await expect(host).toContainText('4-week best estimate change');
+ await expect(host).toContainText('2 capacity-evidence days');
+ await page.evaluate(()=>setUnit('lb'));
+ await expect(host).toContainText('lb');
+ expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
+ await host.getByRole('button',{name:'Details',exact:true}).click();
+ await expect(page.locator('#exercise-detail')).toBeVisible();
+ await expect(page.locator('#exercise-detail-title')).toContainText('Competition Squat');
+});

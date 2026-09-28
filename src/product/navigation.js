@@ -17,7 +17,7 @@ function renderVisibleView(panel,sub) {
     if(sub==='nu-library')renderFoodLibrary();
     if(sub==='nu-history')renderNutritionHistory();
   }
-  else if(panel==='prs'){renderPRs();window.renderTrainingReview?.();}
+  else if(panel==='prs'){renderPRs();window.renderProgressAnalytics?.();window.renderTrainingReview?.();}
   else if(panel==='measures')renderMeasures();
   else if(panel==='photos')renderPhotos();
   else if(panel==='coach')renderCoach();

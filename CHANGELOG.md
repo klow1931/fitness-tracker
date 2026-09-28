@@ -1,3 +1,17 @@
+# v2.53.0 — Useful Progress Analytics
+
+- Add a compact, evidence-first Training Progress section to Progress instead of another dense dashboard.
+- Compare the most recent 4 weeks with the previous 4 weeks for logged sessions, completed strength sets and valid RPE coverage.
+- Keep volume quantity descriptive: more sessions or sets are not labeled better or worse.
+- Summarize recent scheduled-session execution with completed, explicitly skipped, unresolved and cancelled counts plus resolved-session adherence.
+- Prioritize athlete-confirmed competition squat, bench and deadlift mappings for performance evidence. When no competition lifts are mapped, fall back to the three most-trained rep-based strength movements.
+- Show the best RPE-aware demonstrated-capacity estimate and heaviest logged set for each featured movement while keeping the estimate separate from tested 1RM, training max and prescribed load.
+- Only show a 4-week capacity-change comparison when both windows contain at least two distinct capacity-evidence days. Sparse evidence stays visible without a percentage-change claim.
+- Keep all internal loads in kg and convert only at display time; changing kg/lb does not rewrite workout history.
+- Link each featured movement directly to the existing Exercise Details view for deeper history.
+- Add deterministic unit coverage for date windows, schedule execution, explicit competition mappings, sparse guards and fallback movement selection, plus desktop/mobile browser coverage.
+- No schema migration and no automatic training/program changes.
+
 # v2.52.0 — Data & Reliability Hardening II
 
 - Add cross-record integrity checks for current workouts, Calendar sessions, planned-work snapshots and workout revision history.

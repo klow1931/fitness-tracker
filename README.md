@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.52.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.53.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.53 — Useful Progress Analytics
+
+Progress now starts with a compact 4-week comparison that answers a few useful questions without turning training into a score: how often you trained, how many strength sets you actually logged, how consistently RPE was recorded, how scheduled sessions resolved, and what your strongest recent performance evidence looks like. Confirmed competition lifts are prioritized; athletes without those mappings see their most-trained rep-based movements instead.
+
+Performance comparisons use RPE-aware demonstrated-capacity estimates only when both 4-week windows contain enough evidence days. Sparse data stays visible without a percentage-change claim, and logged load, estimated capacity, tested 1RM, training max and prescribed load remain distinct concepts.
 
 ## v2.52 — Data & Reliability Hardening II
 

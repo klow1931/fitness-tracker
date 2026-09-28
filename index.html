@@ -501,6 +501,7 @@
   <article class="card progress-overview-card"><span>Record book</span><b id="progress-pr-count">0 records</b><small>Your saved best performances</small></article>
 </div>
 <div class="progress-quick-actions"><button type="button" class="btn-secondary text-sm" onclick="showTab('measures')">Measurements</button><button type="button" class="btn-secondary text-sm" onclick="showTab('photos')">Progress photos</button></div>
+<section id="progress-analytics" class="card" aria-label="Training progress analytics"></section>
 <section id="training-review" class="card" aria-label="Training Review"></section>
 <div class="more-columns">
       <details id="pr-entry" class="card pr-entry">
@@ -1357,7 +1358,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.52.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.53.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1969,6 +1970,7 @@
   <script src="src/product/progress-model.js" defer></script>
   <script src="src/product/training-blocks.js" defer></script>
   <script src="src/product/decision-readiness.js" defer></script>
+  <script src="src/product/progress-analytics.js" defer></script>
   <script src="src/product/athlete-goals.js" defer></script>
   <script src="src/product/athlete-goals-ui.js" defer></script>
   <script src="src/product/programming-profile.js" defer></script>
@@ -2035,6 +2037,7 @@
   <script src="src/product/training-blocks-ui.js" defer></script>
   <script src="src/product/decision-readiness-ui.js" defer></script>
   <script src="src/product/progress-ui.js" defer></script>
+  <script src="src/product/progress-analytics-ui.js" defer></script>
   <script src="src/product/session-ui.js" defer></script>
   <script src="src/product/workout-logger.js" defer></script>
   <script src="app.js" defer></script>
