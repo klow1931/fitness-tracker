@@ -54,8 +54,12 @@ const {createServer}=require('../backend/server');
   assert.equal(response.status,200);
   assert.match(response.headers.get('set-cookie'),/Max-Age=0/);
 
+  response=await fetch(base+'/api/health');
+  assert.equal(response.headers.get('x-content-type-options'),'nosniff');
   response=await fetch(base+'/api/health',{headers:{Origin:'https://evil.example'}});
   assert.equal(response.status,403,'unconfigured cross-origin callers must be rejected');
+  response=await fetch(base+'/api/health',{headers:{Origin:'capacitor://'+address.address+':'+address.port}});
+  assert.equal(response.status,403,'native/custom-scheme origins require explicit allow-listing even when the host text matches');
  }finally{await new Promise(resolve=>server.close(resolve));}
 
  assert.throws(()=>createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'1'}}),/AUTH_SECRET/);
