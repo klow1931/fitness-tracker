@@ -1004,3 +1004,14 @@ body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; bo
 #exercise-rows .next-set-guidance{margin:.55rem 0 .15rem;padding:.65rem .8rem;border:1px solid #cbd5e1;border-radius:.65rem;font-size:.85rem;line-height:1.45;overflow-wrap:anywhere;background:rgba(148,163,184,.09)}
 #exercise-rows .next-set-guidance[data-status="above-cap"],#exercise-rows .next-set-guidance[data-status="work-different"]{border-color:#d97706;background:rgba(245,158,11,.1)}
 #exercise-rows .set-done-check{min-width:22px;min-height:22px}
+
+
+/* v2.48 — make the next training action obvious without turning Home into a dashboard wall. */
+#today-training .eyebrow{margin:0 0 .25rem;font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;opacity:.62}
+.today-training-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.today-training-head h2{margin:.05rem 0 .3rem;font-size:1.28rem;line-height:1.2}
+.today-training-head p{margin:0}
+.today-training-exercises{display:flex;flex-wrap:wrap;gap:.45rem;margin:.9rem 0 .65rem}
+.today-training-exercises span{display:inline-flex;align-items:center;border:1px solid rgba(100,116,139,.22);border-radius:999px;padding:.38rem .65rem;font-size:.82rem;background:rgba(148,163,184,.08)}
+.today-training-actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.9rem}
+@media(max-width:640px){.today-training-actions>*{flex:1 1 10rem}.today-training-head{gap:.65rem}}
