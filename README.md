@@ -2,6 +2,10 @@
 
 **v2.48.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.48 — Today → Train
+
+Home now puts the next action first. If a reviewed session is scheduled for today, Loadnote shows it in a dedicated Today card with the session goal, exercise/set summary, and one **Start workout** action. An unfinished linked draft becomes **Resume workout** after reload instead of creating a duplicate. Scheduled sessions can only be started on their saved Calendar date; reschedule first when plans change so strict planned-versus-performed evidence remains auditable. Unscheduled logging still works normally.
+
 ## v2.47 — Real-world launch hardening
 
 Before the first full Loadnote-directed training cycle, v2.47 hardens the data path rather than adding another programming layer. Tools now includes a training-data health audit for invalid loads/RPE values, missing-RPE coverage and extreme same-exercise load outliers. Corrected workout revisions stay visible as history but do not replace the active workout record. JSON imports now validate meet-cycle, adopted-program and frozen-transition structures before replacing local data. The next-program handoff also blocks on unresolved current load/RPE integrity issues while corrected historical revisions remain non-blocking evidence. No new programming action or schema migration is introduced.
