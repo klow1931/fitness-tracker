@@ -2,6 +2,14 @@
 
 **v2.56.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.56 — Account Identity & Authentication Foundation
+
+Loadnote now has a real server-side account/session boundary without pretending a production sign-in provider already exists. A trusted external identity can map to a stable opaque Loadnote account ID, the server can issue short-lived signed application sessions, cookie-authenticated state-changing requests require CSRF, and account-scoped endpoints no longer have to trust a client-supplied account identifier. Session credentials stay out of localStorage.
+
+Production backend deployments now default toward authenticated access and refuse to start with required auth but no sufficiently strong server secret. Cross-origin credential access is explicit instead of wildcard. A development-only session issuer exists solely for integration tests/local development and is forcibly disabled in production. Consumer backend configuration controls were removed from the normal food-entry UI. See `docs/auth-architecture.md`.
+
+This is still an authentication foundation, not complete consumer accounts: Apple/Google/email sign-in, persistent account storage, recovery, linking, refresh/revocation infrastructure and actual cloud synchronization remain later milestones.
+
 ## v2.55 — Sync-Safe Training Data Foundation
 
 Loadnote now has a deterministic account-data sync model before any cloud transport is introduced. Structured records are compared by stable identity against a known shared base, allowing safe one-sided changes while turning true concurrent edits into explicit conflicts instead of using last-write-wins. A conflict-free record plan is still rejected if the combined result would break workout/Calendar relationship integrity.
