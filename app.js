@@ -303,6 +303,7 @@
     let bwChart = null;
     function renderDashboard() {
       window.renderSchedule?.();
+      window.renderTodayTraining?.();
       renderHomeActivity();
       const now = new Date();
       const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
