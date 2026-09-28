@@ -150,9 +150,10 @@
     const plan=planThreeWay(baseState,localState,remoteState);
     if(plan.status==='conflict')return {version:1,status:'conflict',plan,state:null};
     const merged=clone(localState)||{},localProject=project(localState),remoteProject=project(remoteState);
+    const rawMap=(rows,collection)=>{const map=new Map();for(const row of rows||[]){if(!row||row.id==null)throw Error(collection+' contains a record without a stable id');const id=String(row.id);if(map.has(id))throw Error(collection+' contains duplicate id '+id);map.set(id,clone(row));}return map;};
     const byCollection=new Map(COLLECTIONS.map(name=>[name,plan.items.filter(item=>item.scope==='collection'&&item.collection===name)]));
     for(const collection of COLLECTIONS){
-      const localRows=localProject.collections[collection]||[],remoteMap=recordMap(remoteProject.collections[collection]||[],collection),decisions=new Map((byCollection.get(collection)||[]).map(item=>[item.id,item]));
+      const localRows=Array.isArray(localState?.[collection])?localState[collection]:[],remoteMap=rawMap(Array.isArray(remoteState?.[collection])?remoteState[collection]:[],collection),decisions=new Map((byCollection.get(collection)||[]).map(item=>[item.id,item]));
       const used=new Set(),rows=[];
       for(const row of localRows){
         const id=String(row.id),item=decisions.get(id);
@@ -168,8 +169,8 @@
     }
     for(const document of DOCUMENTS){
       const item=plan.items.find(row=>row.scope==='document'&&row.document===document);
-      if(item?.resolution==='remote')merged[document]=clone(remoteProject.documents[document]);
-      else if(item?.resolution==='same'&&same(localProject.documents[document],remoteProject.documents[document]))merged[document]=clone(localProject.documents[document]);
+      if(item?.resolution==='remote')merged[document]=clone(remoteState?.[document]??null);
+      else if(item?.resolution==='same'&&same(localProject.documents[document],remoteProject.documents[document]))merged[document]=clone(localState?.[document]??null);
     }
     const relationshipAudit=Integrity.auditRelationships(merged);
     if(relationshipAudit.blocking)return {version:1,status:'invalid-merge',plan,state:null,relationshipAudit};
