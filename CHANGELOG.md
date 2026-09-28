@@ -1,3 +1,16 @@
+# v2.50.0 — Adaptation Explanation Layer
+
+- Add a deterministic explanation layer for athlete-approved weekly and phase programming changes.
+- Explain **what changed**, **why it changed**, and the exact logged evidence that made the bounded change reviewable.
+- Derive explanations from accepted review records and the exact before/after Calendar revisions instead of generating retrospective AI rationale.
+- Support one-set reductions/additions and bounded load increases/reductions, including the number of affected future sessions and exact load deltas.
+- Keep squat, bench and deadlift evidence separate and preserve the accepted review's original decision record.
+- Show **What changed & why** on Home when today's scheduled workout was revised by an accepted training review.
+- Surface the same explanation in Decisions for the next revised scheduled workout.
+- Clearly distinguish recorded evidence from causal claims: explanations do not diagnose fatigue, recovery or adaptation.
+- Add deterministic unit coverage for weekly/phase review explanations and browser coverage for the Today explanation flow.
+- No schema migration; schema remains v25 and existing accepted review / Calendar revision history remains authoritative.
+
 # v2.49.0 — Workout Logger Speed & Clarity
 
 - Add a focused between-set quick-entry flow for strength sets without changing the stored workout schema.
