@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.54.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.55.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.54 — Mobile Release Foundation
 
