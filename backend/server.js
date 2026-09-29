@@ -203,6 +203,13 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
     const session=authenticated(req,res,{required:true});if(!session)return;
     return send(req,res,200,{account:session.account,session:{expiresAt:session.expiresAt,transport:session.transport}});
    }
+   if(req.method==='DELETE'&&pathname==='/api/account'){
+    const session=authenticated(req,res,{csrf:true,required:true});if(!session)return;
+    const remote=syncStore?syncStore.remove(session.account.id):{deleted:false};
+    const account=accountStore.deleteAccount(session.account.id);
+    if(!account.deleted)throw Error('Authenticated account disappeared before deletion completed');
+    return send(req,res,200,{deleted:true,remoteTrainingDeleted:remote.deleted===true,localDeviceDataDeleted:false},'application/json',{'Set-Cookie':auth.clearCookie()});
+   }
    if(req.method==='GET'&&pathname==='/api/sync/status'){
     const session=authenticated(req,res,{required:true});if(!session)return;
     if(!syncStore)return send(req,res,503,{error:'Remote training storage is not configured.',code:'remote_storage_unavailable'});
