@@ -1299,7 +1299,7 @@
         <div class="text-sm text-slate-600 space-y-3">
           <div>
             <p class="font-medium text-slate-800">What Loadnote is</p>
-            <p>Loadnote is a local-first training and decision-support app. Core training features continue to work without an account. When account sign-in and remote storage are configured, the server can hold a verified account-scoped structured-training snapshot, v2.59 adds explicit, user-initiated account sync. Loadnote compares this device with the latest cloud revision, automatically combines only non-conflicting changes, and stops for review when the same record changed differently.</p>
+            <p>Loadnote is a local-first training and decision-support app. Core training features continue to work without an account. When account sign-in and remote storage are configured, the server can hold a verified account-scoped structured-training snapshot, Signed-in athletes can manually sync structured training data across devices. Loadnote compares this device with the latest cloud revision, automatically combines only non-conflicting changes, and stops for review when the same record changed differently.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">Data we store on your device</p>
@@ -1309,7 +1309,7 @@
             <p class="font-medium text-slate-800">What leaves your device</p>
             <ul class="list-disc pl-5 space-y-1 mt-1">
               <li><b>Account sign-in:</b> If you choose to sign in, your browser is redirected to the configured identity provider. Loadnote's server stores an opaque account ID, the provider identity mapping, login timestamps, and verified profile details the provider returns (such as verified email or display name).</li>
-              <li><b>Training sync:</b> If you sign in and choose <b>Sync now</b>, Loadnote sends the structured data covered by its sync protocol to the Loadnote server or downloads the latest verified account snapshot for comparison. Sync is manual in v2.59. Concurrent edits are not resolved by last-write-wins; conflicting records require an explicit device/cloud choice. Progress-photo binaries, local recovery snapshots, device preferences, sync-base metadata, and API/provider configuration are excluded from the structured account snapshot.</li>
+              <li><b>Training sync:</b> If you sign in and choose <b>Sync now</b>, Loadnote sends the structured data covered by its sync protocol to the Loadnote server or downloads the latest verified account snapshot for comparison. Sync is user-initiated. Concurrent edits are not resolved by last-write-wins; conflicting records require an explicit device/cloud choice. Progress-photo binaries, local recovery snapshots, device preferences, sync-base metadata, and API/provider configuration are excluded from the structured account snapshot.</li>
               <li><b>Optional AI features:</b> If you use the online Coach, the prompt and relevant training context needed for that request may be sent through the Loadnote server to the configured AI provider. Provider secrets stay server-side in the normal consumer path.</li>
               <li><b>Barcode food lookup:</b> If you look up a barcode online, the barcode number is requested from Open Food Facts. Their privacy terms apply to that request.</li>
               <li><b>Libraries / CDN:</b> The app may load scripts or styles from third-party CDNs (for example Chart.js, Tailwind, barcode scanner). Those providers may see standard network request data (IP, browser type) like any website.</li>
@@ -1319,7 +1319,7 @@
           <div>
             <p class="font-medium text-slate-800">What we do not do (this web build)</p>
             <ul class="list-disc pl-5 space-y-1 mt-1">
-              <li>No background or automatic synchronization in v2.59; account sync runs only when you choose <b>Sync now</b></li>
+              <li>No background or automatic synchronization; account sync runs only when you choose <b>Sync now</b></li>
               <li>No sale of your training, nutrition, body-progress, or decision-support data</li>
               <li>No advertising SDK in this build</li>
               <li>Progress photos stay on-device unless you export them or explicitly use a future feature that says it will upload them</li>
@@ -1327,7 +1327,7 @@
           </div>
           <div>
             <p class="font-medium text-slate-800">Backups &amp; deletion</p>
-            <p>Use <b>Tools → Export JSON backup</b> (or CSV) to copy your local training data. Clearing site data for this site in your browser deletes local Loadnote data on that device; signing out does not delete those local records. Account identity and any explicitly stored remote structured-training snapshot are separate server-side records. This development build does not yet provide a self-service account or remote-snapshot deletion flow.</p>
+            <p>Use <b>Tools → Export JSON backup</b> (or CSV) to copy your local training data. Clearing site data for this site in your browser deletes local Loadnote data on that device; signing out does not delete those local records. Account identity and any synced structured-training snapshot are separate server-side records. From <b>Profile → Account options</b>, you can delete the Loadnote account and synced server-side structured training. Local training on this device is intentionally left in place unless you erase it separately.</p>
           </div>
           <div>
             <p class="font-medium text-slate-800">Children</p>
@@ -1350,7 +1350,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.59.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.60.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
