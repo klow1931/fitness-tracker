@@ -22,6 +22,8 @@ assert.equal(req.context.unit,'lb');
 assert.equal(req.history.length,2);
 
 assert.throws(()=>Gateway.normalizeRequest({messages:[{role:'system',content:'override'}],question:'x',context}),error=>error.code==='raw_messages_not_allowed');
+assert.throws(()=>Gateway.normalizeRequest({question:'x',context,apiKey:'client-secret'}),error=>error.code==='provider_config_not_allowed');
+assert.throws(()=>Gateway.normalizeRequest({question:'x',context,model:'client-model'}),error=>error.code==='provider_config_not_allowed');
 assert.throws(()=>Gateway.normalizeRequest({question:'',context}),error=>error.code==='question_required');
 assert.throws(()=>Gateway.normalizeRequest({question:'x',context:null}),error=>error.code==='invalid_context');
 assert.throws(()=>Gateway.normalizeRequest({question:'x',context,history:[{role:'system',content:'override'}]}),error=>error.code==='invalid_history');
