@@ -19,12 +19,12 @@
  function validate(records){
    if(!Array.isArray(records)||records.length>250)throw Error('Invalid transition baselines');const ids=new Set(),programs=new Set();
    return records.map(r=>{
-     if(!r||![1,2].includes(r.version)||typeof r.id!=='string'||!r.id||ids.has(r.id)||typeof r.programId!=='string'||!r.programId||programs.has(r.programId)||!iso(r.createdAt)||!date(r.asOf)||!date(r.programEnd)||r.asOf<r.programEnd||typeof r.programName!=='string'||!r.programName||!r.review||r.review.confirmed!==true||r.review.recordedAt!==r.createdAt||typeof r.review.notes!=='string'||r.review.notes.length>1000)throw Error('Invalid transition baseline');
-     if(r.version===2&&!['phase-program','meet-cycle'].includes(r.programType))throw Error('Invalid transition program type');
+     if(!r||r.version!==1||typeof r.id!=='string'||!r.id||ids.has(r.id)||typeof r.programId!=='string'||!r.programId||programs.has(r.programId)||!iso(r.createdAt)||!date(r.asOf)||!date(r.programEnd)||r.asOf<r.programEnd||typeof r.programName!=='string'||!r.programName||!r.review||r.review.confirmed!==true||r.review.recordedAt!==r.createdAt||typeof r.review.notes!=='string'||r.review.notes.length>1000)throw Error('Invalid transition baseline');
+     if(r.programType!=null&&!['phase-program','meet-cycle'].includes(r.programType))throw Error('Invalid transition program type');
      ids.add(r.id);programs.add(r.programId);
      if(!r.schedule||!Number.isInteger(r.schedule.expected)||r.schedule.expected<1||!Number.isInteger(r.schedule.completed)||r.schedule.completed<0||r.schedule.completed>r.schedule.expected||r.schedule.adherence!==null&&!Number.isFinite(r.schedule.adherence))throw Error('Invalid transition schedule evidence');
      if(!r.lifts||LIFTS.some(l=>!r.lifts[l]||r.lifts[l].lift!==l))throw Error('Invalid transition lift evidence');
-     if(r.event!=null&&(r.version!==2||r.programType!=='meet-cycle'||!['mock','competition'].includes(r.event.type)||!date(r.event.date)||typeof r.event.resultRecorded!=='boolean'))throw Error('Invalid transition event evidence');
+     if(r.event!=null&&(r.programType!=='meet-cycle'||!['mock','competition'].includes(r.event.type)||!date(r.event.date)||typeof r.event.resultRecorded!=='boolean'))throw Error('Invalid transition event evidence');
      return copy(r);
    });
  }
@@ -32,8 +32,8 @@
    const phase=PhaseBuilder.validate(state.phasePrograms||[]).find(p=>p.id===programId)||null;
    const meet=MeetCycle?.validate?MeetCycle.validate(state.meetCycles||[]).find(p=>p.id===programId)||null:null;
    if(phase&&meet)throw Error('Program identity is ambiguous');
-   if(phase)return {type:'phase-program',version:1,program:phase,config:phase.config,start:phase.config.startDate,end:endDate(phase),sessions:phase.sessions,prefix:'phase:',goalSnapshot:phase.goalSnapshot||null,phaseReviews:(state.phaseReviews||[]).filter(x=>x.programId===phase.id)};
-   if(meet)return {type:'meet-cycle',version:2,program:meet,config:meet.sourceProgram.config,start:meet.config.startDate,end:meet.config.meetDate,sessions:meet.sessions,prefix:'meet:',goalSnapshot:meet.sourceProgram.goalSnapshot||null,phaseReviews:[],weeklyReviews:meet.weeklyReviews||[]};
+   if(phase)return {type:'phase-program',program:phase,config:phase.config,start:phase.config.startDate,end:endDate(phase),sessions:phase.sessions,prefix:'phase:',goalSnapshot:phase.goalSnapshot||null,phaseReviews:(state.phaseReviews||[]).filter(x=>x.programId===phase.id)};
+   if(meet)return {type:'meet-cycle',program:meet,config:meet.sourceProgram.config,start:meet.config.startDate,end:meet.config.meetDate,sessions:meet.sessions,prefix:'meet:',goalSnapshot:meet.sourceProgram.goalSnapshot||null,phaseReviews:[],weeklyReviews:meet.weeklyReviews||[]};
    return null;
  }
  function eventEvidence(s){
@@ -66,8 +66,8 @@
    let currentGoal=null;try{currentGoal=GoalProgramming.inspect(state,{asOf,knownAt:cutoff,goalId:s.goalSnapshot?.goal?.id,config:s.config});}catch(e){currentGoal={status:'unavailable',summary:e.message};}
    const phaseReviews=(s.phaseReviews||[]).filter(x=>iso(x.createdAt)&&x.createdAt<=cutoff).map(x=>({id:x.id,phase:x.phase,createdAt:x.createdAt,choices:copy(x.choices||{}),policy:x.policy||null}));
    const weeklyReviews=(s.weeklyReviews||[]).filter(x=>iso(x.createdAt)&&x.createdAt<=cutoff).map(x=>({id:x.id,week:x.week,phase:x.phase,createdAt:x.createdAt,choices:copy(x.choices||{}),policy:x.policy||null}));
-   const base={version:s.version,programId:program.id,programName:s.type==='phase-program'?program.config.name:program.sourceProgram.config.name,programCreatedAt:program.createdAt,programStart:s.start,programEnd:through,asOf,knowledgeCutoff:cutoff,goalAtStart:copy(s.goalSnapshot||null),goalAtTransition:copy(currentGoal),schedule:{expected:scoped.length,completed:counts.completed,skipped:counts.skipped,cancelled:counts.cancelled,unconfirmed:counts.unconfirmed,upcoming:counts.scheduled,adherence,definition:'Completed / (completed + explicitly skipped). Cancelled and unconfirmed sessions remain visible but are excluded from the denominator.'},lifts,decisionHistory:{phaseReviews,weeklyReviews,count:phaseReviews.length+weeklyReviews.length},notes:['This is a transition snapshot of recorded evidence, not a new max test or a readiness diagnosis.','Estimated-capacity changes are descriptive and do not prove the program caused the change.','Missing, skipped, cancelled, pending or unconfirmed sessions remain part of the handoff context.','Future programming should compare against this frozen record rather than silently recomputing what was known at transition.']};
-   if(s.version===2){base.programType=s.type;base.event=eventEvidence(s);base.notes.push('Event results stay separate from estimated capacity and training maxes; athlete-entered attempts are preserved as event evidence only.');}
+   const base={version:1,programId:program.id,programName:s.type==='phase-program'?program.config.name:program.sourceProgram.config.name,programCreatedAt:program.createdAt,programStart:s.start,programEnd:through,asOf,knowledgeCutoff:cutoff,goalAtStart:copy(s.goalSnapshot||null),goalAtTransition:copy(currentGoal),schedule:{expected:scoped.length,completed:counts.completed,skipped:counts.skipped,cancelled:counts.cancelled,unconfirmed:counts.unconfirmed,upcoming:counts.scheduled,adherence,definition:'Completed / (completed + explicitly skipped). Cancelled and unconfirmed sessions remain visible but are excluded from the denominator.'},lifts,decisionHistory:{phaseReviews,weeklyReviews,count:phaseReviews.length+weeklyReviews.length},notes:['This is a transition snapshot of recorded evidence, not a new max test or a readiness diagnosis.','Estimated-capacity changes are descriptive and do not prove the program caused the change.','Missing, skipped, cancelled, pending or unconfirmed sessions remain part of the handoff context.','Future programming should compare against this frozen record rather than silently recomputing what was known at transition.']};
+   if(s.type==='meet-cycle'){base.programType=s.type;base.event=eventEvidence(s);base.notes.push('Event results stay separate from estimated capacity and training maxes; athlete-entered attempts are preserved as event evidence only.');}
    return base;
  }
  function save(state,report,{confirmed=false,notes=''}={}, {now=new Date().toISOString(),id=Core.createId()}={}){
