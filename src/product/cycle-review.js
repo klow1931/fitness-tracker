@@ -1,8 +1,8 @@
-/* v2.65 — evidence-bound, phase-specific weekly and transition cycle reviews. */
+/* v2.66 — evidence-bound phase-specific reviews with frozen controller observability. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./meet-cycle'),require('./phase-guidance'),require('./schedule'),require('./session-intent'),require('./decision-readiness'),require('./cycle-phase-policy'));
- else root.LoadnoteCycleReview=factory(root.LoadnoteCore,root.LoadnoteMeetCycle,root.LoadnotePhaseGuidance,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteReadiness,root.LoadnoteCyclePhasePolicy);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Cycle,Guidance,Schedule,Intent,Readiness,PhasePolicy){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./meet-cycle'),require('./phase-guidance'),require('./schedule'),require('./session-intent'),require('./decision-readiness'),require('./cycle-phase-policy'),require('./cycle-observability'));
+ else root.LoadnoteCycleReview=factory(root.LoadnoteCore,root.LoadnoteMeetCycle,root.LoadnotePhaseGuidance,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteReadiness,root.LoadnoteCyclePhasePolicy,root.LoadnoteCycleObservability);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Cycle,Guidance,Schedule,Intent,Readiness,PhasePolicy,Observability){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x)),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -15,12 +15,13 @@
    if(!Array.isArray(cycle.weeklyReviews)||cycle.weeklyReviews.length>52)throw Error('Invalid weekly reviews');
    let prev='',seen=new Set();
    for(const e of cycle.weeklyReviews){
-    if(!e||![1,2,3,4].includes(e.version)||![LEGACY_POLICY,PREVIOUS_POLICY,UPWARD_POLICY,POLICY].includes(e.policy)||e.cycleId!==cycle.id||typeof e.id!=='string'||!e.id||!iso(e.createdAt)||e.createdAt<=prev||!Schedule.date(e.asOf)||e.asOf>e.createdAt.slice(0,10)||!Number.isInteger(e.week)||e.week<1||e.week>=cycle.config.weeks||seen.has(e.week)||typeof e.notes!=='string'||e.notes.length>1000||!e.report||e.report.cycleId!==cycle.id||e.report.week!==e.week||!Array.isArray(e.changes))throw Error('Invalid weekly review record');
+    if(!e||![1,2,3,4,5].includes(e.version)||![LEGACY_POLICY,PREVIOUS_POLICY,UPWARD_POLICY,POLICY].includes(e.policy)||e.cycleId!==cycle.id||typeof e.id!=='string'||!e.id||!iso(e.createdAt)||e.createdAt<=prev||!Schedule.date(e.asOf)||e.asOf>e.createdAt.slice(0,10)||!Number.isInteger(e.week)||e.week<1||e.week>=cycle.config.weeks||seen.has(e.week)||typeof e.notes!=='string'||e.notes.length>1000||!e.report||e.report.cycleId!==cycle.id||e.report.week!==e.week||!Array.isArray(e.changes))throw Error('Invalid weekly review record');
     prev=e.createdAt;seen.add(e.week);
     if(e.kind!=='weekly'&&e.kind!=='phase-transition')throw Error('Invalid review kind');
     for(const lift of LIFTS){
       const allowed=e.policy===LEGACY_POLICY?['keep','reduce-one']:e.policy===PREVIOUS_POLICY?['keep','reduce-one','reduce-load']:['keep','reduce-one','reduce-load','increase-load'];
-      if(e.version===4){const expected=PhasePolicy.resolve({phase:e.report?.phase,nextPhase:e.report?.nextPhase});if(e.policy!==POLICY||e.report?.version!==4||e.report?.policy!==POLICY||!e.report?.phasePolicy||!same(e.report.phasePolicy,expected))throw Error('Invalid phase-policy review snapshot');}
+      if(e.version>=4){const expected=PhasePolicy.resolve({phase:e.report?.phase,nextPhase:e.report?.nextPhase});if(e.policy!==POLICY||e.report?.version!==4||e.report?.policy!==POLICY||!e.report?.phasePolicy||!same(e.report.phasePolicy,expected))throw Error('Invalid phase-policy review snapshot');}
+      if(e.version===5)Observability.validateControllerSnapshot(e.controllerSnapshot,e.report,{savedAt:e.createdAt});
       if(!allowed.includes(e.choices?.[lift]))throw Error('Invalid weekly lift choice');
     }
     for(const change of e.changes){
@@ -97,8 +98,9 @@
   }
   return LIFTS.filter(l=>choices[l]!=='keep');
  }
- function apply(state,report,choices,{confirmed=false,notes='',asOf,now=new Date().toISOString(),id=Core.createId(),lockedSessionIds=[]}={}){
+ function apply(state,report,choices,{confirmed=false,notes='',asOf,now=new Date().toISOString(),id=Core.createId(),lockedSessionIds=[],controllerSnapshot}={}){
   if(!confirmed||typeof notes!=='string'||notes.length>1000||!iso(now)||asOf!==report?.asOf||(asOf!==now.slice(0,10)&&dayAfter(asOf)!==now.slice(0,10)))throw Error('Approve a fresh weekly review for today');
+  const frozenController=Observability.validateControllerSnapshot(controllerSnapshot,report,{savedAt:now});
   const selected=preview(report,choices),fresh=analyze(state,{cycleId:report.cycleId,week:report.week,asOf,now});
   const semantic=value=>{const x=copy(value);delete x.cutoff;delete x.guidance.cutoff;return x;};
   if(!same(semantic(report),semantic(fresh)))throw Error('Training evidence or Calendar changed; regenerate the weekly review');
@@ -139,7 +141,7 @@
    }
    for(const lift of selected)if(!changes.some(e=>sources.find(s=>'meet:'+cycle.id+':'+s.key===e.id)?.exercises.some(ex=>ex.lift===lift)))throw Error('A selected lift has no complete eligible next-week edit');
   }
-  const event={version:4,policy:POLICY,id,cycleId:cycle.id,week:report.week,kind:report.kind,asOf,createdAt:now,notes:notes.trim(),choices:copy(choices),report:copy(report),changes};
+  const event={version:5,policy:POLICY,id,cycleId:cycle.id,week:report.week,kind:report.kind,asOf,createdAt:now,notes:notes.trim(),choices:copy(choices),controllerSnapshot:frozenController,report:copy(report),changes};
   cycle.weeklyReviews=[...(cycle.weeklyReviews||[]),event];
   const result={...state,meetCycles:records,scheduledSessions:Schedule.validate(sessions)};
   validate(result);
