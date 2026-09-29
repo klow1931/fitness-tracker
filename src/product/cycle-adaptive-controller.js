@@ -9,7 +9,7 @@
  function recommendFromReports(review,response,learningSummary=null){
   if(!review||!review.findings||!review.eligibility)throw Error('A completed-week cycle review is required');
   const phase=response?.phases?.find(p=>p.phase===review.phase)||null;
-  const phasePolicy=review.phasePolicy?.id===PhasePolicy.POLICY?review.phasePolicy:PhasePolicy.resolve({phase:review.phase,nextPhase:review.nextPhase});
+  const phasePolicy=PhasePolicy.resolve({phase:review.phase,nextPhase:review.nextPhase});if(review.phasePolicy&&JSON.stringify(review.phasePolicy)!==JSON.stringify(phasePolicy))throw Error('Cycle review phase policy no longer matches the deterministic policy');
   const t=phasePolicy.thresholds||{},lifts={},choices={};
   for(const lift of LIFTS){
    const f=review.findings[lift]||{},trend=phase?.lifts?.[lift]||null;
