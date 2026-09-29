@@ -12,7 +12,7 @@ const {phaseFixture}=require('./fixtures/phase-builder');
 
 function completedWorkout(state,id,workoutId){
  const rec=state.scheduledSessions.find(x=>x.id===id),rev=rec.revisions.at(-1),p=rev.context.prescription;
- return {id:workoutId,date:rev.context.date,createdAt:rev.context.date+'T20:00:00.000Z',exercises:p.plannedExercises.map(e=>({...e,sets:(e.sets||[]).map(s=>({...s,rpe:s.targetRpe||8}))})),sessionIntent:{schedule:{id,revisionAt:rev.recordedAt},prescription:p,timing:'planned-before-training'}};
+ return {id:workoutId,date:rev.context.date,createdAt:rev.context.date+'T20:00:00.000Z',exercises:p.plannedExercises.map(e=>({...e,sets:(e.sets||[]).map(s=>({...s,rpe:s.targetRpe||8}))})),sessionIntent:{schedule:{id,revisionAt:rev.recordedAt},prescription:p}};
 }
 function completeThrough(state,prefix,through){
  for(const row of Schedule.list(state.scheduledSessions).filter(x=>x.id.startsWith(prefix)&&x.date<=through)){
