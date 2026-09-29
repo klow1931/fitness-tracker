@@ -26,5 +26,11 @@
      window.LoadnotePhaseBuilderUI?.open(r);
    });
  }
- return {card,bind,report};
+ function open(state,asOf){
+   const r=report(state,asOf);if(!r?.ready||!r.prefill)return false;
+   showTab('coach');showSubTab('coach','co-programs');
+   const panel=document.getElementById('phase-builder-panel');if(panel)panel.open=true;
+   window.LoadnotePhaseBuilderUI?.open(r);return true;
+ }
+ return {card,bind,report,open};
 });

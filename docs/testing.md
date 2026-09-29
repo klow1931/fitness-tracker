@@ -4,9 +4,9 @@
 
 Run `npm run check`, `npm test`, `npm run check:mobile`, then the full `npm run test:browser` suite before merging. GitHub Actions installs Chromium and runs these commands on pushes and pull requests. Check the run for the actual proposed commit; an older passing run does not validate newer changes.
 
-The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency, mobile runtime detection, sync manifest/conflict planning, account/session signing, CSRF/CORS auth boundaries, persistent account identity, OIDC PKCE/state/nonce/JWKS verification, account-scoped remote snapshot revisions/conflicts/corruption checks, explicit shared-base sync orchestration, first-link safety, recovery-backed cloud application, stale-review rejection, durable account/remote-snapshot deletion, Profile/onboarding behavior, and module boundaries. `npm run check:mobile` rebuilds the consumer `www/` package and verifies its Capacitor configuration, install manifest, safe-area contract, asset completeness and exclusion of server/development directories.
+The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency, mobile runtime detection, sync manifest/conflict planning, account/session signing, CSRF/CORS auth boundaries, persistent account identity, OIDC PKCE/state/nonce/JWKS verification, account-scoped remote snapshot revisions/conflicts/corruption checks, explicit shared-base sync orchestration, first-link safety, recovery-backed cloud application, stale-review rejection, durable account/remote-snapshot deletion, Profile/onboarding behavior, active-program lifecycle ordering, meet-cycle transition handoff, timely/missed review windows, and module boundaries. `npm run check:mobile` rebuilds the consumer `www/` package and verifies its Capacitor configuration, install manifest, safe-area contract, asset completeness and exclusion of server/development directories.
 
-Browser coverage includes workout/review/edit/reload flows, manual and template-sourced prescriptions, deviation context, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and More pages, Focus mode, timer recovery, dashboard signal guards, decision-readiness mapping confirmation, authenticated Coach/CSRF routing, account status/sign-out behavior, read-only remote storage status, explicit remote snapshot packaging without local mutation, and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
+Browser coverage includes workout/review/edit/reload flows, manual and template-sourced prescriptions, deviation context, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and secondary pages, Focus mode, timer recovery, dashboard signal guards, decision-readiness mapping confirmation, active-program lifecycle routing on desktop/mobile, authenticated Coach/CSRF routing, account status/sign-out behavior, explicit account sync, and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
 
 ## Test limits
 
@@ -32,3 +32,11 @@ Local Chromium installation can fail because of network/download issues. Record 
 ## Historical results
 
 Earlier release-time execution notes described the tests available then. Current coverage is defined by the repository suite and its commit-specific Actions results. Historical source and setup notes remain under `docs/archive/` and `dev-archive/`.
+
+
+### v2.61 lifecycle acceptance
+
+- Run a scheduled reviewed phase program through a phase boundary: unresolved sessions must stay explicit, a review may own the next step only while its future-only change window is open, and a missed window must not block later training.
+- Run a flexible meet cycle through a completed week, event day, saved athlete-entered results, transition freeze and next-program handoff. Confirm event attempts never become estimated-capacity or training-max values.
+- Confirm Home, Coach and the post-workout recap agree on the same lifecycle next action.
+- Confirm overlapping scheduled programs produce a review state rather than an arbitrarily selected active program.

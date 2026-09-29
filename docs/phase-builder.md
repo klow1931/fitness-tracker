@@ -62,3 +62,12 @@ A **scheduled** meet cycle offers an expandable mock-meet result recorder on its
 ## Mock meets vs competition meets (v2.35)
 
 Flexible meet-prep cycles now have an explicit event type. **Mock meet** remains the default for all legacy cycles and for new training-only endpoints; it retains the weekend final-week rule and stores athlete-entered results in the legacy mock-meet result history. **Competition meet** requires a meet name, can use any date inside the final program week, uses a distinct final `meet` phase, and stores result revisions separately from mock-meet results. Competition entries are user-entered records only: Loadnote does not verify federation results, judging, equipment category, weight class, bodyweight, placing, or official records. In both cases, event day has no automatically generated attempts and does not overwrite the approved training cycle.
+
+
+## Active program lifecycle (v2.61)
+
+Scheduled phase programs and flexible meet cycles now participate in one deterministic lifecycle coordinator. It derives the current program/week/phase from already-reviewed program and Calendar records, then routes the athlete to the appropriate existing workflow: train, resolve an earlier session, review an eligible week/phase, record event results, freeze a transition baseline, or review the next program.
+
+Review routing respects the adjustment engines' existing future-only boundaries. A weekly or phase review becomes a blocking next action only while the reviewed period is fully resolved and future target sessions are still within the supported review window. If the athlete misses that window, Loadnote records that fact as nonblocking historical context and preserves the already-started/past prescriptions instead of demanding a retroactive review.
+
+Meet cycles can freeze an immutable transition baseline after the event is reached and actual results are recorded. That baseline may carry athlete-entered best made attempts/total as event evidence, but those values remain separate from estimated capacity, known/tested 1RM and selected training max. Goal-aware next-block objectives can use the same completed-block context afterward. This lifecycle does not add a new progression rule or automatically approve any training change.

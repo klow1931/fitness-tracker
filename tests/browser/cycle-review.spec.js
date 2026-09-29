@@ -10,11 +10,12 @@ test.beforeEach(async({page})=>{
   const p=LoadnoteMeetCycle.prepare(data,data.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args);
   data=LoadnoteMeetCycle.save(data,p,{confirmed:true},{...args,id:'c12'});
   data=LoadnoteMeetCycle.schedule(data,'c12',{...args,now:'2026-09-24T13:00:00.000Z'});
-  showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();
+  showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();document.getElementById('phase-review-panel').open=true;
  },phaseFixture());
 });
 test('weekly review is compact, explains missing evidence, and requires approval to save a keep review',async({page})=>{
  const host=page.locator('#cycle-week-review');
+ await expect(host).toHaveCount(1);
  await expect(host).toContainText('completed training weeks');
  await host.locator('.cycle-review-panel > summary').click();
  await host.locator('#cycle-review-analyze').click();

@@ -1,3 +1,21 @@
+# v2.61.0 — Active Program Lifecycle
+
+- Add one deterministic lifecycle controller for scheduled phase programs and mock/competition meet cycles.
+- Resolve one current program context with explicit overlap detection instead of guessing when reviewed programs collide.
+- Track current week, phase, scheduled-session resolution, event state, transition state and next-block handoff from existing stored records.
+- Use the same next-action state on Home, Coach and post-workout continuity.
+- Surface timely weekly/phase review actions before future work only while the existing future-only adjustment window remains legally usable and the reviewed period is fully resolved.
+- Keep missed historical review windows visible as nonblocking audit context instead of forcing stale reviews or retroactively changing training.
+- Preserve unresolved prior scheduled sessions as blockers until the athlete explicitly resolves or logs them.
+- Guard scheduled program workout start when an actionable review still owns the next step; do not create a competing adaptation rule.
+- Add direct lifecycle routing into the existing weekly review, phase review, event-result, transition-baseline and next-program handoff experiences.
+- Extend immutable transition baselines to scheduled meet cycles, including weekly-review history and athlete-entered event evidence.
+- Keep event results separate from estimated capacity, known/tested 1RM and training max in transition evidence.
+- Let goal-aware block objectives and next-program handoff consume completed meet-cycle transitions.
+- Keep new meet-cycle transition records at record version 1 with additive metadata for rollback compatibility.
+- Add Node and browser regression coverage for lifecycle ordering, overlap refusal, timely/missed review windows, event closure, handoff, mobile layout and shared Home/Coach state.
+- No training-data schema migration and no new programming-progression heuristic in this release.
+
 # v2.60.0 — Consumer Profile & Onboarding
 
 - Make **Home → Train → Progress → Coach → Profile** the five primary consumer destinations on desktop and mobile.

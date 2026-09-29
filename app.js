@@ -297,6 +297,7 @@
     function renderDashboard() {
       window.renderSchedule?.();
       window.renderTodayTraining?.();
+      window.LoadnoteProgramLifecycleUI?.home?.();
       renderHomeActivity();
       const now = new Date();
       const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
@@ -2604,6 +2605,7 @@ ${woLines}
       window.renderPowerliftingBuilder?.();
       window.renderPhaseBuilder?.();
       window.renderPhaseReview?.();
+      window.LoadnoteProgramLifecycleUI?.coach?.();
       window.renderProgramWeekReview?.();
       window.renderProgramOutcomes?.();
       try { renderAthleteProfile(); } catch (e) { console.warn('Athlete profile render failed', e); }

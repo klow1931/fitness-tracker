@@ -7,12 +7,12 @@
  const LIFTS=['squat','bench','deadlift'];
  const copy=x=>JSON.parse(JSON.stringify(x));
  const round=(x,n=1)=>{const p=10**n;return Math.round(Number(x)*p)/p;};
- function validTransition(x){return x&&x.version===1&&typeof x.id==='string'&&typeof x.programId==='string'&&typeof x.createdAt==='string'&&x.goalAtStart&&x.schedule&&x.lifts;}
+ function validTransition(x){return x&&[1,2].includes(x.version)&&typeof x.id==='string'&&typeof x.programId==='string'&&typeof x.createdAt==='string'&&x.goalAtStart&&x.schedule&&x.lifts;}
  function latestTransition(state,goalId,asOf){
    return (state.transitionSnapshots||[]).filter(validTransition).filter(x=>x.asOf<=asOf&&x.goalAtStart?.status==='ready'&&x.goalAtStart?.goal?.id===goalId).sort((a,b)=>a.asOf.localeCompare(b.asOf)||a.createdAt.localeCompare(b.createdAt)).at(-1)||null;
  }
  function adjustmentCount(snapshot,lift){
-   let n=0;for(const review of snapshot?.decisionHistory?.phaseReviews||[]){const action=review?.choices?.[lift];if(action&&action!=='keep')n++;}return n;
+   let n=0;for(const review of [...(snapshot?.decisionHistory?.phaseReviews||[]),...(snapshot?.decisionHistory?.weeklyReviews||[])]){const action=review?.choices?.[lift];if(action&&action!=='keep')n++;}return n;
  }
  function responseObjective(goalLift,transitionLift,schedule,adjustments,{sameExercise=true}={}){
    const base=goalLift?.objective||{code:'no-target',label:'No lift target',reason:'No target context is available.'};

@@ -52,5 +52,14 @@
       clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();showToast('Phase review saved; approved changes applied','success');
     }catch(e){error.textContent=e.message;}finally{busy=false;host.querySelectorAll('button').forEach(b=>b.disabled=false);}}
   }
+  function openPhaseReview(programId,phase){
+    showTab('coach');showSubTab('coach','co-programs');render();
+    const panel=document.getElementById('phase-review-panel');if(panel)panel.open=true;
+    const program=document.getElementById('phase-review-program'),type=document.getElementById('phase-review-type');
+    if(programId&&program&&[...program.options].some(o=>o.value===programId))program.value=programId;
+    if(phase&&type&&[...type.options].some(o=>o.value===phase))type.value=phase;
+    panel?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
   window.renderPhaseReview=render;
+  window.openPhaseReview=openPhaseReview;
 })();

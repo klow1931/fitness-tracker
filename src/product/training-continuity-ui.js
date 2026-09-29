@@ -32,6 +32,7 @@
    const adaptation=report.next?window.LoadnoteAdaptationExplanation?.forSession(state,report.next.id):null;
    section.innerHTML='<h3>What Loadnote learned</h3><p>'+esc(evidenceLine(e))+'</p>'+reason+'<h3>What comes next</h3><p>'+esc(nextLine(report.next))+'</p>'+overdue+(window.LoadnoteAdaptationExplanationUI?.render(adaptation,{summary:'Why the next workout changed'})||'')+'<p class="more-hint">'+esc(report.notice)+'</p>';
    host.appendChild(section);
+   window.LoadnoteProgramLifecycleUI?.recap?.(host,state,asOf);
  }
  window.LoadnoteTrainingContinuityUI={evidenceLine,nextLine,home,renderRecap};
 })();
