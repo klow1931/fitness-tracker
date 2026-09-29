@@ -11,7 +11,7 @@ assert.equal(acc.historyScope,'general');
 const accStrength=Policy.resolve({phase:'accumulation',nextPhase:'strength'});
 assert.deepEqual(accStrength.allowedActions,['keep','reduce-one','reduce-load']);
 assert.equal(Policy.allows(accStrength,'increase-load'),false);
-assert.match(accStrength.objective,/planned phase transition/i);
+assert.match(accStrength.objective,/planned strength transition/i);
 
 const strength=Policy.resolve({phase:'strength',nextPhase:'strength'});
 assert.equal(strength.thresholds.increaseCompetitionComparable,4);
