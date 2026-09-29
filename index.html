@@ -58,7 +58,7 @@
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-900">Loadnote</h1>
-        <p class="text-slate-500 text-sm">What you lifted. What comes next. — train, progress, decisions & more</p>
+        <p class="text-slate-500 text-sm">An adaptive training log that learns how you train.</p>
       </div>
       <div class="flex gap-2 flex-wrap items-center">
         <button onclick="toggleDark()" id="dark-toggle" class="btn-secondary text-sm px-3 py-1.5" title="Toggle dark mode">🌙</button>
@@ -71,18 +71,8 @@
           <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn nav-active">Home</button>
           <button onclick="showTab('workouts')" id="tab-workouts" class="tab-btn">Train</button>
           <button onclick="showTab('prs')" id="tab-prs" class="tab-btn">Progress</button>
-          <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">Decisions</button>
-          <details id="desktop-more" class="desktop-more"><summary class="tab-btn" aria-label="More destinations">More <span aria-hidden="true">⌄</span></summary>
-            <div class="desktop-more-menu" aria-label="More destinations">
-              <span class="desktop-more-label">Plan &amp; track</span>
-              <button type="button" onclick="showTab('calendar');document.getElementById('desktop-more').open=false" id="tab-calendar">Calendar</button>
-              <button type="button" onclick="showTab('nutrition');document.getElementById('desktop-more').open=false" id="tab-nutrition">Food</button>
-              <button type="button" onclick="showTab('measures');document.getElementById('desktop-more').open=false" id="tab-measures">Measurements</button>
-              <button type="button" onclick="showTab('photos');document.getElementById('desktop-more').open=false" id="tab-photos">Photos</button>
-              <span class="desktop-more-label">App &amp; data</span>
-              <button type="button" onclick="showTab('tools');document.getElementById('desktop-more').open=false" id="tab-tools">Tools &amp; backups</button>
-            </div>
-          </details>
+          <button onclick="showTab('coach')" id="tab-coach" class="tab-btn">Coach</button>
+          <button onclick="showTab('profile')" id="tab-profile" class="tab-btn">Profile</button>
         </div>
       </div>
     </header>
@@ -91,23 +81,23 @@
     <div id="onboarding-card" class="card onboarding-card hidden mb-4">
       <div class="flex items-start justify-between gap-3 mb-2">
         <div>
-          <h2 class="font-semibold">Quick start</h2>
-          <p class="text-xs text-slate-500">A few tips for your first session — dismiss anytime.</p>
+          <h2 class="font-semibold">Set up Loadnote</h2>
+          <p class="text-xs text-slate-500">Start with the essentials. You can change everything later.</p>
         </div>
         <button onclick="dismissOnboarding()" class="btn-secondary text-xs py-1 px-2">Dismiss</button>
       </div>
       <div class="grid sm:grid-cols-3 gap-2 text-sm">
-        <button type="button" class="onboard-tip" onclick="showTab('workouts')">
+        <button type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-training-setup')?.scrollIntoView({behavior:'smooth'}); }, 50)">
           <span class="onboard-num">1</span>
-          <span><b>Log a workout</b><br><span class="text-slate-500 text-xs">Add a lift, sets, then Save</span></span>
+          <span><b>Set up your training</b><br><span class="text-slate-500 text-xs">Goal, availability and equipment</span></span>
         </button>
-        <button type="button" class="onboard-tip" onclick="toggleGymMode(); showToast('Gym mode toggled — larger controls', 'info')">
+        <button type="button" class="onboard-tip" onclick="showTab('workouts')">
           <span class="onboard-num">2</span>
-          <span><b>Try Gym mode</b><br><span class="text-slate-500 text-xs">Bigger buttons for the gym floor</span></span>
+          <span><b>Train</b><br><span class="text-slate-500 text-xs">Log sets, reps, load and RPE</span></span>
         </button>
-        <button type="button" class="onboard-tip" onclick="showTab('tools'); setTimeout(() => { document.querySelector('.more-demo')?.setAttribute('open',''); document.getElementById('load-demo-btn')?.scrollIntoView({behavior:'smooth'}); }, 100)">
+        <button type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-account-card')?.scrollIntoView({behavior:'smooth'}); }, 50)">
           <span class="onboard-num">3</span>
-          <span><b>Load demo data</b><br><span class="text-slate-500 text-xs">Tools tab — explore charts fast</span></span>
+          <span><b>Account is optional</b><br><span class="text-slate-500 text-xs">Sign in when you want backup and sync</span></span>
         </button>
       </div>
     </div>
@@ -1138,10 +1128,15 @@
       </div><!-- /co-programs -->
     </section>
 
+    <!-- PROFILE -->
+    <section id="panel-profile" class="hidden more-page profile-page">
+      <header class="measure-hero"><div><p class="measure-eyebrow">PROFILE</p><h1>Your Loadnote.</h1><p>Training setup, account, preferences and secondary tools in one place.</p></div></header>
+      <div id="profile-hub"></div>
+    </section>
+
     <!-- TOOLS -->
     <section id="panel-tools" class="hidden more-page">
-<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING TOOLS</p><h1>Useful tools, when you need them.</h1><p>Calculate your next lift, manage backups, or find app information.</p></div></header><nav class="more-jump-links" aria-label="Tools sections"><a href="#tools-account">Account</a><a href="#tools-calculators">Calculators</a><a href="#tools-data">Backups & data</a><a href="#tools-about">About & privacy</a></nav>
-      <div class="card" id="tools-account"><h2 class="font-semibold mb-2">Account</h2><div id="account-status" aria-live="polite"><p class="more-hint">Checking account status…</p></div></div>
+<header class="measure-hero"><div><p class="measure-eyebrow">TRAINING TOOLS</p><h1>Useful tools, when you need them.</h1><p>Calculate your next lift, manage backups, or find app information.</p></div></header><nav class="more-jump-links" aria-label="Tools sections"><a href="#tools-calculators">Calculators</a><a href="#tools-data">Backups & data</a><a href="#tools-about">About & privacy</a></nav>
       <div class="more-columns" id="tools-calculators">
         <div class="card">
           <h2 class="font-semibold mb-4">1RM Calculator</h2>
@@ -1379,40 +1374,12 @@
       <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V9m5 9V5m5 13v-7m5 7V3"/></svg></span><span>Progress</span>
     </button>
     <button type="button" class="mobile-nav-btn" data-tab="coach" onclick="showTab('coach')">
-      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H9l-5 4Z M8 9h8 M8 12h5"/></svg></span><span>Decisions</span>
+      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H9l-5 4Z M8 9h8 M8 12h5"/></svg></span><span>Coach</span>
     </button>
-    <button type="button" class="mobile-nav-btn" data-tab="more" onclick="toggleMobileMore()">
-      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2m5 0h2m5 0h2"/></svg></span><span>More</span>
+    <button type="button" class="mobile-nav-btn" data-tab="profile" onclick="showTab('profile')">
+      <span class="mobile-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6"/></svg></span><span>Profile</span>
     </button>
   </nav>
-  <div id="mobile-more-sheet" class="mobile-more-sheet hidden">
-    <div class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
-    <div class="mobile-more-panel">
-      <div class="mobile-more-hero">
-        <span class="eyebrow">More</span>
-        <h2>Everything else, when you need it.</h2>
-        <p>Nutrition, planning, body progress, tools and app controls stay one tap away without crowding the main navigation.</p>
-      </div>
-      <div class="mobile-more-groups">
-        <button type="button" class="mobile-more-item" onclick="showTab('nutrition');toggleMobileMore(false)"><span class="mobile-more-icon">🍽️</span><span><b>Food</b><small>Nutrition log and targets</small></span></button>
-        <details class="mobile-more-group"><summary><b>Planning &amp; body progress</b><small>Calendar, measurements and photos</small></summary>
-          <div class="mobile-more-grid">
-            <button type="button" class="mobile-more-item" onclick="showTab('calendar');toggleMobileMore(false)"><span class="mobile-more-icon">📅</span><span><b>Calendar</b><small>Plan training days</small></span></button>
-            <button type="button" class="mobile-more-item" onclick="showTab('measures');toggleMobileMore(false)"><span class="mobile-more-icon">📏</span><span><b>Measurements</b><small>Body check-ins</small></span></button>
-            <button type="button" class="mobile-more-item" onclick="showTab('photos');toggleMobileMore(false)"><span class="mobile-more-icon">📷</span><span><b>Photos</b><small>Photo check-ins</small></span></button>
-          </div>
-        </details>
-        <details class="mobile-more-group"><summary><b>Tools &amp; preferences</b><small>Calculators, backups and Gym mode</small></summary>
-          <div class="mobile-more-grid">
-            <button type="button" class="mobile-more-item" onclick="showTab('tools');toggleMobileMore(false)"><span class="mobile-more-icon">🛠️</span><span><b>Tools</b><small>Calculators, backups and settings</small></span></button>
-            <button type="button" class="mobile-more-item" onclick="toggleGymMode();toggleMobileMore(false)"><span class="mobile-more-icon">🏋️</span><span><b>Gym mode</b><small>Larger training controls</small></span></button>
-          </div>
-        </details>
-      </div>
-      <button type="button" class="btn-secondary w-full mobile-more-close" onclick="toggleMobileMore(false)">Close</button>
-    </div>
-  </div>
-
   <datalist id="exercise-list">
     <!-- Squat / Quad dominant -->
     <option value="Back Squat">
@@ -1945,6 +1912,7 @@
   <script src="src/product/state-store.js" defer></script>
   <script src="src/product/sync-coordinator.js" defer></script>
   <script src="src/product/account-ui.js" defer></script>
+  <script src="src/product/profile-ui.js" defer></script>
   <script src="src/product/units.js" defer></script>
   <script src="src/product/workout-form.js" defer></script>
   <script src="src/product/session-intent-ui.js" defer></script>
