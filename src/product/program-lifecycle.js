@@ -73,15 +73,39 @@
  function scopedRows(state,p,asOf){
    return Schedule.rows(state?.scheduledSessions||[],state?.workouts||[],{asOf}).filter(x=>x.id.startsWith(p.prefix));
  }
+ function resolvedIds(state,p,asOf){
+   const rows=scopedRows(state,p,asOf),resolved=new Set(rows.filter(x=>['completed','skipped','cancelled'].includes(x.state)).map(x=>x.id));
+   return resolved;
+ }
  function phaseReviewDue(state,p,asOf){
    if(p.kind!=='phase-program')return null;
-   const accepted=PhaseReview.validate(state?.phaseReviews||[]).filter(x=>x.programId===p.id);
-   return p.phaseBounds.filter(x=>x.index<p.phaseBounds.length-1&&x.endDate<asOf&&!accepted.some(r=>r.phase===x.type)).sort((a,b)=>a.endDate.localeCompare(b.endDate))[0]||null;
+   const accepted=PhaseReview.validate(state?.phaseReviews||[]).filter(x=>x.programId===p.id),resolved=resolvedIds(state,p,asOf);
+   for(const bound of p.phaseBounds.filter(x=>x.index<p.phaseBounds.length-1&&!accepted.some(r=>r.phase===x.type)).sort((a,b)=>a.endDate.localeCompare(b.endDate))){
+     const next=p.phaseBounds[bound.index+1];
+     if(!(bound.endDate<=asOf&&asOf<next.startDate))continue;
+     const ids=p.record.sessions.filter(s=>s.phase===bound.type).map(s=>p.prefix+s.key);
+     if(ids.length&&ids.every(id=>resolved.has(id)))return bound;
+   }
+   return null;
  }
- function weekReviewDue(p,asOf){
+ function weekReviewDue(state,p,asOf){
    if(p.kind!=='meet-cycle')return null;
-   const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week));
-   return p.record.weekly.filter(x=>x.week<p.totalWeeks&&x.endDate<asOf&&!reviewed.has(x.week)).sort((a,b)=>a.week-b.week)[0]||null;
+   const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week)),resolved=resolvedIds(state,p,asOf);
+   for(const row of p.record.weekly.filter(x=>x.week<p.totalWeeks&&!reviewed.has(x.week)).sort((a,b)=>a.week-b.week)){
+     const next=p.record.weekly.find(x=>x.week===row.week+1);
+     if(!next||!(row.endDate<=asOf&&asOf<next.startDate))continue;
+     const ids=p.record.sessions.filter(s=>s.week===row.week).map(s=>p.prefix+s.key);
+     if(ids.length&&ids.every(id=>resolved.has(id)))return row;
+   }
+   return null;
+ }
+ function missedReviewWindows(state,p,asOf){
+   if(p.kind==='meet-cycle'){
+     const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week));
+     return p.record.weekly.filter(x=>x.week<p.totalWeeks&&!reviewed.has(x.week)&&p.record.weekly.find(n=>n.week===x.week+1)?.startDate<=asOf).map(x=>({kind:'week',week:x.week,phase:x.phase,ended:x.endDate}));
+   }
+   const reviewed=new Set(PhaseReview.validate(state?.phaseReviews||[]).filter(x=>x.programId===p.id).map(x=>x.phase));
+   return p.phaseBounds.filter(x=>x.index<p.phaseBounds.length-1&&!reviewed.has(x.type)&&p.phaseBounds[x.index+1]?.startDate<=asOf).map(x=>({kind:'phase',phase:x.type,ended:x.endDate}));
  }
  function action(kind,label,detail,extra={}){return {kind,label,detail,...extra};}
  function inspect(state,{asOf,draft=null,draftOpen=false}={}){
@@ -95,7 +119,7 @@
    const p=chosen.program,rows=scopedRows(state,p,asOf),unconfirmed=rows.filter(x=>x.state==='unconfirmed').sort((a,b)=>a.date.localeCompare(b.date)),todayRows=rows.filter(x=>x.date===asOf&&x.state==='scheduled'),next=rows.filter(x=>x.state==='scheduled'&&x.date>=asOf).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
    const counts={planned:rows.length,completed:rows.filter(x=>x.state==='completed').length,skipped:rows.filter(x=>x.state==='skipped').length,cancelled:rows.filter(x=>x.state==='cancelled').length,unconfirmed:unconfirmed.length,upcoming:rows.filter(x=>x.state==='scheduled').length};
    const prog=progress(p,asOf),draftScheduleId=draft?.sessionIntent?.schedule?.id||null,isProgramDraft=!!draftScheduleId&&draftScheduleId.startsWith(p.prefix),openDraft=!!draftOpen||!!draftScheduleId;
-   const transition=transitionFor(state,p),weekDue=weekReviewDue(p,asOf),phaseDue=phaseReviewDue(state,p,asOf);
+   const transition=transitionFor(state,p),weekDue=weekReviewDue(state,p,asOf),phaseDue=phaseReviewDue(state,p,asOf),missedReviews=missedReviewWindows(state,p,asOf);
    let nextAction;
    if(isProgramDraft)nextAction=action('resume-workout','Resume workout','An unfinished workout from this program is open on this device.',{scheduleId:draftScheduleId});
    else if(openDraft)nextAction=action('resume-draft','Finish the open workout first','An unfinished workout is open on this device. Finish, save, or clear it before applying a program review.');
@@ -114,7 +138,7 @@
    return {version:1,asOf,status:chosen.selection==='upcoming'?'upcoming':asOf>p.endDate?'completed':'active',selection:chosen.selection,
      program:{kind:p.kind,id:p.id,name:p.name,startDate:p.startDate,endDate:p.endDate,totalWeeks:p.totalWeeks,eventType:p.eventType||null,eventName:p.eventName||null,eventDate:p.eventDate||null},
      progress:prog,schedule:{...counts,next:next?{id:next.id,date:next.date,name:next.name}:null,unconfirmed:unconfirmed.map(x=>({id:x.id,date:x.date,name:x.name}))},
-     transition:transition?{id:transition.id,asOf:transition.asOf,programType:transition.programType||'phase-program'}:null,nextAction,notes:['The lifecycle controller selects the next workflow step; it never applies a training change by itself.','Weekly/phase adjustments still require the existing evidence checks and explicit athlete approval.','Unconfirmed past sessions block review routing instead of being silently treated as skipped.']};
+     transition:transition?{id:transition.id,asOf:transition.asOf,programType:transition.programType||'phase-program'}:null,missedReviews:copy(missedReviews),nextAction,notes:['The lifecycle controller selects the next workflow step; it never applies a training change by itself.','Weekly/phase adjustments still require the existing evidence checks and explicit athlete approval.','A review blocks the next step only while its future-only adjustment window is still open and the reviewed period is fully resolved. Missed historical review windows remain visible but do not trap later training.','Unconfirmed past sessions block review routing instead of being silently treated as skipped.']};
  }
- return {programs,select,progress,phaseBounds,phaseReviewDue,weekReviewDue,inspect};
+ return {programs,select,progress,phaseBounds,phaseReviewDue,weekReviewDue,missedReviewWindows,inspect};
 });
