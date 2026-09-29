@@ -4,7 +4,7 @@
 - Keep competition-lift and confirmed close-variation workload evidence separate from competition-lift capacity evidence.
 - Require at least three matching exposure dates spanning 14 days before recent frequency is treated as a supported starting reference.
 - Derive a bounded 1–3 exposures/week suggestion from recent matching exposure frequency.
-- Derive a bounded 2–4 sets/exposure suggestion from recent 3–8 rep development work while preventing the suggestion from exceeding the recent weekly development-set average by more than 25% where that evidence exists.
+- Derive a bounded 2–4 sets/exposure suggestion from recent 3–8 rep development work; apply the 25% weekly-set guardrail only when all four recent seven-day windows contain matching work so missing weeks are not treated as low tolerance.
 - Keep the default weekly progression suggestion at 1 percentage point of training max and allow only a conservative reduction to 0.5 when recent matching-set effort is high or supported competition-lift capacity direction is lower.
 - Explicitly prevent low RPE alone from increasing the suggested weekly progression step.
 - Suggest top/back-off primary structure only after repeated recent competition-lift sessions show that pattern.
