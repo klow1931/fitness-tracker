@@ -38,7 +38,7 @@
     const topTrends = (summary?.exerciseTrends || []).slice(0, 8).map(t => ({
       exercise: t.exercise,
       sessions: t.sessions,
-      estimated1RM: t.latestEstimated1RM,
+      estimated1RMKg: t.latestEstimated1RM,
       changePercent: t.change?.percent ?? null,
       plateau: t.change?.percent != null && t.change.percent <= 1
     }));
@@ -46,7 +46,7 @@
       date: w.date,
       exercises: (w.exercises || []).filter(ex => ex.type !== 'cardio').slice(0, 8).map(ex => ({
         name: ex.name,
-        sets: (ex.sets || []).filter(s => Number(s.reps) > 0).map(s => ({ reps: Number(s.reps), weight: Number(s.weight) || 0, rpe: Number(s.rpe) || null })).slice(0, 8)
+        sets: (ex.sets || []).filter(s => Number(s.reps) > 0).map(s => ({ reps: Number(s.reps), weightKg: Number(s.weight) || 0, rpe: Number(s.rpe) || null })).slice(0, 8)
       }))
     }));
     const window=Nutrition.window7(new Date().toLocaleDateString('en-CA'));
@@ -54,8 +54,9 @@
     const avgProtein=nutrition.average===null?null:Core.round(nutrition.average,0);
     const lastBodyweight = (data.bodyweight || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0] || null;
     return {
-      version: '0.5',
+      version: '0.6',
       unit,
+      units:{ storageWeight:'kg', displayWeight:unit },
       athlete: {
         goals: [
           ...(data.athleteGoals || []).map(record => {
@@ -86,8 +87,8 @@
         recentWorkouts: recent
       },
       nutrition: { loggedDays7d: nutrition.loggedDays, completeDays7d:nutrition.completeDays, proteinDays7d:nutrition.validDays, incompleteDays7d:nutrition.incompleteDays, unknownProteinDays7d:nutrition.unknownDays, averageProteinGrams: avgProtein },
-      bodyweight: lastBodyweight ? { value: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
-      prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weight: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RM: Number(p.estimated1RM)||null })),
+      bodyweight: lastBodyweight ? { weightKg: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
+      prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weightKg: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RMKg: Number(p.estimated1RM)||null })),
       adaptive: adaptive || null,
       lifecycle: lifecycle ? JSON.parse(JSON.stringify(lifecycle)) : null
     };
