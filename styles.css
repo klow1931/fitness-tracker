@@ -1196,3 +1196,7 @@ body.dark .profile-destination:hover{background:#17213a;border-color:#4f46e5}
 .profile-setup-extra{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--measure-line)}
 .profile-setup-extra .more-hint{margin:.15rem 0 0}
 @media(max-width:520px){.profile-setup-extra{align-items:stretch;flex-direction:column}.profile-setup-extra .btn-secondary{width:100%;min-height:44px}}
+
+.account-danger-zone{margin-top:.85rem;padding-top:.7rem;border-top:1px solid var(--measure-line)}
+.account-danger-zone>summary{cursor:pointer;font-size:.82rem;font-weight:700;min-height:32px}
+.account-danger-zone .btn-danger{margin-top:.35rem;min-height:40px}
