@@ -2304,7 +2304,7 @@
       return engine.buildContext({
         data,
         analytics,
-        adaptive: lastCoachSnapshot?.recommendation || null,
+        priorCoachRecommendation: lastCoachSnapshot?.recommendation || null,
         unit: unitLabel(),
         activeProgram: active,
         lifecycle
