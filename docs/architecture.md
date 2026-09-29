@@ -22,7 +22,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `progress-model.js`, `progress-ui.js` | Exercise series, tracking-mode-aware comparisons and exercise-detail dialogs |
 | `training-flow.js`, `rest-timer.js` | Focus/completion, exercise order and deadline-based timer recovery |
 | `nutrition-model.js`, `nutrition-ui.js`, `nutrition-forms.js` | Nutrient/portion rules, day summaries, food entry/edit and barcode review |
-| `navigation.js`, `home-activity.js` | View navigation/refresh and weekly activity model |
+| `navigation.js`, `profile-ui.js`, `home-activity.js` | Primary/secondary navigation, consumer Profile composition and weekly activity model |
 | `units.js` | Display-unit conversion |
 | `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and coaching rules |
 
@@ -42,7 +42,7 @@ Paths below are under `src/product/` unless otherwise noted.
 - Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
 - Draft migration preserves named fields, units, completion, order, edit context and optional prescription snapshots. Schema 12 wraps integrity metadata around the existing workout payload shape.
 - Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
-- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. Background sync and simultaneous-tab coordination are not implemented.
+- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. v2.60 adds server-side account/remote-snapshot deletion while intentionally leaving local training intact. Background sync and simultaneous-tab coordination are not implemented.
 - Decision-readiness results are evidence-quality classifications, not training prescriptions. The v2 decision engine remains disabled.
 
 ## Remaining boundaries
