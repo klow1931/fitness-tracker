@@ -1,6 +1,6 @@
 const {test,expect}=require('playwright/test');
 
-test('v2.59 shows account-scoped sync status and keeps low-level remote writes explicit',async({page})=>{
+test('v2.60 keeps account and sync inside Profile while low-level remote writes stay explicit',async({page})=>{
  let coachHeaders=null,syncPutHeaders=null,syncPutBody=null;
  await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
  await page.route('**/api/auth/session',route=>route.fulfill({
@@ -43,14 +43,14 @@ test('v2.59 shows account-scoped sync status and keeps low-level remote writes e
  expect(await page.evaluate(()=>localStorage.getItem('loadnote_session'))).toBeNull();
 
  const beforeRemote=await page.evaluate(()=>JSON.stringify(data));
- await page.evaluate(()=>showTab('tools'));
+ await page.evaluate(()=>showTab('profile'));
  const account=page.locator('#account-status');
  await expect(account).toContainText('Browser Athlete');
  await expect(account).toContainText('browser@example.com');
  await expect(account).toContainText('Training sync');
  await expect(account).toContainText('Cloud revision 3');
  await expect(account).toContainText('42 structured records');
- await expect(account).toContainText('Sync is manual in v2.59');
+ await expect(account).toContainText('Sync is manual.');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(beforeRemote);
 
  const upload=await page.evaluate(async()=>{
