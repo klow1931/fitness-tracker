@@ -18,4 +18,5 @@
     dialog.querySelector('#profile-close').onclick=()=>{if(!busy)dialog.close();};dialog.oncancel=e=>{if(busy)e.preventDefault();};dialog.showModal();
   }
   window.renderProgrammingProfile=render;
+  window.openProgrammingProfile=open;
 })();
