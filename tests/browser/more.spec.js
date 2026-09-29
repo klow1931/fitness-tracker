@@ -43,11 +43,12 @@ test('More pages fit the viewport in light and dark modes',async({page})=>{
  }
 });
 
-test('More sheet uses card navigation and updated disclosures',async({page})=>{
- const copy=await page.locator('#mobile-more-sheet').textContent();
- expect(copy).toContain('Everything else, when you need it.');
+test('Profile groups secondary navigation and Tools keeps disclosures',async({page})=>{
+ await page.evaluate(()=>showTab('profile'));
+ const copy=await page.locator('#profile-more').textContent();
+ expect(copy).toContain('Other parts of Loadnote');
  expect(copy).toContain('Nutrition log and targets');
- expect(copy).toContain('Calculators, backups and settings');
+ expect(copy).toContain('Calculators, backups, integrity checks, privacy and app information');
  await page.evaluate(()=>showTab('coach'));
  await expect(page.locator('#panel-coach')).toContainText('training-support tools, not medical care');
  await page.evaluate(()=>showTab('tools'));

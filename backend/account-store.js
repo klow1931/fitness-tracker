@@ -79,6 +79,17 @@ function createFileAccountStore({filePath,now=Date.now,createId}={}){
   const {provider,subject}=validateIdentity(input),doc=load(),record=doc.identities[identityKey(provider,subject)];
   return record?{account:getAccount(record.accountId),identity:clone(record)}:null;
  }
+ function deleteAccount(accountId){
+  const id=clean(accountId);
+  if(!/^acct_[A-Za-z0-9_-]{20,}$/.test(id))throw Error('Invalid Loadnote account identity');
+  const doc=clone(load()),account=doc.accounts[id];
+  if(!account)return {deleted:false,identityCount:0};
+  let identityCount=0;
+  for(const [key,record] of Object.entries(doc.identities))if(record.accountId===id){delete doc.identities[key];identityCount++;}
+  delete doc.accounts[id];
+  persist(doc);
+  return {deleted:true,identityCount};
+ }
  function resolveIdentity(input){
   const identity=validateIdentity(input),doc=clone(load()),key=identityKey(identity.provider,identity.subject),at=isoNow(now);
   const existing=doc.identities[key];
@@ -105,7 +116,7 @@ function createFileAccountStore({filePath,now=Date.now,createId}={}){
   return {account:getAccount(account.id),identity:clone(mapping),created:!existing};
  }
  function snapshot(){return clone(load());}
- return {version:STORE_VERSION,filePath:target,getAccount,findByIdentity,resolveIdentity,snapshot};
+ return {version:STORE_VERSION,filePath:target,getAccount,findByIdentity,resolveIdentity,deleteAccount,snapshot};
 }
 
 module.exports={STORE_VERSION,createFileAccountStore,identityKey,validateIdentity,publicAccount};

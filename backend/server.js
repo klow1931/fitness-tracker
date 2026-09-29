@@ -151,7 +151,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   if(req.method==='OPTIONS'){
    res.writeHead(204,responseHeaders(req,{
     'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Loadnote-CSRF, X-Loadnote-Dev-Auth',
-    'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods':'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Max-Age':'600'
    }));return res.end();
   }
@@ -202,6 +202,13 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    if(req.method==='GET'&&pathname==='/api/account'){
     const session=authenticated(req,res,{required:true});if(!session)return;
     return send(req,res,200,{account:session.account,session:{expiresAt:session.expiresAt,transport:session.transport}});
+   }
+   if(req.method==='DELETE'&&pathname==='/api/account'){
+    const session=authenticated(req,res,{csrf:true,required:true});if(!session)return;
+    const remote=syncStore?syncStore.remove(session.account.id):{deleted:false};
+    const account=accountStore.deleteAccount(session.account.id);
+    if(!account.deleted)throw Error('Authenticated account disappeared before deletion completed');
+    return send(req,res,200,{deleted:true,remoteTrainingDeleted:remote.deleted===true,localDeviceDataDeleted:false},'application/json',{'Set-Cookie':auth.clearCookie()});
    }
    if(req.method==='GET'&&pathname==='/api/sync/status'){
     const session=authenticated(req,res,{required:true});if(!session)return;

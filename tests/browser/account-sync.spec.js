@@ -19,7 +19,7 @@ test('v2.59 explicitly creates the first cloud training snapshot and stores a de
  await page.goto('/');
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
  const before=await page.evaluate(()=>JSON.stringify(data));
- await page.evaluate(()=>showTab('tools'));
+ await page.evaluate(()=>showTab('profile'));
  const account=page.locator('#account-status');
  await account.getByRole('button',{name:'Sync now'}).click();
  await expect(account).toContainText('Synced');
@@ -47,7 +47,7 @@ test('v2.59 refuses first-link guessing and recovery-backs an explicit cloud cho
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
  await page.goto('/');
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
- await page.evaluate(()=>showTab('tools'));
+ await page.evaluate(()=>showTab('profile'));
  const account=page.locator('#account-status');
  await account.getByRole('button',{name:'Sync now'}).click();
  await expect(account).toContainText('Choose the starting copy');

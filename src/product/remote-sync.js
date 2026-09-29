@@ -40,6 +40,10 @@
   if(!storage||!clean(accountId))return;
   storage.setItem(receiptKey(accountId),JSON.stringify(value));
  }
+ function clearReceipt(accountId,storage=globalThis.localStorage){
+  if(!storage||!clean(accountId))return;
+  storage.removeItem(receiptKey(accountId));
+ }
  const requester=(url,options,request)=>request?request(url,options):AccountSession?.request?AccountSession.request(url,options):fetch(url,{...options,credentials:options?.credentials||'include'});
  async function status({request}={}){
   return json(await requester('/api/sync/status',{method:'GET',headers:{Accept:'application/json'}},request));
@@ -72,5 +76,5 @@
   const pkg=prepare(state,{client,createdAt,releaseVersion});
   return uploadPackage(pkg,{expectedRevision,request,accountId,storage});
  }
- return {CLIENT_KEY,RECEIPT_PREFIX,clientId,loadReceipt,status,fetchSnapshot,prepare,uploadPackage,upload};
+ return {CLIENT_KEY,RECEIPT_PREFIX,clientId,loadReceipt,clearReceipt,status,fetchSnapshot,prepare,uploadPackage,upload};
 });

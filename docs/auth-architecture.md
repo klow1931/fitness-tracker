@@ -2,7 +2,9 @@
 
 > **v2.57 update:** The provider-verification and durable-account steps anticipated by this v2.56 document are now implemented through generic OIDC plus the file-backed single-instance account store. See `docs/oidc-account-store.md` for the current flow and its scaling boundary. The session/CSRF rules below remain authoritative.
 
-> **v2.58 update:** Account-scoped remote structured-training snapshot endpoints now reuse this authenticated session boundary. The server derives storage scope from the verified session and never trusts a client-supplied account ID. Automatic synchronization remains off; see `docs/remote-training-storage.md`.
+> **v2.58 update:** Account-scoped remote structured-training snapshot endpoints now reuse this authenticated session boundary. The server derives storage scope from the verified session and never trusts a client-supplied account ID. See `docs/remote-training-storage.md`.
+
+> **v2.60 update:** authenticated consumers can delete their Loadnote account with `DELETE /api/account`. Cookie-authenticated deletion requires CSRF. The server removes the account-scoped remote training snapshot first, then deletes the account and all provider-identity mappings, and clears the web session cookie. Local device training is not part of this server-side deletion.
 
 Loadnote v2.56 establishes the server-side identity/session boundary that later commercial account and cloud-sync work can build on.
 
@@ -130,7 +132,11 @@ For a future bearer-token client, logout also requires the client to discard its
 
 Always requires a valid Loadnote session.
 
-This is the first account-scoped protected endpoint and establishes the server authorization boundary that future sync/account resources should reuse.
+This is the account-scoped protected read endpoint.
+
+### DELETE /api/account
+
+Deletes the authenticated Loadnote account and its server-side synced structured training. Cookie-authenticated requests require CSRF. Provider-identity mappings attached to the account are removed, the session cookie is cleared, and the old session stops resolving because the account no longer exists. Local browser/native training data is deliberately not erased by this server endpoint.
 
 ## Coach protection
 

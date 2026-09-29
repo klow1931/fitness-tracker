@@ -52,13 +52,6 @@
     function showTab(name) { navigateTab(name); if(name==='workouts')window.renderTrainingBlocks?.(); }
     function showSubTab(panel, sub) { navigateSubTab(panel, sub); }
 
-    function toggleMobileMore(force) {
-      const sheet = document.getElementById('mobile-more-sheet');
-      if (!sheet) return;
-      const open = force === false ? false : force === true ? true : sheet.classList.contains('hidden');
-      sheet.classList.toggle('hidden', !open);
-    }
-
     function maybeAutoGymMode() {
       // On narrow screens, enable Gym mode once unless the user has chosen manually
       if (data.gymModeUserSet) return;
@@ -79,7 +72,7 @@
       data.onboardingDismissed = true;
       saveData(data);
       updateOnboardingUI();
-      showToast('Quick-start tips dismissed', 'info');
+      showToast('Setup tips dismissed', 'info');
     }
 
     function toggleDark() {

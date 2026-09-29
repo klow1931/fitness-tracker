@@ -1,6 +1,6 @@
 # Mobile release foundation
 
-Loadnote v2.54 established a reproducible mobile packaging boundary. v2.59 adds explicit conflict-first account synchronization on top of authenticated remote structured-training snapshots, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
+Loadnote v2.54 established a reproducible mobile packaging boundary. v2.60 adds a consumer Profile/onboarding surface plus self-service account deletion on top of v2.59 manual sync, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
 
 ## Current mobile shell
 
@@ -67,7 +67,7 @@ npm run test:browser
 
 Also perform the manual iPhone/Android acceptance work documented in `docs/testing.md`. Automated Chromium tests do not prove iOS WebView, Android WebView, signing, store metadata, permissions or physical-device behavior.
 
-## Still not completed after v2.59
+## Still not completed after v2.60
 
 This release does **not** implement:
 

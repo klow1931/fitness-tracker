@@ -4,6 +4,8 @@ Loadnote v2.58 adds authenticated, account-scoped storage for one verified struc
 
 > **v2.59 update:** the consumer app now uses this storage through explicit **Sync now**. Each device retains an acknowledged shared base outside the account payload, performs deterministic three-way comparison, stops for real conflicts, creates a recovery snapshot before applying incoming data, and rechecks cloud freshness before pull-only application. Background/automatic sync remains off.
 
+> **v2.60 update:** Profile adds self-service account deletion. The authenticated server removes the account-scoped remote training file before deleting the account identity. The initiating device then clears its local sync-base acknowledgement and receipt metadata; ordinary local training remains on-device.
+
 This is **not automatic synchronization**. The server can store, return, and version a v2.55 sync package, but the normal Loadnote training flow does not automatically upload local history, download remote history into the device, or merge two devices.
 
 ## Why this milestone exists

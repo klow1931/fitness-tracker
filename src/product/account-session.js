@@ -65,5 +65,11 @@
   if(response.ok)reset('anonymous');
   return response;
  }
- return {state,snapshot,refresh,request,signOut,_applyForTest:apply,_resetForTest:reset};
+ async function deleteAccount(fetchImpl=globalThis.fetch,endpoint='/api/account'){
+  if(typeof fetchImpl!=='function')throw Error('Fetch is unavailable');
+  const response=await request(endpoint,{method:'DELETE'},fetchImpl);
+  if(response.ok)reset('anonymous');
+  return response;
+ }
+ return {state,snapshot,refresh,request,signOut,deleteAccount,_applyForTest:apply,_resetForTest:reset};
 });

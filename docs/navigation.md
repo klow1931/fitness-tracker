@@ -1,4 +1,6 @@
-# v1.5 navigation and flow
+# Navigation and flow
+
+> **v2.60 update:** Loadnote's primary navigation is now Home → Train → Progress → Coach → Profile on desktop and mobile. Secondary destinations are grouped under Profile instead of occupying a primary More tab. Session-local subsection/scroll behavior described below remains in place.
 
 Tab subsections, scroll positions and food-entry mode are retained during the page session. Refresh still initializes Home and the existing persisted workout draft; navigation itself does not change saved data or add a migration.
 
