@@ -20,6 +20,8 @@ test('weekly review is compact, explains missing evidence, and requires approval
  await host.locator('.cycle-review-panel > summary').click();
  await host.locator('#cycle-review-analyze').click();
  await expect(host).toContainText('Week 1');
+ await expect(host).toContainText('Accumulation: protect repeatable volume');
+ await expect(host.locator('[data-cycle-phase-policy]')).toContainText('increase one load increment');
  await expect(host).toContainText('unconfirmed');
  await expect(host.locator('[data-cycle-review-choice]')).toHaveCount(3);
  expect(await host.locator('[data-cycle-review-choice="squat"] option').count()).toBe(1);
@@ -100,4 +102,31 @@ test('learned-history guardrail suppresses controller upward choice without remo
  await host.locator('#cycle-controller-use').click();
  await expect(bench).toHaveValue('keep');
  await page.evaluate(()=>{LoadnoteAdaptiveOutcomeLearning.analyze=window.__realAdaptiveLearning;LoadnoteCycleResponse.inspect=window.__realCycleResponse;});
+});
+
+
+test('peaking review preserves structure and only offers a bounded downward competition-load action',async({page})=>{
+ const peak=await page.evaluate(()=>{const cycle=data.meetCycles[0];return cycle.weekly.find(w=>w.phase==='peaking'&&cycle.weekly[w.week]?.phase==='peaking');});
+ expect(peak).toBeTruthy();
+ await page.clock.setFixedTime(new Date(peak.endDate+'T19:00:00.000Z'));
+ await page.evaluate(week=>{
+  const cycle=data.meetCycles[0];
+  for(const row of cycle.sessions.filter(s=>s.week===week)){
+   const record=data.scheduledSessions.find(x=>x.id==='meet:'+cycle.id+':'+row.key),plan=record.revisions[0].context.prescription;
+   data.workouts.push({id:'browser-peak-'+row.key,date:row.date,createdAt:row.date+'T18:00:00.000Z',exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({weight:s.weight,reps:s.reps,rpe:Math.min(10,s.targetRpe+1)}))})),sessionIntent:{prescription:plan,schedule:{id:record.id,revisionAt:record.revisions[0].recordedAt}}});
+  }
+  renderCycleWeekReview();
+ },peak.week);
+ const host=page.locator('#cycle-week-review');await host.locator('.cycle-review-panel > summary').click();
+ await host.locator('#cycle-review-week').selectOption(String(peak.week));await host.locator('#cycle-review-analyze').click();
+ await expect(host.locator('[data-cycle-phase-policy]')).toContainText('Peak: preserve specificity');
+ await expect(host.locator('[data-cycle-phase-policy]')).toContainText('reduce one load increment');
+ await expect(host.locator('[data-cycle-phase-policy]')).not.toContainText('increase one load increment');
+ const squat=host.locator('[data-cycle-review-choice="squat"]');
+ await expect(squat.locator('option')).toHaveCount(2);
+ await expect(squat.locator('option[value="reduce-load"]')).toHaveCount(1);
+ await expect(squat.locator('option[value="reduce-one"]')).toHaveCount(0);
+ await expect(squat.locator('option[value="increase-load"]')).toHaveCount(0);
+ const label=squat.locator('xpath=..');await expect(label).toContainText('peak work');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
