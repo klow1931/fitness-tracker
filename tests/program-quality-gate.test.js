@@ -27,6 +27,10 @@ const time=structuredClone(p);time.sessions[0].estimatedMinutes=time.sourceProgr
 let gate=Gate.inspect(time);assert.equal(gate.status,'blocking');assert(gate.findings.some(f=>f.code==='session-time-block'));
 time.qualityGate=gate;assert.throws(()=>Meet.save(reviewed,time,{confirmed:true,notes:'must not save'},{...args,id:'blocked-cycle'}),/blocking program quality-gate/);
 
+const missingPrimary=structuredClone(p),firstWeek=missingPrimary.sessions.filter(s=>s.week===1);
+for(const session of firstWeek)session.exercises=(session.exercises||[]).filter(e=>e.lift!=='squat');
+gate=Gate.inspect(missingPrimary);assert.equal(gate.status,'blocking');assert(gate.findings.some(f=>f.code==='missing-lift-week'&&f.lift==='squat'));
+
 const lateVariation=structuredClone(p),peakSession=lateVariation.sessions.find(s=>s.phase==='peaking'),squat=peakSession.exercises.find(e=>e.lift==='squat');
 squat.exerciseId=source.config.lifts.squat.variation.exerciseId;squat.name=source.config.lifts.squat.variation.name;squat.trainingMaxKg=source.config.lifts.squat.variation.trainingMaxKg;
 gate=Gate.inspect(lateVariation);assert.equal(gate.status,'blocking');assert(gate.findings.some(f=>f.code==='late-variation'&&f.lift==='squat'));
