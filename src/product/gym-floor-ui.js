@@ -4,7 +4,7 @@
  */
 (function(){
  'use strict';
- let decorated=false,viewportBase=0;
+ let decorated=false,viewportBase=0,viewportWidth=0;
  const H=()=>window.LoadnoteGymFloor;
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function loggerVisible(){
@@ -109,6 +109,8 @@
  }
  function viewportState(){
   const vv=window.visualViewport;if(!vv)return;
+  const width=Math.round(vv.width||window.innerWidth||0);
+  if(!viewportWidth||Math.abs(width-viewportWidth)>80){viewportWidth=width;viewportBase=vv.height;}
   if(!viewportBase||vv.height>viewportBase)viewportBase=vv.height;
   const layout=Math.max(document.documentElement.clientHeight,viewportBase);
   const open=H()?.keyboardLikelyOpen(layout,vv.height,140)||false;
