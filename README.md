@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.65.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.66.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.66 — Cycle Observability & Reproducibility
+
+Loadnote now preserves the decision environment around a powerlifting cycle rather than only the resulting Calendar changes. Newly reviewed phase programs and meet cycles freeze release/schema/policy metadata, and every normal v2.66 weekly review freezes the exact deterministic controller recommendation that was shown before athlete approval. The displayed recommendation, athlete-selected action and resulting Calendar revisions remain separate records, so an override never rewrites what Loadnote originally recommended.
+
+Coach → Programming now includes a read-only **Cycle Journal** derived from the existing source program, weekly reviews, Calendar, linked workouts, event results and transition baseline. It can show what Loadnote knew, what it recommended, what the athlete chose and what later evidence was observed without maintaining a second training database or claiming causation. Outcome linkage requires exact scheduled-session and prescription lineage; awaiting, unobserved, revised/deviated and observed evidence remain distinct.
+
+The release also adds deterministic recommendation replay/fingerprints and a decision-data audit. That audit found and fixed two null-handling errors in next-block objective logic: missing transition capacity change and missing recent average RPE could be converted to numeric zero. Unknown values now remain unknown, and starting-prescription numeric normalization was hardened the same way. v2.66 does not change the v2.65 training rules. Schema v25 remains unchanged. See `docs/cycle-observability.md`.
 
 ## v2.65 — Phase-Specific Cycle Decisions
 
