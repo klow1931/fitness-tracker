@@ -20,7 +20,7 @@ assert.equal(p.weekly.filter(w=>w.phase==='peaking').length,2);assert.equal(p.we
 assert.equal(JSON.stringify(reviewed),before);
 assert.throws(()=>Meet.save(reviewed,p,{},args),/Review and approve/);
 const saved=Meet.save(reviewed,p,{confirmed:true,notes:'Mock meet test'},{...args,id:'meet12'});
-assert.equal(saved.meetCycles.length,1);assert.equal(saved.meetCycles[0].scheduledAt,null);
+assert.equal(saved.meetCycles.length,1);assert.equal(saved.meetCycles[0].scheduledAt,null);assert.equal(saved.meetCycles[0].decisionEnvironment.releaseVersion,'2.66.0');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.meetCycle,'meet-cycle-v1');
 assert.equal(JSON.stringify(saved.workouts),JSON.stringify(reviewed.workouts));
 assert.deepEqual(Meet.validate(structuredClone(saved.meetCycles)),saved.meetCycles);
 const scheduled=Meet.schedule(saved,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});

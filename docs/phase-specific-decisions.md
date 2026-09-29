@@ -77,3 +77,10 @@ v2.65 stores the resolved phase policy inside each new weekly-review report. Wee
 The adaptive controller reports policy `cycle-adaptive-v5` and includes the active phase-policy snapshot in its explanation. All calendar edits remain future-only, bounded to the next week, and require explicit athlete approval.
 
 Schema v25 is unchanged.
+
+
+## v2.66 observability
+
+v2.66 does not change the phase-specific rules above. New weekly-review records move to record version 5 only to add a frozen `controllerSnapshot`; the underlying review policy remains `cycle-week-adjust-v4` and the adaptive controller remains `cycle-adaptive-v5`.
+
+The snapshot preserves the recommendation shown before athlete approval, its point-in-time inputs and decision environment. The athlete's approved choices remain separate, so later analysis can distinguish following the controller from overriding it. See `docs/cycle-observability.md`.

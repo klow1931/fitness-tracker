@@ -1,9 +1,9 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'));
-  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'),require('./cycle-observability'));
+  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability){
   'use strict';
-  const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'];
+  const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'],POLICY='phase-builder-v1';
   const clone=x=>JSON.parse(JSON.stringify(x));
   const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -95,13 +95,14 @@
       if(r.roleSnapshot.length!==expected.length||expected.some(e=>r.roleSnapshot.filter(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift).length!==1))throw Error('Incomplete or conflicting phase exercise-role snapshot');
       const normalized={version:1,id:r.id,createdAt:r.createdAt,config:built.config,sessions:built.sessions,profileSnapshot:profile,roleSnapshot:clone(r.roleSnapshot),goalSnapshot:r.goalSnapshot===undefined?null:clone(r.goalSnapshot),objectiveSnapshot:r.objectiveSnapshot===undefined?null:clone(r.objectiveSnapshot),warnings:[...r.warnings],review:clone(r.review),scheduledAt:r.scheduledAt||null};
       if(r.startingPrescriptionSnapshot!==undefined)normalized.startingPrescriptionSnapshot=StartingPrescription.validateAudit(r.startingPrescriptionSnapshot,built.config);
+      if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'phase-program-review'});if(env.policies.phaseBuilder!==POLICY||env.policies.startingPrescription!==StartingPrescription.POLICY)throw Error('Invalid phase-program decision policy identity');normalized.decisionEnvironment=env;}
       return normalized;
     });
   }
   function comparableProposal(value){const x=clone(value);if(x?.startingPrescriptionSnapshot)delete x.startingPrescriptionSnapshot.cutoff;return x;}
   function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
     if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review every phase and quality warning before saving');const fresh=prepare(state,proposal.config,{asOf,now});if(JSON.stringify(comparableProposal(fresh))!==JSON.stringify(comparableProposal(proposal)))throw Error('Profile, exercise context or recent evidence changed; generate a fresh preview');
-    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'phase-program-review',policies:{startingPrescription:StartingPrescription.POLICY,phaseBuilder:POLICY}}),warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
     return {...state,phasePrograms:validate([...(state.phasePrograms||[]),record])};
   }
   function comparableStartingSnapshot(value){const x=clone(value);if(x)delete x.cutoff;return x;}
@@ -112,5 +113,5 @@
     let sessions=state.scheduledSessions||[];for(const s of record.sessions)sessions=Schedule.create(sessions,{name:record.config.name+' · '+s.name,date:s.date,role:s.phase==='deload'?'deload':'mixed',goal:record.config.name,prescription:Intent.createPrescription(s.exercises,{type:'program',referenceId:record.id,label:record.config.name+' · '+s.name},now)},{id:`phase:${record.id}:${s.key}`,now});
     record.scheduledAt=now;return {...state,phasePrograms:validate(records),scheduledSessions:sessions};
   }
-  return {LIFTS,TYPES,config,build,prepare,validate,save,schedule};
+  return {POLICY,LIFTS,TYPES,config,build,prepare,validate,save,schedule};
 });

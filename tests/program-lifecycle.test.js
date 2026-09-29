@@ -3,6 +3,8 @@ const Lifecycle=require('../src/product/program-lifecycle');
 const Phase=require('../src/product/phase-builder');
 const Meet=require('../src/product/meet-cycle');
 const CycleReview=require('../src/product/cycle-review');
+const Controller=require('../src/product/cycle-adaptive-controller');
+const Observability=require('../src/product/cycle-observability');
 const PhaseReview=require('../src/product/phase-review');
 const Result=require('../src/product/mock-meet');
 const Transition=require('../src/product/transition-baseline');
@@ -71,7 +73,8 @@ report=Lifecycle.inspect(meetState,{asOf:week1.endDate});
 assert.equal(report.nextAction.kind,'review-week','weekly review must surface while the next-week adjustment window is still open');
 assert.equal(report.nextAction.week,1);
 const weekOneReview=CycleReview.analyze(meetState,{cycleId:'life-meet',week:1,asOf:week1.endDate,now:week1.endDate+'T19:00:00.000Z'});
-meetState=CycleReview.apply(meetState,weekOneReview,keep,{confirmed:true,notes:'Reviewed on time',asOf:week1.endDate,now:week1.endDate+'T19:01:00.000Z',id:'closed-1'});
+const weekOneNow=week1.endDate+'T19:01:00.000Z',weekOneController=Controller.recommendFromReports(weekOneReview,null,null),weekOneSnapshot=Observability.captureController({report:weekOneReview,controller:weekOneController,response:null,learningSummary:null,generatedAt:week1.endDate+'T19:00:30.000Z'});
+meetState=CycleReview.apply(meetState,weekOneReview,keep,{confirmed:true,notes:'Reviewed on time',asOf:week1.endDate,now:weekOneNow,id:'closed-1',controllerSnapshot:weekOneSnapshot});
 
 skipAll(meetState,'meet:life-meet:','2026-12-19T10:00:00.000Z');
 report=Lifecycle.inspect(meetState,{asOf:'2026-12-19'});

@@ -4,7 +4,7 @@
   else root.LoadnoteStartingPrescription=factory(root.LoadnoteCore,root.LoadnoteReadiness,root.LoadnoteProgrammingProfile);
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Readiness,Profile){
   'use strict';
-  const LIFTS=['squat','bench','deadlift'];
+  const LIFTS=['squat','bench','deadlift'],POLICY='starting-prescription-v1';
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
   const validDate=day=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&Number.isFinite(Date.parse(day+'T12:00:00Z'));
   const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -12,7 +12,7 @@
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const median=values=>{const a=[...values].sort((x,y)=>x-y),n=a.length;return n?n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2:null;};
   const mondayIndex=day=>(new Date(day+'T12:00:00Z').getUTCDay()+6)%7;
-  const finite=value=>Number.isFinite(Number(value))?Number(value):null;
+  const finite=value=>value===null||value===undefined||value===''?null:Number.isFinite(Number(value))?Number(value):null;
   function chooseDays(available,counts,count,preferred){
     const list=[...available];
     if(!list.length||count<1)return [];
@@ -113,5 +113,5 @@
     for(const lift of LIFTS){const row=raw.lifts[lift],selected=config?.lifts?.[lift];if(!row||!selected||row.exerciseId!==selected.exerciseId||row.selected?.frequency!==selected.exposures.length||row.selected?.setsPerExposure!==selected.sets||row.selected?.weeklySets!==selected.sets*selected.exposures.length||row.selected?.stepPct!==selected.stepPct)throw Error('Starting-prescription audit does not match the saved phase configuration');}
     return JSON.parse(JSON.stringify(raw));
   }
-  return {LIFTS,inspect,audit,validateAudit};
+  return {POLICY,LIFTS,inspect,audit,validateAudit};
 });

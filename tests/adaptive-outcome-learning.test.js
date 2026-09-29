@@ -2,6 +2,8 @@ const assert=require('node:assert/strict');
 const Learning=require('../src/product/adaptive-outcome-learning');
 const PhaseReview=require('../src/product/phase-review');
 const CycleReview=require('../src/product/cycle-review');
+const Controller=require('../src/product/cycle-adaptive-controller');
+const Observability=require('../src/product/cycle-observability');
 const Cycle=require('../src/product/meet-cycle');
 const Phase=require('../src/product/phase-builder');
 const {fixture:phaseFixture,args:phaseArgs}=require('./fixtures/phase-review');
@@ -30,7 +32,8 @@ for(const row of cycle.sessions.filter(s=>s.week===1)){
 }
 const weekArgs={cycleId:'c12',week:1,asOf:'2026-10-04',now:'2026-10-04T19:00:00.000Z'};
 const week=CycleReview.analyze(cycleState,weekArgs);
-cycleState=CycleReview.apply(cycleState,week,{squat:'reduce-load',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:weekArgs.asOf,now:'2026-10-04T19:01:00.000Z',id:'cycle-decision'});
+const displayed=Controller.recommendFromReports(week,null,null),controllerSnapshot=Observability.captureController({report:week,controller:displayed,response:null,learningSummary:null,generatedAt:'2026-10-04T19:00:30.000Z'});
+cycleState=CycleReview.apply(cycleState,week,{squat:'reduce-load',bench:'keep',deadlift:'keep'},{confirmed:true,asOf:weekArgs.asOf,now:'2026-10-04T19:01:00.000Z',id:'cycle-decision',controllerSnapshot});
 for(const row of cycle.sessions.filter(s=>s.week===2)){
  const rec=cycleState.scheduledSessions.find(x=>x.id==='meet:c12:'+row.key),rev=rec.revisions.at(-1),plan=rev.context.prescription;
  cycleState.workouts.push({id:'next-'+row.key,date:row.date,createdAt:row.date+'T18:00:00.000Z',sessionIntent:{schedule:{id:rec.id,revisionAt:rev.recordedAt},prescription:structuredClone(plan)},exercises:plan.plannedExercises.map(e=>({...e,sets:e.sets.map(s=>({...s,rpe:s.targetRpe}))}))});
