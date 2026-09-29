@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.56.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.57.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.57 — OIDC Identity & Persistent Account Store
+
+Loadnote can now connect the v2.56 session boundary to a real standards-based identity provider. The backend implements OpenID Connect authorization-code flow with PKCE, state and nonce verification, server-side code exchange, RS256/JWKS ID-token verification and strict issuer/audience/time checks. A verified provider subject resolves to a durable Loadnote account record rather than using email as identity.
+
+The first account store is an atomic file-backed adapter intended for one Loadnote server instance. It survives restarts and keeps provider subjects server-side, but it is not a substitute for a transactional database when Loadnote eventually runs multiple API instances. Production authenticated deployments must explicitly configure both the account-store path and OIDC provider. Tools now has a small Account surface for sign-in/status/sign-out and explicitly says that workouts are still local until cloud sync exists. See `docs/oidc-account-store.md`.
 
 ## v2.56 — Account Identity & Authentication Foundation
 

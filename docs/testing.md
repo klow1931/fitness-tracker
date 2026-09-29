@@ -4,9 +4,9 @@
 
 Run `npm run check`, `npm test`, `npm run check:mobile`, then the full `npm run test:browser` suite before merging. GitHub Actions installs Chromium and runs these commands on pushes and pull requests. Check the run for the actual proposed commit; an older passing run does not validate newer changes.
 
-The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency, mobile runtime detection, sync manifest/conflict planning, account/session signing, CSRF/CORS auth boundaries, and module boundaries. `npm run check:mobile` rebuilds the consumer `www/` package and verifies its Capacitor configuration, install manifest, safe-area contract, asset completeness and exclusion of server/development directories.
+The Node suite covers training and nutrition rules, drafts, unit conversion, stable exercise identities, workout revision/undo, recovery snapshots, import previews, block coverage, planned-versus-completed comparisons, decision-readiness mappings and point-in-time evidence, session edits and PR reconciliation, persistence failures, release consistency, mobile runtime detection, sync manifest/conflict planning, account/session signing, CSRF/CORS auth boundaries, persistent account identity, OIDC PKCE/state/nonce/JWKS verification, and module boundaries. `npm run check:mobile` rebuilds the consumer `www/` package and verifies its Capacitor configuration, install manifest, safe-area contract, asset completeness and exclusion of server/development directories.
 
-Browser coverage includes workout/review/edit/reload flows, manual and template-sourced prescriptions, deviation context, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and More pages, Focus mode, timer recovery, dashboard signal guards, decision-readiness mapping confirmation, authenticated Coach/CSRF routing, and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
+Browser coverage includes workout/review/edit/reload flows, manual and template-sourced prescriptions, deviation context, templates, history pagination/comparison/deletion, navigation, nutrition, measurements and More pages, Focus mode, timer recovery, dashboard signal guards, decision-readiness mapping confirmation, authenticated Coach/CSRF routing, account status/sign-out behavior, and light/night coach-link contrast. Projects target desktop and 390px mobile Chromium.
 
 ## Test limits
 
@@ -25,6 +25,7 @@ Local Chromium installation can fail because of network/download issues. Record 
 - Test an upgrade with service workers enabled, then reload online/offline. Check that the new version and scripts replace the cached build.
 - Export a backup before import/replacement tests. Check quota/transaction failures and verify recovery exports without claiming a save succeeded.
 - For commercial backend staging, verify anonymous account access is rejected, authenticated session status is correct, logout clears the cookie, CSRF is required for cookie-authenticated POSTs, and unapproved cross-origin requests are rejected.
+- With a staging identity provider, verify OIDC login redirects to the configured issuer, callback creates/reuses the same Loadnote account, a server restart preserves account identity, unverified provider email is not trusted as account email, and sign-in never claims local workouts are already synchronized.
 
 ## Historical results
 

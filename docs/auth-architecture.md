@@ -1,5 +1,7 @@
 # Account identity and authentication foundation
 
+> **v2.57 update:** The provider-verification and durable-account steps anticipated by this v2.56 document are now implemented through generic OIDC plus the file-backed single-instance account store. See `docs/oidc-account-store.md` for the current flow and its scaling boundary. The session/CSRF rules below remain authoritative.
+
 Loadnote v2.56 establishes the server-side identity/session boundary that later commercial account and cloud-sync work can build on.
 
 This release does **not** add a production identity provider or consumer sign-in screen yet. It intentionally separates:
@@ -18,13 +20,13 @@ A trusted server-side identity is represented by:
 - provider
 - provider subject
 
-Loadnote derives a stable opaque account ID from those two values.
+In v2.56 the session primitive could derive a deterministic opaque identity for testing the boundary. In v2.57, the persistent account store becomes the authority: provider + provider subject resolve to a durable Loadnote account record with its own opaque account ID.
 
-The Loadnote account ID is intentionally independent of the session-signing secret so routine session-key rotation does not silently create a new account identity.
+The Loadnote account ID is independent of the session-signing secret, so routine session-key rotation does not silently create a new account identity.
 
 Email addresses are **not** treated as the account identity key. Email addresses can change, can be hidden by providers, and should not be trusted as a globally stable account identifier.
 
-Future account linking across identity providers will require explicit server-side account records and linking rules.
+Future account linking across identity providers will require explicit linking rules that attach another verified provider identity to the existing Loadnote account.
 
 ## Session model
 
@@ -175,9 +177,9 @@ Normal consumer requests use the configured Loadnote backend contract.
 
 Development provider/BYO-key plumbing may remain in code for local development, but it should not appear as normal consumer product configuration.
 
-## Future identity-provider integration
+## Identity-provider integration (implemented in v2.57)
 
-A later release can add a production provider such as Apple, Google, or another reviewed identity service.
+v2.57 adds a provider-neutral OIDC implementation. Production deployment still requires provisioning and reviewing a concrete compatible identity provider.
 
 That provider integration should:
 
@@ -195,9 +197,11 @@ The provider token should not become the internal identifier for workouts or syn
 
 v2.55 defined **what** structured data can be safely compared and merged.
 
-v2.56 defines **who** an authenticated server request belongs to.
+v2.56 defined the signed account-session authorization boundary.
 
-A future cloud-sync milestone can combine those two layers:
+v2.57 adds the verified OIDC identity path and durable account mapping.
+
+A future cloud-sync milestone can combine those layers:
 
 - authenticated account identity
 - account-scoped server revision
@@ -207,15 +211,15 @@ A future cloud-sync milestone can combine those two layers:
 
 The server must never accept a client-supplied account ID as authorization on its own. Account scope must come from the verified Loadnote session.
 
-## Not completed in v2.56
+## Still not completed after v2.57
 
 This release does not implement:
 
-- Apple/Google/email production sign-in
+- provider-specific provisioning / store-review configuration where required
 - password storage
 - password reset
 - account recovery
-- persistent server-side account database
+- multi-instance transactional account database (v2.57 currently uses a durable single-instance file adapter)
 - server-side session revocation store
 - refresh tokens
 - account linking

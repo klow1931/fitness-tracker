@@ -1,19 +1,26 @@
-/* Loadnote backend — secure Coach proxy plus v2.56 account/session boundary.
+/* Loadnote backend — Coach proxy, authenticated account boundary, and v2.57 OIDC/account store.
  * Production example:
- *   LOADNOTE_AI_API_KEY=... LOADNOTE_AUTH_SECRET=<32+ random bytes> LOADNOTE_REQUIRE_AUTH=1 NODE_ENV=production node backend/server.js
- *
- * v2.56 does not verify a production identity provider yet. A development-only
- * session issuer exists behind explicit non-production environment flags so the
- * authenticated boundary can be integration-tested without creating fake consumer auth.
+ *   NODE_ENV=production
+ *   LOADNOTE_AUTH_SECRET=<32+ random bytes>
+ *   LOADNOTE_ACCOUNT_STORE_PATH=/var/lib/loadnote/accounts.json
+ *   LOADNOTE_OIDC_ISSUER=https://id.example.com
+ *   LOADNOTE_OIDC_CLIENT_ID=...
+ *   LOADNOTE_OIDC_CLIENT_SECRET=...
+ *   LOADNOTE_OIDC_REDIRECT_URI=https://app.example.com/api/auth/callback
+ *   node backend/server.js
  */
 'use strict';
 const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const {createAuth,safeEqual}=require('./auth');
+const {createFileAccountStore}=require('./account-store');
+const {createOidc}=require('./oidc');
 
 const ROOT=path.resolve(__dirname,'..');
 const MAX_BODY=256*1024;
+const STATIC_ROOT_FILES=new Set(['index.html','styles.css','energy.css','app.js','manifest.webmanifest','sw.js','icon-192.png','icon-512.png','apple-touch-icon.png']);
+const STATIC_PREFIXES=['assets/','src/'];
 
 function contentType(file){
  const ext=path.extname(file).toLowerCase();
@@ -36,14 +43,33 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  const apiKey=env.LOADNOTE_AI_API_KEY||'';
  const baseUrl=(env.LOADNOTE_AI_BASE_URL||'https://api.x.ai/v1').replace(/\/$/,'');
  const model=env.LOADNOTE_AI_MODEL||'grok-2-latest';
- const authRequired=(env.LOADNOTE_REQUIRE_AUTH===''||env.LOADNOTE_REQUIRE_AUTH==null)?env.NODE_ENV==='production':env.LOADNOTE_REQUIRE_AUTH==='1';
- const secureCookie=env.LOADNOTE_COOKIE_SECURE?env.LOADNOTE_COOKIE_SECURE==='1':env.NODE_ENV==='production';
+ const production=env.NODE_ENV==='production';
+ const authRequired=(env.LOADNOTE_REQUIRE_AUTH===''||env.LOADNOTE_REQUIRE_AUTH==null)?production:env.LOADNOTE_REQUIRE_AUTH==='1';
+ const secureCookie=env.LOADNOTE_COOKIE_SECURE?env.LOADNOTE_COOKIE_SECURE==='1':production;
  const sameSite=env.LOADNOTE_SESSION_SAMESITE||'Strict';
- const auth=createAuth({secret:env.LOADNOTE_AUTH_SECRET||'',ttlSeconds:Number(env.LOADNOTE_SESSION_TTL_SECONDS)||43200,secure:secureCookie,sameSite});
+ const authSecret=env.LOADNOTE_AUTH_SECRET||'';
+ const auth=createAuth({secret:authSecret,ttlSeconds:Number(env.LOADNOTE_SESSION_TTL_SECONDS)||43200,secure:secureCookie,sameSite});
+ const storePath=env.LOADNOTE_ACCOUNT_STORE_PATH||path.join(ROOT,'.loadnote-data','accounts.json');
+ const accountStore=createFileAccountStore({filePath:storePath});
+ accountStore.snapshot(); // fail fast on an unreadable/corrupt configured account store
+ const oidc=createOidc({
+  issuer:env.LOADNOTE_OIDC_ISSUER||'',
+  clientId:env.LOADNOTE_OIDC_CLIENT_ID||'',
+  clientSecret:env.LOADNOTE_OIDC_CLIENT_SECRET||'',
+  redirectUri:env.LOADNOTE_OIDC_REDIRECT_URI||'',
+  providerId:env.LOADNOTE_OIDC_PROVIDER_ID||'',
+  providerName:env.LOADNOTE_OIDC_PROVIDER_NAME||'Sign in',
+  authSecret,
+  secure:secureCookie,
+  fetchImpl,
+  production
+ });
  const devKey=String(env.LOADNOTE_DEV_AUTH_KEY||'');
- const devAuthEnabled=env.NODE_ENV!=='production'&&env.LOADNOTE_DEV_AUTH==='1'&&devKey.length>=16&&auth.configured;
+ const devAuthEnabled=!production&&env.LOADNOTE_DEV_AUTH==='1'&&devKey.length>=16&&auth.configured;
  const allowedOrigins=new Set(String(env.LOADNOTE_ALLOWED_ORIGINS||'').split(',').map(v=>v.trim()).filter(Boolean));
- if(env.NODE_ENV==='production'&&authRequired&&!auth.configured)throw Error('LOADNOTE_REQUIRE_AUTH=1 requires a 32+ byte LOADNOTE_AUTH_SECRET in production');
+ if(production&&authRequired&&!auth.configured)throw Error('Production authentication requires a 32+ byte LOADNOTE_AUTH_SECRET');
+ if(production&&authRequired&&!env.LOADNOTE_ACCOUNT_STORE_PATH)throw Error('Production authentication requires LOADNOTE_ACCOUNT_STORE_PATH');
+ if(production&&authRequired&&!oidc.configured)throw Error('Production authentication requires a configured OIDC provider');
  if(typeof fetchImpl!=='function')throw Error('A fetch implementation is required');
 
  function originAllowed(req){
@@ -65,27 +91,32 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   res.writeHead(status,headers);
   res.end(type==='application/json'?JSON.stringify(body):body);
  }
- function unauthorized(req,res,message='Authentication required'){
-  return send(req,res,401,{error:message});
+ function redirect(req,res,location,cookies=[]){
+  const headers=responseHeaders(req,{Location:location});
+  if(cookies.length)headers['Set-Cookie']=cookies;
+  res.writeHead(302,headers);res.end();
+ }
+ function unauthorized(req,res,message='Authentication required'){return send(req,res,401,{error:message});}
+ function loadSession(req){
+  if(!auth.configured)return null;
+  const session=auth.fromRequest(req);if(!session)return null;
+  const account=accountStore.getAccount(session.account.id);if(!account)return null;
+  return {...session,account};
  }
  function authenticated(req,res,{csrf=false,required=true}={}){
   if(!auth.configured){
-   if(required)return send(req,res,503,{error:'Account authentication is not configured.'});
+   if(required)send(req,res,503,{error:'Account authentication is not configured.'});
    return null;
   }
-  const session=auth.fromRequest(req);
-  if(!session){
-   if(required)unauthorized(req,res);
-   return null;
-  }
+  const session=loadSession(req);
+  if(!session){if(required)unauthorized(req,res);return null;}
   if(csrf&&!auth.csrfValid(req,session)){send(req,res,403,{error:'Request verification failed.'});return null;}
   return session;
  }
  async function coach(req,res){
   if(authRequired&&!authenticated(req,res,{csrf:true,required:true}))return;
   if(!apiKey)return send(req,res,503,{error:'Server AI key is not configured.'});
-  const body=await parseBody(req);
-  const messages=Array.isArray(body.messages)?body.messages:[];
+  const body=await parseBody(req),messages=Array.isArray(body.messages)?body.messages:[];
   if(!messages.length)return send(req,res,400,{error:'messages are required'});
   const upstream=await fetchImpl(baseUrl+'/chat/completions',{
    method:'POST',
@@ -93,13 +124,13 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    body:JSON.stringify({model,messages:messages.slice(-14),temperature:0.4})
   });
   const text=await upstream.text();
-  const headers=responseHeaders(req,{'Content-Type':'application/json'});
-  res.writeHead(upstream.status,headers);res.end(text);
+  res.writeHead(upstream.status,responseHeaders(req,{'Content-Type':'application/json'}));res.end(text);
  }
  function staticFile(req,res,pathname){
   const relative=pathname==='/'?'index.html':decodeURIComponent(pathname).replace(/^[/\\]+/,'');
+  if(!STATIC_ROOT_FILES.has(relative)&&!STATIC_PREFIXES.some(prefix=>relative.startsWith(prefix)))return send(req,res,404,{error:'Not found'});
   const file=path.resolve(ROOT,relative),rel=path.relative(ROOT,file);
-  if(rel.startsWith('..')||path.isAbsolute(rel)&&rel!==file)return send(req,res,404,{error:'Not found'});
+  if(rel.startsWith('..')||path.isAbsolute(rel))return send(req,res,404,{error:'Not found'});
   if(!fs.existsSync(file)||!fs.statSync(file).isFile())return send(req,res,404,{error:'Not found'});
   const data=fs.readFileSync(file);
   res.writeHead(200,responseHeaders(req,{'Content-Type':contentType(file),'Cache-Control':file.endsWith('index.html')?'no-cache':'public, max-age=300'}));
@@ -117,22 +148,47 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   }
   try{
    const url=new URL(req.url||'/','http://loadnote.local'),pathname=url.pathname;
-   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,model,auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled}});
+   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,model,auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured}});
+   if(req.method==='GET'&&pathname==='/api/auth/providers'){
+    return send(req,res,200,{providers:oidc.configured?[{id:oidc.providerId,name:oidc.providerName,loginUrl:'/api/auth/login'}]:[]});
+   }
+   if(req.method==='GET'&&pathname==='/api/auth/login'){
+    if(!oidc.configured)return send(req,res,503,{error:'Account sign-in is not configured.'});
+    const start=await oidc.begin(url.searchParams.get('returnTo')||'/');
+    return redirect(req,res,start.url,[start.cookie]);
+   }
+   if(req.method==='GET'&&pathname==='/api/auth/callback'){
+    if(!oidc.configured)return send(req,res,503,{error:'Account sign-in is not configured.'});
+    if(url.searchParams.get('error'))return send(req,res,400,{error:'Identity provider sign-in was not completed.'},'application/json',{'Set-Cookie':oidc.clearCookie()});
+    try{
+     const completed=await oidc.complete({code:url.searchParams.get('code'),state:url.searchParams.get('state'),cookieHeader:req.headers.cookie});
+     const resolved=accountStore.resolveIdentity(completed.identity);
+     const issued=auth.issue({id:resolved.account.id,provider:completed.identity.provider});
+     return redirect(req,res,completed.returnTo,[auth.sessionCookie(issued.token),completed.clearCookie]);
+    }catch(error){
+     const status=/OIDC state|OIDC nonce|sign-in state|authorization code|ID token|audience|issuer|authorized-party|signature|expired/i.test(error.message||'')?400:500;
+     return send(req,res,status,{error:error.message||'Sign-in failed'},'application/json',{'Set-Cookie':oidc.clearCookie()});
+    }
+   }
    if(req.method==='GET'&&pathname==='/api/auth/session'){
-    const session=auth.configured?auth.fromRequest(req):null;
-    return send(req,res,200,session?{authenticated:true,account:session.account,expiresAt:session.expiresAt,csrf:session.transport==='cookie'?session.csrf:null,transport:session.transport}:{authenticated:false,authConfigured:auth.configured,authRequired});
+    const session=loadSession(req);
+    return send(req,res,200,session?{
+     authenticated:true,account:session.account,expiresAt:session.expiresAt,csrf:session.transport==='cookie'?session.csrf:null,transport:session.transport,
+     authConfigured:auth.configured,authRequired,loginAvailable:oidc.configured,provider:oidc.configured?{id:oidc.providerId,name:oidc.providerName}:null
+    }:{authenticated:false,authConfigured:auth.configured,authRequired,loginAvailable:oidc.configured,provider:oidc.configured?{id:oidc.providerId,name:oidc.providerName}:null});
    }
    if(req.method==='POST'&&pathname==='/api/auth/logout'){
-    const session=auth.configured?auth.fromRequest(req):null;
+    const session=loadSession(req);
     if(session&&!auth.csrfValid(req,session))return send(req,res,403,{error:'Request verification failed.'});
     return send(req,res,200,{ok:true,discardBearer:session?.transport==='bearer'||false},'application/json',{'Set-Cookie':auth.clearCookie()});
    }
    if(req.method==='POST'&&pathname==='/api/auth/dev-session'){
     if(!devAuthEnabled)return send(req,res,404,{error:'Not found'});
     if(!safeEqual(req.headers['x-loadnote-dev-auth'],devKey))return unauthorized(req,res);
-    const body=await parseBody(req),identity=auth.accountIdentity({provider:body.provider||'development',subject:body.subject});
-    const issued=auth.issue(identity);
-    return send(req,res,200,{authenticated:true,account:issued.account,expiresAt:issued.expiresAt,csrf:issued.csrf},'application/json',{'Set-Cookie':auth.sessionCookie(issued.token)});
+    const body=await parseBody(req);
+    const resolved=accountStore.resolveIdentity({provider:body.provider||'development',subject:body.subject,email:body.email,emailVerified:body.emailVerified===true,displayName:body.displayName});
+    const issued=auth.issue({id:resolved.account.id,provider:resolved.identity.provider});
+    return send(req,res,200,{authenticated:true,account:resolved.account,expiresAt:issued.expiresAt,csrf:issued.csrf},'application/json',{'Set-Cookie':auth.sessionCookie(issued.token)});
    }
    if(req.method==='GET'&&pathname==='/api/account'){
     const session=authenticated(req,res,{required:true});if(!session)return;
@@ -142,16 +198,16 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    if(req.method==='GET')return staticFile(req,res,pathname);
    return send(req,res,404,{error:'Not found'});
   }catch(error){
-   return send(req,res,Number(error.statusCode)||500,{error:error.message||'Server error'});
+   const status=Number(error.statusCode)||(/OIDC state|OIDC nonce|sign-in state|authorization code|ID token|audience|issuer|authorized-party|signature|expired/i.test(error.message||'')?400:500);
+   return send(req,res,status,{error:error.message||'Server error'});
   }
  });
- server.loadnote={port,auth,authRequired,devAuthEnabled,allowedOrigins:[...allowedOrigins]};
+ server.loadnote={port,auth,authRequired,devAuthEnabled,oidc,accountStore,allowedOrigins:[...allowedOrigins]};
  return server;
 }
 
 if(require.main===module){
- const server=createServer();
- const port=server.loadnote.port;
+ const server=createServer(),port=server.loadnote.port;
  server.listen(port,()=>console.log(`Loadnote backend listening on http://localhost:${port}`));
 }
-module.exports={createServer};
+module.exports={createServer,STATIC_ROOT_FILES,STATIC_PREFIXES};
