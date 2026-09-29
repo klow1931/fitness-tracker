@@ -2,7 +2,7 @@
 
 Loadnote v2.57 connects the v2.56 application-session boundary to a real standards-based identity flow and a durable account record.
 
-The release is deliberately still separate from cloud workout synchronization.
+v2.58 now adds account-scoped remote structured-training snapshot storage, but automatic workout synchronization remains separate.
 
 ## What v2.57 adds
 
@@ -188,9 +188,7 @@ If a provider is configured and the athlete is signed out, it shows the configur
 
 If signed in, it shows safe account profile information and a sign-out action.
 
-The UI explicitly states that training history is still local in v2.57.
-
-Signing in must not imply that workouts are backed up or synchronized before that functionality exists.
+In v2.58 the Account UI can read remote-storage metadata for the signed-in account, while explicitly stating that automatic sync is off. Signing in alone must not imply that local workouts were uploaded, restored, or merged.
 
 ## Provider-neutral architecture
 
@@ -230,7 +228,7 @@ v2.57 adds a durable account identity and real provider-verification path.
 
 The next cloud-data milestone can therefore build around:
 
-`verified identity -> Loadnote account -> authenticated request -> account-scoped revision -> v2.55 sync protocol`
+`verified identity -> Loadnote account -> authenticated request -> v2.58 account-scoped remote revision -> v2.55 sync protocol`
 
 The server must continue deriving account scope from the verified Loadnote session rather than accepting a client-supplied account ID.
 
@@ -238,9 +236,8 @@ The server must continue deriving account scope from the verified Loadnote sessi
 
 v2.57 does not implement:
 
-- cloud workout storage
 - automatic multi-device sync
-- server revision/base storage
+- persistent client shared-base orchestration
 - conflict-resolution UI
 - progress-photo upload
 - multi-provider account linking
