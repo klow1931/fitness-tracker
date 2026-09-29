@@ -29,7 +29,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and deterministic/structured coaching rules |
 | `coach-client.js`, `backend/coach-gateway.js`, `backend/server.js` | Consumer online-Coach transport, bounded context/request contract, trusted server prompt, provider secret/configuration and response validation |
 
-`app.js` still coordinates startup and several dashboard, program, coaching and More-page views. Production script order and global compatibility boundaries are tested. `styles.css` and `energy.css` share layout/theme responsibility.
+The v2.64 starting-prescription layer is read-only until explicit athlete application and stores only an additive audit snapshot on newly reviewed phase programs; it does not infer training maxes or change active-program adaptation rules.\n\n`app.js` still coordinates startup and several dashboard, program, coaching and More-page views. Production script order and global compatibility boundaries are tested. `styles.css` and `energy.css` share layout/theme responsibility.
 
 ## Data and calculation boundaries
 
