@@ -1,4 +1,4 @@
-/* v2.42 — transition baseline review inside saved phase-program cards. */
+/* v2.61 — transition baseline review for phase programs and meet cycles. */
 (function(root,factory){
  if(typeof module==='object'&&module.exports)module.exports=factory(require('./transition-baseline'));
  else root.LoadnoteTransitionBaselineUI=factory(root.LoadnoteTransitionBaseline);
@@ -29,13 +29,24 @@
      try{const report=Transition.preview(data,{programId:button.dataset.transitionReview,asOf:today()});output._transitionReport=report;output.innerHTML=previewHtml(report);bindSave(output);}catch(e){output.textContent=e.message;}
    });
  }
+ function open(programId){
+   let dialog=document.getElementById('transition-baseline-dialog');
+   if(!dialog){dialog=document.createElement('dialog');dialog.id='transition-baseline-dialog';dialog.className='card schedule-dialog';document.body.append(dialog);}
+   try{
+     const report=Transition.preview(data,{programId,asOf:today()});
+     dialog.innerHTML='<div class="transition-dialog-content"><div class="flex items-start justify-between gap-3"><div><p class="eyebrow">PROGRAM HANDOFF</p><h2>Review transition baseline</h2></div><button type="button" class="btn-secondary" data-transition-close>Close</button></div><div data-transition-dialog-result>'+previewHtml(report)+'</div></div>';
+     const output=dialog.querySelector('[data-transition-dialog-result]');output._transitionReport=report;bindSave(output);
+     dialog.querySelector('[data-transition-close]').onclick=()=>dialog.close();
+     dialog.showModal();
+   }catch(e){showToast?.(e.message||'Transition review unavailable','error');}
+ }
  function bindSave(output){
    const button=output.querySelector('[data-transition-save]');if(!button)return;
    button.onclick=async()=>{
      const confirmed=output.querySelector('[data-transition-confirm]').checked,note=output.querySelector('[data-transition-note]').value;
-     try{const next=Transition.save(data,output._transitionReport,{confirmed,notes:note},{now:new Date().toISOString()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();renderPhaseBuilder();showToast('Transition baseline saved','success');}
+     try{const next=Transition.save(data,output._transitionReport,{confirmed,notes:note},{now:new Date().toISOString()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();renderPhaseBuilder();window.renderProgramLifecycle?.();showToast('Transition baseline saved','success');if(output.closest('dialog'))output.closest('dialog').close();}
      catch(e){output.setAttribute('role','alert');const err=document.createElement('p');err.textContent=e.message;output.append(err);}
    };
  }
- return {card,bind,summary};
+ return {card,bind,summary,open};
 });
