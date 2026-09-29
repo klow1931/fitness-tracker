@@ -140,11 +140,11 @@
     const add=(code,severity,detail,extra={})=>{issues.push({code,severity,detail,...extra});if(severity==='blocking')blocking++;else warnings++;};
     const cutoff=asOf+'T23:59:59.999Z',allCycles=state.meetCycles||[],cycles=allCycles.filter(c=>(!cycleId||c.id===cycleId)&&(!c.createdAt||c.createdAt<=cutoff)),sourceIds=new Set(cycles.map(c=>c.sourceProgram?.id||c.config?.sourceProgramId).filter(Boolean)),programs=(state.phasePrograms||[]).filter(p=>(!cycleId||sourceIds.has(p.id))&&(!p.createdAt||p.createdAt<=cutoff));
     for(const p of programs){
-      if(p.decisionEnvironment){try{validateEnvironment(p.decisionEnvironment,{capturedAt:p.createdAt,purpose:'phase-program-review'});}catch(e){add('invalid-program-environment','blocking',e.message,{programId:p.id});}}
+      if(p.decisionEnvironment){try{const env=validateEnvironment(p.decisionEnvironment,{capturedAt:p.createdAt,purpose:'phase-program-review'});if(env.policies.phaseBuilder!=='phase-builder-v1'||env.policies.startingPrescription!=='starting-prescription-v1')throw Error('Phase-program policy identities do not match this recorded program format');}catch(e){add('invalid-program-environment','blocking',e.message,{programId:p.id});}}
       else add('legacy-program-without-environment','warning','This phase program predates frozen decision-environment metadata.',{programId:p.id});
     }
     for(const cycle of cycles){
-      if(cycle.decisionEnvironment){try{validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
+      if(cycle.decisionEnvironment){try{const env=validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!=='meet-cycle-v1')throw Error('Meet-cycle policy identity does not match this recorded cycle format');}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
       else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
       for(const review of (cycle.weeklyReviews||[]).filter(r=>!r.createdAt||r.createdAt<=cutoff)){
         if(review.controllerSnapshot){try{
