@@ -13,6 +13,9 @@ const context = Coach.buildContext({
   lifecycle:{status:'active',program:{name:'Meet prep'},progress:{week:4,totalWeeks:12}}
 });
 assert.equal(context.unit, 'lb');
+assert.deepEqual(context.units,{storageWeight:'kg',displayWeight:'lb'});
+assert.equal(context.training.recentWorkouts[0].exercises[0].sets[0].weightKg,315);
+assert.equal(context.prs[0].weightKg,315);
 assert.equal(context.training.workouts7d, 1);
 assert.equal(context.athlete.goals[0].name,'Meet prep');
 assert.equal(context.lifecycle.progress.week,4);
