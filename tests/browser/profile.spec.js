@@ -24,7 +24,7 @@ test('v2.60 onboarding leads into reusable training setup and Profile stays comp
  await page.locator('#profile-lift-mapping').click();
  await expect(page.locator('#panel-coach')).toBeVisible();
  await expect(page.locator('#decision-readiness-card .decision-review-tools')).toHaveAttribute('open','');
- await expect(page.locator('#decision-readiness-card details', {hasText:'Confirm exercise roles and lift relationships'})).toHaveAttribute('open','');
+ await expect(page.locator('#decision-readiness-card .decision-review-tools > details', {hasText:'Confirm exercise roles and lift relationships'})).toHaveAttribute('open','');
  await page.evaluate(()=>showTab('profile'));
 
  await page.locator('[data-profile-unit="lb"]').click();
