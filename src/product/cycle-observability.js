@@ -82,7 +82,7 @@
       const scheduleId='meet:'+cycle.id+':'+target.key,linked=workouts.filter(w=>w.sessionIntent?.schedule?.id===scheduleId);
       if(linked.length!==1){if(linked.length>1)sawNonAttributable=true;continue;}
       const w=linked[0],record=(state.scheduledSessions||[]).find(s=>s.id===scheduleId),revision=record?.revisions?.find(r=>r.recordedAt===w.sessionIntent?.schedule?.revisionAt);
-      if(!revision||revision.recordedAt>w.createdAt||revision.context?.date!==w.date||fingerprint(w.sessionIntent?.prescription)!==fingerprint(revision.context?.prescription)){sawNonAttributable=true;continue;}
+      if(!revision||revision.recordedAt>w.createdAt||revision.context?.date!==w.date||!revision.context?.prescription||!w.sessionIntent?.prescription||fingerprint(w.sessionIntent.prescription)!==fingerprint(revision.context.prescription)){sawNonAttributable=true;continue;}
       const reviewChange=(review.changes||[]).find(change=>change.id===scheduleId)||null;
       if(chosen!=='keep'){
         if(!reviewChange||revision.recordedAt!==reviewChange.after?.recordedAt){sawNonAttributable=true;continue;}
