@@ -117,7 +117,7 @@
     const events=[];
     const source=cycle.sourceProgram||null;
     if(source?.createdAt&&source.createdAt<=cutoff)events.push({kind:'starting-program',at:source.createdAt,date:source.config?.startDate||null,label:'Starting program reviewed',environment:copy(source.decisionEnvironment||null),startingPrescription:copy(source.startingPrescriptionSnapshot||null)});
-    if(cycle.createdAt&&cycle.createdAt<=cutoff)events.push({kind:'cycle-reviewed',at:cycle.createdAt,date:cycle.config?.startDate||null,label:'Meet cycle reviewed',environment:copy(cycle.decisionEnvironment||null),weeks:cycle.config?.weeks||null,eventType:cycle.config?.eventType||'mock'});
+    if(cycle.createdAt&&cycle.createdAt<=cutoff)events.push({kind:'cycle-reviewed',at:cycle.createdAt,date:cycle.config?.startDate||null,label:'Meet cycle reviewed',environment:copy(cycle.decisionEnvironment||null),qualityGate:copy(cycle.qualityGate||null),weeks:cycle.config?.weeks||null,eventType:cycle.config?.eventType||'mock'});
     for(const review of (cycle.weeklyReviews||[]).filter(r=>r.createdAt<=cutoff).sort((a,b)=>a.createdAt.localeCompare(b.createdAt))){
       const controller=review.controllerSnapshot?validateControllerSnapshot(review.controllerSnapshot,review.report,{savedAt:review.createdAt}):null;
       const lifts={};
