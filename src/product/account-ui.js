@@ -102,7 +102,7 @@
     const records=Number.isFinite(Number(status.current?.records))?Number(status.current.records):null;
     const saved=status.updatedAt?new Date(status.updatedAt).toLocaleString():null;
     const detail=['Cloud revision '+status.revision,records!=null?records+' structured records':null,saved?'saved '+saved:null].filter(Boolean).join(' · ');
-    target.innerHTML='<p class="account-remote-title"><b>Training sync</b></p><p class="more-hint">'+esc(detail)+'</p><p class="more-hint">Sync is manual in v2.59. Workout logging remains local and works offline.</p>'+button('Sync now','account-sync-now','primary');
+    target.innerHTML='<p class="account-remote-title"><b>Training sync</b></p><p class="more-hint">'+esc(detail)+'</p><p class="more-hint">Sync is manual. Workout logging remains local and works offline.</p>'+button('Sync now','account-sync-now','primary');
    }else{
     target.innerHTML='<p class="account-remote-title"><b>Training sync</b></p><p class="more-hint">Cloud storage is ready but empty. Sync now will create the first verified account snapshot.</p>'+button('Sync now','account-sync-now','primary');
    }
