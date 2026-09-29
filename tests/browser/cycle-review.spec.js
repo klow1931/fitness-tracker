@@ -15,6 +15,7 @@ test.beforeEach(async({page})=>{
 });
 test('weekly review is compact, explains missing evidence, and requires approval to save a keep review',async({page})=>{
  const host=page.locator('#cycle-week-review');
+ await expect(host).toHaveCount(1);
  await expect(host).toContainText('completed training weeks');
  await host.locator('.cycle-review-panel > summary').click();
  await host.locator('#cycle-review-analyze').click();
