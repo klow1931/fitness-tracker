@@ -1,3 +1,20 @@
+# v2.59.0 — Safe Account Sync
+
+- Add explicit **Sync now** for signed-in accounts while keeping workout logging and core training fully local/offline.
+- Persist a trustworthy per-account shared sync base as a device-only IndexedDB record rather than placing sync metadata inside the account snapshot.
+- Compare Shared Base ↔ This Device ↔ Cloud with the existing deterministic v2.55 three-way merge rules.
+- Automatically combine only safe one-sided or identical changes; never use timestamp/last-write-wins to hide concurrent edits.
+- Add explicit record-level conflict review with **Keep this device** / **Keep cloud** choices for true concurrent changes.
+- Treat a device with existing divergent cloud data but no shared base as a first-link review instead of guessing how to merge; require an explicit whole-device/cloud starting choice.
+- Preserve device-local settings, drafts, photos, recovery snapshots and provider/API configuration when applying incoming structured account data.
+- Create a bounded local recovery snapshot before incoming cloud training is applied.
+- Re-run workout/Calendar relationship integrity after merges and refuse combinations that would create invalid linked training records.
+- Recheck the remote package/revision immediately before pull-only local application; uploads continue to use server compare-and-swap revisions and stale writes stop for a fresh review.
+- Fix merge application so downloaded sync-project snapshots apply selected remote records correctly rather than being interpreted as missing flat-state collections.
+- Keep progress-photo binaries and background synchronization out of v2.59; sync is intentionally user-initiated.
+- Add unit and browser coverage for first upload, first-link safety, shared-base merges, explicit conflicts, projected remote packages, recovery-backed cloud application and stale-revision handling.
+- No training-data schema migration in this release.
+
 # v2.58.0 — Account-Scoped Remote Training Storage
 
 - Add authenticated, account-scoped storage for verified `loadnote-sync-v1` structured-training snapshots without enabling automatic synchronization.
