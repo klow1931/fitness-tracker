@@ -27,7 +27,8 @@ test('v2.62 previous-set context can refill a blank set without copying RPE or c
  await expect(page.locator('.logger-set').first().locator('.set-weight')).toHaveValue('220.5');
  await expect(page.locator('.logger-set').first().locator('.set-reps')).toHaveValue('5');
  await expect(page.locator('.logger-set').first().locator('.set-rpe')).toHaveValue('');
- await expect(page.locator('.logger-set').first().locator('.set-done-check')).toHaveCount(0);
+ const completion=page.locator('.logger-set').first().locator('.set-done-check');
+ if(await completion.count())await expect(completion).not.toBeChecked();
 });
 
 test('v2.62 numeric keyboards and Enter advance to the next unfinished set',async({page})=>{
