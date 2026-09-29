@@ -50,8 +50,13 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   const verification=verifyPackage(doc.package);
   if(!verification?.verified)throw Error('Stored remote training package failed integrity verification: '+(verification?.reason||'invalid package'));
   if(doc.current.packageFingerprint!==verification.packageFingerprint||doc.current.manifestFingerprint!==verification.manifest?.fingerprint)throw Error('Stored remote training metadata does not match its package');
+  for(let index=0;index<doc.history.length;index++){
+   const entry=doc.history[index],previous=doc.history[index-1];
+   if(!entry||!Number.isInteger(entry.revision)||entry.revision<1)throw Error('Stored remote training revision history is inconsistent');
+   if(previous&&entry.revision!==previous.revision+1)throw Error('Stored remote training revision history is inconsistent');
+  }
   const latest=doc.history[doc.history.length-1];
-  if(!latest||latest.revision!==doc.revision||latest.packageFingerprint!==doc.current.packageFingerprint)throw Error('Stored remote training revision history is inconsistent');
+  if(!latest||latest.revision!==doc.revision||doc.current.revision!==doc.revision||latest.packageFingerprint!==doc.current.packageFingerprint||latest.manifestFingerprint!==doc.current.manifestFingerprint||latest.committedAt!==doc.updatedAt)throw Error('Stored remote training revision history is inconsistent');
   return doc;
  }
  function write(accountId,doc){
