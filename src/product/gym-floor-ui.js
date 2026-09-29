@@ -38,9 +38,11 @@
   let host=set.querySelector('.gym-set-history');
   if(!host){host=document.createElement('div');host.className='gym-set-history';set.appendChild(host);}
   const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy);
-  if(!label){host.hidden=true;host.replaceChildren();return;}
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
-  const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0);
+  const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0),signature=label+'|'+blank+'|'+currentUnit();
+  if(host._gymSignature===signature){host.hidden=!label;return;}
+  host._gymSignature=signature;
+  if(!label){host.hidden=true;host.replaceChildren();return;}
   host.hidden=false;
   host.innerHTML='<span>Last: '+esc(label)+'</span>'+(blank?'<button type="button" class="gym-use-last" data-gym-use-last>Use last</button>':'');
   const button=host.querySelector('[data-gym-use-last]');
