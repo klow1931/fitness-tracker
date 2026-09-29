@@ -21,7 +21,8 @@ function renderVisibleView(panel,sub) {
   else if(panel==='measures')renderMeasures();
   else if(panel==='photos')renderPhotos();
   else if(panel==='coach')renderCoach();
-  else if(panel==='tools'){updateStorageInfo();window.renderAccountStatus?.();window.renderDataIntegrityTools?.();}
+  else if(panel==='profile')window.renderProfileHub?.();
+  else if(panel==='tools'){updateStorageInfo();window.renderDataIntegrityTools?.();}
   nav.rendered[key]=stamp;nav.metrics.renders++;nav.metrics.lastRenderMs=performance.now()-start;
 }
 function restoreViewPosition(panel) {
@@ -38,15 +39,15 @@ function navigateTab(name) {
   if(nav.active)nav.scroll[navigationKey(nav.active)]=window.scrollY;
   const changed=nav.active!==name;
   nav.active=name;
-  for(const panel of ['dashboard','calendar','workouts','nutrition','prs','measures','photos','coach','tools']) {
+  for(const panel of ['dashboard','calendar','workouts','nutrition','prs','measures','photos','coach','profile','tools']) {
     document.getElementById('panel-'+panel)?.classList.toggle('hidden',panel!==name);
     const tab=document.getElementById('tab-'+panel);if(tab){tab.classList.toggle('nav-active',panel===name);tab.setAttribute('aria-pressed',String(panel===name));}
   }
   const desktopMore=document.getElementById('desktop-more');
-  desktopMore?.classList.toggle('nav-active',!['dashboard','workouts','prs','coach'].includes(name));
-  if(desktopMore && !['dashboard','workouts','prs','coach'].includes(name))desktopMore.open=false;
+  desktopMore?.classList.toggle('nav-active',!['dashboard','workouts','prs','coach','profile'].includes(name));
+  if(desktopMore && !['dashboard','workouts','prs','coach','profile'].includes(name))desktopMore.open=false;
   document.querySelectorAll('.mobile-nav-btn').forEach(btn=>{
-    const selected=btn.dataset.tab===name || btn.dataset.tab==='more'&&!['dashboard','workouts','prs','coach'].includes(name);
+    const selected=btn.dataset.tab===name;
     btn.classList.toggle('nav-active',selected);btn.setAttribute('aria-pressed',String(selected));
   });
   if(nav.sub[name])navigateSubTab(name,nav.sub[name],true);else renderVisibleView(name);
