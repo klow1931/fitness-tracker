@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const Review=require('../src/product/cycle-review'),Cycle=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder'),Schedule=require('../src/product/schedule'),Controller=require('../src/product/cycle-adaptive-controller'),Observability=require('../src/product/cycle-observability');
-const reviewOpts=(report,opts)=>({...opts,controllerSnapshot:Observability.captureController({report,controller:Controller.recommendFromReports(report,null,null),response:null,learningSummary:null,generatedAt:new Date(Date.parse(opts.now)-1000).toISOString()})});
+const reviewOpts=(report,opts)=>({...opts,controllerSnapshot:Observability.captureController({report,controller:Controller.recommendFromReports(report,null,null),response:null,learningSummary:null,generatedAt:opts.now})});
 const {phaseFixture}=require('./fixtures/phase-builder');
 const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
 const source=Phase.save(state,Phase.prepare(state,config,args),{confirmed:true},{...args,id:'setup'});
