@@ -18,6 +18,7 @@ const {createFileAccountStore}=require('./account-store');
 const {createOidc}=require('./oidc');
 const {createFileSyncStore}=require('./sync-store');
 const Sync=require('../src/product/sync-model');
+const CoachGateway=require('./coach-gateway');
 
 const ROOT=path.resolve(__dirname,'..');
 const MAX_BODY=256*1024;
@@ -51,6 +52,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  const model=env.LOADNOTE_AI_MODEL||'grok-2-latest';
  const production=env.NODE_ENV==='production';
  const authRequired=(env.LOADNOTE_REQUIRE_AUTH===''||env.LOADNOTE_REQUIRE_AUTH==null)?production:env.LOADNOTE_REQUIRE_AUTH==='1';
+ const coachAuthRequired=production||authRequired;
  const secureCookie=env.LOADNOTE_COOKIE_SECURE?env.LOADNOTE_COOKIE_SECURE==='1':production;
  const sameSite=env.LOADNOTE_SESSION_SAMESITE||'Strict';
  const authSecret=env.LOADNOTE_AUTH_SECRET||'';
@@ -123,17 +125,27 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   return session;
  }
  async function coach(req,res){
-  if(authRequired&&!authenticated(req,res,{csrf:true,required:true}))return;
-  if(!apiKey)return send(req,res,503,{error:'Server AI key is not configured.'});
-  const body=await parseBody(req),messages=Array.isArray(body.messages)?body.messages:[];
-  if(!messages.length)return send(req,res,400,{error:'messages are required'});
-  const upstream=await fetchImpl(baseUrl+'/chat/completions',{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-   body:JSON.stringify({model,messages:messages.slice(-14),temperature:0.4})
-  });
-  const text=await upstream.text();
-  res.writeHead(upstream.status,responseHeaders(req,{'Content-Type':'application/json'}));res.end(text);
+  if(coachAuthRequired&&!authenticated(req,res,{csrf:true,required:true}))return;
+  if(!apiKey)return send(req,res,503,{error:'Online Coach is not configured.',code:'coach_unavailable'});
+  const body=await parseBody(req),messages=CoachGateway.providerMessages(body);
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),Number(env.LOADNOTE_AI_TIMEOUT_MS)||25000);
+  let upstream;
+  try{
+   upstream=await fetchImpl(baseUrl+'/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+    body:JSON.stringify({model,messages,temperature:0.3}),
+    signal:controller.signal
+   });
+  }catch(error){
+   if(error?.name==='AbortError')return send(req,res,504,{error:'Online Coach timed out.',code:'coach_timeout'});
+   return send(req,res,502,{error:'Online Coach provider is unavailable.',code:'coach_provider_unavailable'});
+  }finally{clearTimeout(timeout);}
+  if(!upstream.ok)return send(req,res,502,{error:'Online Coach provider returned an error.',code:'coach_provider_error'});
+  let payload;
+  try{payload=await upstream.json();}catch{return send(req,res,502,{error:'Online Coach provider returned an invalid response.',code:'coach_provider_invalid_json'});}
+  const result=CoachGateway.parseProviderResponse(payload);
+  return send(req,res,200,{coach:result});
  }
  function staticFile(req,res,pathname){
   const relative=pathname==='/'?'index.html':decodeURIComponent(pathname).replace(/^[/\\]+/,'');
@@ -157,7 +169,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   }
   try{
    const url=new URL(req.url||'/','http://loadnote.local'),pathname=url.pathname;
-   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,model,auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured},remoteTraining:{configured:!!syncStore,protocol:Sync.PROTOCOL,maxBytes:maxSyncBytes}});
+   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,coach:{configured:!!apiKey,authRequired:coachAuthRequired},auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured},remoteTraining:{configured:!!syncStore,protocol:Sync.PROTOCOL,maxBytes:maxSyncBytes}});
    if(req.method==='GET'&&pathname==='/api/auth/providers'){
     return send(req,res,200,{providers:oidc.configured?[{id:oidc.providerId,name:oidc.providerName,loginUrl:'/api/auth/login'}]:[]});
    }
@@ -241,7 +253,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    return send(req,res,status,{error:error.message||'Server error'});
   }
  });
- server.loadnote={port,auth,authRequired,devAuthEnabled,oidc,accountStore,syncStore,maxSyncBytes,allowedOrigins:[...allowedOrigins]};
+ server.loadnote={port,auth,authRequired,coachAuthRequired,aiConfigured:!!apiKey,devAuthEnabled,oidc,accountStore,syncStore,maxSyncBytes,allowedOrigins:[...allowedOrigins]};
  return server;
 }
 
