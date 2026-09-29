@@ -12,6 +12,7 @@
 - Surface accumulation/strength phases extending beyond the six-week progressive engine window because the generator intentionally holds the final supported prescription instead of extrapolating indefinitely.
 - Expand the full-cycle preview with gate status/findings, workout/time range, weekly lift frequency, set counts, average planned %TM and competition-specific set percentage.
 - Freeze the quality-gate snapshot and `program-quality-gate-v1` policy identity on newly reviewed meet cycles.
+- Surface the saved gate status in the Cycle Journal and audit its fingerprint/count/policy lineage without recomputing or rewriting the approved result.
 - Preserve legacy meet cycles without quality-gate snapshots.
 - Add deterministic 8/12/16/20-week simulations spanning 3-day/5-day schedules, intermediate/advanced profiles, sparse history, kg/lb display and mock/competition events.
 - Keep v2.65 adaptive thresholds unchanged and introduce no automatic correction or approval behavior.
