@@ -2,6 +2,12 @@
 
 **v2.57.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
+## v2.58 — Account-Scoped Remote Training Storage
+
+Loadnote can now persist one verified structured-training snapshot per authenticated account behind a server-authoritative monotonic revision. Remote writes are compare-and-swap: a client must name the revision it read, and a stale different snapshot receives a conflict instead of overwriting newer remote training data. Exact-package retries are idempotent for unreliable mobile networks.
+
+The server reuses and hardens the v2.55 `loadnote-sync-v1` package contract, verifies workout/Calendar relationship integrity before storage, verifies persisted packages again on read, and keeps account scope derived from the signed session. The Account panel can show whether remote storage is empty or which revision exists, but **automatic sync remains off**. Remote fetch/upload helpers never automatically replace local training history. See `docs/remote-training-storage.md`.
+
 ## v2.57 — OIDC Identity & Persistent Account Store
 
 Loadnote can now connect the v2.56 session boundary to a real standards-based identity provider. The backend implements OpenID Connect authorization-code flow with PKCE, state and nonce verification, server-side code exchange, RS256/JWKS ID-token verification and strict issuer/audience/time checks. A verified provider subject resolves to a durable Loadnote account record rather than using email as identity.
