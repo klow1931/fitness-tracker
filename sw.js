@@ -1,9 +1,9 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.63.0';
+const CACHE = 'loadnote-v2.64.0';
 const ASSETS = [
   './src/product/program-review.js',
   './src/product/program-review-ui.js',
-  './src/product/phase-builder.js',
+  './src/product/starting-prescription.js',\n  './src/product/phase-builder.js',
   './src/product/lift-workload.js',
   './src/product/workload-review.js',
   './src/product/lift-performance.js',
