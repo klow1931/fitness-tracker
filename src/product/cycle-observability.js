@@ -31,13 +31,13 @@
     for(const [key,value] of Object.entries(raw.policies))if(typeof key!=='string'||!key||typeof value!=='string'||!value)throw Error('Invalid decision policy identity');
     return copy(raw);
   }
-  function programEnvironment({capturedAt,purpose='program-review'}={}){
-    return environment({capturedAt,purpose,policies:{startingPrescription:'starting-prescription-v1'}});
+  function programEnvironment({capturedAt,purpose='program-review',policies={}}={}){
+    return environment({capturedAt,purpose,policies});
   }
   function responseInput(response,phase){
     if(!response)return null;
     const found=(response.phases||[]).find(p=>p.phase===phase)||null;
-    return {version:response.version??null,asOf:response.asOf??null,cutoff:response.cutoff??null,phase:copy(found)};
+    return {version:response.version??null,asOf:response.asOf??null,cutoff:response.cutoff??null,phases:found?[copy(found)]:[]};
   }
   function learningInput(summary,controller){
     if(!summary)return null;
@@ -57,7 +57,7 @@
     return base;
   }
   function validateControllerSnapshot(raw,report,{savedAt=null}={}){
-    if(!raw||raw.version!==1||!report||raw.cycleId!==report.cycleId||raw.week!==report.week||raw.asOf!==report.asOf||raw.knowledgeCutoff!==report.cutoff||!iso(raw.generatedAt)||raw.reviewFingerprint!==fingerprint(report)||!raw.inputs||raw.inputFingerprint!==fingerprint(raw.inputs)||!raw.recommendation||raw.recommendationFingerprint!==fingerprint(raw.recommendation))throw Error('Invalid or stale controller snapshot');
+    if(!raw||raw.version!==1||!report||raw.cycleId!==report.cycleId||raw.week!==report.week||raw.asOf!==report.asOf||raw.knowledgeCutoff!==report.cutoff||!iso(raw.generatedAt)||!iso(raw.knowledgeCutoff)||raw.knowledgeCutoff>raw.generatedAt||raw.reviewFingerprint!==fingerprint(report)||!raw.inputs||raw.inputFingerprint!==fingerprint(raw.inputs)||!raw.recommendation||raw.recommendationFingerprint!==fingerprint(raw.recommendation))throw Error('Invalid or stale controller snapshot');
     validateEnvironment(raw.environment,{capturedAt:raw.generatedAt,purpose:'cycle-controller'});
     if(raw.recommendation.cycleId!==report.cycleId||raw.recommendation.week!==report.week||raw.recommendation.asOf!==report.asOf||raw.recommendation.policy!==raw.environment.policies.cycleAdaptive||report.policy!==raw.environment.policies.cycleReview||report.phasePolicy?.id!==raw.environment.policies.phasePolicy)throw Error('Controller snapshot policy or cycle identity mismatch');
     if(!raw.recommendation.choices||LIFTS.some(l=>!['keep','reduce-one','reduce-load','increase-load'].includes(raw.recommendation.choices[l])))throw Error('Controller snapshot has invalid lift recommendations');
@@ -75,11 +75,13 @@
     const exerciseId=review.report?.findings?.[lift]?.exerciseId,nextWeek=review.report?.nextWeek;
     if(!exerciseId||!Number.isInteger(nextWeek))return {status:'unavailable',reason:'Saved review lacks a competition-lift identity or next-week reference.'};
     const targets=(cycle.sessions||[]).filter(s=>s.week===nextWeek&&s.exercises?.some(e=>e.exerciseId===exerciseId)).sort((a,b)=>a.date.localeCompare(b.date));
-    const workouts=(state.workouts||[]).filter(w=>!w.createdAt||w.createdAt<=cutoff);
+    const workouts=(state.workouts||[]).filter(w=>iso(w.createdAt)&&w.createdAt<=cutoff&&date(w.date)&&w.date<=cutoff.slice(0,10));
     for(const target of targets){
       const scheduleId='meet:'+cycle.id+':'+target.key,linked=workouts.filter(w=>w.sessionIntent?.schedule?.id===scheduleId);
       if(linked.length!==1)continue;
-      const w=linked[0],values=[],rpes=[];
+      const w=linked[0],record=(state.scheduledSessions||[]).find(s=>s.id===scheduleId),revision=record?.revisions?.find(r=>r.recordedAt===w.sessionIntent?.schedule?.revisionAt);
+      if(!revision||revision.recordedAt>w.createdAt||revision.context?.date!==w.date)continue;
+      const values=[],rpes=[];
       for(const ex of w.exercises||[])if(ex.exerciseId===exerciseId&&ex.type!=='cardio'&&ex.trackBy!=='duration')for(const set of ex.sets||[]){
         const ev=Core.capacityEvidence(set.weight,set.reps,set.rpe);if(ev.estimate!=null)values.push(ev.estimate);
         const effort=finite(set.rpe);if(effort!=null&&effort>=1&&effort<=10)rpes.push(effort);
@@ -129,15 +131,16 @@
     const programs=state.phasePrograms||[],cycles=(state.meetCycles||[]).filter(c=>!cycleId||c.id===cycleId);
     for(const p of programs){
       if(p.decisionEnvironment){try{validateEnvironment(p.decisionEnvironment,{capturedAt:p.createdAt,purpose:'phase-program-review'});}catch(e){add('invalid-program-environment','blocking',e.message,{programId:p.id});}}
-      else if(p.createdAt&&p.createdAt.slice(0,10)>=asOf)add('missing-program-environment','warning','A current-release phase program has no decision-environment snapshot.',{programId:p.id});
+      else add('legacy-program-without-environment','warning','This phase program predates frozen decision-environment metadata.',{programId:p.id});
     }
     for(const cycle of cycles){
       if(cycle.decisionEnvironment){try{validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
+      else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
       for(const review of cycle.weeklyReviews||[]){
         if(review.controllerSnapshot){try{
           const snap=validateControllerSnapshot(review.controllerSnapshot,review.report,{savedAt:review.createdAt});
           for(const lift of LIFTS){
-            const shown=snap.recommendation?.lifts?.[lift]?.observedChangePct,input=snap.inputs?.response?.phase?.lifts?.[lift]?.observedChangePct;
+            const shown=snap.recommendation?.lifts?.[lift]?.observedChangePct,input=snap.inputs?.response?.phases?.[0]?.lifts?.[lift]?.observedChangePct;
             if(shown===0&&(input===null||input===undefined))add('unknown-capacity-coerced-zero','blocking','A saved controller snapshot shows 0% capacity change even though its frozen response input was unknown.',{cycleId:cycle.id,reviewId:review.id,lift});
           }
         }catch(e){add('invalid-controller-snapshot','blocking',e.message,{cycleId:cycle.id,reviewId:review.id});}}
