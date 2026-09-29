@@ -106,7 +106,7 @@
    if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review and approve the full cycle before saving');
    const fresh=prepare(state,proposal.sourceProgram,proposal.config,{asOf,now});
    if(JSON.stringify(fresh)!==JSON.stringify(proposal))throw Error('Training context, dates or Calendar evidence changed; regenerate the cycle');
-   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review'}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:'meet-cycle-v1'}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
    return {...state,meetCycles:validate([...(state.meetCycles||[]),row])};
  }
  function schedule(state,id,{asOf,now=new Date().toISOString()}={}){
