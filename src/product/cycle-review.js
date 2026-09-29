@@ -20,7 +20,7 @@
     if(e.kind!=='weekly'&&e.kind!=='phase-transition')throw Error('Invalid review kind');
     for(const lift of LIFTS){
       const allowed=e.policy===LEGACY_POLICY?['keep','reduce-one']:e.policy===PREVIOUS_POLICY?['keep','reduce-one','reduce-load']:['keep','reduce-one','reduce-load','increase-load'];
-      if(e.version===4&&(!e.report?.phasePolicy||e.report.phasePolicy.id!==PhasePolicy.POLICY))throw Error('Invalid phase-policy review snapshot');
+      if(e.version===4){const expected=PhasePolicy.resolve({phase:e.report?.phase,nextPhase:e.report?.nextPhase});if(e.policy!==POLICY||e.report?.version!==4||e.report?.policy!==POLICY||!e.report?.phasePolicy||!same(e.report.phasePolicy,expected))throw Error('Invalid phase-policy review snapshot');}
       if(!allowed.includes(e.choices?.[lift]))throw Error('Invalid weekly lift choice');
     }
     for(const change of e.changes){
