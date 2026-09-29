@@ -78,11 +78,22 @@
     for(const name of DOCUMENTS)documents[name]=clone(state?.[name]??null);
     return {version:1,collections,documents};
   }
+  function projectState(data){
+    if(!data||data.version!==1||!data.collections||typeof data.collections!=='object'||!data.documents||typeof data.documents!=='object')throw Error('Invalid sync project');
+    const collectionKeys=Object.keys(data.collections).sort(),documentKeys=Object.keys(data.documents).sort();
+    const expectedCollections=[...COLLECTIONS].sort(),expectedDocuments=[...DOCUMENTS].sort();
+    if(collectionKeys.length!==expectedCollections.length||collectionKeys.some((key,index)=>key!==expectedCollections[index]))throw Error('Sync project collection set does not match the protocol.');
+    if(documentKeys.length!==expectedDocuments.length||documentKeys.some((key,index)=>key!==expectedDocuments[index]))throw Error('Sync project document set does not match the protocol.');
+    const state={};
+    for(const name of COLLECTIONS)state[name]=data.collections[name];
+    for(const name of DOCUMENTS)state[name]=data.documents[name]??null;
+    return state;
+  }
   function manifestFromProject(data){
-    if(!data||data.version!==1||!data.collections||!data.documents)throw Error('Invalid sync project');
+    projectState(data);
     const collections={},documents={};let records=0;
     for(const name of COLLECTIONS){
-      const map=recordMap(data.collections[name]||[],name),entries=[...map].sort(([a],[b])=>a.localeCompare(b)).map(([id,value])=>({id,fingerprint:fingerprint(value)}));
+      const map=recordMap(data.collections[name],name),entries=[...map].sort(([a],[b])=>a.localeCompare(b)).map(([id,value])=>({id,fingerprint:fingerprint(value)}));
       collections[name]={count:entries.length,entries,fingerprint:fingerprint(entries)};records+=entries.length;
     }
     for(const name of DOCUMENTS)documents[name]={fingerprint:fingerprint(data.documents[name]??null)};
@@ -105,7 +116,9 @@
       if(Number(pkg.manifest.records)!==actual.records)return {status:'invalid',verified:false,reason:'Sync package record count does not match its manifest.'};
       const meta={protocol:pkg.protocol,createdAt:pkg.createdAt,clientId:pkg.clientId,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifestFingerprint:actual.fingerprint};
       if(typeof pkg.packageFingerprint!=='string'||pkg.packageFingerprint!==fingerprint(meta))return {status:'invalid',verified:false,reason:'Sync package metadata does not match its recorded fingerprint.'};
-      return {status:'verified',verified:true,protocol:PROTOCOL,clientId:pkg.clientId,createdAt:pkg.createdAt,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifest:actual,packageFingerprint:pkg.packageFingerprint};
+      const relationships=Integrity.auditRelationships(projectState(pkg.data));
+      if(relationships.blocking)return {status:'invalid',verified:false,reason:'Sync package contains blocking training-record relationship problems.',relationshipAudit:relationships};
+      return {status:'verified',verified:true,protocol:PROTOCOL,clientId:pkg.clientId,createdAt:pkg.createdAt,schemaVersion:pkg.schemaVersion??null,releaseVersion:pkg.releaseVersion||'',manifest:actual,packageFingerprint:pkg.packageFingerprint,relationshipAudit:relationships};
     }catch(error){return {status:'invalid',verified:false,reason:error.message||'Invalid sync package.'};}
   }
   const valueFingerprint=value=>value===undefined?'__missing__':fingerprint(value);
@@ -178,5 +191,5 @@
     if(relationshipAudit.blocking)return {version:1,status:'invalid-merge',plan,state:null,relationshipAudit};
     return {version:1,status:'merged',plan,state:merged,relationshipAudit};
   }
-  return {PROTOCOL,COLLECTIONS,DOCUMENTS,LOCAL_ONLY,canonicalStringify,fingerprint,preflight,project,manifest,manifestFromProject,createPackage,verifyPackage,planThreeWay,mergeThreeWay};
+  return {PROTOCOL,COLLECTIONS,DOCUMENTS,LOCAL_ONLY,canonicalStringify,fingerprint,preflight,project,projectState,manifest,manifestFromProject,createPackage,verifyPackage,planThreeWay,mergeThreeWay};
 });
