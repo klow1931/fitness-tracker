@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.64.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.65.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.65 — Phase-Specific Cycle Decisions
+
+Meet-cycle Decisions now uses an explicit policy for each training phase instead of treating accumulation, strength, peaking and taper as the same decision environment. Accumulation uses a higher bar before optional upward loading, the accumulation → strength boundary does not stack an extra increase onto the planned intensity transition, and strength retains guarded competition-specific progression when completion, RPE and within-phase capacity evidence agree.
+
+Peaking is now deliberately asymmetric: Loadnote never adds load or volume, but repeated directly comparable competition-lift work above its approved RPE caps can support reviewing one program increment lower on the next peak exposure. Taper and event week are protected from adaptive escalation or dose replacement. Every change remains future-only, bounded to the next week and requires explicit athlete approval.
+
+New weekly reviews freeze the exact phase policy used so later cycle analysis can reconstruct not only what Loadnote changed, but what actions were allowed and why. Legacy weekly-review records remain valid and schema v25 is unchanged. See `docs/phase-specific-decisions.md`.
 
 ## v2.64 — Evidence-Backed Starting Prescription Intelligence
 
