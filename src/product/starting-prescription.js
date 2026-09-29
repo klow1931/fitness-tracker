@@ -42,7 +42,7 @@
     }
     const start=move(asOf,-27),view=Readiness.workoutsAt(state,asOf,cutoff,false),workouts=view.workouts.filter(w=>w.date>=start&&w.date<=asOf),lifts={},globalDays={};
     for(const lift of LIFTS){
-      const map=mappings[lift],mainId=map.competition.exerciseId,ids=new Set([mainId,...map.variations.map(r=>r.exerciseId)]),dates=new Map(),compDates=new Set(),weekdayCounts={},compWeekdayCounts={},validSets=0,rpeSets=0,rpeValues=[],developmentSets=0,topBackoffDays=0,capacityByDay=new Map();
+      const map=mappings[lift],mainId=map.competition.exerciseId,ids=new Set([mainId,...map.variations.map(r=>r.exerciseId)]),dates=new Map(),compDates=new Set(),weekdayCounts={},compWeekdayCounts={},rpeValues=[],capacityByDay=new Map();let validSets=0,rpeSets=0,developmentSets=0,topBackoffDays=0;
       for(const w of workouts){
         const relevant=(w.exercises||[]).filter(e=>ids.has(e.exerciseId)&&e.type!=='cardio'&&e.trackBy!=='duration');if(!relevant.length)continue;
         let dayValid=false,dayDevelopment=0,dayTopBackoff=false;
