@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(CycleReview,CycleResponse,HistoryGuardrail,PhasePolicy){
  'use strict';
  const LIFTS=['squat','bench','deadlift'],POLICY='cycle-adaptive-v5';
- function finite(x){return Number.isFinite(Number(x))?Number(x):null;}
+ function finite(x){if(x===null||x===undefined||x==='')return null;return Number.isFinite(Number(x))?Number(x):null;}
  function recommendFromReports(review,response,learningSummary=null){
   if(!review||!review.findings||!review.eligibility)throw Error('A completed-week cycle review is required');
   const phase=response?.phases?.find(p=>p.phase===review.phase)||null;
