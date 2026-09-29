@@ -2359,7 +2359,7 @@
       if (!text) return;
       appendChatMessage(escapeChat(text), true);
       input.value = '';
-      const useApi = !!window.LoadnoteCoachClient?.signedIn?.();
+      const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
       const btn = document.getElementById('chat-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = useApi ? '…' : 'Send'; }
 
@@ -2403,7 +2403,7 @@
     async function refreshCoachAnalysis(btn) {
       if (btn) { btn.disabled = true; btn.textContent = 'Analyzing…'; }
       try {
-        const useApi = !!window.LoadnoteCoachClient?.signedIn?.();
+        const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
         if (!useApi) { renderProactiveCoachPreview(); return; }
         const snapshot = await requestStructuredCoach('Analyze my current training and give me the single most useful next-workout recommendation.');
         if (snapshot) renderCoachSnapshot(snapshot);
