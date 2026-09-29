@@ -73,4 +73,9 @@ assert.match(verification.reason,/relationship/i);
 
 assert.throws(()=>store.commit(accountA,second,{expectedRevision:-1}),error=>error.code==='invalid_revision');
 
+const corruptFile=store.fileFor(accountB),corrupt=JSON.parse(fs.readFileSync(corruptFile,'utf8'));
+corrupt.package.data.collections.nutrition[0].calories=999;
+fs.writeFileSync(corruptFile,JSON.stringify(corrupt));
+assert.throws(()=>makeStore().status(accountB),/integrity verification|metadata does not match/,'persisted remote corruption must fail closed');
+
 console.log('v2.58 remote store revisions, idempotency, account isolation, persistence and package validation passed');
