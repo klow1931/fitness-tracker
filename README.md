@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.66.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.67.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.67 — Program Simulation & Pre-Cycle Quality Gate
+
+Before a meet-preparation cycle can be approved, Loadnote now evaluates the entire generated program as one structure rather than asking the athlete to infer quality from individual sessions. The deterministic gate checks event alignment, session feasibility, load/RPE bounds, week-to-week continuity, phase transitions, late-cycle competition specificity, taper reduction, hard squat/deadlift spacing and extended-phase holds.
+
+The result is **Pass**, **Review**, or **Blocking** — not a numerical program score. Review findings are prompts for athlete inspection and never silently alter the program; blocking findings represent structural inconsistencies that prevent approval. The complete preview now shows weekly lift frequency, working sets, average planned %TM, competition-specific set percentage and session-time demand before the original cycle is saved.
+
+Newly reviewed meet cycles freeze the quality-gate snapshot and policy identity for later audit. Legacy cycles remain valid. v2.67 deliberately leaves the v2.65 adaptive rules unchanged and adds deterministic 8/12/16/20-week simulation coverage across different schedules, experience profiles, sparse history, units and event types. See `docs/program-quality-gate.md`.
 
 ## v2.66 — Cycle Observability & Reproducibility
 
