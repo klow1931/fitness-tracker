@@ -26,6 +26,7 @@ function updateTrainingFlow(){
  const summary=document.getElementById('training-progress-label');if(summary)setText(summary,`${done}/${total} entered strength sets checked · ${finished}/${rows.length} exercises checked complete`);
  const meter=document.getElementById('training-progress');if(meter){meter.max=Math.max(total,1);meter.value=done;}
  window.refreshLoggerQuickEntry?.();
+ window.refreshGymFloorUI?.();
 }
 function toggleTrainingFocus(){trainingFocus=document.getElementById('training-focus').checked;updateTrainingFlow();}
 function expandTrainingExercise(button){const row=button.closest('[data-idx]');if(expandedTrainingRows.has(row))expandedTrainingRows.delete(row);else expandedTrainingRows.add(row);updateTrainingFlow();}
