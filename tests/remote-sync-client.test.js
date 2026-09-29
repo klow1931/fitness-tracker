@@ -55,7 +55,7 @@ assert.equal(JSON.stringify(state),before,'preparing remote data must not mutate
  await assert.rejects(()=>Remote.upload(state,{expectedRevision:0,client:id1,accountId:'acct_test_remote_account_1234567890',storage,request:async()=>new Response(JSON.stringify({error:'Remote training revision changed before this commit.',code:'revision_conflict',remote:{revision:2}}),{status:409,headers:{'Content-Type':'application/json'}})}),error=>{
   assert.equal(error.status,409);assert.equal(error.code,'revision_conflict');assert.equal(error.remote.revision,2);return true;
  });
- assert.throws(()=>Remote.upload(state,{expectedRevision:-1,client:id1,storage,request:async()=>{throw Error('should not call');}}),/expected remote revision/);
+ await assert.rejects(()=>Remote.upload(state,{expectedRevision:-1,client:id1,storage,request:async()=>{throw Error('should not call');}}),/expected remote revision/);
 
  console.log('v2.58 explicit remote client status, verification, revision upload and receipt behavior passed');
 })().catch(error=>{console.error(error);process.exit(1);});
