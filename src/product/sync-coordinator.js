@@ -98,6 +98,8 @@
  async function commit(previewResult,localState,{choice,resolutions,client,createdAt,releaseVersion,request,receiptStorage}={}){
   const p=previewResult;
   if(!p||!['ready','review'].includes(p.status))throw Error('A current sync preview is required');
+  const currentLocalFingerprint=projectFingerprint(localState);
+  if(p.localFingerprint&&currentLocalFingerprint!==p.localFingerprint)return {status:'stale',mode:'retry',message:'Training on this device changed while this sync was being reviewed. Run Sync now again.',local:true};
   const id=p.accountId,expectedRevision=p.remoteRevision;
   let nextState=localState,applyRequired=false,uploadRequired=false,basePackage=p.remotePackage||null,revision=expectedRevision;
   if(p.mode==='upload'){
