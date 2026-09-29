@@ -14,6 +14,10 @@ o=Objectives.responseObjective(baseGoal,{changePct:3,recent28d:{averageRpe:8}}, 
 assert.equal(o.code,'restore-consistency');
 o=Objectives.responseObjective(baseGoal,{changePct:.4,recent28d:{averageRpe:8.2}},full,0,{sameExercise:true});
 assert.equal(o.code,'consolidate-response');
+o=Objectives.responseObjective(baseGoal,{changePct:null,recent28d:{averageRpe:null}},full,0,{sameExercise:true});
+assert.equal(o.code,'establish-response','Missing capacity change must stay unknown instead of becoming 0%');
+o=Objectives.responseObjective(baseGoal,{changePct:3,recent28d:{averageRpe:null}},full,0,{sameExercise:true});
+assert.equal(o.code,'continue-cautious','Missing RPE must not be treated as a low-effort productive signal');
 o=Objectives.responseObjective(baseGoal,productive,full,0,{sameExercise:false});
 assert.equal(o.code,'build-strength');
 
