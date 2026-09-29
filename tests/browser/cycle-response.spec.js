@@ -15,6 +15,7 @@ test.beforeEach(async({page})=>{
 });
 test('Decisions displays separate completed-phase summaries with honest sparse evidence',async({page})=>{
  const container=page.locator('#cycle-response');
+ await expect(container).toHaveCount(1);
  await expect(container).toContainText('Training response · 5 of 12 completed weeks');
  await container.locator('.cycle-response-panel > summary').click();
  await expect(container.locator('[data-response-phase]')).toHaveCount(2);
