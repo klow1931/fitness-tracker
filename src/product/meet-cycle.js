@@ -1,8 +1,8 @@
 /* v2.30 — flexible, reviewed meet-cycle proposals built on the existing phase-plan engine. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'));
- else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'));
+ else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x));
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -85,7 +85,8 @@
    const existing=Schedule.list(state.scheduledSessions||[],cutoff).filter(s=>s.status==='scheduled'&&s.date>=c.startDate&&s.date<=c.meetDate);
    if(existing.length)result.warnings.push(existing.length+' existing Calendar session(s) fall within this proposed cycle; conflicts must be resolved before scheduling.');
    if(result.weekly.some(w=>(w.phase==='mock-meet'||w.phase==='meet')&&w.sessionCount))throw Error('Meet day must not receive inferred training attempts');
-   return {...result,profileSnapshot:copy(profile),roleSnapshot:snapshot};
+   const qualityGate=QualityGate.inspect(result);
+   return {...result,profileSnapshot:copy(profile),roleSnapshot:snapshot,qualityGate};
  }
  function validate(records){
    if(!Array.isArray(records)||records.length>40)throw Error('Invalid meet cycles');
@@ -98,15 +99,17 @@
      const expected=r.sourceProgram.roleSnapshot;
      if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.length!==expected.length||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt)||expected.some(e=>!r.roleSnapshot.some(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift)))throw Error('Invalid competition exercise snapshot');
      if(r.scheduledAt!=null&&(!iso(r.scheduledAt)||r.scheduledAt<r.createdAt))throw Error('Invalid scheduling timestamp');
-     if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');}
+     if(r.qualityGate!==undefined)QualityGate.validate(r.qualityGate,{...built,profileSnapshot:r.profileSnapshot,roleSnapshot:r.roleSnapshot});
+     if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');if(r.qualityGate!==undefined&&env.policies.programQualityGate!==QualityGate.POLICY)throw Error('Invalid program quality-gate policy identity');}
      return copy(r);
    });
  }
  function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
    if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review and approve the full cycle before saving');
+   if(proposal?.qualityGate?.status==='blocking')throw Error('Resolve blocking program quality-gate findings before saving');
    const fresh=prepare(state,proposal.sourceProgram,proposal.config,{asOf,now});
    if(JSON.stringify(fresh)!==JSON.stringify(proposal))throw Error('Training context, dates or Calendar evidence changed; regenerate the cycle');
-   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:POLICY}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:POLICY,programQualityGate:QualityGate.POLICY}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
    return {...state,meetCycles:validate([...(state.meetCycles||[]),row])};
  }
  function schedule(state,id,{asOf,now=new Date().toISOString()}={}){
