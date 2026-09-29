@@ -2,9 +2,10 @@ const assert=require('node:assert/strict');
 const Core=require('../src/core/loadnote-core');
 const Obs=require('../src/product/cycle-observability');
 const Controller=require('../src/product/cycle-adaptive-controller');
+const PhasePolicy=require('../src/product/cycle-phase-policy');
 
 const report={version:4,policy:'cycle-week-adjust-v4',cycleId:'c1',week:3,phase:'strength',nextPhase:'strength',nextWeek:4,asOf:'2026-10-25',cutoff:'2026-10-25T20:00:00.000Z',
- phasePolicy:{id:'cycle-phase-policy-v1'},eligibility:{squat:true,bench:true,deadlift:true},findings:{
+ phasePolicy:PhasePolicy.resolve({phase:'strength',nextPhase:'strength'}),eligibility:{squat:true,bench:true,deadlift:true},findings:{
  squat:{name:'Squat',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:false,comparableRpeSets:4,aboveCap:3,competitionComparableRpeSets:4,competitionAboveCap:3,competitionBelowCapHalf:0,reductionComparableRpeSets:4,reductionAboveCap:3,incrementKg:2.5},
  bench:{name:'Bench',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:true,comparableRpeSets:4,aboveCap:0,competitionComparableRpeSets:4,competitionAboveCap:0,competitionBelowCapHalf:3,reductionComparableRpeSets:4,reductionAboveCap:0,incrementKg:2.5},
  deadlift:{name:'Deadlift',canReduceOne:true,canReduceLoad:true,canIncreaseLoad:true,comparableRpeSets:4,aboveCap:0,competitionComparableRpeSets:4,competitionAboveCap:0,competitionBelowCapHalf:3,reductionComparableRpeSets:4,reductionAboveCap:0,incrementKg:2.5}
