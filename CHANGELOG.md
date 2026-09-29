@@ -13,6 +13,7 @@
 - Store the resolved phase policy in new weekly-review reports for auditability.
 - Advance weekly-review records to version 4 / `cycle-week-adjust-v4` while preserving v1–v3 validation.
 - Advance the adaptive controller to `cycle-adaptive-v5`.
+- Missing capacity trend remains unknown rather than being coerced to zero.
 - Add UI explanation of the active phase policy and allowed review actions.
 - Add deterministic policy/controller/review tests plus browser coverage.
 - Add `docs/phase-specific-decisions.md`.
