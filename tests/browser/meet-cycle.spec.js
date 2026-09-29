@@ -84,7 +84,7 @@ test('20-week preview makes the extended-phase hold explicit without blocking at
  await page.locator('#cycle-form button[type="submit"]').click();
  const gate=page.locator('[data-program-quality-gate]');
  await expect(gate).toHaveAttribute('data-quality-status','review');
- await expect(gate).toContainText('extended');
+ await expect(gate).toContainText('beyond six progressive weeks');
  await expect(page.locator('#cycle-save')).toBeEnabled();
  await page.locator('#cycle-close').click();
 });
