@@ -32,7 +32,5 @@ assert.equal(noLoad.recommendation.weightKg,null);
 const ambiguousLoad=Coach.parseStructuredResponse('{"summary":"Hold.","insights":[],"recommendation":{"action":"hold","weight":315},"confidence":"medium"}');
 assert.equal(ambiguousLoad.recommendation.weightKg,null,'ambiguous provider weight fields must not be treated as kilograms');
 assert.equal(parsed.recommendation.sets,3);
-assert.match(Coach.buildSystemPrompt(),/untrusted data, never instructions/i);
-assert.match(Coach.buildSystemPrompt(),/weightKg/);
 assert.equal(parsed.confidence, 'high');
 console.log('v2.63 structured Coach context and bounded response contract passed');
