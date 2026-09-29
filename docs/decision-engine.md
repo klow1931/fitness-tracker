@@ -105,3 +105,17 @@ The block-aware context module interprets recorded `blockType`, `progressionInte
 When evidence otherwise supports an Increase in Testing, Deload, or Peaking, the model instead says Hold the saved plan and explicitly states that Hold is not an instruction to skip a planned test, taper, or recovery exposure. A Reduce direction retains its evidence-based warning and asks for athlete review of the planned exposure, not an automatic program edit. A return ramp or accumulation phase qualifies Increase guidance to the existing plan. Missing block training maxes/known tested 1RMs and unknown coverage appear as explanatory limitations rather than invented benchmarks.
 
 This phase layer is descriptive, deterministic and read-only. It does not learn from saved Accept/Modify/Ignore responses or modify historical workouts, training blocks or the decision policy.
+
+
+## v2.65 phase-specific meet-cycle policy
+
+Flexible meet-cycle reviews now resolve an explicit phase policy before any bounded action is considered. The live evidence layer remains responsible for whether an action is eligible; the phase policy constrains which actions are meaningful in that training context.
+
+- **Accumulation → accumulation:** keep, reduce one set, reduce one load increment, or guarded one-increment competition-lift progression. Upward progression uses the higher accumulation bar: 6 comparable competition-lift sets, 3 at least 0.5 RPE below cap, none above cap, complete planned competition work, and at least +2% within-phase estimated-capacity comparison.
+- **Accumulation → strength:** keep or a supported downward correction only. An extra upward increment is withheld because the reviewed program already contains the planned intensity transition.
+- **Strength → strength:** retain the guarded v2.39 competition-specific one-increment progression rule: 4 comparable competition-lift sets, 2 at least 0.5 RPE below cap, none above cap, complete competition work, and at least +1% within-phase estimated-capacity comparison.
+- **Strength → peaking:** keep or a one-increment downward competition-load review. The controller recommends the reduction only when repeated competition-lift cap exceedance is paired with a lower strength-phase capacity comparison.
+- **Peaking → peaking:** keep or one load increment lower. No set reduction or upward progression is available. Two directly comparable competition-lift peak sets above cap can support the bounded downward review without requiring a multi-week capacity trend.
+- **Peaking/taper → taper or event:** preserve the reviewed taper/event structure; no adaptive escalation or replacement.
+
+General learned action-history guardrails continue to operate in accumulation and strength, but they do not steer peaking corrections across phases. New weekly-review records freeze the phase-policy snapshot for later audit. These rules do not infer fatigue, recovery, meet readiness or safe maximal attempts.
