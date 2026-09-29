@@ -13,6 +13,13 @@
   try{return globalThis.LoadnoteAccountSession?.snapshot?.()||{status:'unknown'};}catch{return {status:'unknown'};}
  }
  function signedIn(){return session().status==='authenticated';}
+ async function ensureSignedIn(){
+  let current=session();
+  if(current.status==='unknown'&&typeof globalThis.LoadnoteAccountSession?.refresh==='function'){
+   try{current=await globalThis.LoadnoteAccountSession.refresh();}catch{}
+  }
+  return current?.status==='authenticated';
+ }
  async function availability({force=false,request=globalThis.LoadnoteAccountSession?.request||globalThis.fetch}={}){
   const now=Date.now();
   if(!force&&healthCache&&now-healthAt<60000)return healthCache;
@@ -26,7 +33,7 @@
   healthAt=now;return healthCache;
  }
  async function ask({question,context,history=[]}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
-  if(!signedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
+  if(!await ensureSignedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
   if(typeof request!=='function'){const error=new Error('Secure Coach connection is unavailable.');error.code='coach_unavailable';throw error;}
   const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context,history})});
   let body={};try{body=await response.json();}catch{}
@@ -42,5 +49,5 @@
   try{storage?.removeItem?.(LEGACY_KEY);return true;}catch{return false;}
  }
  scrubLegacyCredential();
- return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,availability,ask,resetHealth,scrubLegacyCredential};
+ return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,ensureSignedIn,availability,ask,resetHealth,scrubLegacyCredential};
 });
