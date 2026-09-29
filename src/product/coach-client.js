@@ -7,7 +7,7 @@
  else root.LoadnoteCoachClient=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
- const ENDPOINT='/api/coach',HEALTH='/api/health';
+ const ENDPOINT='/api/coach',HEALTH='/api/health',LEGACY_KEY='fitness-tracker-api-key';
  let healthCache=null,healthAt=0;
  function session(){
   try{return globalThis.LoadnoteAccountSession?.snapshot?.()||{status:'unknown'};}catch{return {status:'unknown'};}
@@ -38,5 +38,9 @@
   return body.coach;
  }
  function resetHealth(){healthCache=null;healthAt=0;}
- return {ENDPOINT,HEALTH,session,signedIn,availability,ask,resetHealth};
+ function scrubLegacyCredential(storage=globalThis.localStorage){
+  try{storage?.removeItem?.(LEGACY_KEY);return true;}catch{return false;}
+ }
+ scrubLegacyCredential();
+ return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,availability,ask,resetHealth,scrubLegacyCredential};
 });
