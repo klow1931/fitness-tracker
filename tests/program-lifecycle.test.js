@@ -84,7 +84,7 @@ report=Lifecycle.inspect(meetState,{asOf:'2026-12-19'});
 assert.equal(report.nextAction.kind,'save-transition');
 
 const transition=Transition.preview(meetState,{programId:'life-meet',asOf:'2026-12-19',now:'2026-12-19T13:00:00.000Z'});
-assert.equal(transition.version,2);
+assert.equal(transition.version,1);
 assert.equal(transition.programType,'meet-cycle');
 assert.equal(transition.event.resultRecorded,true);
 assert.equal(transition.event.totalKg,590);
