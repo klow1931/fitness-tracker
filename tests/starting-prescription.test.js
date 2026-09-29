@@ -1,0 +1,45 @@
+const assert=require('node:assert/strict');
+const Starting=require('../src/product/starting-prescription');
+const {phaseFixture}=require('./fixtures/phase-builder');
+const {state,config}=phaseFixture();
+const before=JSON.stringify(state);
+const workouts=[];
+const add=(id,date,exerciseId,name,sets)=>workouts.push({id,date,createdAt:date+'T20:00:00.000Z',exercises:[{exerciseId,name,type:'strength',trackBy:'reps',sets}]});
+for(const [i,date] of ['2026-09-06','2026-09-13','2026-09-20'].entries())add('sq'+i,date,'s','Competition Squat',[{weight:140+i*5,reps:1,rpe:7},{weight:120+i*2,reps:5,rpe:7},{weight:117.5+i*2,reps:5,rpe:7.5},{weight:115+i*2,reps:5,rpe:8},{weight:112.5+i*2,reps:5,rpe:8}]);
+for(const [i,date] of ['2026-09-08','2026-09-10','2026-09-15','2026-09-17','2026-09-22','2026-09-24'].entries())add('be'+i,date,'b','Competition Bench',[{weight:90+i,reps:5,rpe:6},{weight:87.5+i,reps:5,rpe:6.5},{weight:85+i,reps:5,rpe:6.5}]);
+for(const [i,date] of ['2026-09-06','2026-09-10','2026-09-13','2026-09-17','2026-09-20','2026-09-24'].entries())add('dl'+i,date,'d','Competition Sumo Deadlift',[{weight:170+i,reps:4,rpe:8.5},{weight:165+i,reps:4,rpe:9}]);
+const synthetic={...state,workouts,workoutRevisions:[]};
+const report=Starting.inspect(synthetic,{asOf:'2026-09-24',knownAt:'2026-09-24T23:00:00.000Z'});
+assert.equal(report.status,'ready');
+assert.equal(report.applyReady,true);
+assert.deepEqual(report.recommendedTrainingDays,[1,3,6]);
+assert.equal(report.lifts.squat.recommendation.frequency,1);
+assert.equal(report.lifts.squat.recommendation.setsPerExposure,4);
+assert.equal(report.lifts.squat.recommendation.primaryFormat,'top-backoff');
+assert.equal(report.lifts.bench.recommendation.frequency,2);
+assert.equal(report.lifts.bench.recommendation.setsPerExposure,3);
+assert.equal(report.lifts.bench.recommendation.stepPct,1,'low RPE alone must not create a larger weekly step');
+assert.equal(report.lifts.deadlift.recommendation.frequency,2);
+assert.equal(report.lifts.deadlift.recommendation.setsPerExposure,2);
+assert.equal(report.lifts.deadlift.recommendation.stepPct,.5,'high recent effort should only make the starting step more conservative');
+assert.equal(JSON.stringify(state),before,'starting prescription inspection must be read-only');
+
+const audit=Starting.audit(report,config);
+assert.equal(audit.status,'reviewed-comparison');
+assert.equal(audit.lifts.squat.selected.frequency,2);
+assert.equal(audit.lifts.bench.selected.frequency,3);
+assert.equal(audit.lifts.deadlift.selected.frequency,1);
+assert(audit.warnings.some(x=>x.startsWith('squat:')));
+assert.deepEqual(Starting.validateAudit(audit,config),audit);
+const changed=structuredClone(config);changed.lifts.squat.sets=4;
+assert.throws(()=>Starting.validateAudit(audit,changed),/does not match/);
+
+const future={...synthetic,workouts:[...workouts,{id:'future',date:'2026-09-25',createdAt:'2026-09-25T20:00:00.000Z',exercises:[{exerciseId:'b',name:'Competition Bench',type:'strength',trackBy:'reps',sets:Array.from({length:20},()=>({weight:200,reps:5,rpe:10}))}]}]};
+assert.deepEqual(Starting.inspect(future,{asOf:'2026-09-24',knownAt:'2026-09-24T23:00:00.000Z'}),report,'future workouts must not change a point-in-time starting prescription');
+
+const sparse={...synthetic,workouts:workouts.filter(w=>w.id==='sq0'||w.id==='be0'||w.id==='dl0')};
+const sparseReport=Starting.inspect(sparse,{asOf:'2026-09-24',knownAt:'2026-09-24T23:00:00.000Z'});
+assert.equal(sparseReport.lifts.squat.confidence,'gather');
+assert.equal(sparseReport.lifts.bench.recommendation.stepPct,1);
+assert(sparseReport.lifts.squat.reasons.some(x=>x.includes('Fewer than three')));
+console.log('v2.64 evidence-backed starting prescription and audit tests passed');
