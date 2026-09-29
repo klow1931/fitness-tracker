@@ -98,7 +98,7 @@ assert.equal(transition.event.totalKg,590);
 assert.equal(transition.decisionHistory.weeklyReviews.length,11);
 meetState=Transition.save(meetState,transition,{confirmed:true,notes:'Cycle closed'},{now:'2026-12-19T13:01:00.000Z',id:'life-meet-transition'});
 report=Lifecycle.inspect(meetState,{asOf:'2026-12-19'});
-assert.equal(report.nextAction.kind,'review-next-program');
+assert.equal(report.nextAction.kind,'review-next-program',JSON.stringify(report.nextAction.handoff));
 assert.equal(report.nextAction.handoff.ready,true);
 assert.equal(report.transition.programType,'meet-cycle');
 
