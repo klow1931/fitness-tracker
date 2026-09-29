@@ -6,6 +6,7 @@
 - Verify every generated set remains positive, at or below the supported 85% training-max ceiling and within a valid RPE-cap range.
 - Compare estimated workout duration with the athlete-reviewed session budget; over-budget sessions block approval and sessions at 90%+ of the budget require review.
 - Audit within-phase exposure/set continuity and phase-transition set/load changes without automatically rewriting the program.
+- Require exactly one primary competition-lift exposure per lift in every non-event training week; missing/duplicate primaries block approval.
 - Require peaking and taper work to stay on the reviewed competition lifts; late-cycle variation work or a missing competition-lift exposure blocks approval.
 - Review taper set/loading reduction against the final peak week and surface repeated multi-week taper doses instead of implying individualized taper optimization.
 - Surface same/adjacent-day hard primary squat/deadlift spacing as a review item, not a recovery diagnosis.
