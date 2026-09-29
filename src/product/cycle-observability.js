@@ -113,7 +113,7 @@
   function timeline(state,{cycleId,asOf,knownAt}={}){
     if(typeof cycleId!=='string'||!cycleId||!date(asOf))throw Error('Choose a cycle and valid journal date');
     const cutoff=knownAt||asOf+'T23:59:59.999Z';if(!iso(cutoff))throw Error('Choose a valid journal knowledge cutoff');
-    const cycle=(state.meetCycles||[]).find(c=>c.id===cycleId);if(!cycle)throw Error('Cycle not found');
+    const cycle=(state.meetCycles||[]).find(c=>c.id===cycleId);if(!cycle)throw Error('Cycle not found');if(!iso(cycle.createdAt)||cycle.createdAt>cutoff)throw Error('Cycle was not known at the journal cutoff');
     const events=[];
     const source=cycle.sourceProgram||null;
     if(source?.createdAt&&source.createdAt<=cutoff)events.push({kind:'starting-program',at:source.createdAt,date:source.config?.startDate||null,label:'Starting program reviewed',environment:copy(source.decisionEnvironment||null),startingPrescription:copy(source.startingPrescriptionSnapshot||null)});
@@ -138,7 +138,7 @@
     if(!date(asOf))throw Error('Choose a valid audit date');
     const issues=[];let blocking=0,warnings=0;
     const add=(code,severity,detail,extra={})=>{issues.push({code,severity,detail,...extra});if(severity==='blocking')blocking++;else warnings++;};
-    const allCycles=state.meetCycles||[],cycles=allCycles.filter(c=>!cycleId||c.id===cycleId),sourceIds=new Set(cycles.map(c=>c.sourceProgram?.id||c.config?.sourceProgramId).filter(Boolean)),programs=(state.phasePrograms||[]).filter(p=>!cycleId||sourceIds.has(p.id));
+    const cutoff=asOf+'T23:59:59.999Z',allCycles=state.meetCycles||[],cycles=allCycles.filter(c=>(!cycleId||c.id===cycleId)&&(!c.createdAt||c.createdAt<=cutoff)),sourceIds=new Set(cycles.map(c=>c.sourceProgram?.id||c.config?.sourceProgramId).filter(Boolean)),programs=(state.phasePrograms||[]).filter(p=>(!cycleId||sourceIds.has(p.id))&&(!p.createdAt||p.createdAt<=cutoff));
     for(const p of programs){
       if(p.decisionEnvironment){try{validateEnvironment(p.decisionEnvironment,{capturedAt:p.createdAt,purpose:'phase-program-review'});}catch(e){add('invalid-program-environment','blocking',e.message,{programId:p.id});}}
       else add('legacy-program-without-environment','warning','This phase program predates frozen decision-environment metadata.',{programId:p.id});
@@ -146,7 +146,7 @@
     for(const cycle of cycles){
       if(cycle.decisionEnvironment){try{validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
       else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
-      for(const review of cycle.weeklyReviews||[]){
+      for(const review of (cycle.weeklyReviews||[]).filter(r=>!r.createdAt||r.createdAt<=cutoff)){
         if(review.controllerSnapshot){try{
           const snap=validateControllerSnapshot(review.controllerSnapshot,review.report,{savedAt:review.createdAt});
           for(const lift of LIFTS){
