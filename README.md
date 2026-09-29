@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.59.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.60.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.60 — Consumer Profile & Onboarding
+
+Loadnote now presents the intended five-part consumer navigation directly: **Home → Train → Progress → Coach → Profile**. Calendar, Food, Measurements, Photos and Tools remain available from Profile so secondary functionality stays accessible without competing with the core training loop.
+
+Profile now owns the consumer account/sync surface, training setup, display preferences and secondary destinations. Training setup reuses the existing constraint-aware programming profile instead of introducing another athlete-profile schema, and powerlifting athletes can jump from Profile to the existing confirmed competition-lift mapping workflow. First-run onboarding now points athletes toward training setup, their first logged session and optional account/sync rather than demo data.
+
+Signed-in athletes also have self-service account deletion under Profile. Deletion requires the authenticated CSRF boundary, removes the durable Loadnote account identity and account-scoped remote structured-training snapshot, clears this device's sync acknowledgement metadata, and deliberately leaves local training data on the device unless the athlete erases it separately.
+
+No training-data schema migration is introduced in v2.60. Background sync, photo cloud storage, production store signing, subscriptions and provider-specific native provisioning remain later milestones.
 
 ## v2.59 — Safe Account Sync
 

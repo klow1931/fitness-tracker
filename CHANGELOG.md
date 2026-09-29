@@ -1,3 +1,18 @@
+# v2.60.0 — Consumer Profile & Onboarding
+
+- Make **Home → Train → Progress → Coach → Profile** the five primary consumer destinations on desktop and mobile.
+- Group Calendar, Food, Measurements, Photos and Tools beneath Profile instead of a competing primary More destination.
+- Move account sign-in, sync status, manual Sync now and sign-out from Tools into Profile.
+- Add a compact Profile hub for training setup, account/sync, weight-display preference, Gym mode, appearance and secondary destinations.
+- Reuse the existing revisioned programming profile for training setup rather than creating duplicate athlete settings.
+- Surface current powerlifting competition-lift mapping coverage in Profile and hand off to the existing confirmed mapping workflow.
+- Replace demo-oriented first-run tips with setup → train → optional account guidance.
+- Add self-service account deletion behind authenticated CSRF protection.
+- Delete the durable account identity and account-scoped remote structured-training snapshot while leaving local device training intact unless separately erased.
+- Clear the initiating device's acknowledged sync base and remote receipt after successful account deletion.
+- Add Node/backend/browser coverage for account-store deletion, remote-snapshot deletion, client CSRF handling, Profile deletion behavior, onboarding, primary navigation and secondary-destination access.
+- No training-data schema migration in this release.
+
 # v2.59.0 — Safe Account Sync
 
 - Add explicit **Sync now** for signed-in accounts while keeping workout logging and core training fully local/offline.
