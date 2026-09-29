@@ -2,7 +2,7 @@
 
 - Add an explicit deterministic phase-policy layer for accumulation, strength, peaking, taper and event transitions.
 - Keep all cycle changes athlete-approved and future-only; no completed workout or original cycle is rewritten.
-- Make accumulation prioritize repeatable workload and use a higher upward-progression evidence bar: 6 comparable competition-lift sets, 3 clearly below-cap sets and at least +2% within-phase estimated-capacity change.
+- Make accumulation prioritize repeatable workload and use a higher adaptive-controller upward-progression evidence bar: 6 comparable competition-lift sets, 3 clearly below-cap sets and at least +2% within-phase estimated-capacity change.
 - Preserve the planned accumulation → strength intensity transition by withholding any extra upward increment at the boundary.
 - Keep strength-phase upward progression at the existing stricter competition-specific rule: 4 comparable competition-lift sets, 2 clearly below cap and at least +1% within-phase estimated-capacity change.
 - Restrict strength → peaking to keep or a bounded one-increment downward load review from competition-lift evidence; no added load or set-count change is offered.
