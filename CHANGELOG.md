@@ -1,3 +1,22 @@
+# v2.58.0 — Account-Scoped Remote Training Storage
+
+- Add authenticated, account-scoped storage for verified `loadnote-sync-v1` structured-training snapshots without enabling automatic synchronization.
+- Add a monotonic per-account remote revision beginning at 0 (empty) and incrementing exactly once for each different accepted snapshot.
+- Require compare-and-swap `expectedRevision` writes. Stale different snapshots receive `409 revision_conflict` instead of overwriting newer remote training data.
+- Make exact-package retries idempotent so a mobile/network retry can recover from an ambiguous successful commit without creating a duplicate revision.
+- Reuse the v2.55 sync-package manifest and add stricter server-grade verification: exact protocol collection/document sets, bounded metadata, fingerprint verification and blocking workout/Calendar relationship checks.
+- Verify persisted remote packages again on read and fail closed when stored snapshot contents, metadata or revision history are inconsistent.
+- Keep account scope server-derived from the authenticated Loadnote session; client-supplied account identifiers are ignored for authorization.
+- Add `GET /api/sync/status`, `GET /api/sync/state` and CSRF-protected `PUT /api/sync/state`.
+- Keep lightweight status separate from the full remote package so normal account UI does not download training history just to show storage state.
+- Add a separate bounded sync-body limit (8 MiB default, 32 MiB hard maximum) while progress photos remain outside the structured sync protocol.
+- Add a single-process file-backed remote store with atomic replacement, hashed account filenames, restrictive file permissions where supported and bounded revision metadata history.
+- Add an explicit browser remote-sync client for status, verified download and revision-checked upload. These helpers do not automatically apply remote data or mutate local training state.
+- Show read-only remote storage status in the Account panel while explicitly stating that automatic sync is off.
+- Add deterministic unit/integration/browser coverage for revisions, idempotency, account isolation, persistence, corruption detection, CSRF, stale-write conflicts, remote package verification and nonmutation of local training state.
+- Add `docs/remote-training-storage.md` plus environment, privacy, testing, sync and mobile-readiness documentation updates.
+- No training-data schema migration, automatic upload/download, local remote-data application, conflict-resolution UI, background sync, photo cloud storage or multi-instance transactional database in this release.
+
 # v2.57.0 — OIDC Identity & Persistent Account Store
 
 - Connect the v2.56 signed-session boundary to a real provider-neutral OpenID Connect authorization-code flow.
