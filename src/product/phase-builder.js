@@ -95,7 +95,7 @@
       if(r.roleSnapshot.length!==expected.length||expected.some(e=>r.roleSnapshot.filter(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift).length!==1))throw Error('Incomplete or conflicting phase exercise-role snapshot');
       const normalized={version:1,id:r.id,createdAt:r.createdAt,config:built.config,sessions:built.sessions,profileSnapshot:profile,roleSnapshot:clone(r.roleSnapshot),goalSnapshot:r.goalSnapshot===undefined?null:clone(r.goalSnapshot),objectiveSnapshot:r.objectiveSnapshot===undefined?null:clone(r.objectiveSnapshot),warnings:[...r.warnings],review:clone(r.review),scheduledAt:r.scheduledAt||null};
       if(r.startingPrescriptionSnapshot!==undefined)normalized.startingPrescriptionSnapshot=StartingPrescription.validateAudit(r.startingPrescriptionSnapshot,built.config);
-      if(r.decisionEnvironment!==undefined)normalized.decisionEnvironment=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'phase-program-review'});
+      if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'phase-program-review'});if(env.policies.phaseBuilder!==POLICY||env.policies.startingPrescription!==StartingPrescription.POLICY)throw Error('Invalid phase-program decision policy identity');normalized.decisionEnvironment=env;}
       return normalized;
     });
   }
