@@ -25,6 +25,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `nutrition-model.js`, `nutrition-ui.js`, `nutrition-forms.js` | Nutrient/portion rules, day summaries, food entry/edit and barcode review |
 | `navigation.js`, `profile-ui.js`, `home-activity.js` | Primary/secondary navigation, consumer Profile composition and weekly activity model |
 | `program-lifecycle.js`, `program-lifecycle-ui.js` | Deterministic active-program state and workflow routing across training, reviews, events, transition baselines and next-block handoff |
+| `program-quality-gate.js`, `meet-cycle.js`, `meet-cycle-ui.js` | Whole-cycle structural simulation/quality review, immutable meet-cycle generation and athlete-facing full-cycle preview |
 | `units.js` | Display-unit conversion |
 | `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and deterministic/structured coaching rules |
 | `coach-client.js`, `backend/coach-gateway.js`, `backend/server.js` | Consumer online-Coach transport, bounded context/request contract, trusted server prompt, provider secret/configuration and response validation |
@@ -69,3 +70,10 @@ The service worker caches each release's complete app shell without background r
 `phase-builder.js` and `meet-cycle.js` attach additive decision-environment metadata when new records are reviewed. `cycle-review.js` stores the controller snapshot that the athlete actually saw separately from the athlete's approved choices and the resulting Calendar revisions. `transition-baseline.js` carries those frozen controller snapshots into the immutable meet-cycle handoff. Legacy records without v2.66 metadata remain valid and are reported as non-blocking observability limitations.
 
 No generic analytics/event ledger is introduced. The Cycle Journal is reconstructed from existing records so observability cannot drift into a second source of training truth.
+
+
+### v2.67 program-quality boundary
+
+`program-quality-gate.js` is a pure read-only structural inspector over an already generated meet-cycle proposal. It may classify findings as pass/review/blocking, but it never changes loads, sets, frequency, exercise selection, phase duration or Calendar state. `meet-cycle.js` remains the generator and approval boundary; blocking quality findings prevent save, while review findings remain athlete-review prompts.
+
+The gate fingerprints only the source-program identity/configuration plus generated cycle configuration/sessions/weekly outline. Newly reviewed meet cycles freeze the gate snapshot and policy identity for later audit. Older cycles without that additive metadata remain valid. Internal kg remains authoritative; unit display cannot change quality results.
