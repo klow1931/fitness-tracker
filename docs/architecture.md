@@ -55,3 +55,8 @@ The v2.64 starting-prescription layer is read-only until explicit athlete applic
 Continue extracting legacy orchestration only with regression coverage. Some non-workout inline handlers remain. Retired technique-review code is archived, while saved form-review records remain intact. Styles and charts are now generated into committed assets; food lookup and online coaching still require a connection.
 
 The service worker caches each release's complete app shell without background replacement. app-lifecycle.js presents waiting updates, saves drafts/data before explicit activation and blocks activation while other app tabs are open. Old caches are retained for open pages; cache reclamation remains follow-up work. Browser eviction can still remove local caches/data, so exports remain important. Release labels are checked against `package.json`.
+
+
+### v2.65 phase policy
+
+`cycle-phase-policy.js` is the pure authority for which bounded cycle actions are available in accumulation, strength, peaking, taper and event transitions. `cycle-review.js` owns evidence eligibility and future-only Calendar revisions; `cycle-adaptive-controller.js` chooses among only those already-eligible actions. This keeps phase semantics separate from evidence collection and mutation.

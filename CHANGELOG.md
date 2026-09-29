@@ -1,3 +1,24 @@
+# v2.65.0 — Phase-Specific Cycle Decisions
+
+- Add an explicit deterministic phase-policy layer for accumulation, strength, peaking, taper and event transitions.
+- Keep all cycle changes athlete-approved and future-only; no completed workout or original cycle is rewritten.
+- Make accumulation prioritize repeatable workload and use a higher adaptive-controller upward-progression evidence bar: 6 comparable competition-lift sets, 3 clearly below-cap sets and at least +2% within-phase estimated-capacity change.
+- Preserve the planned accumulation → strength intensity transition by withholding any extra upward increment at the boundary.
+- Keep strength-phase upward progression at the existing stricter competition-specific rule: 4 comparable competition-lift sets, 2 clearly below cap and at least +1% within-phase estimated-capacity change.
+- Restrict strength → peaking to keep or a bounded one-increment downward load review from competition-lift evidence; no added load or set-count change is offered.
+- Allow peaking → peaking only keep or a one-increment downward competition-load review when at least 2 directly comparable peak sets exceed their approved RPE caps.
+- Do not require a multi-week capacity trend for that peak correction because short peaks may not contain enough dated evidence.
+- Prevent learned action-history patterns from steering peaking corrections across phases.
+- Protect taper and event-week prescriptions from adaptive escalation or replacement.
+- Store the resolved phase policy in new weekly-review reports for auditability.
+- Advance weekly-review records to version 4 / `cycle-week-adjust-v4` while preserving v1–v3 validation.
+- Advance the adaptive controller to `cycle-adaptive-v5`.
+- Missing capacity trend remains unknown rather than being coerced to zero.
+- Add UI explanation of the active phase policy and allowed review actions.
+- Add deterministic policy/controller/review tests plus browser coverage.
+- Add `docs/phase-specific-decisions.md`.
+- No top-level schema migration; schema v25 remains unchanged.
+
 # v2.64.0 — Evidence-Backed Starting Prescription Intelligence
 
 - Add a deterministic 28-day starting-prescription evidence model for confirmed squat, bench and deadlift identities.

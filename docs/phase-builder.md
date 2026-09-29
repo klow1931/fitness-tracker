@@ -80,3 +80,10 @@ Before a new phase proposal is reviewed, Loadnote can summarize the prior 28 day
 The suggestion can cover exposure frequency, working sets per exposure, compatible recent weekdays, primary straight/top-back-off structure, and a conservative weekly percentage-point step. Training maxes remain separately selected. Low RPE alone never increases the weekly progression suggestion.
 
 Using the suggestion is explicit. The athlete can apply it to the editable builder, change any field, and then regenerate the normal phase preview. The saved phase record freezes the point-in-time suggestion-versus-selection comparison as an additive `startingPrescriptionSnapshot`; legacy phase records without the field remain valid. Schema v25 is unchanged.
+
+
+## Phase-specific meet-cycle decisions (v2.65)
+
+Meet-cycle reviews now resolve an explicit policy from the completed phase and next phase. Accumulation, strength, peaking and taper no longer share one generic recommendation mindset. See `docs/phase-specific-decisions.md` for the complete deterministic rules.
+
+Accumulation uses a higher evidence bar for optional upward loading and never stacks an additional increase onto the planned accumulation → strength transition. Strength retains guarded competition-specific progression. Peaking never adds load or volume; repeated directly comparable above-cap competition work can support one reviewed load increment lower inside the peak. Taper and event week remain protected. All changes stay athlete-approved, future-only and next-week bounded.
