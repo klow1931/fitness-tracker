@@ -28,7 +28,7 @@
  }
  function render(){
    const host=document.getElementById('cycle-journal');if(!host)return;
-   const selected=(data.meetCycles||[]).filter(c=>c.scheduledAt&&c.config?.startDate<=today()).sort((a,b)=>String(b.config.startDate).localeCompare(String(a.config.startDate)))[0];
+   const day=today(),cycles=(data.meetCycles||[]).filter(c=>c.scheduledAt),active=cycles.filter(c=>c.config?.startDate<=day&&c.config?.meetDate>=day).sort((a,b)=>String(b.config.startDate).localeCompare(String(a.config.startDate)))[0],upcoming=cycles.filter(c=>c.config?.startDate>day).sort((a,b)=>String(a.config.startDate).localeCompare(String(b.config.startDate)))[0],ended=cycles.filter(c=>c.config?.meetDate<day).sort((a,b)=>String(b.config.meetDate).localeCompare(String(a.config.meetDate)))[0],selected=active||upcoming||ended;
    if(!selected){host.replaceChildren();return;}
    let audit;try{audit=LoadnoteCycleObservability.audit(data,{cycleId:selected.id,asOf:today()});}catch(e){host.innerHTML='<p role="alert">'+esc(e.message)+'</p>';return;}
    let journal=null,error='';try{journal=LoadnoteCycleObservability.timeline(data,{cycleId:selected.id,asOf:today()});}catch(e){error=e.message;}
