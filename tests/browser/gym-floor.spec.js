@@ -78,3 +78,17 @@ test('v2.62 gym mode remains one-handed and does not overflow a 390px viewport',
  await expect(page.locator('#gym-floor-dock')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+
+test('v2.62 entered work requires confirmation before destructive removal',async({page})=>{
+ const row=page.locator('#exercise-rows > div').first();
+ await row.locator('.ex-name').fill('Deadlift');
+ await row.locator('.set-weight').fill('180');
+ await row.locator('.set-reps').fill('3');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await row.locator('[data-workout-action="remove-set"]').click();
+ await expect(row.locator('.logger-set')).toHaveCount(1);
+ page.once('dialog',dialog=>dialog.accept());
+ await row.locator('[data-workout-action="remove-set"]').click();
+ await expect(row.locator('.logger-set')).toHaveCount(0);
+});
