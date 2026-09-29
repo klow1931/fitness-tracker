@@ -61,6 +61,7 @@ const ASSETS = [
   './src/product/data-integrity.js',
   './src/product/sync-model.js',
   './src/product/account-session.js',
+  './src/product/remote-sync.js',
   './src/product/account-ui.js',
   './src/product/session-intent.js',
   './src/product/schedule.js',
