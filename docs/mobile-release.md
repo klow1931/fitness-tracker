@@ -1,6 +1,6 @@
 # Mobile release foundation
 
-Loadnote v2.54 established a reproducible mobile packaging boundary. v2.60 adds a consumer Profile/onboarding surface plus self-service account deletion on top of v2.59 manual sync, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
+Loadnote v2.54 established a reproducible mobile packaging boundary. v2.62 adds gym-floor mobile interaction hardening on top of the v2.60 consumer Profile/account experience and v2.61 program lifecycle, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
 
 ## Current mobile shell
 
@@ -67,7 +67,7 @@ npm run test:browser
 
 Also perform the manual iPhone/Android acceptance work documented in `docs/testing.md`. Automated Chromium tests do not prove iOS WebView, Android WebView, signing, store metadata, permissions or physical-device behavior.
 
-## Still not completed after v2.60
+## Still not completed after v2.62
 
 This release does **not** implement:
 
@@ -81,3 +81,12 @@ This release does **not** implement:
 - production store listings
 
 Those should be introduced as separate reviewed milestones rather than implied by the existence of a Capacitor configuration.
+
+
+## Gym-floor interaction layer (v2.62)
+
+The workout logger now exposes mobile keyboard hints, a current-set/rest/Finish dock, previous-set context and explicit previous-set reuse. The dock is presentation only: the recoverable workout draft remains the source of truth and workout saving remains local.
+
+Previous loads are read from normal workout history in storage kilograms and converted at display time. The UI never stores display pounds as internal kilograms. Use-last does not copy RPE, completion state or a hidden readiness interpretation.
+
+The dock uses the browser visual viewport only to avoid competing with a likely on-screen keyboard. Native iOS/Android keyboard behavior still requires physical-device acceptance testing; this release does not claim Chromium viewport behavior proves App Store-quality keyboard handling.

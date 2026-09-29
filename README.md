@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.61.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.62.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.62 — Gym-Floor Mobile Polish
+
+v2.62 focuses on the interface used during an actual workout. Mobile logging now gets a compact one-handed dock for the current set, rest timer and Finish action; numeric fields advertise the appropriate mobile keyboard and Enter advances through load → reps/hold → RPE before moving to the next unfinished set.
+
+Each strength set can show the matching set from the most recent prior session. A blank set can explicitly **Use last** to copy only the previous load and reps/hold duration. Stored weights remain kilograms internally and are converted only for the active display unit; prior RPE and completion state are never copied.
+
+Draft state remains local-first and recoverable. The Train navigation indicates an unfinished workout, the dock follows the active logger and disappears when the mobile keyboard is likely covering the viewport, and an already-loaded workout can still be reviewed and saved while the network is offline. Entered sets/exercises now require confirmation before destructive removal, while blank rows still remove immediately.
+
+This release does not add a new training decision, progression rule, cloud dependency or training-data schema. Schema v25 is unchanged.
 
 ## v2.61 — Active Program Lifecycle
 

@@ -16,6 +16,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `data-transfer.js` | JSON/CSV and photo-backup import/export |
 | `draft-model.js`, `workout-logger.js` | Named-field draft validation, migration, capture, restoration and status |
 | `workout-form.js`, `workout-templates.js` | Exercise/set forms, last weights, repeat and template flows |
+| `gym-floor.js`, `gym-floor-ui.js`, `logger-quick-entry.js`, `logger-quick-entry-ui.js` | Between-set mobile input semantics, previous-set reuse, current-set progression and one-handed workout controls |
 | `workout-events.js` | Scoped, idempotent workout/review event delegation |
 | `workout-session.js`, `session-ui.js` | Immutable create/edit operations, PR reconciliation, review and durable save coordination |
 | `workout-history.js` | Paginated history cards, date/search filters and history actions |
@@ -43,7 +44,7 @@ Paths below are under `src/product/` unless otherwise noted.
 - Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
 - Draft migration preserves named fields, units, completion, order, edit context and optional prescription snapshots. Schema 12 wraps integrity metadata around the existing workout payload shape.
 - Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
-- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. v2.60 adds server-side account/remote-snapshot deletion while intentionally leaving local training intact. v2.61 adds a read/route lifecycle layer over existing program, Calendar, review, event and handoff records; it does not create a parallel prescription store. Background sync and simultaneous-tab coordination are not implemented.
+- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. v2.60 adds server-side account/remote-snapshot deletion while intentionally leaving local training intact. v2.61 adds a read/route lifecycle layer over existing program, Calendar, review, event and handoff records; it does not create a parallel prescription store. v2.62 adds a UI-only gym-floor layer over the same workout draft/session state; it does not introduce another workout schema or network dependency. Background sync and simultaneous-tab coordination are not implemented.
 - Decision-readiness results are evidence-quality classifications, not training prescriptions. The v2 decision engine remains disabled.
 
 ## Remaining boundaries

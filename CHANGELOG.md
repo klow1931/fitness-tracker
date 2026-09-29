@@ -1,3 +1,22 @@
+# v2.62.0 — Gym-Floor Mobile Polish
+
+- Add a compact mobile workout dock with the current set, recoverable rest timer and Finish action.
+- Keep the dock tied to the visible Train logger and hide it when the mobile keyboard is likely covering the viewport.
+- Mark the mobile Train destination when an unfinished workout draft is saved on-device.
+- Add mobile input modes and Enter-key hints for load, reps/hold duration and RPE.
+- Allow Enter on a valid RPE to complete the set through the existing quick-entry path.
+- Advance after completion to the next unfinished set, including a blank manually-added set, without auto-completing or inventing values.
+- Show matching previous-session evidence beside each strength set.
+- Add explicit **Use last** for blank sets, copying only prior load and reps/hold duration.
+- Convert previous stored kg into the current display unit at the UI boundary; do not copy prior RPE or completion state.
+- Keep previous-performance context read-only until the athlete explicitly chooses Use last.
+- Protect entered sets/exercises from single-tap deletion while leaving blank-row removal immediate.
+- Enlarge destructive set touch targets and tighten 390px/gym-mode logger layout.
+- Preserve draft recovery, rest-timer recovery and local workout saving across navigation/reload.
+- Add an offline-save browser regression proving a loaded workout does not require network access to save locally.
+- Add Node/browser coverage for input semantics, previous-set reuse, next-set progression, dock/navigation behavior, draft recovery, destructive-action protection and 390px overflow.
+- No training-data schema migration and no change to adaptive programming logic.
+
 # v2.61.0 — Active Program Lifecycle
 
 - Add one deterministic lifecycle controller for scheduled phase programs and mock/competition meet cycles.

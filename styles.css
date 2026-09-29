@@ -1229,3 +1229,131 @@ body.dark .program-lifecycle-next{background:rgba(99,102,241,.09);border-color:r
 
 .program-lifecycle-history-note{margin:.65rem 0 0;font-size:.76rem;line-height:1.4;color:#64748b}
 body.dark .program-lifecycle-history-note{color:#94a3b8}
+
+
+/* v2.62 — gym-floor mobile polish. */
+#workout-log-card .quick-set-entry,
+#workout-log-card .set-target-note,
+#workout-log-card .gym-set-history{grid-column:1/-1}
+
+.gym-set-history{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.55rem;
+ margin-top:.15rem;
+ padding:.38rem .45rem;
+ border-radius:.55rem;
+ background:rgba(148,163,184,.08);
+ color:#64748b;
+ font-size:.72rem;
+ line-height:1.35
+}
+.gym-set-history[hidden]{display:none}
+.gym-set-history span{min-width:0;overflow-wrap:anywhere}
+.gym-use-last{
+ flex:0 0 auto;
+ min-height:36px!important;
+ padding:.3rem .55rem;
+ border:1px solid #cbd5e1;
+ border-radius:.5rem;
+ background:#fff;
+ color:#334155;
+ font-size:.72rem;
+ font-weight:700
+}
+.gym-use-last:active,.gym-use-last:hover{border-color:#6366f1;background:#eef2ff;color:#3730a3}
+body.dark .gym-set-history{background:rgba(148,163,184,.1);color:#cbd5e1}
+body.dark .gym-use-last{background:#111827;border-color:#475569;color:#e2e8f0}
+
+.gym-floor-dock{display:none}
+#mobile-nav .workout-draft-active{position:relative}
+#mobile-nav .workout-draft-active::after{
+ content:'';
+ position:absolute;
+ top:.45rem;
+ right:calc(50% - 1.15rem);
+ width:.42rem;
+ height:.42rem;
+ border-radius:999px;
+ background:#6366f1;
+ box-shadow:0 0 0 2px #fff
+}
+body.dark #mobile-nav .workout-draft-active::after{box-shadow:0 0 0 2px #0f172a}
+
+@media(max-width:768px){
+ #workout-log-card .logger-set{
+   grid-template-columns:22px 26px minmax(54px,.85fr) 12px minmax(72px,1fr) minmax(58px,.82fr) 38px;
+   gap:5px
+ }
+ #workout-log-card .logger-set:not(:has(.set-done-check)){
+   grid-template-columns:22px minmax(54px,.85fr) 12px minmax(72px,1fr) minmax(58px,.82fr) 38px
+ }
+ body.gym-mode #workout-log-card .set-reps,
+ body.gym-mode #workout-log-card .set-duration,
+ body.gym-mode #workout-log-card .set-weight,
+ body.gym-mode #workout-log-card .set-rpe{
+   min-width:0;
+   min-height:48px;
+   padding:.65rem .45rem;
+   font-size:1.15rem
+ }
+ .gym-set-history{padding:.42rem .5rem;font-size:.74rem}
+ .gym-use-last{min-height:40px!important;padding:.38rem .65rem}
+ .gym-floor-dock.gym-floor-dock-active{
+   display:grid;
+   grid-template-columns:minmax(0,1fr) auto auto;
+   align-items:stretch;
+   gap:.45rem;
+   position:fixed;
+   left:max(.55rem,env(safe-area-inset-left));
+   right:max(.55rem,env(safe-area-inset-right));
+   bottom:calc(4.55rem + env(safe-area-inset-bottom));
+   z-index:8900;
+   padding:.45rem;
+   border:1px solid rgba(100,116,139,.24);
+   border-radius:.9rem;
+   background:rgba(255,255,255,.96);
+   box-shadow:0 8px 28px rgba(15,23,42,.16);
+   backdrop-filter:blur(12px)
+ }
+ body.dark .gym-floor-dock.gym-floor-dock-active{background:rgba(15,23,42,.96);border-color:#334155}
+ .gym-floor-current,.gym-floor-rest{
+   min-width:0;
+   min-height:46px;
+   display:flex;
+   flex-direction:column;
+   justify-content:center;
+   align-items:flex-start;
+   padding:.35rem .55rem;
+   border-radius:.65rem;
+   border:0;
+   background:transparent;
+   color:inherit;
+   text-align:left
+ }
+ .gym-floor-current span,.gym-floor-rest span{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;font-weight:800}
+ .gym-floor-current b{max-width:100%;font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .gym-floor-rest{align-items:center;min-width:3.7rem}
+ .gym-floor-rest b{font-size:.9rem}
+ .gym-floor-finish{min-height:46px;padding:.55rem .8rem;white-space:nowrap}
+ body.gym-floor-dock-visible #panel-workouts{padding-bottom:9.5rem}
+ body.mobile-keyboard-open .gym-floor-dock,
+ body.mobile-keyboard-open .mobile-nav{display:none!important}
+ body.mobile-keyboard-open #panel-workouts{padding-bottom:1rem}
+}
+
+@media(max-width:390px){
+ #workout-log-card .logger-set{
+   grid-template-columns:20px 24px minmax(48px,.78fr) 10px minmax(66px,1fr) minmax(52px,.76fr) 34px;
+   gap:4px
+ }
+ #workout-log-card .logger-set:not(:has(.set-done-check)){
+   grid-template-columns:20px minmax(48px,.78fr) 10px minmax(66px,1fr) minmax(52px,.76fr) 34px
+ }
+ .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) 3.4rem auto}
+ .gym-floor-finish{padding:.5rem .65rem}
+}
+
+#workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:38px;border-radius:.5rem}
+body.gym-mode #workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:44px}

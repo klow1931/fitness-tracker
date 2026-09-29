@@ -19,12 +19,12 @@
  }
  function setState(set,active){
   set.classList.toggle('logger-active-set',active);
-  const host=bar(set);host.hidden=!active;
+  const host=bar(set);host.hidden=!(active&&H().entered(snapshot(set)));
  }
  function rows(){return [...document.querySelectorAll('#exercise-rows .sets-container > div')];}
  function activeSet(){
   const all=rows(),eligible=all.filter(s=>H().entered(snapshot(s))&&!s.querySelector('.set-done-check')?.checked);
-  if(focusedSet?.isConnected&&eligible.includes(focusedSet))return focusedSet;
+  if(focusedSet?.isConnected&&!focusedSet.querySelector('.set-done-check')?.checked)return focusedSet;
   return eligible[0]||null;
  }
  function refresh(){
@@ -34,8 +34,15 @@
  function complete(set,rpe){
   const input=set.querySelector('.set-rpe');if(rpe!=null&&input){input.value=String(H().normalizeRpe(rpe));input.dispatchEvent(new Event('input',{bubbles:true}));}
   const check=ensureCheck(set);check.checked=true;check.dispatchEvent(new Event('change',{bubbles:true}));
-  focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
-  const next=activeSet();if(next){next.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>next.querySelector('.set-rpe')?.focus({preventScroll:true}),120);}
+  const all=rows(),index=all.indexOf(set);focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
+  const model=all.map(row=>({done:!!row.querySelector('.set-done-check')?.checked})),nextIndex=window.LoadnoteGymFloor?.nextUnfinishedIndex(model,index)??-1,next=nextIndex>=0?all[nextIndex]:null;
+  if(next){
+    focusedSet=next;refresh();next.scrollIntoView({block:'center',behavior:'smooth'});
+    const weight=next.querySelector('.set-weight'),measure=next.querySelector('.set-reps,.set-duration'),rpeInput=next.querySelector('.set-rpe');
+    const target=weight&&weight.value===''?weight:measure&&measure.value===''?measure:rpeInput||measure||weight;
+    setTimeout(()=>{target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
+  }
+  window.refreshGymFloorUI?.();
  }
  document.addEventListener('focusin',event=>{
   const input=event.target.matches?.('.set-reps,.set-duration,.set-weight,.set-rpe')?event.target:null;
