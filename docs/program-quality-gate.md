@@ -127,9 +127,9 @@ The snapshot contains a deterministic fingerprint of:
 - generated sessions
 - generated weekly outline
 
-Validation confirms that the saved gate still belongs to the saved original cycle.
+Validation confirms that the saved gate still belongs to the saved original cycle. The v2.66 Cycle Journal also surfaces the saved gate status, and its decision-data audit checks the gate fingerprint, status/count consistency and decision-environment policy identity.
 
-Older meet cycles without a quality-gate snapshot remain valid.
+Older meet cycles without a quality-gate snapshot remain valid and are identified as legacy observability records rather than treated as corrupt training data.
 
 ## Simulation coverage
 
