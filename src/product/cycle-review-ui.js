@@ -38,7 +38,7 @@
     let draft;try{draft=JSON.parse(localStorage.getItem(LOGGER_DRAFT_KEY)||'null');}catch(e){throw Error('Workout draft is unreadable; restore or clear it before approving');}
     if(!controllerSnapshot)throw Error('The displayed controller recommendation could not be frozen. Regenerate this review before saving.');
     const nowDate=today(),now=new Date().toISOString(),next=LoadnoteCycleReview.apply(data,report,choices(host),{confirmed:el.querySelector('#cycle-review-confirm').checked,notes:el.querySelector('#cycle-review-notes').value,asOf:nowDate,now,controllerSnapshot,lockedSessionIds:[draft?.sessionIntent?.schedule?.id,typeof pendingScheduledSession!=='undefined'?pendingScheduledSession?.id:null].filter(Boolean)});
-    clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();window.renderPhaseReview?.();window.renderSchedule?.();window.renderMeetCycle?.();showToast('Weekly review approved; original cycle retained','success');
+    clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();window.renderCycleJournal?.();window.renderPhaseReview?.();window.renderSchedule?.();window.renderMeetCycle?.();showToast('Weekly review approved; original cycle retained','success');
    }catch(e){error.textContent=e.message;}finally{busy=false;}
   };
  }
