@@ -163,9 +163,11 @@
         'Record identity is stable id based. Collection array order is not treated as user data in this protocol.'
       ]};
   }
-  function mergeThreeWay(baseState,localState,remoteState){
-    const plan=planThreeWay(baseState,localState,remoteState);
-    if(plan.status==='conflict')return {version:1,status:'conflict',plan,state:null};
+  function itemKey(item){
+    if(!item||!item.scope)throw Error('Invalid sync plan item');
+    return item.scope==='collection'?'collection:'+item.collection+':'+item.id:'document:'+item.document;
+  }
+  function applyPlan(localState,remoteState,plan){
     const merged=clone(localState)||{},localProject=project(localState),remoteProject=project(remoteState);
     const rawMap=(rows,collection)=>{const map=new Map();for(const row of rows||[]){if(!row||row.id==null)throw Error(collection+' contains a record without a stable id');const id=String(row.id);if(map.has(id))throw Error(collection+' contains duplicate id '+id);map.set(id,clone(row));}return map;};
     const byCollection=new Map(COLLECTIONS.map(name=>[name,plan.items.filter(item=>item.scope==='collection'&&item.collection===name)]));
@@ -193,5 +195,26 @@
     if(relationshipAudit.blocking)return {version:1,status:'invalid-merge',plan,state:null,relationshipAudit};
     return {version:1,status:'merged',plan,state:merged,relationshipAudit};
   }
-  return {PROTOCOL,COLLECTIONS,DOCUMENTS,LOCAL_ONLY,canonicalStringify,fingerprint,preflight,project,projectState,manifest,manifestFromProject,createPackage,verifyPackage,planThreeWay,mergeThreeWay};
+  function mergeThreeWay(baseState,localState,remoteState){
+    const plan=planThreeWay(baseState,localState,remoteState);
+    if(plan.status==='conflict')return {version:1,status:'conflict',plan,state:null};
+    return applyPlan(localState,remoteState,plan);
+  }
+  function mergeThreeWayResolved(baseState,localState,remoteState,resolutions={}){
+    const plan=planThreeWay(baseState,localState,remoteState);
+    if(plan.status!=='conflict')return applyPlan(localState,remoteState,plan);
+    const unresolved=[];
+    const items=plan.items.map(item=>{
+      if(item.resolution!=='conflict')return item;
+      const choice=resolutions[itemKey(item)];
+      if(!['local','remote'].includes(choice)){unresolved.push(itemKey(item));return item;}
+      return {...item,resolution:choice,manualResolution:true};
+    });
+    if(unresolved.length)return {version:1,status:'conflict',plan:{...plan,unresolved},state:null};
+    const counts={local:0,remote:0,same:0,conflicts:0};
+    for(const item of items){if(item.resolution==='local')counts.local++;else if(item.resolution==='remote')counts.remote++;else counts.same++;}
+    const resolvedPlan={...plan,status:'mergeable',counts,items,manualResolutions:true,unresolved:[]};
+    return applyPlan(localState,remoteState,resolvedPlan);
+  }
+  return {PROTOCOL,COLLECTIONS,DOCUMENTS,LOCAL_ONLY,canonicalStringify,fingerprint,preflight,project,projectState,manifest,manifestFromProject,createPackage,verifyPackage,planThreeWay,itemKey,mergeThreeWay,mergeThreeWayResolved};
 });
