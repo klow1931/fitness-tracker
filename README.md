@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.60.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.61.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.61 — Active Program Lifecycle
+
+Loadnote now coordinates reviewed phase programs and mock/competition meet cycles through one deterministic lifecycle: **current program → current week/phase → next training action → timely review → event/program closure → frozen transition baseline → next-program handoff**. Home, Coach and post-workout continuity use the same next-action state rather than maintaining separate ideas of what the athlete should do next.
+
+Weekly and phase reviews only block progression while their existing future-only adjustment window is still open and the reviewed period is fully resolved. If that window is missed, the missing review stays visible as historical context but does not trap later training or retroactively rewrite prescriptions. Unresolved prior Calendar sessions still block ambiguous advancement.
+
+Meet cycles can now create the same immutable transition evidence used by goal-aware next-block planning. Athlete-entered mock/competition results are captured in the handoff as event evidence but remain separate from RPE-aware estimated capacity, tested/known 1RM and training max. The stored transition record remains version 1 with additive metadata for rollback compatibility; schema v25 is unchanged.
+
+No new load/volume progression heuristic is introduced in v2.61. Existing weekly/phase evidence rules and explicit athlete approval remain responsible for actual prescription changes.
 
 ## v2.60 — Consumer Profile & Onboarding
 
