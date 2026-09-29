@@ -59,6 +59,14 @@
    };
   }
  }
+ function open(cycleId){
+  showTab('coach');showSubTab('coach','co-programs');
+  const panel=document.getElementById('phase-builder-panel');if(panel)panel.open=true;
+  window.renderMeetCycle?.();
+  const card=[...document.querySelectorAll('[data-cycle]')].find(el=>el.dataset.cycle===cycleId);
+  if(card){card.open=true;const details=card.querySelector('.mock-meet-results');if(details)details.open=true;(details||card).scrollIntoView({behavior:'smooth',block:'start'});}
+ }
+ window.openMeetResult=open;
  window.renderMockMeet=render;
  window.renderMeetResult=render;
 })();
