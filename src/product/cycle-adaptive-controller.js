@@ -20,7 +20,7 @@
     action='keep';confidence='high';signal='phase-guard';
     why=phasePolicy.objective+' The reviewed '+review.nextPhase+' prescription remains unchanged by this adaptive controller.';
    }else if(review.phase==='peaking'&&review.nextPhase==='peaking'){
-    if(f.canReduceLoad&&reductionAbove>=Number(t.loadReductionAboveCap||2)&&reductionComparable>=Number(t.loadReductionComparable||2)){
+    if(PhasePolicy.allows(phasePolicy,'reduce-load')&&f.canReduceLoad&&reductionAbove>=Number(t.loadReductionAboveCap||2)&&reductionComparable>=Number(t.loadReductionComparable||2)){
       action='reduce-load';confidence=change!=null&&change<=-3?'high':'medium';signal='peak-effort-above-plan';
       why='Directly comparable competition-lift peak work exceeded its approved RPE cap on at least two sets. Peaking preserves set count and never adds load here, so the bounded phase policy supports reviewing one program increment lower next week. A multi-week capacity decline is not required because peak phases can be too short to produce that comparison.';
     }else{
@@ -28,20 +28,20 @@
       why=reductionComparable>=2?'The directly comparable peak work does not meet the phase-specific downward-load threshold. Preserve the reviewed competition-specific exposure.':f.reason||'There is not enough directly comparable peak evidence to support changing next week.';
     }
    }else if(review.phase==='strength'&&review.nextPhase==='peaking'){
-    if(f.canReduceLoad&&competitionAbove>=Number(t.loadReductionAboveCap||2)&&competitionComparable>=Number(t.loadReductionComparable||2)&&change!=null&&change<=Number(t.controllerLoadReductionCapacityPct??-3)){
+    if(PhasePolicy.allows(phasePolicy,'reduce-load')&&f.canReduceLoad&&competitionAbove>=Number(t.loadReductionAboveCap||2)&&competitionComparable>=Number(t.loadReductionComparable||2)&&change!=null&&change<=Number(t.controllerLoadReductionCapacityPct??-3)){
       action='reduce-load';confidence='high';signal='strength-to-peak-caution';
       why='The completed strength work has repeated competition-lift RPE-cap exceedance plus a lower within-phase estimated-capacity comparison ('+change+'%). The phase policy protects the planned peak from extra stress and supports reviewing one program increment lower on the first peak exposure.';
     }else{
       action='keep';confidence=competitionComparable>=2?'medium':'low';signal='transition-guard';
       why='The reviewed peak already changes specificity and workload. Extra upward progression and set edits are withheld at this transition'+(f.canReduceLoad?' unless competition-lift effort and the completed strength-phase capacity comparison both support the bounded downward correction.':'.');
     }
-   }else if(review.eligibility[lift]&&f.canReduceLoad&&reductionAbove>=Number(t.loadReductionAboveCap||2)&&reductionComparable>=Number(t.controllerLoadReductionComparable||3)&&change!=null&&change<=Number(t.controllerLoadReductionCapacityPct??-3)){
+   }else if(PhasePolicy.allows(phasePolicy,'reduce-load')&&review.eligibility[lift]&&f.canReduceLoad&&reductionAbove>=Number(t.loadReductionAboveCap||2)&&reductionComparable>=Number(t.controllerLoadReductionComparable||3)&&change!=null&&change<=Number(t.controllerLoadReductionCapacityPct??-3)){
     action='reduce-load';confidence='high';signal='effort-and-capacity-down';
     why='At least '+Number(t.loadReductionAboveCap||2)+' directly comparable '+(phasePolicy.reductionEvidence==='competition-only'?'competition-lift ':'')+'sets exceeded the original RPE caps, sufficient comparable work was logged, and the completed '+review.phase+' phase shows a lower estimated-capacity comparison ('+change+'%). The '+phasePolicy.label+' policy therefore supports reviewing one program load increment lower next week. This does not prove fatigue or causation.';
-   }else if(review.eligibility[lift]&&f.canIncreaseLoad&&competitionAbove===0&&competitionComparable>=Number(t.increaseCompetitionComparable||4)&&competitionBelow>=Number(t.increaseCompetitionBelowCapHalf||2)&&change!=null&&change>=Number(t.increaseCapacityPct||1)){
+   }else if(PhasePolicy.allows(phasePolicy,'increase-load')&&review.eligibility[lift]&&f.canIncreaseLoad&&competitionAbove===0&&competitionComparable>=Number(t.increaseCompetitionComparable||4)&&competitionBelow>=Number(t.increaseCompetitionBelowCapHalf||2)&&change!=null&&change>=Number(t.increaseCapacityPct||1)){
     action='increase-load';confidence='high';signal='completed-below-cap-and-improving';
     why='All planned competition-lift work was completed, at least '+Number(t.increaseCompetitionComparable||4)+' sets were directly comparable, none exceeded the approved RPE cap, at least '+Number(t.increaseCompetitionBelowCapHalf||2)+' finished 0.5 RPE or more below it, and the completed '+review.phase+' phase shows an improving estimated-capacity comparison ('+change+'%). The '+phasePolicy.label+' policy supports reviewing one program load increment higher on the matching next-week competition exercise.';
-   }else if(review.eligibility[lift]&&f.canReduceOne&&reductionAbove>=Number(t.setReductionAboveCap||2)&&reductionComparable>=Number(t.setReductionComparable||2)){
+   }else if(PhasePolicy.allows(phasePolicy,'reduce-one')&&review.eligibility[lift]&&f.canReduceOne&&reductionAbove>=Number(t.setReductionAboveCap||2)&&reductionComparable>=Number(t.setReductionComparable||2)){
     action='reduce-one';confidence=change!=null?'high':'medium';signal='effort-above-plan';
     why='At least '+Number(t.setReductionAboveCap||2)+' directly comparable '+(phasePolicy.reductionEvidence==='competition-only'?'competition-lift ':'')+'sets exceeded the original RPE caps in a resolved completed week, and '+phasePolicy.label+' permits one fewer set per eligible next-week exposure.';
     if(change!=null&&change<=-3)why+=' The completed '+review.phase+' evidence also shows a lower estimated-capacity comparison ('+change+'%), but a one-increment load reduction is unavailable or lacks the stronger evidence threshold.';
