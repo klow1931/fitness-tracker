@@ -19,7 +19,7 @@ assert.equal(snap.environment.releaseVersion,Core.RELEASE_VERSION);
 assert.equal(snap.environment.schemaVersion,Core.SCHEMA_VERSION);
 assert.equal(Obs.validateControllerSnapshot(snap,report,{savedAt:'2026-10-25T20:02:00.000Z'}).recommendation.policy,Controller.POLICY);
 const replay=Obs.verifyReplay(snap,report,Controller);assert.equal(replay.status,'match');
-const tampered=structuredClone(snap);tampered.inputs.response.phase.lifts.bench.observedChangePct=9;
+const tampered=structuredClone(snap);tampered.inputs.response.phases[0].lifts.bench.observedChangePct=9;
 assert.throws(()=>Obs.validateControllerSnapshot(tampered,report),/Invalid or stale/);
 const staleReport=structuredClone(report);staleReport.findings.bench.competitionBelowCapHalf=2;
 assert.throws(()=>Obs.validateControllerSnapshot(snap,staleReport),/Invalid or stale/);
