@@ -50,7 +50,8 @@
  }
  function home(r=currentReport()){
    const host=document.getElementById('program-lifecycle-home');if(!host)return;
-   if(!r||(!r.program&&r.nextAction?.kind==='no-program')){host.classList.add('hidden');host.replaceChildren();return;}
+   let todayActive=false;try{const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null;todayActive=!!window.LoadnoteTodayTraining?.inspect(data,{day:today(),draft})?.active;}catch{}
+   if(!r||(!r.program&&r.nextAction?.kind==='no-program')||todayActive){host.classList.add('hidden');host.replaceChildren();return;}
    host.classList.remove('hidden');host.innerHTML=card(r,{compact:true});bind(host,r);
  }
  function coach(r=currentReport()){
