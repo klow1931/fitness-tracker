@@ -14,7 +14,7 @@ assert.equal(report.status,'ready');
 assert.equal(report.applyReady,true);
 assert.deepEqual(report.recommendedTrainingDays,[1,3,5]);
 assert.equal(report.lifts.squat.recommendation.frequency,1);
-assert.equal(report.lifts.squat.recommendation.setsPerExposure,3);
+assert.equal(report.lifts.squat.recommendation.setsPerExposure,4);
 assert.equal(report.lifts.squat.recommendation.primaryFormat,'top-backoff');
 assert.equal(report.lifts.bench.recommendation.frequency,2);
 assert.equal(report.lifts.bench.recommendation.setsPerExposure,3);
