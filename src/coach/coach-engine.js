@@ -30,7 +30,7 @@
     return rows;
   }
 
-  function buildContext({ data = {}, analytics = null, adaptive = null, unit = 'kg', activeProgram = null, lifecycle = null } = {}) {
+  function buildContext({ data = {}, analytics = null, priorCoachRecommendation = null, unit = 'kg', activeProgram = null, lifecycle = null } = {}) {
     const workouts = safeWorkouts(data.workouts);
     const a = analytics || {};
     const summary = a.dashboardSummary ? a.dashboardSummary(workouts) : null;
@@ -89,7 +89,7 @@
       nutrition: { loggedDays7d: nutrition.loggedDays, completeDays7d:nutrition.completeDays, proteinDays7d:nutrition.validDays, incompleteDays7d:nutrition.incompleteDays, unknownProteinDays7d:nutrition.unknownDays, averageProteinGrams: avgProtein },
       bodyweight: lastBodyweight ? { weightKg: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
       prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weightKg: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RMKg: Number(p.estimated1RM)||null })),
-      adaptive: adaptive || null,
+      priorCoachRecommendation: priorCoachRecommendation || null,
       lifecycle: lifecycle ? JSON.parse(JSON.stringify(lifecycle)) : null
     };
   }
