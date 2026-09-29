@@ -128,7 +128,7 @@
     if(!date(asOf))throw Error('Choose a valid audit date');
     const issues=[];let blocking=0,warnings=0;
     const add=(code,severity,detail,extra={})=>{issues.push({code,severity,detail,...extra});if(severity==='blocking')blocking++;else warnings++;};
-    const programs=state.phasePrograms||[],cycles=(state.meetCycles||[]).filter(c=>!cycleId||c.id===cycleId);
+    const allCycles=state.meetCycles||[],cycles=allCycles.filter(c=>!cycleId||c.id===cycleId),sourceIds=new Set(cycles.map(c=>c.sourceProgram?.id||c.config?.sourceProgramId).filter(Boolean)),programs=(state.phasePrograms||[]).filter(p=>!cycleId||sourceIds.has(p.id));
     for(const p of programs){
       if(p.decisionEnvironment){try{validateEnvironment(p.decisionEnvironment,{capturedAt:p.createdAt,purpose:'phase-program-review'});}catch(e){add('invalid-program-environment','blocking',e.message,{programId:p.id});}}
       else add('legacy-program-without-environment','warning','This phase program predates frozen decision-environment metadata.',{programId:p.id});
