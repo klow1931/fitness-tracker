@@ -50,9 +50,9 @@ test('reduced motion and visible keyboard focus',async({page})=>{
  expect(await page.evaluate(()=>document.getElementById('panel-nutrition').contains(document.activeElement))).toBe(true);
 });
 
-test('v2.1 primary navigation centers Train Progress and Decisions',async({page})=>{
+test('v2.60 primary navigation is Home Train Progress Coach Profile',async({page})=>{
  const labels=await page.locator('#mobile-nav .mobile-nav-btn span:last-child').allTextContents();
- expect(labels).toEqual(['Home','Train','Progress','Decisions','More']);
+ expect(labels).toEqual(['Home','Train','Progress','Coach','Profile']);
  await page.evaluate(()=>showTab('coach'));
  await expect(page.locator('[data-panel="coach"][data-sub="co-programs"]')).toBeVisible();
  await expect(page.locator('[data-panel="coach"][data-sub="co-insights"]')).toBeHidden();
@@ -65,7 +65,7 @@ test('v2.1 primary navigation centers Train Progress and Decisions',async({page}
 
 test('visible form controls stay inside cards and viewport on mobile',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- const panels=['dashboard','workouts','nutrition','prs','measures','photos','coach','tools'];
+ const panels=['dashboard','workouts','nutrition','prs','measures','photos','coach','profile','tools'];
  for(const panel of panels){
    await page.evaluate(panel=>showTab(panel),panel);
    await page.evaluate(()=>{
@@ -84,7 +84,7 @@ test('visible form controls stay inside cards and viewport on mobile',async({pag
 
 test('date inputs stay inside mobile grid columns',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- for(const panel of ['workouts','prs','measures','coach','tools']){
+ for(const panel of ['workouts','prs','measures','coach','profile','tools']){
    await page.evaluate(panel=>showTab(panel),panel);
    const offenders=await page.locator('input[type=date]').evaluateAll(nodes=>nodes.filter(el=>{
      const r=el.getBoundingClientRect(),style=getComputedStyle(el);
@@ -103,8 +103,7 @@ test('primary navigation and Home hide secondary tools without removing them',as
   await expect(page.locator('#home-details')).toHaveAttribute('open','');
   return;
  }
- await expect(page.locator('#desktop-more')).toBeVisible();
- expect(await page.locator('.desktop-tabs > button').allTextContents()).toEqual(['Home','Train','Progress','Decisions']);
+ expect(await page.locator('.desktop-tabs > button').allTextContents()).toEqual(['Home','Train','Progress','Coach','Profile']);
  await expect(page.locator('#home-details')).not.toHaveAttribute('open','');
  await expect(page.locator('#athlete-home-command')).toBeVisible();
  await expect(page.locator('#home-week-plan')).not.toHaveAttribute('open','');
@@ -116,26 +115,23 @@ test('primary navigation and Home hide secondary tools without removing them',as
  await page.evaluate(()=>{data.workouts=[{id:'ui-home-smoke',date:today(),exercises:[]}];invalidateViews();renderDashboard();});
  await expect(page.locator('#home-more-empty')).toBeHidden();
  await expect(page.locator('#home-stats-grid')).toBeVisible();
- await page.locator('#desktop-more > summary').click();
- await expect(page.locator('#desktop-more')).toHaveAttribute('open','');
- await page.locator('#tab-calendar').click();
+ await page.evaluate(()=>showTab('profile'));
+ await expect(page.locator('#profile-more')).toBeVisible();
+ await page.locator('#profile-more').getByRole('button',{name:/Calendar/}).click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
- await expect(page.locator('#desktop-more')).not.toHaveAttribute('open','');
  await page.evaluate(()=>showTab('coach'));
  await expect(page.locator('.coach-programming-details')).not.toHaveAttribute('open','');
  await expect(page.locator('#decision-readiness-card')).toBeVisible();
  await page.locator('.coach-programming-details > summary').click();
  await expect(page.locator('#athlete-profile-card')).toBeVisible();
 });
-test('mobile More groups secondary destinations',async({page})=>{
+test('mobile Profile keeps secondary destinations one level below primary navigation',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- await page.locator('#mobile-nav [data-tab="more"]').click();
- await expect(page.locator('#mobile-more-sheet')).toBeVisible();
- await expect(page.locator('.mobile-more-group[open]')).toHaveCount(0);
- await page.locator('.mobile-more-group').first().locator('summary').click();
- await page.locator('.mobile-more-group').first().getByRole('button',{name:/Calendar/}).click();
+ await page.locator('#mobile-nav [data-tab="profile"]').click();
+ await expect(page.locator('#panel-profile')).toBeVisible();
+ await expect(page.locator('#profile-more')).toContainText('Other parts of Loadnote');
+ await page.locator('#profile-more').getByRole('button',{name:/Calendar/}).click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
- await expect(page.locator('#mobile-more-sheet')).toBeHidden();
 });
 
 test('focused Home and backup are compact until requested',async({page})=>{
