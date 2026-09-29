@@ -72,5 +72,13 @@
       const roles=window.LoadnoteReadiness.replace(data.exerciseRoles||[],inputs),candidate={...data,exerciseRoles:roles,readinessVersion:1};const next=LoadnoteIntegrity.addRecoverySnapshot(candidate,data,'Before exercise role mapping');busy=true;clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderDataIntegrityTools?.();showToast('Exercise roles confirmed · readiness recalculated','success');
     }catch(exception){if(error)error.textContent=exception.message;showToast('Could not save exercise roles','error');}finally{busy=false;}
   }
+  function openMappings(){
+    showTab('coach');showSubTab('coach','co-programs');render();
+    const host=document.getElementById('decision-readiness-card');
+    const tools=host?.querySelector('.decision-review-tools');if(tools)tools.open=true;
+    const mapping=[...(host?.querySelectorAll('details')||[])].find(row=>/Confirm exercise roles and lift relationships/.test(row.querySelector(':scope > summary')?.textContent||''));
+    if(mapping){mapping.open=true;mapping.scrollIntoView({behavior:'smooth',block:'start'});}
+  }
   window.renderDecisionReadiness=render;
+  window.openExerciseRoleSetup=openMappings;
 })();
