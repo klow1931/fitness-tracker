@@ -1354,3 +1354,6 @@ body.dark #mobile-nav .workout-draft-active::after{box-shadow:0 0 0 2px #0f172a}
  .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) 3.4rem auto}
  .gym-floor-finish{padding:.5rem .65rem}
 }
+
+#workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:38px;border-radius:.5rem}
+body.gym-mode #workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:44px}
