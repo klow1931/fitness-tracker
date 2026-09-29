@@ -2,13 +2,13 @@ const assert=require('node:assert/strict');
 const Gateway=require('../backend/coach-gateway');
 
 const context={
- version:'0.5',unit:'lb',
+ version:'0.6',unit:'lb',units:{storageWeight:'kg',displayWeight:'lb'},
  athlete:{goals:[{type:'athlete-goal',name:'Meet prep',sport:'powerlifting',targets:[{lift:'squat',kg:220}]}]},
  training:{workouts30d:12,status:'normal',trends:[{exercise:'Competition Squat',changePercent:2}]},
  nutrition:{proteinDays7d:5,averageProteinGrams:180},
  bodyweight:{value:103,date:'2026-09-29'},
  prs:[{exercise:'Competition Squat',weight:200,reps:1}],
- adaptive:null,
+ priorCoachRecommendation:null,
  lifecycle:{status:'active',program:{name:'12-week meet prep'},progress:{week:4,totalWeeks:12,phaseLabel:'Strength'},nextAction:{kind:'start-workout',label:'Day 2'}}
 };
 
