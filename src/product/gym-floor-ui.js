@@ -105,7 +105,6 @@
   const train=document.querySelector('#mobile-nav [data-tab="workouts"]');
   train?.classList.toggle('workout-draft-active',hasDraft);
   if(train)train.setAttribute('aria-label',hasDraft?'Train — workout draft saved':'Train');
-  try{paintRest();}catch{}
  }
  function viewportState(){
   const vv=window.visualViewport;if(!vv)return;
