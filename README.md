@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.57.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.58.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.58 — Account-Scoped Remote Training Storage
 
