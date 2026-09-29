@@ -34,6 +34,7 @@ function normalizeContext(input){
  const selected={
   version:input.version??null,
   unit:input.unit==='lb'?'lb':'kg',
+  units:bounded(input.units||{storageWeight:'kg',displayWeight:input.unit==='lb'?'lb':'kg'}),
   athlete:bounded(input.athlete),
   training:bounded(input.training),
   nutrition:bounded(input.nutrition),
@@ -62,6 +63,8 @@ function normalizeHistory(input){
 function normalizeRequest(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Object.assign(new Error('Invalid Coach request.'),{statusCode:400,code:'invalid_request'});
  if(Object.hasOwn(input,'messages'))throw Object.assign(new Error('Raw provider messages are not accepted.'),{statusCode:400,code:'raw_messages_not_allowed'});
+ const forbidden=['apiKey','provider','model','baseUrl','system','systemPrompt'];
+ for(const key of forbidden)if(Object.hasOwn(input,key))throw Object.assign(new Error('Client provider configuration is not accepted.'),{statusCode:400,code:'provider_config_not_allowed'});
  const question=cleanText(input.question,MAX_QUESTION_CHARS);
  if(!question)throw Object.assign(new Error('Coach question is required.'),{statusCode:400,code:'question_required'});
  return {question,context:normalizeContext(input.context),history:normalizeHistory(input.history)};
