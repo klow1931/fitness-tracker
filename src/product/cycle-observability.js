@@ -75,12 +75,21 @@
     const exerciseId=review.report?.findings?.[lift]?.exerciseId,nextWeek=review.report?.nextWeek;
     if(!exerciseId||!Number.isInteger(nextWeek))return {status:'unavailable',reason:'Saved review lacks a competition-lift identity or next-week reference.'};
     const targets=(cycle.sessions||[]).filter(s=>s.week===nextWeek&&s.exercises?.some(e=>e.exerciseId===exerciseId)).sort((a,b)=>a.date.localeCompare(b.date));
-    const workouts=(state.workouts||[]).filter(w=>iso(w.createdAt)&&w.createdAt<=cutoff&&date(w.date)&&w.date<=cutoff.slice(0,10));
+    const workouts=(state.workouts||[]).filter(w=>iso(w.createdAt)&&w.createdAt<=cutoff&&date(w.date)&&w.date<=cutoff.slice(0,10)),chosen=review.choices?.[lift]||'keep';
+    let sawNonAttributable=false;
+    const exercisePlan=(prescription,id)=>(prescription?.plannedExercises||[]).filter(e=>e.exerciseId===id);
     for(const target of targets){
       const scheduleId='meet:'+cycle.id+':'+target.key,linked=workouts.filter(w=>w.sessionIntent?.schedule?.id===scheduleId);
-      if(linked.length!==1)continue;
+      if(linked.length!==1){if(linked.length>1)sawNonAttributable=true;continue;}
       const w=linked[0],record=(state.scheduledSessions||[]).find(s=>s.id===scheduleId),revision=record?.revisions?.find(r=>r.recordedAt===w.sessionIntent?.schedule?.revisionAt);
-      if(!revision||revision.recordedAt>w.createdAt||revision.context?.date!==w.date)continue;
+      if(!revision||revision.recordedAt>w.createdAt||revision.context?.date!==w.date||fingerprint(w.sessionIntent?.prescription)!==fingerprint(revision.context?.prescription)){sawNonAttributable=true;continue;}
+      const reviewChange=(review.changes||[]).find(change=>change.id===scheduleId)||null;
+      if(chosen!=='keep'){
+        if(!reviewChange||revision.recordedAt!==reviewChange.after?.recordedAt){sawNonAttributable=true;continue;}
+      }else{
+        const original=record?.revisions?.[0]?.context?.prescription;
+        if(fingerprint(exercisePlan(original,exerciseId))!==fingerprint(exercisePlan(revision.context?.prescription,exerciseId))){sawNonAttributable=true;continue;}
+      }
       const values=[],rpes=[];
       for(const ex of w.exercises||[])if(ex.exerciseId===exerciseId&&ex.type!=='cardio'&&ex.trackBy!=='duration')for(const set of ex.sets||[]){
         const ev=Core.capacityEvidence(set.weight,set.reps,set.rpe);if(ev.estimate!=null)values.push(ev.estimate);
@@ -89,6 +98,7 @@
       return {status:'observed',workoutId:w.id||null,date:w.date||target.date,scheduleId,revisionAt:w.sessionIntent?.schedule?.revisionAt||null,capacityKg:values.length?Math.max(...values):null,capacityStatus:values.length?'usable':'missing-or-ineligible-rpe',averageRpe:rpes.length?Core.round(rpes.reduce((a,b)=>a+b,0)/rpes.length,1):null};
     }
     const pastTargets=targets.filter(t=>t.date<=cutoff.slice(0,10));
+    if(sawNonAttributable&&pastTargets.length)return {status:'revised-or-deviated',reason:'A linked next-week workout exists, but its captured prescription cannot be attributed cleanly to this saved lift decision.'};
     return {status:pastTargets.length?'unobserved':'awaiting',reason:pastTargets.length?'No unique linked workout is available for the next matching competition-lift exposure.':'The next matching competition-lift exposure is still in the future.'};
   }
   function eventResult(cycle,cutoff){
