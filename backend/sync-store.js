@@ -104,8 +104,14 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   write(id,doc);
   return {version:STORE_VERSION,status:'committed',changed:true,revision,updatedAt:committedAt,current:clone(entry)};
  }
+ function remove(accountId){
+  const id=clean(accountId),file=fileFor(id);
+  if(!fs.existsSync(file))return {deleted:false};
+  fs.unlinkSync(file);
+  return {deleted:true};
+ }
  function inspect(accountId){const doc=read(accountId);return clone(doc);}
- return {version:STORE_VERSION,rootDir:root,status,get,commit,inspect,fileFor};
+ return {version:STORE_VERSION,rootDir:root,status,get,commit,remove,inspect,fileFor};
 }
 
 module.exports={STORE_VERSION,createFileSyncStore,accountKey,validAccountId};
