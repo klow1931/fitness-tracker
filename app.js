@@ -2315,7 +2315,7 @@
       const status = document.getElementById('coach-online-status');
       const accountLink = document.getElementById('coach-account-link');
       if (!status || !window.LoadnoteCoachClient) return;
-      const signedIn = window.LoadnoteCoachClient.signedIn();
+      const signedIn = await window.LoadnoteCoachClient.ensureSignedIn();
       accountLink?.toggleAttribute('hidden', signedIn);
       if (!signedIn) {
         status.textContent = 'Offline coaching is available now. Sign in from Profile to use the secure online Coach.';
