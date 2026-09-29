@@ -34,6 +34,9 @@ assert.equal(plan.counts.remote,1);
 let merged=Sync.mergeThreeWay(base,localSame,remoteUpdate);
 assert.equal(merged.status,'merged');
 assert.equal(merged.state.workouts[0].notes,'remote edit');
+merged=Sync.mergeThreeWay(Sync.project(base),localSame,Sync.project(remoteUpdate));
+assert.equal(merged.status,'merged');
+assert.equal(merged.state.workouts[0].notes,'remote edit','downloaded sync-project snapshots must apply remote records, not delete them');
 
 const localUpdate=state({workouts:[workout('w','local edit')]});
 plan=Sync.planThreeWay(base,localUpdate,remoteUpdate);
