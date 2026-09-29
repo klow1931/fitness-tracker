@@ -146,6 +146,16 @@
     for(const cycle of cycles){
       if(cycle.decisionEnvironment){try{const env=validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!=='meet-cycle-v1')throw Error('Meet-cycle policy identity does not match this recorded cycle format');}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
       else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
+      if(cycle.qualityGate){try{
+        const gate=cycle.qualityGate,expected=fingerprint({config:copy(cycle.config||null),sourceProgram:{id:cycle.sourceProgram?.id||null,config:copy(cycle.sourceProgram?.config||null)},sessions:copy(cycle.sessions||[]),weekly:copy(cycle.weekly||[])});
+        if(gate.version!==1||gate.policy!=='program-quality-gate-v1'||gate.inputFingerprint!==expected||!['pass','review','blocking'].includes(gate.status)||!Array.isArray(gate.findings)||!gate.counts)throw Error('Program quality-gate snapshot does not match the saved original cycle');
+        const gateBlocking=gate.findings.filter(f=>f.severity==='blocking').length,gateReview=gate.findings.filter(f=>f.severity==='review').length,gateStatus=gateBlocking?'blocking':gateReview?'review':'pass';
+        if(gateBlocking!==gate.counts.blocking||gateReview!==gate.counts.review||gateStatus!==gate.status)throw Error('Program quality-gate status/counts are inconsistent');
+        if(cycle.decisionEnvironment?.policies?.programQualityGate!==gate.policy)throw Error('Program quality-gate policy identity is missing or mismatched in the cycle decision environment');
+        if(gate.status==='blocking')throw Error('A saved approved cycle contains a blocking program quality-gate result');
+      }catch(e){add('invalid-program-quality-gate','blocking',e.message,{cycleId:cycle.id});}}
+      else if(cycle.decisionEnvironment?.policies?.programQualityGate)add('missing-program-quality-gate','blocking','The cycle decision environment names a quality-gate policy but the frozen gate snapshot is missing.',{cycleId:cycle.id});
+      else add('legacy-cycle-without-quality-gate','warning','This meet cycle predates frozen whole-cycle quality-gate metadata.',{cycleId:cycle.id});
       const auditedReviews=(cycle.weeklyReviews||[]).filter(r=>!r.createdAt||r.createdAt<=cutoff);
       for(const review of auditedReviews){
         if(review.controllerSnapshot){try{
