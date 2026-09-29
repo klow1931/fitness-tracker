@@ -1226,3 +1226,6 @@ body.dark .program-lifecycle-next{background:rgba(99,102,241,.09);border-color:r
  .program-lifecycle-actions{display:grid;grid-template-columns:1fr}
  .program-lifecycle-actions .btn-primary,.program-lifecycle-actions .btn-secondary{width:100%;min-height:44px}
 }
+
+.program-lifecycle-history-note{margin:.65rem 0 0;font-size:.76rem;line-height:1.4;color:#64748b}
+body.dark .program-lifecycle-history-note{color:#94a3b8}
