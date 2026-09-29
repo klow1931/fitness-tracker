@@ -218,7 +218,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
     if(!syncStore)return send(req,res,503,{error:'Remote training storage is not configured.',code:'remote_storage_unavailable'});
     const body=await parseBody(req,maxSyncBytes);
     try{
-     const result=syncStore.commit(session.account.id,body.package,{expectedRevision:Number(body.expectedRevision)});
+     const result=syncStore.commit(session.account.id,body.package,{expectedRevision:body.expectedRevision});
      return send(req,res,200,{protocol:Sync.PROTOCOL,...result});
     }catch(error){
      if(error.code==='revision_conflict')return send(req,res,409,{error:error.message,code:error.code,remote:error.remote});
