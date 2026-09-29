@@ -6,7 +6,7 @@
   'use strict';
 
   const SCHEMA_VERSION = 25;
-  const RELEASE_VERSION = '2.62.0';
+  const RELEASE_VERSION = '2.63.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -31,8 +31,8 @@
       if (!Array.isArray(base[key])) base[key] = [];
     });
     if (!base.exerciseNotes || typeof base.exerciseNotes !== 'object') base.exerciseNotes = {};
-    if (!base.api || typeof base.api !== 'object') base.api = { enabled: false, backendEnabled: false, backendUrl: '/api/coach', provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' };
-    base.api = { enabled: false, backendEnabled: false, backendUrl: '/api/coach', provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest', ...base.api };
+    if (!base.api || typeof base.api !== 'object') base.api = { enabled: false, backendEnabled: false };
+    base.api = { enabled: false, backendEnabled: false, ...base.api };
     if (base.unit !== 'kg' && base.unit !== 'lb') base.unit = 'kg';
     if (base.measureUnit !== 'cm' && base.measureUnit !== 'in') base.measureUnit = 'cm';
     return migrateState(base);
@@ -73,7 +73,7 @@
     // v4 → v5: add coach architecture settings without changing user training data.
     if (Number(state.schemaVersion || 1) < 5) {
       state.coachVersion = 2;
-      state.api = { enabled: false, backendEnabled: false, backendUrl: '/api/coach', provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest', ...(state.api || {}) };
+      state.api = { enabled: false, backendEnabled: false, ...(state.api || {}) };
       state.schemaVersion = 5;
     } else {
       state.coachVersion = state.coachVersion || 2;

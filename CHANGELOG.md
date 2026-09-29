@@ -1,3 +1,24 @@
+# v2.63.0 — Secure Production Coach Boundary
+
+- Route the normal consumer online Coach exclusively through the Loadnote server.
+- Require an authenticated Loadnote account for production Coach requests, with the existing CSRF/session protections.
+- Remove active browser-side provider API-key, base-URL, model and provider-selection code from the consumer Coach path.
+- Remove obsolete historical browser Coach API keys on upgrade.
+- Replace raw provider-style `messages` with a bounded contract: athlete question + recent user/assistant history + structured Loadnote context.
+- Reject raw message arrays, client API keys, provider choices, models, base URLs and client-supplied system prompts at the server boundary.
+- Keep the trusted Coach system prompt on the server and instruct the model to treat athlete context as untrusted data, never instructions.
+- Bound Coach question/history/context sizes before provider requests.
+- Normalize provider timeouts/errors instead of forwarding raw upstream payloads.
+- Parse and validate the provider response on the server; the browser receives only the structured Coach result.
+- Make Coach output fields bounded and typed, including a kg-only `weightKg` recommendation field.
+- Make all training-context weight fields explicit kilograms while preserving display unit separately.
+- Add current athlete goals and active-program lifecycle state to structured Coach context.
+- Keep AI guidance advisory-only; no Coach response directly mutates workouts, programs or deterministic adaptive logic.
+- Keep offline deterministic Coach guidance available for signed-out/offline use.
+- Update privacy copy to describe exactly what online Coach sends and does not persist in the account snapshot.
+- Add backend, client and browser tests for prompt ownership, provider-secret isolation, CSRF/auth, unit safety, legacy-key cleanup, fallback behavior and consumer request shape.
+- No training-data schema migration; schema v25 remains unchanged.
+
 # v2.62.0 — Gym-Floor Mobile Polish
 
 - Add a compact mobile workout dock with the current set, recoverable rest timer and Finish action.

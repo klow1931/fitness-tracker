@@ -20,7 +20,15 @@ test('v2.60 keeps account and sync inside Profile while low-level remote writes 
  let logoutHeaders=null;
  await page.route('**/api/coach',async route=>{
   coachHeaders=await route.request().allHeaders();
-  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({choices:[{message:{content:'Authenticated coach reply'}}]})});
+  const body=route.request().postDataJSON();
+  expect(Object.keys(body).sort()).toEqual(['context','history','question']);
+  expect(body.messages).toBeUndefined();
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({coach:{
+   summary:'Authenticated coach reply',
+   insights:[],
+   recommendation:{action:'none',exercise:null,weightKg:null,sets:null,reps:null,targetRPE:null,reason:''},
+   confidence:'medium'
+  }})});
  });
  await page.route('**/api/auth/logout',async route=>{
   logoutHeaders=await route.request().allHeaders();
@@ -32,10 +40,13 @@ test('v2.60 keeps account and sync inside Profile while low-level remote writes 
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
 
  const result=await page.evaluate(async()=>{
-  data.api={...(data.api||{}),backendEnabled:true,backendUrl:'/api/coach'};
-  return await callCoachAPI('Use the authenticated backend');
+  return await window.LoadnoteCoachClient.ask({
+   question:'Use the authenticated backend',
+   context:{version:'0.6',unit:'kg',units:{storageWeight:'kg',displayWeight:'kg'},athlete:{goals:[]},training:{workouts30d:0},nutrition:{},bodyweight:null,prs:[],adaptive:null,lifecycle:null},
+   history:[]
+  });
  });
- expect(result).toBe('Authenticated coach reply');
+ expect(result.summary).toBe('Authenticated coach reply');
  expect(coachHeaders['x-loadnote-csrf']).toBe('browser-csrf');
 
  expect(await page.locator('#api-backend-url').count()).toBe(0);

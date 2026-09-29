@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.62.0';
+const CACHE = 'loadnote-v2.63.0';
 const ASSETS = [
   './src/product/program-review.js',
   './src/product/program-review-ui.js',
@@ -61,6 +61,7 @@ const ASSETS = [
   './src/product/data-integrity.js',
   './src/product/sync-model.js',
   './src/product/account-session.js',
+  './src/product/coach-client.js',
   './src/product/remote-sync.js',
   './src/product/sync-coordinator.js',
   './src/product/account-ui.js',

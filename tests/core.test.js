@@ -21,6 +21,9 @@ assert.equal(migrated.trainingIntelligenceVersion, 1);
 assert.equal(migrated.adaptiveProgrammingVersion, 2);
 assert.equal(migrated.coachVersion, 2);
 assert.equal(migrated.api.backendEnabled, false);
+ assert.equal(Object.hasOwn(migrated.api,'provider'),false);
+ assert.equal(Object.hasOwn(migrated.api,'baseUrl'),false);
+ assert.equal(Object.hasOwn(migrated.api,'model'),false);
 assert.ok(migrated.workouts[0].id);
 
 assert.equal(Core.estimated1RM(100, 1), 100);

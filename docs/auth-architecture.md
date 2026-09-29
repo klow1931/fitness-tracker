@@ -6,6 +6,8 @@
 
 > **v2.60 update:** authenticated consumers can delete their Loadnote account with `DELETE /api/account`. Cookie-authenticated deletion requires CSRF. The server removes the account-scoped remote training snapshot first, then deletes the account and all provider-identity mappings, and clears the web session cookie. Local device training is not part of this server-side deletion.
 
+> **v2.63 update:** production online Coach always requires an authenticated Loadnote account even if a deployment relaxes the general account requirement. The browser no longer owns provider credentials/configuration or the trusted Coach prompt. See `docs/coach-production.md`.
+
 Loadnote v2.56 establishes the server-side identity/session boundary that later commercial account and cloud-sync work can build on.
 
 This release does **not** add a production identity provider or consumer sign-in screen yet. It intentionally separates:
@@ -140,17 +142,17 @@ Deletes the authenticated Loadnote account and its server-side synced structured
 
 ## Coach protection
 
-The Coach proxy can now operate behind the same account session.
+The Coach proxy uses the same account session. In production, Coach authentication is always required even if a deployment explicitly relaxes the general account requirement.
 
-When authentication is required:
+For online Coach:
 
 - anonymous Coach POST requests receive 401
 - authenticated cookie requests without CSRF receive 403
 - only an authenticated/verified request proceeds to the upstream AI-provider boundary
 
-The AI provider key remains server-side.
+The AI provider key, provider/model configuration, trusted system prompt, upstream error payloads and provider-response parsing remain server-side. The client may send only its question, bounded recent user/assistant history and structured Loadnote context. Raw provider-style messages and client provider/model/key configuration are rejected.
 
-The existing deterministic/offline Coach remains available to the app if the online backend is unavailable.
+The existing deterministic/offline Coach remains available to the app when signed out, offline, or when the online provider is unavailable.
 
 ## Development-only session issuer
 
@@ -183,7 +185,7 @@ It also removes the exposed backend-URL/backend-toggle controls that had leaked 
 
 Normal consumer requests use the configured Loadnote backend contract.
 
-Development provider/BYO-key plumbing may remain in code for local development, but it should not appear as normal consumer product configuration.
+v2.63 removes active browser BYO-key/provider plumbing from the consumer Coach path. Historical browser Coach keys are scrubbed on upgrade. Development provider configuration now belongs at the server/environment boundary rather than in production-facing UI.
 
 ## Identity-provider integration (implemented in v2.57)
 

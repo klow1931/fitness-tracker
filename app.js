@@ -13,7 +13,6 @@
     ];
     let measuresChart = null;
 
-    const API_KEY_STORAGE = 'fitness-tracker-api-key';
     let chatHistory = []; // {role, content} for API multi-turn
     let lastCoachSnapshot = null;
     let pendingProgramSession = null;
@@ -2295,227 +2294,55 @@
       return 'I can help with a wide range of topics:<br><br>• Progression & loading schemes (linear, step, flat, DUP, block, concurrent, conjugate)<br>• Protein and nutrition (bulk/cut)<br>• Soreness, recovery, sleep<br>• Deloads and plateaus<br>• Form cues for squat, bench, deadlift<br>• Warm-ups, RPE, training to failure<br>• Frequency, splits, and goal setting<br><br>Try one of the quick buttons, ask about a periodization model, or generate a program with a specific loading scheme.';
     }
 
-    function getStoredApiKey() {
-      try { return localStorage.getItem(API_KEY_STORAGE) || ''; } catch { return ''; }
-    }
-    function setStoredApiKey(key) {
-      try {
-        if (key) localStorage.setItem(API_KEY_STORAGE, key);
-        else localStorage.removeItem(API_KEY_STORAGE);
-      } catch (e) {
-        showToast('Could not store API key', 'error');
-      }
-    }
-
-    function applyApiProviderPreset() {
-      const p = document.getElementById('api-provider')?.value || 'xai';
-      const base = document.getElementById('api-base');
-      const model = document.getElementById('api-model');
-      if (p === 'xai') {
-        if (base) base.value = 'https://api.x.ai/v1';
-        if (model && (!model.value || model.value.startsWith('gpt'))) model.value = 'grok-2-latest';
-      } else if (p === 'openai') {
-        if (base) base.value = 'https://api.openai.com/v1';
-        if (model && (!model.value || model.value.includes('grok'))) model.value = 'gpt-4o-mini';
-      }
-    }
-
-    function saveApiSettings() {
-      data.api = data.api || {};
-      data.api.enabled = !!document.getElementById('api-enabled')?.checked;
-      data.api.backendEnabled = document.getElementById('api-backend-enabled')?.checked !== false;
-      data.api.backendUrl = (document.getElementById('api-backend-url')?.value || '/api/coach').trim();
-      data.api.provider = document.getElementById('api-provider')?.value || 'xai';
-      data.api.baseUrl = (document.getElementById('api-base')?.value || '').trim().replace(/\/$/, '');
-      data.api.model = (document.getElementById('api-model')?.value || '').trim();
-      const key = (document.getElementById('api-key')?.value || '').trim();
-      if (key && key !== '••••••••') setStoredApiKey(key);
-      saveData(data);
-      updateApiStatusUI();
-      showToast('API settings saved (key stays in this browser only)', 'success');
-    }
-
-    function clearApiKey() {
-      setStoredApiKey('');
-      const el = document.getElementById('api-key');
-      if (el) el.value = '';
-      if (data.api) data.api.enabled = false;
-      const en = document.getElementById('api-enabled');
-      if (en) en.checked = false;
-      saveData(data);
-      updateApiStatusUI();
-      showToast('API key cleared', 'info');
-    }
-
-    function updateApiStatusUI() {
-      const key = getStoredApiKey();
-      const backendEnabled = !!(data.api && data.api.backendEnabled !== false);
-      const enabled = !!(data.api && data.api.enabled && key);
-      const aiEnabled = backendEnabled || enabled;
-      const status = document.getElementById('api-status');
-      const hint = document.getElementById('chat-mode-hint');
-      if (status) {
-        status.textContent = backendEnabled
-          ? `Secure backend · ${data.api.backendUrl || '/api/coach'}`
-          : (enabled ? `Developer API · ${(data.api.model || 'model')}` : (key ? 'Key saved — enable developer API' : 'Offline rule-based coach'));
-        status.className = 'text-xs ' + (aiEnabled ? 'text-emerald-600 font-medium' : 'text-slate-500');
-      }
-      if (hint) {
-        hint.textContent = backendEnabled
-          ? 'Using Loadnote Coach backend when available; deterministic insights remain available offline.'
-          : (enabled ? 'Using developer API mode — answers can use your recent training data.' : 'Using built-in coach (no API).');
-      }
-      // Populate form fields
-      const api = data.api || {};
-      const prov = document.getElementById('api-provider');
-      const base = document.getElementById('api-base');
-      const model = document.getElementById('api-model');
-      const en = document.getElementById('api-enabled');
-      const keyEl = document.getElementById('api-key');
-      const backendToggle = document.getElementById('api-backend-enabled');
-      const backendUrl = document.getElementById('api-backend-url');
-      if (prov && api.provider) prov.value = api.provider;
-      if (base) base.value = api.baseUrl || 'https://api.x.ai/v1';
-      if (model) model.value = api.model || 'grok-2-latest';
-      if (en) en.checked = !!api.enabled;
-      if (backendToggle) backendToggle.checked = api.backendEnabled !== false;
-      if (backendUrl) backendUrl.value = api.backendUrl || '/api/coach';
-      if (keyEl && key && keyEl.value !== '••••••••') keyEl.placeholder = 'Developer key saved on this device (local development only)';
-    }
-
-    function buildCoachSystemPrompt() {
-      const unit = unitLabel();
-      const recentWo = (data.workouts || []).slice(0, 8);
-      const woLines = recentWo.map(w => {
-        const parts = (w.exercises || []).map(ex => {
-          if (ex.type === 'cardio') return `${escapeHtml(ex.name)} ${ex.duration || 0}min`;
-          const sets = (ex.sets || []).map(s => {
-            if (s.duration > 0 && !(s.reps > 0)) return `${s.duration}s x ${toDisplay(s.weight)}${unit}`;
-            return `${s.reps}x${toDisplay(s.weight)}${unit}`;
-          }).join(', ');
-          return `${escapeHtml(ex.name)}: ${sets}`;
-        }).join('; ');
-        return `${w.date}: ${parts}`;
-      }).join('\n') || 'No workouts logged yet.';
-      const proteinSummary = nutritionSummary7('protein');
-      const prs = (data.prs || []).slice(0, 8).map(p =>
-        `${p.exercise}: ${toDisplay(p.weight)}${unit} x ${p.reps}`
-      ).join('; ') || 'None';
-      const dl = typeof analyzeDeloadNeed === 'function' ? analyzeDeloadNeed() : null;
-      const active = typeof getActiveProgram === 'function' ? getActiveProgram() : null;
-
-      return `You are a practical strength & nutrition coach inside a local fitness tracking app.
-Be concise, actionable, and evidence-informed. Use the user's units (${unit}).
-Do not invent specific lifts or numbers that contradict the log summary.
-If data is missing, say what to log.
-Important: You are not a doctor, physical therapist, dietitian, or licensed medical professional. Your suggestions are general fitness recommendations only — not medical advice, diagnosis, or treatment. If the user describes pain, injury, illness, or a medical condition, encourage them to consult a qualified professional.
-
-USER CONTEXT:
-- Weight unit: ${unit}
-- Workouts (30d count): ${(data.workouts || []).filter(w => w.date >= new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10)).length}
-- Streak: ${typeof calcStreak === 'function' ? calcStreak() : 0} days
-- Recent workouts:
-${woLines}
-- Recent protein: ${nutritionSummaryLabel(proteinSummary,'g')}. Only complete days with known values contribute. Do not infer full-week intake or deficiencies from partial coverage.
-- Top PRs: ${prs}
-- Deload signal: ${dl ? dl.level + ' — ' + dl.summary : 'n/a'}
-- Active program: ${active ? active.name : 'none'}
-- Goals: ${(data.goals || []).filter(g => !g.completed).map(g => g.type + (g.exercise ? ' ' + g.exercise : '')).join(', ') || 'none'}
-- Progress photos on device: ${(data.progressPhotos || []).length}
-- Last photo date: ${((data.progressPhotos || []).slice().sort((a,b)=>b.date.localeCompare(a.date))[0] || {}).date || 'none'}`;
-    }
-
     function buildCoachContext() {
       const engine = window.LoadnoteCoach;
       const analytics = window.LoadnoteAnalytics;
       const active = typeof getActiveProgram === 'function' ? getActiveProgram() : null;
+      let lifecycle = null;
+      try { lifecycle = window.LoadnoteProgramLifecycleUI?.currentReport?.() || null; } catch {}
       if (!engine) return null;
       return engine.buildContext({
         data,
         analytics,
-        adaptive: lastCoachSnapshot?.recommendation || null,
+        priorCoachRecommendation: lastCoachSnapshot?.recommendation || null,
         unit: unitLabel(),
-        activeProgram: active
+        activeProgram: active,
+        lifecycle
       });
     }
 
-    function buildCoachMessages(userMessage) {
-      const engine = window.LoadnoteCoach;
-      const context = buildCoachContext();
-      const system = engine ? engine.buildSystemPrompt() : buildCoachSystemPrompt();
-      return [
-        { role: 'system', content: system + '\n\nATHLETE CONTEXT:\n' + JSON.stringify(context || {}, null, 2) },
-        ...chatHistory.slice(-10),
-        { role: 'user', content: userMessage }
-      ];
-    }
-
-    async function callCoachAPI(userMessage) {
-      const api = data.api || {};
-      const backendEnabled = api.backendEnabled !== false;
-      const messages = buildCoachMessages(userMessage);
-      let url = '';
-      let headers = { 'Content-Type': 'application/json' };
-      let body = { messages };
-
-      if (backendEnabled) {
-        url = (api.backendUrl || '/api/coach').trim();
+    async function updateCoachConnectionUI() {
+      const status = document.getElementById('coach-online-status');
+      const accountLink = document.getElementById('coach-account-link');
+      if (!status || !window.LoadnoteCoachClient) return;
+      const signedIn = await window.LoadnoteCoachClient.ensureSignedIn();
+      accountLink?.toggleAttribute('hidden', signedIn);
+      if (!signedIn) {
+        status.textContent = 'Offline coaching is available now. Sign in from Profile to use the secure online Coach.';
+        status.className = 'text-xs text-slate-500 mt-1';
+        return;
+      }
+      status.textContent = 'Checking secure online Coach…';
+      status.className = 'text-xs text-slate-500 mt-1';
+      const availability = await window.LoadnoteCoachClient.availability();
+      if (availability.online) {
+        status.textContent = 'Secure online Coach available · provider credentials stay on the Loadnote server.';
+        status.className = 'text-xs text-emerald-600 font-medium mt-1';
       } else {
-        const key = getStoredApiKey();
-        if (!key) throw new Error('No API key saved');
-        if (!api.baseUrl) throw new Error('No API base URL');
-        url = api.baseUrl.replace(/\/$/, '') + '/chat/completions';
-        headers.Authorization = 'Bearer ' + key;
-        body = { model: api.model || 'grok-2-latest', messages, temperature: 0.4 };
+        status.textContent = 'Online Coach is unavailable right now. Built-in training guidance still works offline.';
+        status.className = 'text-xs text-slate-500 mt-1';
       }
-
-      const requestOptions = { method: 'POST', headers, body: JSON.stringify(body) };
-      const res = backendEnabled && window.LoadnoteAccountSession?.request
-        ? await window.LoadnoteAccountSession.request(url, requestOptions)
-        : await fetch(url, requestOptions);
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        let msg = 'Coach API error ' + res.status;
-        try { const j = JSON.parse(errText); msg = j.error?.message || j.message || msg; }
-        catch { if (errText) msg += ': ' + errText.slice(0, 180); }
-        throw new Error(msg);
-      }
-      const json = await res.json();
-      const content = json.choices?.[0]?.message?.content;
-      if (!content) throw new Error('Empty response from coach API');
-      return content;
     }
 
     async function requestStructuredCoach(userMessage) {
-      const engine = window.LoadnoteCoach;
-      const raw = await callCoachAPI(userMessage);
-      if (!engine) return null;
-      const parsed = engine.parseStructuredResponse(raw);
-      lastCoachSnapshot = parsed;
-      return parsed;
-    }
-
-    async function testApiConnection() {
-      saveApiSettings();
-      const backend = (data.api || {}).backendEnabled !== false;
-      if (!backend && !getStoredApiKey()) return showToast('Save an API key first', 'error');
-      showToast('Testing coach connection…', 'info');
-      try {
-        if (backend) {
-          const healthUrl = ((data.api || {}).backendUrl || '/api/coach').replace(/\/coach\/?$/, '/health');
-          const res = window.LoadnoteAccountSession?.request
-            ? await window.LoadnoteAccountSession.request(healthUrl)
-            : await fetch(healthUrl);
-          if (!res.ok) throw new Error('Backend returned ' + res.status);
-          const j = await res.json();
-          if (!j.ok) throw new Error('Backend health check failed');
-          showToast(j.aiConfigured ? 'Secure coach backend connected' : 'Backend connected, but AI key is not configured', j.aiConfigured ? 'success' : 'error');
-        } else {
-          const reply = await callCoachAPI('Reply with exactly: OK connected');
-          showToast('API connected', 'success');
-          appendChatMessage('<i>Connection test:</i> ' + escapeChat(reply), false);
-        }
-      } catch (e) { showToast('Coach connection failed: ' + e.message, 'error'); }
+      if (!window.LoadnoteCoachClient) throw new Error('Secure Coach client is unavailable.');
+      const structured = await window.LoadnoteCoachClient.ask({
+        question: userMessage,
+        context: buildCoachContext(),
+        history: chatHistory.slice(-8)
+      });
+      lastCoachSnapshot = structured;
+      return structured;
     }
 
     function escapeChat(text) {
@@ -2532,14 +2359,14 @@ ${woLines}
       if (!text) return;
       appendChatMessage(escapeChat(text), true);
       input.value = '';
-      const useApi = !!(data.api && (data.api.enabled || data.api.backendEnabled));
+      const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
       const btn = document.getElementById('chat-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = useApi ? '…' : 'Send'; }
 
       try {
         if (useApi) {
           const structured = await requestStructuredCoach(text);
-          const reply = structured ? structured.summary : await callCoachAPI(text);
+          const reply = structured?.summary || 'Coach recommendation ready.';
           chatHistory.push({ role: 'user', content: text });
           chatHistory.push({ role: 'assistant', content: reply });
           if (chatHistory.length > 24) chatHistory = chatHistory.slice(-24);
@@ -2555,10 +2382,10 @@ ${woLines}
           appendChatMessage(reply, false);
         }
       } catch (e) {
-        appendChatMessage('API error: ' + escapeChat(e.message) + '<br><span class="text-xs">Falling back to built-in coach…</span>', false);
+        appendChatMessage('Online Coach unavailable: ' + escapeChat(e.message) + '<br><span class="text-xs">Using built-in coaching instead.</span>', false);
         const reply = getChatResponse(text);
         appendChatMessage(reply, false);
-        showToast('API failed — used built-in coach', 'error');
+        showToast('Online Coach unavailable — used built-in guidance', 'error');
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
       }
@@ -2576,7 +2403,7 @@ ${woLines}
     async function refreshCoachAnalysis(btn) {
       if (btn) { btn.disabled = true; btn.textContent = 'Analyzing…'; }
       try {
-        const useApi = !!(data.api && (data.api.enabled || data.api.backendEnabled));
+        const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
         if (!useApi) { renderProactiveCoachPreview(); return; }
         const snapshot = await requestStructuredCoach('Analyze my current training and give me the single most useful next-workout recommendation.');
         if (snapshot) renderCoachSnapshot(snapshot);
@@ -2595,7 +2422,7 @@ ${woLines}
       el.innerHTML = `
         <div class="coach-snapshot-head"><div><span class="eyebrow">Coach analysis</span><h3>${escapeHtml(snapshot.summary || 'Your latest training snapshot is ready.')}</h3></div><span class="coach-confidence">${escapeHtml(snapshot.confidence || 'medium')} confidence</span></div>
         ${insights.map(i => `<div class="coach-insight-row"><span class="coach-dot ${i.type === 'watch' ? 'watch' : i.type === 'positive' ? 'positive' : ''}"></span><div><b>${escapeHtml(i.title || 'Insight')}</b><p>${escapeHtml(i.body || '')}</p></div></div>`).join('')}
-        ${rec.action && rec.action !== 'none' ? `<div class="coach-recommendation"><div><span class="eyebrow">Next recommendation</span><b>${escapeHtml(actionLabels[rec.action] || rec.action)}${rec.exercise ? ' · ' + escapeHtml(rec.exercise) : ''}</b></div><div class="coach-rec-load">${rec.weight != null ? escapeHtml(toDisplay(rec.weight) + ' ' + unitLabel()) : '—'}${rec.sets && rec.reps ? ` · ${rec.sets} × ${rec.reps}` : ''}${rec.targetRPE ? ` · RPE ${rec.targetRPE}` : ''}</div><p>${escapeHtml(rec.reason || '')}</p></div>` : ''}
+        ${rec.action && rec.action !== 'none' ? `<div class="coach-recommendation"><div><span class="eyebrow">Next recommendation</span><b>${escapeHtml(actionLabels[rec.action] || rec.action)}${rec.exercise ? ' · ' + escapeHtml(rec.exercise) : ''}</b></div><div class="coach-rec-load">${rec.weightKg != null ? escapeHtml(toDisplay(rec.weightKg) + ' ' + unitLabel()) : '—'}${rec.sets && rec.reps ? ` · ${rec.sets} × ${rec.reps}` : ''}${rec.targetRPE ? ` · RPE ${rec.targetRPE}` : ''}</div><p>${escapeHtml(rec.reason || '')}</p></div>` : ''}
       `;
     }
 
@@ -2616,7 +2443,7 @@ ${woLines}
       if (adviceEl) adviceEl.innerHTML = (tips || []).map(t => `<p>• ${t}</p>`).join('');
       try { if (lastCoachSnapshot) renderCoachSnapshot(lastCoachSnapshot); else renderProactiveCoachPreview(); } catch (e) { console.warn(e); }
       try { refreshDeloadHelper(); } catch (e) { console.warn(e); }
-      try { updateApiStatusUI(); } catch (e) { console.warn(e); }
+      void updateCoachConnectionUI();
 
       // Goals list
       const goalsEl = document.getElementById('goals-list');

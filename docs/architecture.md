@@ -26,7 +26,8 @@ Paths below are under `src/product/` unless otherwise noted.
 | `navigation.js`, `profile-ui.js`, `home-activity.js` | Primary/secondary navigation, consumer Profile composition and weekly activity model |
 | `program-lifecycle.js`, `program-lifecycle-ui.js` | Deterministic active-program state and workflow routing across training, reviews, events, transition baselines and next-block handoff |
 | `units.js` | Display-unit conversion |
-| `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and coaching rules |
+| `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and deterministic/structured coaching rules |
+| `coach-client.js`, `backend/coach-gateway.js`, `backend/server.js` | Consumer online-Coach transport, bounded context/request contract, trusted server prompt, provider secret/configuration and response validation |
 
 `app.js` still coordinates startup and several dashboard, program, coaching and More-page views. Production script order and global compatibility boundaries are tested. `styles.css` and `energy.css` share layout/theme responsibility.
 
@@ -44,7 +45,7 @@ Paths below are under `src/product/` unless otherwise noted.
 - Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
 - Draft migration preserves named fields, units, completion, order, edit context and optional prescription snapshots. Schema 12 wraps integrity metadata around the existing workout payload shape.
 - Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
-- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. v2.60 adds server-side account/remote-snapshot deletion while intentionally leaving local training intact. v2.61 adds a read/route lifecycle layer over existing program, Calendar, review, event and handoff records; it does not create a parallel prescription store. v2.62 adds a UI-only gym-floor layer over the same workout draft/session state; it does not introduce another workout schema or network dependency. Background sync and simultaneous-tab coordination are not implemented.
+- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. v2.60 adds server-side account/remote-snapshot deletion while intentionally leaving local training intact. v2.61 adds a read/route lifecycle layer over existing program, Calendar, review, event and handoff records; it does not create a parallel prescription store. v2.62 adds a UI-only gym-floor layer over the same workout draft/session state; it does not introduce another workout schema or network dependency. v2.63 makes online Coach an authenticated server-mediated feature: the browser supplies bounded structured context, while provider credentials/configuration, the trusted system prompt and provider-response validation stay on the server. Background sync and simultaneous-tab coordination are not implemented.
 - Decision-readiness results are evidence-quality classifications, not training prescriptions. The v2 decision engine remains disabled.
 
 ## Remaining boundaries

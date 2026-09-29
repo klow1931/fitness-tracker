@@ -15,7 +15,7 @@
       gymModeUserSet: false, onboardingDismissed: false,
       lastExportDate: null, backupBannerDismissed: null,
       progressPhotos: [], measurements: [], formReviews: [],
-      api: { enabled: false, backendEnabled: false, backendUrl: '/api/coach', provider: 'xai', baseUrl: 'https://api.x.ai/v1', model: 'grok-2-latest' }
+      api: { enabled: false, backendEnabled: false }
     };
 
     let data = { ...DEFAULT_DATA };

@@ -55,5 +55,5 @@ test('Profile groups secondary navigation and Tools keeps disclosures',async({pa
  await expect(page.locator('#privacy-policy')).toContainText('Last updated: September 28, 2026');
  await expect(page.locator('#privacy-policy')).toContainText('training and decision-support app');
  await expect(page.locator('#privacy-policy')).toContainText('Account sign-in');
- await expect(page.locator('#privacy-policy')).toContainText('Optional AI features');
+ await expect(page.locator('#privacy-policy')).toContainText('Optional online Coach');
 });

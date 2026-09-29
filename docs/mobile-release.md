@@ -1,6 +1,6 @@
 # Mobile release foundation
 
-Loadnote v2.54 established a reproducible mobile packaging boundary. v2.62 adds gym-floor mobile interaction hardening on top of the v2.60 consumer Profile/account experience and v2.61 program lifecycle, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
+Loadnote v2.54 established a reproducible mobile packaging boundary. v2.63 adds an authenticated server-only online Coach boundary on top of the v2.60 consumer Profile/account experience, v2.61 program lifecycle and v2.62 gym-floor polish, but App Store / Play Store distribution, concrete provider provisioning, native redirect validation, background synchronization, and multi-instance transactional storage are still incomplete.
 
 ## Current mobile shell
 
@@ -67,7 +67,7 @@ npm run test:browser
 
 Also perform the manual iPhone/Android acceptance work documented in `docs/testing.md`. Automated Chromium tests do not prove iOS WebView, Android WebView, signing, store metadata, permissions or physical-device behavior.
 
-## Still not completed after v2.62
+## Still not completed after v2.63
 
 This release does **not** implement:
 
@@ -90,3 +90,12 @@ The workout logger now exposes mobile keyboard hints, a current-set/rest/Finish 
 Previous loads are read from normal workout history in storage kilograms and converted at display time. The UI never stores display pounds as internal kilograms. Use-last does not copy RPE, completion state or a hidden readiness interpretation.
 
 The dock uses the browser visual viewport only to avoid competing with a likely on-screen keyboard. Native iOS/Android keyboard behavior still requires physical-device acceptance testing; this release does not claim Chromium viewport behavior proves App Store-quality keyboard handling.
+
+
+## Secure Coach boundary (v2.63)
+
+The mobile/browser bundle contains Coach context-building and transport code, but no AI provider key, provider base URL, selectable model, or trusted system-prompt configuration. Production online Coach requires the Loadnote account/session boundary and calls the Loadnote backend; provider credentials are configured only on the server.
+
+The browser sends a bounded structured context rather than raw provider messages. Weight-bearing context fields remain kilograms internally and are explicitly named as kg fields before leaving the device. Provider output is parsed on the server and returned as a bounded structured Coach result. No response is automatically applied to a workout or program.
+
+A future native release still needs concrete OIDC/native redirect provisioning and real-device sign-in testing. v2.63 does not add native bearer-token persistence.

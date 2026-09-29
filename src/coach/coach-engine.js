@@ -30,7 +30,7 @@
     return rows;
   }
 
-  function buildContext({ data = {}, analytics = null, adaptive = null, unit = 'kg', activeProgram = null } = {}) {
+  function buildContext({ data = {}, analytics = null, priorCoachRecommendation = null, unit = 'kg', activeProgram = null, lifecycle = null } = {}) {
     const workouts = safeWorkouts(data.workouts);
     const a = analytics || {};
     const summary = a.dashboardSummary ? a.dashboardSummary(workouts) : null;
@@ -38,7 +38,7 @@
     const topTrends = (summary?.exerciseTrends || []).slice(0, 8).map(t => ({
       exercise: t.exercise,
       sessions: t.sessions,
-      estimated1RM: t.latestEstimated1RM,
+      estimated1RMKg: t.latestEstimated1RM,
       changePercent: t.change?.percent ?? null,
       plateau: t.change?.percent != null && t.change.percent <= 1
     }));
@@ -46,7 +46,7 @@
       date: w.date,
       exercises: (w.exercises || []).filter(ex => ex.type !== 'cardio').slice(0, 8).map(ex => ({
         name: ex.name,
-        sets: (ex.sets || []).filter(s => Number(s.reps) > 0).map(s => ({ reps: Number(s.reps), weight: Number(s.weight) || 0, rpe: Number(s.rpe) || null })).slice(0, 8)
+        sets: (ex.sets || []).filter(s => Number(s.reps) > 0).map(s => ({ reps: Number(s.reps), weightKg: Number(s.weight) || 0, rpe: Number(s.rpe) || null })).slice(0, 8)
       }))
     }));
     const window=Nutrition.window7(new Date().toLocaleDateString('en-CA'));
@@ -54,10 +54,25 @@
     const avgProtein=nutrition.average===null?null:Core.round(nutrition.average,0);
     const lastBodyweight = (data.bodyweight || []).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0] || null;
     return {
-      version: '0.5',
+      version: '0.6',
       unit,
+      units:{ storageWeight:'kg', displayWeight:unit },
       athlete: {
-        goals: (data.goals || []).filter(g => !g.completed).map(g => ({ type: g.type, exercise: g.exercise || null, targetWeight: g.targetWeight || null })),
+        goals: [
+          ...(data.athleteGoals || []).map(record => {
+            const latest = Array.isArray(record?.revisions) ? record.revisions.at(-1)?.context : null;
+            return latest && latest.status !== 'archived' ? {
+              type: 'athlete-goal',
+              name: latest.name || null,
+              sport: latest.sport || null,
+              status: latest.status || 'active',
+              eventName: latest.eventName || null,
+              eventDate: latest.eventDate || null,
+              targets: Array.isArray(latest.targets) ? latest.targets.slice(0,3).map(t => ({ lift:t.lift, kg:Number(t.kg)||null })) : []
+            } : null;
+          }).filter(Boolean).slice(0,5),
+          ...(data.goals || []).filter(g => !g.completed).slice(0,5).map(g => ({ type: g.type, exercise: g.exercise || null, targetWeightKg: Number(g.targetWeight)||null }))
+        ].slice(0,8),
         activeProgram: activeProgram ? activeProgram.name : null,
         activeProgramId: data.activeProgramId || null
       },
@@ -72,9 +87,10 @@
         recentWorkouts: recent
       },
       nutrition: { loggedDays7d: nutrition.loggedDays, completeDays7d:nutrition.completeDays, proteinDays7d:nutrition.validDays, incompleteDays7d:nutrition.incompleteDays, unknownProteinDays7d:nutrition.unknownDays, averageProteinGrams: avgProtein },
-      bodyweight: lastBodyweight ? { value: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
-      prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weight: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RM: Number(p.estimated1RM)||null })),
-      adaptive: adaptive || null
+      bodyweight: lastBodyweight ? { weightKg: Number(lastBodyweight.weight), date: lastBodyweight.date } : null,
+      prs: (data.prs || []).slice(0, 10).map(p => ({ exercise: p.exercise, weightKg: Number(p.weight)||0, reps: Number(p.reps)||0, estimated1RMKg: Number(p.estimated1RM)||null })),
+      priorCoachRecommendation: priorCoachRecommendation || null,
+      lifecycle: lifecycle ? JSON.parse(JSON.stringify(lifecycle)) : null
     };
   }
 
@@ -92,22 +108,40 @@
     return insights.slice(0, 4);
   }
 
-  function buildSystemPrompt() {
-    return `You are Loadnote Coach, a practical strength-training assistant. Use ONLY the supplied athlete context for personalized numbers. The deterministic training engine has already calculated trends and progression; do not invent measurements, workouts, injuries, or performance. Explain recommendations clearly and conservatively. If data is insufficient, say so. Do not diagnose or treat medical conditions. If the user describes pain, injury, illness, or a medical condition, recommend qualified professional evaluation. Return valid JSON only with this shape: {"summary":string,"insights":[{"type":"positive|watch|info","title":string,"body":string}],"recommendation":{"action":"increase|hold|reduce|repeat|none","exercise":string|null,"weight":number|null,"sets":number|null,"reps":number|null,"targetRPE":number|null,"reason":string},"confidence":"low|medium|high"}. Keep the response concise and actionable.`;
-  }
-
   function parseStructuredResponse(text) {
     const raw = String(text || '').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```$/,'').trim();
     const start = raw.indexOf('{');
     const end = raw.lastIndexOf('}');
     if (start < 0 || end <= start) throw new Error('Coach response was not valid JSON');
-    const obj = JSON.parse(raw.slice(start, end + 1));
-    obj.summary = String(obj.summary || '');
-    obj.insights = Array.isArray(obj.insights) ? obj.insights.slice(0, 5) : [];
-    obj.recommendation = obj.recommendation || { action: 'none' };
-    obj.confidence = ['low','medium','high'].includes(obj.confidence) ? obj.confidence : 'medium';
-    return obj;
+    const source = JSON.parse(raw.slice(start, end + 1));
+    const clean = (value,max) => String(value ?? '').replace(/\s+/g,' ').trim().slice(0,max);
+    const finite = (value,min,max,integer=false) => {
+      if(value==null||value===''||typeof value==='boolean')return null;
+      const number=Number(value);
+      if(!Number.isFinite(number)||number<min||number>max)return null;
+      return integer?Math.round(number):Math.round(number*100)/100;
+    };
+    const action=['increase','hold','reduce','repeat','none'].includes(source?.recommendation?.action)?source.recommendation.action:'none';
+    const recommendationWeightKg=source?.recommendation?.weightKg;
+    return {
+      summary: clean(source?.summary,1200),
+      insights: Array.isArray(source?.insights) ? source.insights.slice(0,5).map(row=>({
+        type:['positive','watch','info'].includes(row?.type)?row.type:'info',
+        title:clean(row?.title,160),
+        body:clean(row?.body,600)
+      })).filter(row=>row.title||row.body) : [],
+      recommendation:{
+        action,
+        exercise:source?.recommendation?.exercise==null?null:clean(source.recommendation.exercise,160)||null,
+        weightKg:finite(recommendationWeightKg,0,2000),
+        sets:finite(source?.recommendation?.sets,1,30,true),
+        reps:finite(source?.recommendation?.reps,1,100,true),
+        targetRPE:finite(source?.recommendation?.targetRPE,1,10),
+        reason:clean(source?.recommendation?.reason,800)
+      },
+      confidence:['low','medium','high'].includes(source?.confidence)?source.confidence:'medium'
+    };
   }
 
-  return { buildContext, deterministicInsights, buildSystemPrompt, parseStructuredResponse, recentExerciseSnapshot };
+  return { buildContext, deterministicInsights, parseStructuredResponse, recentExerciseSnapshot };
 });
