@@ -98,7 +98,7 @@
      const expected=r.sourceProgram.roleSnapshot;
      if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.length!==expected.length||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt)||expected.some(e=>!r.roleSnapshot.some(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift)))throw Error('Invalid competition exercise snapshot');
      if(r.scheduledAt!=null&&(!iso(r.scheduledAt)||r.scheduledAt<r.createdAt))throw Error('Invalid scheduling timestamp');
-     if(r.decisionEnvironment!==undefined)Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});
+     if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');}
      return copy(r);
    });
  }
