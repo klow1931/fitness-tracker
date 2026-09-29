@@ -109,7 +109,7 @@
   }
   function verifyPackage(pkg){
     if(!pkg||pkg.protocol!==PROTOCOL)return {status:'invalid',verified:false,reason:'Unsupported sync protocol.'};
-    if(!iso(pkg.createdAt)||typeof pkg.clientId!=='string'||!pkg.clientId.trim()||pkg.clientId.trim().length>160)return {status:'invalid',verified:false,reason:'Sync package metadata is malformed.'};
+    if(!iso(pkg.createdAt)||typeof pkg.clientId!=='string'||!pkg.clientId.trim()||pkg.clientId!==pkg.clientId.trim()||pkg.clientId.length>160)return {status:'invalid',verified:false,reason:'Sync package metadata is malformed.'};
     if(pkg.schemaVersion!=null&&(!Number.isInteger(pkg.schemaVersion)||pkg.schemaVersion<1))return {status:'invalid',verified:false,reason:'Sync package schema metadata is malformed.'};
     if(typeof (pkg.releaseVersion??'')!=='string'||String(pkg.releaseVersion||'').length>80)return {status:'invalid',verified:false,reason:'Sync package release metadata is malformed.'};
     try{
