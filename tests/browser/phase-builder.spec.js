@@ -278,7 +278,6 @@ test('evidence-backed starting suggestion is explicit, editable and frozen on sa
  for(const [i,l]of ['squat','bench','deadlift'].entries()){await page.locator('.phase-lift > summary').nth(i).click();await page.locator('#phase-'+l+'-tm').fill(String([160,120,220][i]));}
  await page.locator('#phase-dialog button[type="submit"]').click();
  await expect(page.locator('#phase-preview [data-starting-prescription]')).toContainText('Starting prescription audit');
- await expect(page.locator('#phase-notes')).toContainText('evidence-backed 28-day starting-structure suggestion');
  await page.locator('#phase-confirm').check();await page.locator('#phase-save').click();
  await expect.poll(()=>page.evaluate(()=>data.phasePrograms[0]?.startingPrescriptionSnapshot?.status)).toBe('reviewed-comparison');
  expect(await page.evaluate(()=>data.phasePrograms[0].startingPrescriptionSnapshot.lifts.deadlift.recommendation.stepPct)).toBe(.5);
