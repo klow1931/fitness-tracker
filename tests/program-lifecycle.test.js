@@ -20,7 +20,8 @@ function completeThrough(state,prefix,through){
  }
 }
 function skipAll(state,prefix,now){
- for(const row of Schedule.list(state.scheduledSessions).filter(x=>x.id.startsWith(prefix)&&x.status==='scheduled')){
+ const completed=new Set((state.workouts||[]).map(w=>w.sessionIntent?.schedule?.id).filter(Boolean));
+ for(const row of Schedule.list(state.scheduledSessions).filter(x=>x.id.startsWith(prefix)&&x.status==='scheduled'&&!completed.has(x.id))){
   state.scheduledSessions=Schedule.change(state.scheduledSessions,row.id,{status:'skipped',reason:'Lifecycle test resolution'},now);
  }
 }
