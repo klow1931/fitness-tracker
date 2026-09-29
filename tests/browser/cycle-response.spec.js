@@ -10,7 +10,7 @@ test.beforeEach(async({page})=>{
   const p=LoadnoteMeetCycle.prepare(data,data.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args);
   data=LoadnoteMeetCycle.save(data,p,{confirmed:true},{...args,id:'cycle12'});
   data=LoadnoteMeetCycle.schedule(data,'cycle12',{...args,now:'2026-09-24T13:00:00.000Z'});
-  showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();
+  showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();document.getElementById('phase-review-panel').open=true;
  },phaseFixture());
 });
 test('Decisions displays separate completed-phase summaries with honest sparse evidence',async({page})=>{
