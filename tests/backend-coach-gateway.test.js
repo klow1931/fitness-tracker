@@ -66,7 +66,8 @@ const {createServer}=require('../backend/server');
   assert.equal(Object.hasOwn(health,'model'),false,'public health should not expose provider model configuration');
  }finally{await new Promise(resolve=>server.close(resolve));}
 
- const prod=createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'0',LOADNOTE_AUTH_SECRET:'prod-coach-secret-'.padEnd(64,'p'),LOADNOTE_AI_API_KEY:'configured',LOADNOTE_ACCOUNT_STORE_PATH:path.join(dir,'prod-accounts.json')},fetchImpl});
+ assert.throws(()=>createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'0',LOADNOTE_AUTH_SECRET:'prod-coach-secret-'.padEnd(64,'p'),LOADNOTE_AI_API_KEY:'configured',LOADNOTE_ACCOUNT_STORE_PATH:path.join(dir,'prod-accounts-no-oidc.json')},fetchImpl}),/OIDC provider/,'production online Coach must fail closed without a login provider');
+ const prod=createServer({env:{NODE_ENV:'production',LOADNOTE_REQUIRE_AUTH:'0',LOADNOTE_AUTH_SECRET:'prod-coach-secret-'.padEnd(64,'p'),LOADNOTE_AI_API_KEY:'configured',LOADNOTE_ACCOUNT_STORE_PATH:path.join(dir,'prod-accounts.json'),LOADNOTE_OIDC_ISSUER:'https://id.example.com',LOADNOTE_OIDC_CLIENT_ID:'loadnote-client',LOADNOTE_OIDC_CLIENT_SECRET:'server-secret',LOADNOTE_OIDC_REDIRECT_URI:'https://app.example.com/api/auth/callback',LOADNOTE_OIDC_PROVIDER_ID:'test-idp'},fetchImpl});
  assert.equal(prod.loadnote.coachAuthRequired,true,'production Coach must require a Loadnote account even if general auth is relaxed');
 
  console.log('v2.63 authenticated server-owned Coach prompt, provider secret and structured response boundary passed');
