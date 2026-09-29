@@ -1,3 +1,25 @@
+# v2.66.0 — Cycle Observability & Reproducibility
+
+- Freeze an additive decision environment on newly reviewed phase programs and meet cycles: release version, schema version, capture time, record purpose and explicit policy identities.
+- Freeze the exact deterministic cycle-controller recommendation displayed before every normal v2.66 weekly-review approval.
+- Keep the controller recommendation separate from the athlete's lift-by-lift approved choices so accepted recommendations and athlete overrides remain distinguishable.
+- Advance meet-cycle weekly-review records to version 5 while retaining the existing `cycle-week-adjust-v4` training policy and validation compatibility for older review versions.
+- Freeze the weekly review evidence fingerprint, controller-input fingerprint and recommendation fingerprint for deterministic replay/audit.
+- Constrain controller response inputs to the exact weekly-review knowledge cutoff and current phase; later data cannot silently become part of the historical recommendation.
+- Add read-only controller replay that reports a mismatch instead of rewriting an older recommendation when current deterministic code no longer reproduces it.
+- Add a read-only Cycle Journal assembled from existing program, review, Calendar, workout, event and transition records instead of creating a duplicate event database.
+- Show recommendation → athlete choice → Calendar effect → later competition-lift evidence as separate concepts.
+- Require exact scheduled-session, Calendar-revision, date and prescription lineage before later workout evidence is attributed to a saved weekly decision.
+- Preserve awaiting, unobserved, revised/deviated and observed outcome states separately; missing evidence is never treated as a measured zero.
+- Carry frozen v2.66 controller snapshots into immutable meet-cycle transition baselines for later handoff analysis.
+- Add decision-data auditing for malformed/stale environments, missing v2.66 controller snapshots, fingerprint/policy identity mismatches and unknown-capacity values coerced to 0%.
+- Fix a next-block objective bug where missing transition capacity change could become 0% and be interpreted as a flat response.
+- Fix a related next-block objective bug where missing recent average RPE could become 0 and make positive capacity evidence look like clearly manageable effort.
+- Harden starting-prescription numeric normalization so null/empty values remain unknown rather than numeric zero.
+- Add deterministic unit/browser coverage for replay, future-data isolation, athlete override preservation, exact outcome lineage and null-vs-zero regressions.
+- Add `docs/cycle-observability.md`.
+- No new progression heuristic and no top-level schema migration; schema v25 remains unchanged.
+
 # v2.65.0 — Phase-Specific Cycle Decisions
 
 - Add an explicit deterministic phase-policy layer for accumulation, strength, peaking, taper and event transitions.
