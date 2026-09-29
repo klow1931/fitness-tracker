@@ -71,3 +71,12 @@ Scheduled phase programs and flexible meet cycles now participate in one determi
 Review routing respects the adjustment engines' existing future-only boundaries. A weekly or phase review becomes a blocking next action only while the reviewed period is fully resolved and future target sessions are still within the supported review window. If the athlete misses that window, Loadnote records that fact as nonblocking historical context and preserves the already-started/past prescriptions instead of demanding a retroactive review.
 
 Meet cycles can freeze an immutable transition baseline after the event is reached and actual results are recorded. That baseline may carry athlete-entered best made attempts/total as event evidence, but those values remain separate from estimated capacity, known/tested 1RM and selected training max. Goal-aware next-block objectives can use the same completed-block context afterward. This lifecycle does not add a new progression rule or automatically approve any training change.
+
+
+## Evidence-backed starting prescription (v2.64)
+
+Before a new phase proposal is reviewed, Loadnote can summarize the prior 28 days of auditable lift-specific history and form a bounded starting-structure suggestion. See `docs/starting-prescription.md` for the evidence rules and non-goals.
+
+The suggestion can cover exposure frequency, working sets per exposure, compatible recent weekdays, primary straight/top-back-off structure, and a conservative weekly percentage-point step. Training maxes remain separately selected. Low RPE alone never increases the weekly progression suggestion.
+
+Using the suggestion is explicit. The athlete can apply it to the editable builder, change any field, and then regenerate the normal phase preview. The saved phase record freezes the point-in-time suggestion-versus-selection comparison as an additive `startingPrescriptionSnapshot`; legacy phase records without the field remain valid. Schema v25 is unchanged.
