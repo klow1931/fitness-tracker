@@ -140,3 +140,16 @@ test('peaking review preserves structure and only offers a bounded downward comp
  const label=squat.locator('xpath=..');await expect(label).toContainText('peak work');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
+
+
+test('cycle journal is available for an upcoming scheduled cycle and remains compact on mobile',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.clock.setFixedTime(new Date('2026-09-25T12:00:00.000Z'));
+ await page.evaluate(()=>{renderCycleJournal();});
+ const journal=page.locator('#cycle-journal');
+ await expect(journal).toContainText('Cycle journal');
+ await journal.locator('.cycle-journal-panel > summary').click();
+ await expect(journal).toContainText('Starting program reviewed');
+ await expect(journal).toContainText('Meet cycle reviewed');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
