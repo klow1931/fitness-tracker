@@ -97,6 +97,7 @@
   const host=dock(),hasDraft=(()=>{try{return loggerHasContent();}catch{return false;}})();
   const show=loggerVisible()&&hasDraft;
   host.classList.toggle('gym-floor-dock-active',show);
+  document.body.classList.toggle('gym-floor-dock-visible',show);
   host.setAttribute('aria-hidden',String(!show));
   const label=host.querySelector('[data-gym-current-label]');if(label)label.textContent=currentLabel();
   const train=document.querySelector('#mobile-nav [data-tab="workouts"]');
