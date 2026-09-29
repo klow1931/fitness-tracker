@@ -121,12 +121,25 @@
    const account=session.account,primary=account.displayName||account.email||'Signed-in Loadnote account';
    const meta=[account.email&&account.email!==primary?account.email:null,Array.isArray(account.providers)?account.providers.join(', '):(account.provider||session.provider?.name),session.expiresAt?'Session expires '+new Date(session.expiresAt).toLocaleString():null].filter(Boolean);
    host.dataset.accountId=account.id;
-   host.innerHTML='<div class="account-status-head"><div><p class="eyebrow">SIGNED IN</p><h3>'+esc(primary)+'</h3>'+(meta.length?'<p class="more-hint">'+esc(meta.join(' · '))+'</p>':'')+'</div><button type="button" class="btn-secondary text-sm" id="account-signout">Sign out</button></div><p class="more-hint">Your account can back up and manually synchronize structured training data across devices. Loadnote never uses last-write-wins for conflicting training records.</p><div id="remote-training-status" class="remote-training-status" aria-live="polite"><p class="more-hint">Checking cloud training…</p></div>';
+   host.innerHTML='<div class="account-status-head"><div><p class="eyebrow">SIGNED IN</p><h3>'+esc(primary)+'</h3>'+(meta.length?'<p class="more-hint">'+esc(meta.join(' · '))+'</p>':'')+'</div><button type="button" class="btn-secondary text-sm" id="account-signout">Sign out</button></div><p class="more-hint">Your account can back up and manually synchronize structured training data across devices. Loadnote never uses last-write-wins for conflicting training records.</p><div id="remote-training-status" class="remote-training-status" aria-live="polite"><p class="more-hint">Checking cloud training…</p></div><details class="account-danger-zone"><summary>Account options</summary><p class="more-hint">Deleting your Loadnote account removes the account identity and synced structured training stored on the server. Training already saved on this device stays here unless you erase it separately.</p><button type="button" class="btn-danger text-sm" id="account-delete">Delete Loadnote account</button></details>';
    void renderRemote(host,account.id);
    host.querySelector('#account-signout')?.addEventListener('click',async button=>{
     button.disabled=true;
     try{const response=await window.LoadnoteAccountSession.signOut();if(!response.ok)throw Error('Sign out failed');render();}
     catch(error){button.disabled=false;window.showToast?.('Could not sign out: '+error.message,'error');}
+   });
+   host.querySelector('#account-delete')?.addEventListener('click',async button=>{
+    if(!confirm('Delete your Loadnote account and synced cloud training? Training saved on this device will remain here. This server-side deletion cannot be undone.'))return;
+    button.disabled=true;
+    try{
+     const response=await window.LoadnoteAccountSession.deleteAccount();
+     const body=await response.json().catch(()=>({}));
+     if(!response.ok)throw Error(body.error||'Account deletion failed');
+     try{await window.LoadnoteSyncCoordinator?.clearBase(account.id);}catch{}
+     try{window.LoadnoteRemoteSync?.clearReceipt(account.id);}catch{}
+     render();
+     window.showToast?.('Loadnote account and synced cloud data deleted. Local training remains on this device.','success');
+    }catch(error){button.disabled=false;window.showToast?.('Could not delete account: '+error.message,'error');}
    });
    return;
   }
