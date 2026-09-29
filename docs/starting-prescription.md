@@ -64,4 +64,6 @@ v2.64 does not:
 - change active-program weekly adaptation rules
 - rewrite existing workouts, programs or Calendar history
 
+v2.66 gives the starting-prescription engine the explicit policy identity `starting-prescription-v1` and records that identity in newly reviewed phase-program decision environments. The v2.64 recommendation rules above are unchanged.
+
 Schema v25 is unchanged.
