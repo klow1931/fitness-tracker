@@ -21,7 +21,7 @@ async function bootPhase(page,clock='2026-10-19T12:00:00.000Z'){
    const id='phase:'+program.id+':'+session.key,record=data.scheduledSessions.find(x=>x.id===id),rev=record.revisions.at(-1),plan=rev.context.prescription;
    data.workouts.push({id:'browser-'+session.key,date:session.date,createdAt:session.date+'T20:00:00.000Z',updatedAt:session.date+'T20:00:00.000Z',
     exercises:plan.plannedExercises.map(e=>({...e,sets:(e.sets||[]).map(s=>({...s,rpe:s.targetRpe||8}))})),
-    sessionIntent:{role:rev.context.role,goal:rev.context.goal,prescription:structuredClone(plan),schedule:{id,revisionAt:rev.recordedAt},timing:'planned-before-training',deviationReason:'none',deviationNotes:''}});
+    sessionIntent:{role:rev.context.role,goal:rev.context.goal,prescription:structuredClone(plan),schedule:{id,revisionAt:rev.recordedAt},deviationReason:'none',deviationNotes:''}});
   }
   saveData(data);renderDashboard();
  },phaseFixture());
