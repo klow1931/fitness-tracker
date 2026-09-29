@@ -40,7 +40,7 @@ function normalizeContext(input){
   nutrition:bounded(input.nutrition),
   bodyweight:bounded(input.bodyweight),
   prs:bounded(input.prs),
-  adaptive:bounded(input.adaptive),
+  priorCoachRecommendation:bounded(input.priorCoachRecommendation),
   lifecycle:bounded(input.lifecycle)
  };
  const json=JSON.stringify(selected);
