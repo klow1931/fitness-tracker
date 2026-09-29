@@ -15,6 +15,8 @@
  function render(){
   const host=document.getElementById('profile-hub');if(!host)return;
   const setup=setupSummary();
+  let competitionCount=0;
+  try{competitionCount=new Set((window.LoadnoteReadiness?.list?.(data.exerciseRoles||[])||[]).filter(row=>row.role==='competition'&&row.competitionLift).map(row=>row.competitionLift)).size;}catch{}
   host.innerHTML=
    '<div class="profile-grid">'+
     '<section class="card profile-card" id="profile-training-setup">'+
@@ -26,6 +28,7 @@
       '<button type="button" class="btn-primary" id="profile-edit-training">'+(setup.ready?'Edit training setup':'Set up training')+'</button>'+
       '<button type="button" class="btn-secondary" id="profile-go-train">Go to Train</button>'+
      '</div>'+
+     '<div class="profile-setup-extra"><div><b>Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Only needed for squat/bench/deadlift-specific Decisions.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></div>'+
     '</section>'+
     '<section class="card profile-card" id="profile-account-card">'+
      '<p class="eyebrow">ACCOUNT &amp; SYNC</p>'+
@@ -51,6 +54,7 @@
    '</div>';
   host.querySelector('#profile-edit-training')?.addEventListener('click',()=>window.openProgrammingProfile?.());
   host.querySelector('#profile-go-train')?.addEventListener('click',()=>showTab('workouts'));
+  host.querySelector('#profile-lift-mapping')?.addEventListener('click',()=>window.openExerciseRoleSetup?.());
   host.querySelectorAll('[data-profile-unit]').forEach(button=>{
    const active=button.dataset.profileUnit===currentUnit();
    button.classList.toggle('profile-choice-active',active);
