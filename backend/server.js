@@ -151,7 +151,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   if(req.method==='OPTIONS'){
    res.writeHead(204,responseHeaders(req,{
     'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Loadnote-CSRF, X-Loadnote-Dev-Auth',
-    'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods':'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Max-Age':'600'
    }));return res.end();
   }
