@@ -1,16 +1,16 @@
 /* v2.39 — weekly review with guarded downward/upward controller recommendations; athlete approval remains required. */
 (function(){
- 'use strict';let busy=false,report=null;
+ 'use strict';let busy=false,report=null,desiredCycleId='',desiredWeek=null;
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
  function render(){
   const host=document.getElementById('cycle-week-review');if(!host)return;
   report=null;
   const cycles=LoadnoteCycleReview.validate(data).filter(c=>c.scheduledAt&&c.config.startDate<=today()&&c.config.meetDate>=today()&&c.weekly.some(w=>w.week<c.config.weeks&&w.endDate<=today()&&!(c.weeklyReviews||[]).some(r=>r.week===w.week)));
-  const cycle=cycles.at(-1);
+  const cycle=(desiredCycleId?cycles.find(c=>c.id===desiredCycleId):null)||cycles.at(-1);
   if(!cycle){host.innerHTML='<p class="cycle-review-hint">No completed mock-meet cycle week is awaiting review. Your scheduled workout targets remain unchanged.</p>';return;}
   const available=cycle.weekly.filter(w=>w.week<cycle.config.weeks&&w.endDate<=today()&&!(cycle.weeklyReviews||[]).some(r=>r.week===w.week));
   host.innerHTML='<details class="more-details cycle-review-panel"><summary>Review completed training weeks · '+available.length+' awaiting review</summary><p>Compare your logged work with its original schedule. Keeping the plan is the default; only supported next-week changes can be approved.</p>'+
-  '<label>Completed week<select class="input" id="cycle-review-week">'+available.map(w=>'<option value="'+w.week+'">Week '+w.week+' · '+esc(w.phase)+' · ended '+esc(w.endDate)+'</option>').join('')+'</select></label>'+
+  '<label>Completed week<select class="input" id="cycle-review-week">'+available.map(w=>'<option value="'+w.week+'" '+(Number(desiredWeek)===w.week?'selected':'')+'>Week '+w.week+' · '+esc(w.phase)+' · ended '+esc(w.endDate)+'</option>').join('')+'</select></label>'+
   '<button type="button" class="btn-secondary" id="cycle-review-analyze">Review this week</button><div id="cycle-review-report"></div><p id="cycle-review-error" role="alert"></p></details>';
   host.querySelector('#cycle-review-week').onchange=()=>{report=null;host.querySelector('#cycle-review-report').replaceChildren();host.querySelector('#cycle-review-error').textContent='';};
   host.querySelector('#cycle-review-analyze').onclick=()=>{try{
@@ -41,5 +41,13 @@
    }catch(e){error.textContent=e.message;}finally{busy=false;}
   };
  }
+ function open(cycleId,week){
+  desiredCycleId=cycleId||'';desiredWeek=Number(week)||null;
+  showTab('coach');showSubTab('coach','co-programs');window.renderPhaseReview?.();
+  const outer=document.getElementById('phase-review-panel');if(outer)outer.open=true;
+  const panel=document.querySelector('#cycle-week-review .cycle-review-panel');if(panel)panel.open=true;
+  document.getElementById('cycle-week-review')?.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ window.LoadnoteCycleWeekReviewUI={render,open};
  window.renderCycleWeekReview=render;
 })();
