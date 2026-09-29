@@ -1,8 +1,8 @@
 # Sync architecture foundation
 
-Loadnote v2.55 defines how structured user data can be compared and merged safely across devices before any account or cloud transport is introduced.
+Loadnote v2.55 defined how structured user data can be compared and merged safely across devices before account/cloud transport existed.
 
-This release does **not** synchronize anything over the network. It establishes the data contract and conflict rules that a future authenticated sync service must follow.
+> **v2.58 update:** authenticated account-scoped remote snapshot transport and server-authoritative revisions are now implemented. Automatic device synchronization, local application of remote data, and conflict-resolution UI are still intentionally disabled. See `docs/remote-training-storage.md`.
 
 ## Goals
 
@@ -32,7 +32,7 @@ A package contains:
 
 The package manifest fingerprints each stable-id record independently and then fingerprints the complete manifest. This is designed to detect accidental mutation, truncation, or stale package contents before merge planning.
 
-The fingerprint is deterministic but **not cryptographic authentication**. Future server transport still requires authenticated requests, access control, transport security, and server-side integrity controls.
+The fingerprint is deterministic but **not cryptographic authentication**. v2.58 places the package behind authenticated account-scoped transport, CSRF protection for cookie writes, server-side package verification and compare-and-swap revisions; transport security and deployment access controls are still required in production.
 
 ## Syncable structured collections
 
@@ -177,11 +177,9 @@ It blocks packaging when:
 
 It does not automatically rewrite or repair those records.
 
-## Future authenticated transport
+## Authenticated transport and future automatic sync
 
-A later milestone can place an authenticated transport around this model.
-
-A future flow should roughly be:
+v2.58 now provides the authenticated transport, remote snapshot and monotonic revision pieces. A future automatic synchronization flow should roughly be:
 
 1. authenticate the account
 2. identify the current device/client
@@ -194,23 +192,15 @@ A future flow should roughly be:
 9. commit the merged revision atomically
 10. persist the new shared base/revision only after the server confirms the commit
 
-The server should use an account-scoped monotonically changing revision/token so two devices cannot unknowingly commit against different bases.
+v2.58 now enforces an account-scoped monotonically changing revision and rejects stale different writes with HTTP 409. The remaining client work is to retain a trustworthy shared base, run three-way merge orchestration, surface real conflicts and only then commit the merged result.
 
-## Important non-goals in v2.55
+## Remaining non-goals after v2.58
 
 v2.55 does not implement:
 
-- user accounts
-- authentication
-- cloud storage
-- network sync
 - background sync
-- remote backups
 - subscriptions
 - photo upload
 - conflict-resolution UI
-- server revision storage
 
-Those belong to later commercial-readiness milestones.
-
-The purpose of v2.55 is to make those future features safe to build without redesigning or silently compromising Loadnote's training history.
+Automatic/background synchronization, remote-to-local application, conflict-resolution UI and photo/blob sync remain later commercial-readiness milestones. The v2.55 merge contract remains the safety model that those later features must use.

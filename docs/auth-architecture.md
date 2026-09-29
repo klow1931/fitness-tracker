@@ -2,6 +2,8 @@
 
 > **v2.57 update:** The provider-verification and durable-account steps anticipated by this v2.56 document are now implemented through generic OIDC plus the file-backed single-instance account store. See `docs/oidc-account-store.md` for the current flow and its scaling boundary. The session/CSRF rules below remain authoritative.
 
+> **v2.58 update:** Account-scoped remote structured-training snapshot endpoints now reuse this authenticated session boundary. The server derives storage scope from the verified session and never trusts a client-supplied account ID. Automatic synchronization remains off; see `docs/remote-training-storage.md`.
+
 Loadnote v2.56 establishes the server-side identity/session boundary that later commercial account and cloud-sync work can build on.
 
 This release does **not** add a production identity provider or consumer sign-in screen yet. It intentionally separates:

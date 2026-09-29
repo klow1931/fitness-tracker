@@ -1135,3 +1135,10 @@ body.dark .progress-analytics-plan,body.dark .progress-analytics-lifts,body.dark
  .account-status-head{align-items:stretch;flex-direction:column}
  .account-status-head .btn-primary,.account-status-head .btn-secondary{width:100%;text-align:center;min-height:44px}
 }
+
+
+/* v2.58 — remote training storage is secondary, read-only status in consumer UI. */
+.remote-training-status{margin-top:.8rem;padding:.65rem .75rem;border:1px solid rgba(100,116,139,.18);border-radius:.7rem;background:rgba(148,163,184,.05)}
+.remote-training-status p{margin:.15rem 0}
+.account-remote-title{font-size:.84rem}
+body.dark .remote-training-status{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.28)}

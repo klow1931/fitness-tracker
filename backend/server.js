@@ -16,9 +16,12 @@ const path=require('path');
 const {createAuth,safeEqual}=require('./auth');
 const {createFileAccountStore}=require('./account-store');
 const {createOidc}=require('./oidc');
+const {createFileSyncStore}=require('./sync-store');
+const Sync=require('../src/product/sync-model');
 
 const ROOT=path.resolve(__dirname,'..');
 const MAX_BODY=256*1024;
+const DEFAULT_MAX_SYNC_BODY=8*1024*1024;
 const STATIC_ROOT_FILES=new Set(['index.html','styles.css','energy.css','app.js','manifest.webmanifest','sw.js','icon-192.png','icon-512.png','apple-touch-icon.png']);
 const STATIC_PREFIXES=['assets/','src/'];
 
@@ -26,13 +29,16 @@ function contentType(file){
  const ext=path.extname(file).toLowerCase();
  return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon'})[ext]||'application/octet-stream';
 }
-function parseBody(req){
+function parseBody(req,maxBytes=MAX_BODY){
  return new Promise((resolve,reject)=>{
-  let body='',tooLarge=false;
+  const declared=Number(req.headers?.['content-length']||0);
+  if(Number.isFinite(declared)&&declared>maxBytes){const error=new Error('Request too large');error.statusCode=413;reject(error);return;}
+  let body='',tooLarge=false,bytes=0;
   req.on('data',chunk=>{
    if(tooLarge)return;
+   bytes+=chunk.length;
+   if(bytes>maxBytes){tooLarge=true;const error=new Error('Request too large');error.statusCode=413;reject(error);req.destroy();return;}
    body+=chunk;
-   if(Buffer.byteLength(body,'utf8')>MAX_BODY){tooLarge=true;const error=new Error('Request too large');error.statusCode=413;reject(error);req.destroy();}
   });
   req.on('end',()=>{if(tooLarge)return;try{resolve(JSON.parse(body||'{}'));}catch{const error=new Error('Invalid JSON');error.statusCode=400;reject(error);}});
   req.on('error',reject);
@@ -52,6 +58,9 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  const storePath=env.LOADNOTE_ACCOUNT_STORE_PATH||path.join(ROOT,'.loadnote-data','accounts.json');
  const accountStore=createFileAccountStore({filePath:storePath});
  accountStore.snapshot(); // fail fast on an unreadable/corrupt configured account store
+ const maxSyncBytes=Math.max(MAX_BODY,Math.min(Number(env.LOADNOTE_SYNC_MAX_BYTES)||DEFAULT_MAX_SYNC_BODY,32*1024*1024));
+ const syncRoot=env.LOADNOTE_SYNC_STORE_PATH||(!production?path.join(ROOT,'.loadnote-data','training'):'');
+ const syncStore=syncRoot?createFileSyncStore({rootDir:syncRoot,verifyPackage:Sync.verifyPackage}):null;
  const oidc=createOidc({
   issuer:env.LOADNOTE_OIDC_ISSUER||'',
   clientId:env.LOADNOTE_OIDC_CLIENT_ID||'',
@@ -142,13 +151,13 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   if(req.method==='OPTIONS'){
    res.writeHead(204,responseHeaders(req,{
     'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Loadnote-CSRF, X-Loadnote-Dev-Auth',
-    'Access-Control-Allow-Methods':'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods':'GET, POST, PUT, OPTIONS',
     'Access-Control-Max-Age':'600'
    }));return res.end();
   }
   try{
    const url=new URL(req.url||'/','http://loadnote.local'),pathname=url.pathname;
-   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,model,auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured}});
+   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,model,auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured},remoteTraining:{configured:!!syncStore,protocol:Sync.PROTOCOL,maxBytes:maxSyncBytes}});
    if(req.method==='GET'&&pathname==='/api/auth/providers'){
     return send(req,res,200,{providers:oidc.configured?[{id:oidc.providerId,name:oidc.providerName,loginUrl:'/api/auth/login'}]:[]});
    }
@@ -194,6 +203,29 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
     const session=authenticated(req,res,{required:true});if(!session)return;
     return send(req,res,200,{account:session.account,session:{expiresAt:session.expiresAt,transport:session.transport}});
    }
+   if(req.method==='GET'&&pathname==='/api/sync/status'){
+    const session=authenticated(req,res,{required:true});if(!session)return;
+    if(!syncStore)return send(req,res,503,{error:'Remote training storage is not configured.',code:'remote_storage_unavailable'});
+    return send(req,res,200,{protocol:Sync.PROTOCOL,...syncStore.status(session.account.id)});
+   }
+   if(req.method==='GET'&&pathname==='/api/sync/state'){
+    const session=authenticated(req,res,{required:true});if(!session)return;
+    if(!syncStore)return send(req,res,503,{error:'Remote training storage is not configured.',code:'remote_storage_unavailable'});
+    return send(req,res,200,{protocol:Sync.PROTOCOL,...syncStore.get(session.account.id)});
+   }
+   if(req.method==='PUT'&&pathname==='/api/sync/state'){
+    const session=authenticated(req,res,{csrf:true,required:true});if(!session)return;
+    if(!syncStore)return send(req,res,503,{error:'Remote training storage is not configured.',code:'remote_storage_unavailable'});
+    const body=await parseBody(req,maxSyncBytes);
+    try{
+     const result=syncStore.commit(session.account.id,body.package,{expectedRevision:body.expectedRevision});
+     return send(req,res,200,{protocol:Sync.PROTOCOL,...result});
+    }catch(error){
+     if(error.code==='revision_conflict')return send(req,res,409,{error:error.message,code:error.code,remote:error.remote});
+     if(error.code==='invalid_package'||error.code==='invalid_revision')return send(req,res,400,{error:error.message,code:error.code});
+     throw error;
+    }
+   }
    if(req.method==='POST'&&pathname==='/api/coach')return await coach(req,res);
    if(req.method==='GET')return staticFile(req,res,pathname);
    return send(req,res,404,{error:'Not found'});
@@ -202,7 +234,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    return send(req,res,status,{error:error.message||'Server error'});
   }
  });
- server.loadnote={port,auth,authRequired,devAuthEnabled,oidc,accountStore,allowedOrigins:[...allowedOrigins]};
+ server.loadnote={port,auth,authRequired,devAuthEnabled,oidc,accountStore,syncStore,maxSyncBytes,allowedOrigins:[...allowedOrigins]};
  return server;
 }
 
