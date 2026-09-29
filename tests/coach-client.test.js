@@ -9,6 +9,16 @@ const Client=require('../src/product/coach-client');
  assert.equal(Client.signedIn(),false);
  await assert.rejects(()=>Client.ask({question:'test',context:{version:'0.5'}}),error=>error.code==='coach_sign_in_required');
 
+ let refreshed=false;
+ globalThis.LoadnoteAccountSession={
+  snapshot:()=>({status:'unknown'}),
+  refresh:async()=>{refreshed=true;return {status:'authenticated'};},
+  request:async()=>new Response(JSON.stringify({coach:{summary:'Fresh',insights:[],recommendation:{action:'none',exercise:null,weightKg:null,sets:null,reps:null,targetRPE:null,reason:''},confidence:'medium'}}),{status:200,headers:{'Content-Type':'application/json'}})
+ };
+ const fresh=await Client.ask({question:'fresh load',context:{version:'0.6',units:{storageWeight:'kg',displayWeight:'kg'}}});
+ assert.equal(refreshed,true);
+ assert.equal(fresh.summary,'Fresh');
+
  const calls=[];
  globalThis.LoadnoteAccountSession={
   snapshot:()=>({status:'authenticated'}),
