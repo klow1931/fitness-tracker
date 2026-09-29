@@ -3,7 +3,7 @@
   else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability);
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability){
   'use strict';
-  const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'];
+  const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'],POLICY='phase-builder-v1';
   const clone=x=>JSON.parse(JSON.stringify(x));
   const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -102,7 +102,7 @@
   function comparableProposal(value){const x=clone(value);if(x?.startingPrescriptionSnapshot)delete x.startingPrescriptionSnapshot.cutoff;return x;}
   function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
     if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review every phase and quality warning before saving');const fresh=prepare(state,proposal.config,{asOf,now});if(JSON.stringify(comparableProposal(fresh))!==JSON.stringify(comparableProposal(proposal)))throw Error('Profile, exercise context or recent evidence changed; generate a fresh preview');
-    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'phase-program-review',policies:{startingPrescription:'starting-prescription-v1',phaseBuilder:'phase-builder-v1'}}),warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'phase-program-review',policies:{startingPrescription:StartingPrescription.POLICY,phaseBuilder:POLICY}}),warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
     return {...state,phasePrograms:validate([...(state.phasePrograms||[]),record])};
   }
   function comparableStartingSnapshot(value){const x=clone(value);if(x)delete x.cutoff;return x;}
@@ -113,5 +113,5 @@
     let sessions=state.scheduledSessions||[];for(const s of record.sessions)sessions=Schedule.create(sessions,{name:record.config.name+' · '+s.name,date:s.date,role:s.phase==='deload'?'deload':'mixed',goal:record.config.name,prescription:Intent.createPrescription(s.exercises,{type:'program',referenceId:record.id,label:record.config.name+' · '+s.name},now)},{id:`phase:${record.id}:${s.key}`,now});
     record.scheduledAt=now;return {...state,phasePrograms:validate(records),scheduledSessions:sessions};
   }
-  return {LIFTS,TYPES,config,build,prepare,validate,save,schedule};
+  return {POLICY,LIFTS,TYPES,config,build,prepare,validate,save,schedule};
 });
