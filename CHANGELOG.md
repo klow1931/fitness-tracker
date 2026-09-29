@@ -1,3 +1,23 @@
+# v2.67.0 — Program Simulation & Pre-Cycle Quality Gate
+
+- Add a deterministic whole-cycle quality gate before meet-cycle approval.
+- Classify generated cycles as **pass**, **review**, or **blocking** instead of assigning an opaque program score.
+- Verify cycle length, phase counts, final event alignment, empty event week, session week/date integrity and absence of training on/after the event date.
+- Verify every generated set remains positive, at or below the supported 85% training-max ceiling and within a valid RPE-cap range.
+- Compare estimated workout duration with the athlete-reviewed session budget; over-budget sessions block approval and sessions at 90%+ of the budget require review.
+- Audit within-phase exposure/set continuity and phase-transition set/load changes without automatically rewriting the program.
+- Require peaking and taper work to stay on the reviewed competition lifts; late-cycle variation work or a missing competition-lift exposure blocks approval.
+- Review taper set/loading reduction against the final peak week and surface repeated multi-week taper doses instead of implying individualized taper optimization.
+- Surface same/adjacent-day hard primary squat/deadlift spacing as a review item, not a recovery diagnosis.
+- Surface accumulation/strength phases extending beyond the six-week progressive engine window because the generator intentionally holds the final supported prescription instead of extrapolating indefinitely.
+- Expand the full-cycle preview with gate status/findings, workout/time range, weekly lift frequency, set counts, average planned %TM and competition-specific set percentage.
+- Freeze the quality-gate snapshot and `program-quality-gate-v1` policy identity on newly reviewed meet cycles.
+- Preserve legacy meet cycles without quality-gate snapshots.
+- Add deterministic 8/12/16/20-week simulations spanning 3-day/5-day schedules, intermediate/advanced profiles, sparse history, kg/lb display and mock/competition events.
+- Keep v2.65 adaptive thresholds unchanged and introduce no automatic correction or approval behavior.
+- Add `docs/program-quality-gate.md`.
+- No top-level schema migration; schema v25 remains unchanged.
+
 # v2.66.0 — Cycle Observability & Reproducibility
 
 - Freeze an additive decision environment on newly reviewed phase programs and meet cycles: release version, schema version, capture time, record purpose and explicit policy identities.
