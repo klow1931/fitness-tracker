@@ -53,7 +53,7 @@ test('v2.61 does not guess when two scheduled programs overlap today',async({pag
  await bootPhase(page,'2026-10-06T12:00:00.000Z');
  await page.evaluate(()=>{
   const original=data.phasePrograms.find(p=>p.id==='browser-life'),copy=structuredClone(original);
-  copy.id='overlap-life';copy.createdAt='2026-09-24T12:30:00.000Z';copy.review.recordedAt=copy.createdAt;copy.scheduledAt='2026-09-24T13:30:00.000Z';
+  copy.id='overlap-life';copy.createdAt='2026-09-24T12:30:00.000Z';copy.review.recordedAt=copy.createdAt;if(copy.decisionEnvironment)copy.decisionEnvironment.capturedAt=copy.createdAt;copy.scheduledAt='2026-09-24T13:30:00.000Z';
   data.phasePrograms.push(copy);
   for(const session of copy.sessions){
    const source=data.scheduledSessions.find(x=>x.id==='phase:browser-life:'+session.key);
