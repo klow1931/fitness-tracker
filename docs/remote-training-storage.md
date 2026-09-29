@@ -2,6 +2,8 @@
 
 Loadnote v2.58 adds authenticated, account-scoped storage for one verified structured-training snapshot per account.
 
+> **v2.59 update:** the consumer app now uses this storage through explicit **Sync now**. Each device retains an acknowledged shared base outside the account payload, performs deterministic three-way comparison, stops for real conflicts, creates a recovery snapshot before applying incoming data, and rechecks cloud freshness before pull-only application. Background/automatic sync remains off.
+
 This is **not automatic synchronization**. The server can store, return, and version a v2.55 sync package, but the normal Loadnote training flow does not automatically upload local history, download remote history into the device, or merge two devices.
 
 ## Why this milestone exists
@@ -271,17 +273,11 @@ It can show:
 - storage ready but empty
 - current remote revision / record count / saved time
 
-It explicitly states:
+Beginning in v2.59, the Account section exposes **Sync now**. Safe one-sided changes can merge automatically; divergent same-record changes require explicit device/cloud choices. A device without a trustworthy shared base must choose a whole starting copy instead of guessing. Sync is still user-initiated; there is no background synchronization.
 
-**Automatic sync is off.**
+## Relationship to synchronization
 
-There is no consumer "upload now", "restore", or conflict-resolution action in v2.58.
-
-This is deliberate: remote persistence is being proven before the app is allowed to overwrite or merge a user's training history.
-
-## Relationship to future synchronization
-
-A later synchronization flow can build on v2.58 approximately like this:
+v2.59 implements the following explicit/manual flow on top of the v2.58 storage boundary:
 
 1. authenticate account
 2. read remote revision/status
@@ -294,17 +290,13 @@ A later synchronization flow can build on v2.58 approximately like this:
 9. commit with `expectedRevision`
 10. only after server confirmation, persist the new shared base/revision locally
 
-v2.58 intentionally stops before step 3 becomes automatic.
+v2.59 performs these steps only after the athlete chooses **Sync now**. Background synchronization remains a later milestone.
 
-## Not completed in v2.58
+## Still not completed after v2.59
 
 This release does not implement:
 
-- automatic upload
-- automatic download
-- local application of remote data
-- multi-device merge orchestration
-- conflict-resolution UI
+- background/automatic upload and download
 - cloud progress-photo storage
 - background sync
 - remote deletion workflow

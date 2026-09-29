@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.58.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.59.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.59 — Safe Account Sync
+
+Signed-in athletes can now choose **Sync now** to safely synchronize the structured training record covered by `loadnote-sync-v1`. Each device keeps a separate acknowledged shared base in device-only storage, compares that base with current local and cloud state, automatically combines only one-sided/non-conflicting changes, and stops for explicit review when the same record changed differently.
+
+A device with cloud data but no trustworthy shared base does not guess how to merge histories. The athlete must explicitly choose the device copy or the cloud copy once. Applying incoming cloud data creates a local recovery snapshot first. Pull-only sync rechecks the cloud revision immediately before local application, while uploads use the v2.58 compare-and-swap revision boundary. Stale reviews stop and must be rerun instead of overwriting newer cloud state.
+
+Sync remains **manual** in v2.59 so workout logging stays fully local/offline and a network failure cannot interrupt training. Progress-photo binaries, recovery snapshots, device/display preferences, sync-base metadata and provider/API configuration remain outside the structured account snapshot. Background sync, photo cloud storage and multi-instance transactional storage remain later commercial-readiness milestones.
 
 ## v2.58 — Account-Scoped Remote Training Storage
 
@@ -360,6 +368,6 @@ Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
 
 ## Data and development status
 
-Workouts and drafts remain on the current browser/device. GitHub stores app code, not training-data backups. Export JSON before replacement imports or upgrade testing. Schema 15 preserves optional intent, planned-work and revisioned schedule records. v2.0 adds a read-only decision layer and UX improvements without changing the stored schema or rewriting older workouts.
+Workout drafts, recovery snapshots, progress-photo binaries and device preferences remain device-local. Signed-in athletes may manually sync the verified structured account/training record through the configured Loadnote backend; GitHub stores app code, not personal training backups. Export JSON before destructive import or upgrade testing. The current data schema is v25, with migrations preserving older supported records.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.

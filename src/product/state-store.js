@@ -69,6 +69,56 @@
       }));
     }
 
+    const DEVICE_RECORD_PREFIX = 'loadnote-device-v1:';
+    function idbRecordGet(key) {
+      return openIDB().then((db) => new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(DEVICE_RECORD_PREFIX + key);
+        req.onsuccess = () => resolve(req.result ?? null);
+        req.onerror = () => reject(req.error || new Error('Device record read failed'));
+      }));
+    }
+    function idbRecordSet(key,value) {
+      return openIDB().then((db) => new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const req = tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(value)), DEVICE_RECORD_PREFIX + key);
+        tx.oncomplete = () => resolve();
+        tx.onabort = () => reject(tx.error || new Error('Device record write aborted'));
+        tx.onerror = () => reject(tx.error || new Error('Device record write failed'));
+        req.onerror = () => reject(req.error);
+      }));
+    }
+    function idbRecordRemove(key) {
+      return openIDB().then((db) => new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const req = tx.objectStore(IDB_STORE).delete(DEVICE_RECORD_PREFIX + key);
+        tx.oncomplete = () => resolve();
+        tx.onabort = () => reject(tx.error || new Error('Device record removal aborted'));
+        tx.onerror = () => reject(tx.error || new Error('Device record removal failed'));
+        req.onerror = () => reject(req.error);
+      }));
+    }
+    const deviceFallbackKey = key => DEVICE_RECORD_PREFIX + key;
+    async function getDeviceRecord(key) {
+      try { return await idbRecordGet(key); }
+      catch (_) {
+        try { return JSON.parse(localStorage.getItem(deviceFallbackKey(key)) || 'null'); }
+        catch { return null; }
+      }
+    }
+    async function setDeviceRecord(key,value) {
+      try {
+        await idbRecordSet(key,value);
+        try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
+      } catch (_) {
+        localStorage.setItem(deviceFallbackKey(key), JSON.stringify(value));
+      }
+    }
+    async function removeDeviceRecord(key) {
+      try { await idbRecordRemove(key); } catch (_) {}
+      try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
+    }
+
     function loadFromLocalStorage() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -182,3 +232,28 @@
       base.api = { ...DEFAULT_DATA.api, ...base.api };
       return base;
     }
+
+    // Device-only records are outside the account sync payload. v2.59 uses this
+    // for the acknowledged shared sync base so large histories do not depend on
+    // localStorage quota and never recursively sync their own sync metadata.
+    window.LoadnoteDeviceStorage = { get:getDeviceRecord, set:setDeviceRecord, remove:removeDeviceRecord };
+    window.LoadnoteStateStore = {
+      current: () => data,
+      async applySyncedState(incoming,{label='Before account sync'}={}) {
+        const previous=data;
+        const normalized=normalizeDataShape(incoming);
+        const relationships=window.LoadnoteIntegrity?.auditRelationships?.(normalized);
+        if(relationships?.blocking)throw Error('Synced data has blocking workout/Calendar relationship problems.');
+        const next=window.LoadnoteIntegrity?.addRecoverySnapshot
+          ? window.LoadnoteIntegrity.addRecoverySnapshot(normalized,previous,label)
+          : normalized;
+        clearTimeout(saveTimer);
+        await persistNow(next);
+        data=next;
+        if(typeof applyDark==='function')applyDark();
+        if(typeof updateUnitToggle==='function')updateUnitToggle();
+        if(typeof updateStorageInfo==='function')updateStorageInfo();
+        if(typeof invalidateViews==='function')invalidateViews();
+        return data;
+      }
+    };

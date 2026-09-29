@@ -1,4 +1,4 @@
-/* v2.58 — explicit remote-training snapshot client.
+/* v2.59 — explicit remote-training snapshot client.
  * Reading status is automatic for signed-in account UI. Upload/download helpers never
  * mutate local training state and are not automatically invoked by the app.
  */
@@ -55,9 +55,10 @@
  function prepare(state,{client=clientId(),createdAt=new Date().toISOString(),releaseVersion}={}){
   return Sync.createPackage(state,{clientId:client,createdAt,releaseVersion});
  }
- async function upload(state,{expectedRevision,client=clientId(),createdAt=new Date().toISOString(),releaseVersion,request,accountId,storage=globalThis.localStorage}={}){
+ async function uploadPackage(pkg,{expectedRevision,request,accountId,storage=globalThis.localStorage}={}){
   if(!Number.isInteger(expectedRevision)||expectedRevision<0)throw Error('A non-negative expected remote revision is required');
-  const pkg=prepare(state,{client,createdAt,releaseVersion});
+  const verification=Sync.verifyPackage(pkg);
+  if(!verification.verified)throw Error('Cannot upload an invalid training sync package: '+verification.reason);
   const body=await json(await requester('/api/sync/state',{
    method:'PUT',headers:{'Content-Type':'application/json',Accept:'application/json'},
    body:JSON.stringify({expectedRevision,package:pkg})
@@ -67,5 +68,9 @@
   }
   return body;
  }
- return {CLIENT_KEY,RECEIPT_PREFIX,clientId,loadReceipt,status,fetchSnapshot,prepare,upload};
+ async function upload(state,{expectedRevision,client=clientId(),createdAt=new Date().toISOString(),releaseVersion,request,accountId,storage=globalThis.localStorage}={}){
+  const pkg=prepare(state,{client,createdAt,releaseVersion});
+  return uploadPackage(pkg,{expectedRevision,request,accountId,storage});
+ }
+ return {CLIENT_KEY,RECEIPT_PREFIX,clientId,loadReceipt,status,fetchSnapshot,prepare,uploadPackage,upload};
 });

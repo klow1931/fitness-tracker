@@ -2,7 +2,7 @@
 
 Loadnote v2.55 defined how structured user data can be compared and merged safely across devices before account/cloud transport existed.
 
-> **v2.58 update:** authenticated account-scoped remote snapshot transport and server-authoritative revisions are now implemented. Automatic device synchronization, local application of remote data, and conflict-resolution UI are still intentionally disabled. See `docs/remote-training-storage.md`.
+> **v2.59 update:** explicit user-initiated device synchronization is now implemented on top of the v2.58 transport. Each device stores an acknowledged shared base outside the account payload, safe changes merge deterministically, real conflicts require explicit choices, incoming data is recovery-backed, and pull-only application rechecks remote freshness. Background/automatic sync remains intentionally disabled. See `docs/remote-training-storage.md`.
 
 ## Goals
 
@@ -177,9 +177,9 @@ It blocks packaging when:
 
 It does not automatically rewrite or repair those records.
 
-## Authenticated transport and future automatic sync
+## Authenticated transport and explicit sync
 
-v2.58 now provides the authenticated transport, remote snapshot and monotonic revision pieces. A future automatic synchronization flow should roughly be:
+v2.59 connects the authenticated transport, remote snapshot and monotonic revision pieces to a user-initiated sync flow:
 
 1. authenticate the account
 2. identify the current device/client
@@ -192,9 +192,9 @@ v2.58 now provides the authenticated transport, remote snapshot and monotonic re
 9. commit the merged revision atomically
 10. persist the new shared base/revision only after the server confirms the commit
 
-v2.58 now enforces an account-scoped monotonically changing revision and rejects stale different writes with HTTP 409. The remaining client work is to retain a trustworthy shared base, run three-way merge orchestration, surface real conflicts and only then commit the merged result.
+v2.59 retains the trustworthy shared base as device-only data, runs three-way merge orchestration, surfaces real conflicts, commits with compare-and-swap, and acknowledges the new base only after the local side is safely applied. If no upload is needed, the client fetches the remote snapshot again before local application so a review cannot apply a stale cloud revision.
 
-## Remaining non-goals after v2.58
+## Remaining non-goals after v2.59
 
 v2.55 does not implement:
 
@@ -203,4 +203,4 @@ v2.55 does not implement:
 - photo upload
 - conflict-resolution UI
 
-Automatic/background synchronization, remote-to-local application, conflict-resolution UI and photo/blob sync remain later commercial-readiness milestones. The v2.55 merge contract remains the safety model that those later features must use.
+Background synchronization and photo/blob sync remain later commercial-readiness milestones. Manual remote-to-local application and conflict review are now implemented; the v2.55 merge contract remains the safety model for any future automatic flow.

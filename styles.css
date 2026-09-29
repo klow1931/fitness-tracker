@@ -1142,3 +1142,22 @@ body.dark .progress-analytics-plan,body.dark .progress-analytics-lifts,body.dark
 .remote-training-status p{margin:.15rem 0}
 .account-remote-title{font-size:.84rem}
 body.dark .remote-training-status{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.28)}
+
+
+/* v2.59 — explicit sync review stays compact and touch-friendly. */
+.sync-choice-actions{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.7rem}
+.sync-choice-actions .btn-primary,.sync-choice-actions .btn-secondary{min-height:44px}
+.sync-conflict-list{display:grid;gap:.7rem;margin:.75rem 0}
+.sync-conflict-item{padding:.7rem;border:1px solid rgba(100,116,139,.18);border-radius:.7rem;background:rgba(148,163,184,.04)}
+.sync-conflict-item>p{margin:.05rem 0 .55rem}
+.sync-conflict-versions{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem}
+.sync-conflict-versions>div{min-width:0;padding:.55rem;border-radius:.55rem;background:rgba(148,163,184,.07)}
+.sync-version-label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.78}
+.sync-conflict-choice{min-height:44px}
+body.dark .sync-conflict-item{border-color:rgba(148,163,184,.24);background:rgba(15,23,42,.2)}
+body.dark .sync-conflict-versions>div{background:rgba(148,163,184,.08)}
+@media(max-width:520px){
+ .sync-choice-actions{display:grid;grid-template-columns:1fr}
+ .sync-choice-actions .btn-primary,.sync-choice-actions .btn-secondary{width:100%}
+ .sync-conflict-versions{grid-template-columns:1fr}
+}

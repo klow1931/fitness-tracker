@@ -14,7 +14,7 @@ assert.match(id1,/^client_/);
 const empty=()=>Object.fromEntries(Sync.COLLECTIONS.map(name=>[name,[]]));
 const state={schemaVersion:25,...empty(),athleteProfile:null,exerciseNotes:{},programStates:{},activeProgramId:null,workouts:[{id:'w1',date:'2026-09-28',exercises:[]}]};
 const before=JSON.stringify(state);
-const pkg=Remote.prepare(state,{client:id1,createdAt:'2026-09-28T23:10:00.000Z',releaseVersion:'2.58.0'});
+const pkg=Remote.prepare(state,{client:id1,createdAt:'2026-09-28T23:10:00.000Z',releaseVersion:'2.59.0'});
 assert.equal(Sync.verifyPackage(pkg).status,'verified');
 assert.equal(JSON.stringify(state),before,'preparing remote data must not mutate local training state');
 
@@ -34,7 +34,7 @@ assert.equal(JSON.stringify(state),before,'preparing remote data must not mutate
 
  let sent=null;
  const uploaded=await Remote.upload(state,{
-  expectedRevision:0,client:id1,createdAt:'2026-09-28T23:11:00.000Z',releaseVersion:'2.58.0',accountId:'acct_test_remote_account_1234567890',storage,
+  expectedRevision:0,client:id1,createdAt:'2026-09-28T23:11:00.000Z',releaseVersion:'2.59.0',accountId:'acct_test_remote_account_1234567890',storage,
   request:async(url,options)=>{
    sent={url,options};
    const body=JSON.parse(options.body);
@@ -57,5 +57,7 @@ assert.equal(JSON.stringify(state),before,'preparing remote data must not mutate
  });
  await assert.rejects(()=>Remote.upload(state,{expectedRevision:-1,client:id1,storage,request:async()=>{throw Error('should not call');}}),/expected remote revision/);
 
- console.log('v2.58 explicit remote client status, verification, revision upload and receipt behavior passed');
+ const invalid=structuredClone(pkg);invalid.data.collections.workouts[0].date='tampered-again';
+ await assert.rejects(()=>Remote.uploadPackage(invalid,{expectedRevision:1,request:async()=>{throw Error('should not call');}}),/invalid training sync package/);
+ console.log('v2.59 explicit remote client status, prepared-package verification, revision upload and receipt behavior passed');
 })().catch(error=>{console.error(error);process.exit(1);});
