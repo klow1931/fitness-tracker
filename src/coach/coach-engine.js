@@ -71,7 +71,7 @@
               targets: Array.isArray(latest.targets) ? latest.targets.slice(0,3).map(t => ({ lift:t.lift, kg:Number(t.kg)||null })) : []
             } : null;
           }).filter(Boolean).slice(0,5),
-          ...(data.goals || []).filter(g => !g.completed).slice(0,5).map(g => ({ type: g.type, exercise: g.exercise || null, targetWeight: g.targetWeight || null }))
+          ...(data.goals || []).filter(g => !g.completed).slice(0,5).map(g => ({ type: g.type, exercise: g.exercise || null, targetWeightKg: Number(g.targetWeight)||null }))
         ].slice(0,8),
         activeProgram: activeProgram ? activeProgram.name : null,
         activeProgramId: data.activeProgramId || null
