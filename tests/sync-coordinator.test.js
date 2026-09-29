@@ -96,6 +96,11 @@ const client='client_sync_coordinator_12345';
  assert.equal(result.status,'stale');
  assert.equal(result.mode,'retry');
 
+ const localChangedAfterPreview=state({workouts:[workout('w1','changed while reviewing')]});
+ result=await Coordinator.commit(preview,localChangedAfterPreview,{client,createdAt:'2026-09-29T01:24:00.000Z',releaseVersion:'2.59.0',request});
+ assert.equal(result.status,'stale');
+ assert.equal(result.local,true);
+
  assert(putCount>=2);
  console.log('v2.59 safe account sync base, merge, first-link, conflict and stale-revision behavior passed');
 })().catch(error=>{console.error(error);process.exit(1);});
