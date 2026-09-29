@@ -128,6 +128,12 @@
     if(error?.code==='revision_conflict')return {status:'stale',mode:'retry',message:'Cloud training changed while this sync was being reviewed. Run Sync now again.',remote:error.remote||null};
     throw error;
    }
+  }else{
+   const latest=await Remote.fetchSnapshot({request});
+   const sameRevision=latest.hasSnapshot&&Number(latest.revision)===Number(expectedRevision);
+   const samePackage=sameRevision&&latest.package?.packageFingerprint===p.remotePackage?.packageFingerprint;
+   if(!samePackage)return {status:'stale',mode:'retry',message:'Cloud training changed while this sync was being reviewed. Run Sync now again.',remote:latest||null};
+   revision=latest.revision;basePackage=latest.package;
   }
   if(!basePackage)throw Error('No acknowledged cloud package is available');
   const base=baseFromPackage(id,revision,basePackage);
