@@ -146,7 +146,8 @@
     for(const cycle of cycles){
       if(cycle.decisionEnvironment){try{const env=validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!=='meet-cycle-v1')throw Error('Meet-cycle policy identity does not match this recorded cycle format');}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
       else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
-      for(const review of (cycle.weeklyReviews||[]).filter(r=>!r.createdAt||r.createdAt<=cutoff)){
+      const auditedReviews=(cycle.weeklyReviews||[]).filter(r=>!r.createdAt||r.createdAt<=cutoff);
+      for(const review of auditedReviews){
         if(review.controllerSnapshot){try{
           const snap=validateControllerSnapshot(review.controllerSnapshot,review.report,{savedAt:review.createdAt});
           for(const lift of LIFTS){
@@ -156,6 +157,18 @@
         }catch(e){add('invalid-controller-snapshot','blocking',e.message,{cycleId:cycle.id,reviewId:review.id});}}
         else if(review.version>=5)add('missing-controller-snapshot','blocking','A v2.66 weekly review is missing its frozen controller recommendation.',{cycleId:cycle.id,reviewId:review.id});
         else add('legacy-review-without-controller','warning','An older weekly review predates frozen controller recommendations; athlete choice remains valid but recommendation replay is unavailable.',{cycleId:cycle.id,reviewId:review.id});
+        for(const change of review.changes||[]){
+          const record=(state.scheduledSessions||[]).find(row=>row.id===change.id),revision=record?.revisions?.find(row=>row.recordedAt===change.after?.recordedAt);
+          if(!revision||fingerprint(revision)!==fingerprint(change.after))add('calendar-effect-mismatch','blocking','A saved weekly-review Calendar effect is missing or differs from the referenced Calendar revision.',{cycleId:cycle.id,reviewId:review.id,scheduleId:change.id});
+        }
+      }
+      const transition=(state.transitionSnapshots||[]).filter(t=>t.programId===cycle.id&&(!t.createdAt||t.createdAt<=cutoff)).sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||''))).at(-1)||null;
+      if(transition){
+        for(const review of auditedReviews.filter(r=>r.version>=5)){
+          const carried=transition.decisionHistory?.weeklyReviews?.find(r=>r.id===review.id);
+          if(!carried?.controllerSnapshot)add('transition-controller-missing','blocking','The frozen transition handoff is missing a v2.66 weekly controller snapshot.',{cycleId:cycle.id,reviewId:review.id,transitionId:transition.id});
+          else if(fingerprint(carried.controllerSnapshot)!==fingerprint(review.controllerSnapshot))add('transition-controller-mismatch','blocking','The transition handoff controller snapshot differs from the accepted weekly-review snapshot.',{cycleId:cycle.id,reviewId:review.id,transitionId:transition.id});
+        }
       }
     }
     return {version:1,asOf,cycleId,status:blocking?'review':warnings?'warnings':'clean',blocking,warnings,issues,notes:['Blocking issues can compromise decision replay or historical interpretation.','Legacy missing observability metadata is a warning, not evidence that the original training record is wrong.']};
