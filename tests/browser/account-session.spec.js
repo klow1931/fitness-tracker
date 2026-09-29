@@ -1,6 +1,6 @@
 const {test,expect}=require('playwright/test');
 
-test('v2.58 shows account-scoped remote status and keeps remote snapshot writes explicit',async({page})=>{
+test('v2.59 shows account-scoped sync status and keeps low-level remote writes explicit',async({page})=>{
  let coachHeaders=null,syncPutHeaders=null,syncPutBody=null;
  await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
  await page.route('**/api/auth/session',route=>route.fulfill({
@@ -47,15 +47,15 @@ test('v2.58 shows account-scoped remote status and keeps remote snapshot writes 
  const account=page.locator('#account-status');
  await expect(account).toContainText('Browser Athlete');
  await expect(account).toContainText('browser@example.com');
- await expect(account).toContainText('Remote training snapshot');
- await expect(account).toContainText('Revision 3');
+ await expect(account).toContainText('Training sync');
+ await expect(account).toContainText('Cloud revision 3');
  await expect(account).toContainText('42 structured records');
- await expect(account).toContainText('Automatic sync is off');
+ await expect(account).toContainText('Sync is manual in v2.59');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(beforeRemote);
 
  const upload=await page.evaluate(async()=>{
   const before=JSON.stringify(data);
-  const result=await window.LoadnoteRemoteSync.upload(data,{expectedRevision:3,client:'client_browser_remote_12345',createdAt:'2026-09-28T23:31:00.000Z',releaseVersion:'2.58.0',accountId:'acct_browser_test'});
+  const result=await window.LoadnoteRemoteSync.upload(data,{expectedRevision:3,client:'client_browser_remote_12345',createdAt:'2026-09-28T23:31:00.000Z',releaseVersion:'2.59.0',accountId:'acct_browser_test'});
   return {result,before,after:JSON.stringify(data)};
  });
  expect(upload.result.revision).toBe(4);
@@ -66,7 +66,7 @@ test('v2.58 shows account-scoped remote status and keeps remote snapshot writes 
  expect(syncPutBody.package.data.api).toBeUndefined();
  expect(await page.evaluate(()=>localStorage.getItem('loadnote_remote_receipt_v1:acct_browser_test'))).toContain('"revision":4');
  await account.getByRole('button',{name:'Sign out'}).click();
- await expect(account).toContainText('Keep an identity ready for protected backup & sync services');
+ await expect(account).toContainText('Back up and sync training across devices');
  await expect(account.getByRole('link',{name:'Continue with Test ID'})).toHaveAttribute('href','/api/auth/login?returnTo=%2F');
  expect(logoutHeaders['x-loadnote-csrf']).toBe('browser-csrf');
 });
