@@ -36,7 +36,7 @@ A suggestion can include:
 
 The bounds intentionally match the existing phase builder. Loadnote never infers a training max from this evidence.
 
-Frequency is anchored to observed recent exposure frequency when at least three matching dates span 14 days. Working sets are anchored to recent 3–8 rep development-set counts and are prevented from exceeding the recent weekly development-set average by more than 25% where that evidence exists.
+Frequency is anchored to observed recent exposure frequency when at least three matching dates span 14 days. Working sets are anchored to recent 3–8 rep development-set counts. A weekly-set guardrail is used only when all four recent seven-day windows contain matching work; only then is the suggestion prevented from exceeding the four-week weekly development-set average by more than 25%. Missing weeks are not treated as evidence of low workload tolerance.
 
 The weekly progression step defaults to 1 percentage point. It may be reduced to 0.5 when recent matching-set average RPE is high or the supported competition-lift estimated-capacity comparison is lower. **Low RPE alone never increases the progression step.**
 
