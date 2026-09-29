@@ -120,12 +120,13 @@
     const source = JSON.parse(raw.slice(start, end + 1));
     const clean = (value,max) => String(value ?? '').replace(/\s+/g,' ').trim().slice(0,max);
     const finite = (value,min,max,integer=false) => {
+      if(value==null||value===''||typeof value==='boolean')return null;
       const number=Number(value);
       if(!Number.isFinite(number)||number<min||number>max)return null;
       return integer?Math.round(number):Math.round(number*100)/100;
     };
     const action=['increase','hold','reduce','repeat','none'].includes(source?.recommendation?.action)?source.recommendation.action:'none';
-    const legacyWeight=source?.recommendation?.weightKg ?? source?.recommendation?.weight;
+    const recommendationWeightKg=source?.recommendation?.weightKg;
     return {
       summary: clean(source?.summary,1200),
       insights: Array.isArray(source?.insights) ? source.insights.slice(0,5).map(row=>({
@@ -136,7 +137,7 @@
       recommendation:{
         action,
         exercise:source?.recommendation?.exercise==null?null:clean(source.recommendation.exercise,160)||null,
-        weightKg:finite(legacyWeight,0,2000),
+        weightKg:finite(recommendationWeightKg,0,2000),
         sets:finite(source?.recommendation?.sets,1,30,true),
         reps:finite(source?.recommendation?.reps,1,100,true),
         targetRPE:finite(source?.recommendation?.targetRPE,1,10),
