@@ -2,6 +2,8 @@ const assert=require('node:assert/strict');
 const Lifecycle=require('../src/product/program-lifecycle');
 const Phase=require('../src/product/phase-builder');
 const Meet=require('../src/product/meet-cycle');
+const CycleReview=require('../src/product/cycle-review');
+const PhaseReview=require('../src/product/phase-review');
 const Result=require('../src/product/mock-meet');
 const Transition=require('../src/product/transition-baseline');
 const Goals=require('../src/product/athlete-goals');
@@ -52,8 +54,11 @@ assert.equal(report.nextAction.kind,'resolve-overdue','unresolved prior work mus
 
 const finalDate=Transition.endDate(phaseProgram);
 completeThrough(phaseState,'phase:life-phase:',finalDate);
-phaseState.phaseReviews=[{version:3,policy:'phase-adjust-v3',id:'review-a',programId:'life-phase',phase:'accumulation',asOf:phaseReviewDay,through:phaseEnd,createdAt:phaseReviewDay+'T12:00:00.000Z',recovery:{sleep:'unknown',fatigue:'unknown',soreness:'unknown',discomfort:'unknown',notes:''},changes:[],evidence:[],findings:{squat:{decision:'keep',reason:'test',exerciseId:config.lifts.squat.exerciseId,performance:[],comparedSets:0},bench:{decision:'keep',reason:'test',exerciseId:config.lifts.bench.exerciseId,performance:[],comparedSets:0},deadlift:{decision:'keep',reason:'test',exerciseId:config.lifts.deadlift.exerciseId,performance:[],comparedSets:0}},choices:{squat:'keep',bench:'keep',deadlift:'keep'},trainingMaxKg:{[config.lifts.squat.exerciseId]:config.lifts.squat.trainingMaxKg,[config.lifts.bench.exerciseId]:config.lifts.bench.trainingMaxKg,[config.lifts.deadlift.exerciseId]:config.lifts.deadlift.trainingMaxKg},incrementKg:config.incrementKg,exerciseLifts:{[config.lifts.squat.exerciseId]:'squat',[config.lifts.bench.exerciseId]:'bench',[config.lifts.deadlift.exerciseId]:'deadlift'}}];
-phaseState.phaseReviews=[]; // lifecycle only needs final completion here; existing phase-review tests cover record validity.
+const keep={squat:'keep',bench:'keep',deadlift:'keep'},recovery={sleep:'unknown',fatigue:'unknown',soreness:'unknown',discomfort:'unknown',notes:''};
+for(const phase of ['accumulation','strength']){
+ const reviewed=PhaseReview.analyze(phaseState,{programId:'life-phase',phase,asOf:finalDate,recovery,now:finalDate+'T21:0'+(phase==='accumulation'?'0':'2')+':00.000Z'});
+ phaseState=PhaseReview.apply(phaseState,reviewed,keep,{confirmed:true,asOf:finalDate,now:finalDate+'T21:0'+(phase==='accumulation'?'1':'3')+':00.000Z'});
+}
 report=Lifecycle.inspect(phaseState,{asOf:finalDate});
 assert.equal(report.nextAction.kind,'save-transition');
 
@@ -72,7 +77,11 @@ assert.equal(report.nextAction.week,1);
 skipAll(meetState,'meet:life-meet:','2026-12-19T10:00:00.000Z');
 report=Lifecycle.inspect(meetState,{asOf:'2026-12-19'});
 assert.equal(report.nextAction.kind,'review-week','older unreviewed weeks stay ahead of event closure');
-meetState.meetCycles[0].weeklyReviews=cycle.weekly.filter(w=>w.week<cycle.config.weeks).map((w,i)=>({version:3,policy:'cycle-week-adjust-v3',id:'closed-'+w.week,cycleId:'life-meet',week:w.week,kind:w.phase===cycle.weekly[w.week]?.phase?'weekly':'phase-transition',phase:w.phase,nextPhase:cycle.weekly[w.week]?.phase||'mock-meet',createdAt:'2026-12-19T10:'+String(i).padStart(2,'0')+':00.000Z',asOf:'2026-12-19',notes:'closed',report:{cycleId:'life-meet',week:w.week},choices:{squat:'keep',bench:'keep',deadlift:'keep'},changes:[]}));
+for(let week=1;week<cycle.config.weeks;week++){
+ const minute=String(week).padStart(2,'0'),now='2026-12-19T10:'+minute+':00.000Z';
+ const reviewed=CycleReview.analyze(meetState,{cycleId:'life-meet',week,asOf:'2026-12-19',now});
+ meetState=CycleReview.apply(meetState,reviewed,keep,{confirmed:true,notes:'Lifecycle closure',asOf:'2026-12-19',now,id:'closed-'+week});
+}
 report=Lifecycle.inspect(meetState,{asOf:'2026-12-19'});
 assert.equal(report.nextAction.kind,'record-event');
 
