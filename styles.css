@@ -1200,3 +1200,29 @@ body.dark .profile-destination:hover{background:#17213a;border-color:#4f46e5}
 .account-danger-zone{margin-top:.85rem;padding-top:.7rem;border-top:1px solid var(--measure-line)}
 .account-danger-zone>summary{cursor:pointer;font-size:.82rem;font-weight:700;min-height:32px}
 .account-danger-zone .btn-danger{margin-top:.35rem;min-height:40px}
+
+
+/* v2.61 — active program lifecycle */
+.program-lifecycle-card{padding:1rem}
+.program-lifecycle-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.program-lifecycle-head h3{margin:.15rem 0 .2rem;font-size:1.05rem}
+.program-lifecycle-meta{margin:0;font-size:.82rem;color:#64748b}
+.program-lifecycle-next{margin-top:.8rem;padding:.75rem .8rem;border:1px solid rgba(99,102,241,.18);border-radius:.75rem;background:rgba(99,102,241,.045)}
+.program-lifecycle-next>span{display:block;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:#6366f1}
+.program-lifecycle-next>b{display:block;margin-top:.12rem;font-size:.95rem}
+.program-lifecycle-next>p{margin:.2rem 0 0;font-size:.82rem;color:#64748b;line-height:1.45}
+.program-lifecycle-actions{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.75rem}
+.program-lifecycle-actions .btn-primary,.program-lifecycle-actions .btn-secondary{min-height:42px}
+.program-lifecycle-empty h3{margin:.2rem 0 .4rem}
+.program-lifecycle-empty p:not(.eyebrow){font-size:.85rem;color:#64748b}
+.program-lifecycle-coach{padding:1rem}
+.program-lifecycle-recap{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--measure-line)}
+.program-lifecycle-recap h3{margin:0 0 .35rem;font-weight:700}
+.program-lifecycle-recap p{font-size:.86rem;margin:0 0 .65rem}
+body.dark .program-lifecycle-meta,body.dark .program-lifecycle-next>p,body.dark .program-lifecycle-empty p:not(.eyebrow){color:#94a3b8}
+body.dark .program-lifecycle-next{background:rgba(99,102,241,.09);border-color:rgba(129,140,248,.28)}
+@media(max-width:520px){
+ .program-lifecycle-head{gap:.6rem}
+ .program-lifecycle-actions{display:grid;grid-template-columns:1fr}
+ .program-lifecycle-actions .btn-primary,.program-lifecycle-actions .btn-secondary{width:100%;min-height:44px}
+}
