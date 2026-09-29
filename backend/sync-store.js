@@ -46,7 +46,13 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
  function read(accountId){
   const id=clean(accountId),file=fileFor(id);
   if(!fs.existsSync(file))return null;
-  return validateStored(JSON.parse(fs.readFileSync(file,'utf8')),id);
+  const doc=validateStored(JSON.parse(fs.readFileSync(file,'utf8')),id);
+  const verification=verifyPackage(doc.package);
+  if(!verification?.verified)throw Error('Stored remote training package failed integrity verification: '+(verification?.reason||'invalid package'));
+  if(doc.current.packageFingerprint!==verification.packageFingerprint||doc.current.manifestFingerprint!==verification.manifest?.fingerprint)throw Error('Stored remote training metadata does not match its package');
+  const latest=doc.history[doc.history.length-1];
+  if(!latest||latest.revision!==doc.revision||latest.packageFingerprint!==doc.current.packageFingerprint)throw Error('Stored remote training revision history is inconsistent');
+  return doc;
  }
  function write(accountId,doc){
   const file=fileFor(accountId);
