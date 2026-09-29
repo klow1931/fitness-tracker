@@ -44,6 +44,7 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
  await page.goto('/');
  await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
+ expect(await page.evaluate(()=>localStorage.getItem('fitness-tracker-api-key'))).toBeNull();
  await page.evaluate(()=>{data.unit='lb';showTab('coach');showSubTab('coach','co-chat');renderCoach();});
  await expect(page.locator('#coach-online-status')).toContainText('Secure online Coach available');
  await expect(page.locator('#coach-account-link')).toBeHidden();
