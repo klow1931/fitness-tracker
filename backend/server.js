@@ -81,6 +81,8 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  if(production&&authRequired&&!auth.configured)throw Error('Production authentication requires a 32+ byte LOADNOTE_AUTH_SECRET');
  if(production&&authRequired&&!env.LOADNOTE_ACCOUNT_STORE_PATH)throw Error('Production authentication requires LOADNOTE_ACCOUNT_STORE_PATH');
  if(production&&authRequired&&!oidc.configured)throw Error('Production authentication requires a configured OIDC provider');
+ if(production&&apiKey&&!auth.configured)throw Error('Production online Coach requires a 32+ byte LOADNOTE_AUTH_SECRET');
+ if(production&&apiKey&&!oidc.configured)throw Error('Production online Coach requires a configured OIDC provider');
  if(typeof fetchImpl!=='function')throw Error('A fetch implementation is required');
 
  function originAllowed(req){
