@@ -3,7 +3,7 @@ const {phaseFixture}=require('../fixtures/phase-builder');
 
 test.use({serviceWorkers:'allow'});
 
-async function bootPhase(page,clock='2026-10-19T12:00:00.000Z'){
+async function bootPhase(page,clock='2026-10-18T12:00:00.000Z'){
  await page.clock.install({time:new Date(clock)});
  await page.goto('/');
  await expect(page.locator('.ex-name')).toHaveCount(1);
@@ -29,10 +29,11 @@ async function bootPhase(page,clock='2026-10-19T12:00:00.000Z'){
 
 test('v2.61 Home surfaces the due phase review before next-phase training',async({page})=>{
  await bootPhase(page);
- const todayCard=page.locator('#today-training');
- await expect(todayCard).toContainText('Review Accumulation phase');
- await expect(todayCard).toContainText('Review first');
- await todayCard.getByRole('button',{name:'Review Accumulation phase'}).click();
+ const lifecycle=page.locator('#program-lifecycle-home');
+ await expect(lifecycle).toBeVisible();
+ await expect(lifecycle).toContainText('Phased strength');
+ await expect(lifecycle).toContainText('Review Accumulation phase');
+ await lifecycle.getByRole('button',{name:'Review phase'}).click();
  await expect(page.locator('#panel-coach')).toBeVisible();
  await expect(page.locator('#phase-review-panel')).toHaveAttribute('open','');
  await expect(page.locator('#phase-review-program')).toHaveValue('browser-life');
@@ -41,11 +42,11 @@ test('v2.61 Home surfaces the due phase review before next-phase training',async
 
 test('v2.61 Home and Coach resolve the same deterministic next action',async({page})=>{
  await bootPhase(page);
- const homeText=await page.locator('#today-training [data-today-lifecycle]').textContent();
+ const homeText=await page.locator('#program-lifecycle-home .program-lifecycle-next b').textContent();
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');});
  await expect(page.locator('#decision-action-center .program-lifecycle-coach')).toBeVisible();
  await expect(page.locator('#decision-action-center .program-lifecycle-next b')).toHaveText(homeText);
- await expect(page.locator('#decision-action-center')).toContainText('Week 4 of 7');
+ await expect(page.locator('#decision-action-center')).toContainText('Week 3 of 7');
 });
 
 test('v2.61 does not guess when two scheduled programs overlap today',async({page})=>{
@@ -68,22 +69,20 @@ test('v2.61 does not guess when two scheduled programs overlap today',async({pag
 test('v2.61 active program card remains compact on mobile',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await bootPhase(page);
- const todayCard=page.locator('#today-training');
- await expect(todayCard.getByRole('button',{name:'Review Accumulation phase'})).toBeVisible();
+ const lifecycle=page.locator('#program-lifecycle-home');
+ await expect(lifecycle.getByRole('button',{name:'Review phase'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
 
-test('v2.61 Calendar cannot bypass a due program review',async({page})=>{
- await bootPhase(page);
- await page.evaluate(()=>showTab('calendar'));
- const todayId=await page.evaluate(()=>{
-  const life=LoadnoteProgramLifecycle.inspect(data,{asOf:today()});
-  return LoadnoteSchedule.list(data.scheduledSessions).find(s=>s.date===today()&&(s.id.startsWith('phase:'+life.program.id+':')))?.id;
- });
- expect(todayId).toBeTruthy();
- await page.evaluate(id=>startScheduledWorkout(id),todayId);
- await expect(page.locator('#panel-coach')).toBeVisible();
- await expect(page.locator('#phase-review-panel')).toHaveAttribute('open','');
- expect(await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.schedule?.id||null)).not.toBe(todayId);
+test('v2.61 a missed review window stays visible but does not trap later training',async({page})=>{
+ await bootPhase(page,'2026-10-19T12:00:00.000Z');
+ const state=await page.evaluate(()=>LoadnoteProgramLifecycle.inspect(data,{asOf:today()}));
+ expect(state.missedReviews.some(x=>x.kind==='phase'&&x.phase==='accumulation')).toBe(true);
+ expect(state.nextAction.kind).toBe('start-workout');
+ const todayCard=page.locator('#today-training');
+ await expect(todayCard.getByRole('button',{name:'Start workout'})).toBeVisible();
+ await todayCard.getByRole('button',{name:'Start workout'}).click();
+ await expect(page.locator('#panel-workouts')).toBeVisible();
+ expect(await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.schedule?.id||null)).toBe(state.nextAction.scheduleId);
 });
