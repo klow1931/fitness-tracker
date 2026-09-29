@@ -18,6 +18,9 @@ const Client=require('../src/product/coach-client');
    return new Response(JSON.stringify({coach:{summary:'Ready',insights:[],recommendation:{action:'none',exercise:null,weightKg:null,sets:null,reps:null,targetRPE:null,reason:''},confidence:'medium'}}),{status:200,headers:{'Content-Type':'application/json'}});
   }
  };
+ const fakeStorage={removed:[],removeItem(key){this.removed.push(key);}};
+ assert.equal(Client.scrubLegacyCredential(fakeStorage),true);
+ assert.deepEqual(fakeStorage.removed,[Client.LEGACY_KEY]);
  Client.resetHealth();
  assert.equal(Client.signedIn(),true);
  const health=await Client.availability({force:true});
