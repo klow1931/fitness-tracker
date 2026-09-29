@@ -2382,10 +2382,10 @@
           appendChatMessage(reply, false);
         }
       } catch (e) {
-        appendChatMessage('API error: ' + escapeChat(e.message) + '<br><span class="text-xs">Falling back to built-in coach…</span>', false);
+        appendChatMessage('Online Coach unavailable: ' + escapeChat(e.message) + '<br><span class="text-xs">Using built-in coaching instead.</span>', false);
         const reply = getChatResponse(text);
         appendChatMessage(reply, false);
-        showToast('API failed — used built-in coach', 'error');
+        showToast('Online Coach unavailable — used built-in guidance', 'error');
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
       }
