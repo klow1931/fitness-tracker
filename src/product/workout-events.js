@@ -2,10 +2,24 @@
 function removeWorkoutSet(button){
   const set=button?.closest?.('.logger-set');
   if(!set)return false;
+  const entered=[...set.querySelectorAll('input[type=number]')].some(input=>input.value!=='')||!!set.querySelector('.set-done-check')?.checked;
+  if(entered&&!confirm('Remove this entered set?'))return false;
   set.remove();
   saveLoggerDraft();
   updateLoggerSummary();
   window.refreshLoggerQuickEntry?.();
+  window.refreshGymFloorUI?.();
+  return true;
+}
+function removeWorkoutExercise(button){
+  const row=button?.closest?.('[data-idx]');
+  if(!row)return false;
+  const entered=!!row.querySelector('.ex-name')?.value.trim()||[...row.querySelectorAll('input[type=number],.ex-note')].some(input=>input.value!=='')||!!row.querySelector('.cardio-done:checked,.set-done-check:checked');
+  if(entered&&!confirm('Remove this exercise and its entered work?'))return false;
+  row.remove();
+  saveLoggerDraft();
+  updateLoggerSummary();
+  window.refreshGymFloorUI?.();
   return true;
 }
 function initWorkoutEvents(){
@@ -21,7 +35,7 @@ function initWorkoutEvents(){
     'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),
     'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),
     'export-json':()=>exportData(),'export-csv':()=>exportCSV(),import:()=>importData(),
-    'remove-exercise':el=>el.closest('[data-idx]')?.remove(),'remove-set':el=>removeWorkoutSet(el),
+    'remove-exercise':el=>removeWorkoutExercise(el),'remove-set':el=>removeWorkoutSet(el),
     'track-reps':el=>setExerciseTrackBy(el,'reps'),'track-duration':el=>setExerciseTrackBy(el,'duration'),
     'last-weights':el=>fillLastWeights(el),'jump-weights':el=>fillLastWeights(el,true),'add-set':el=>addSetRow(el),
     edit:el=>editWorkout(el.dataset.workoutId),duplicate:el=>duplicateWorkout(el.dataset.workoutId),'undo-change':el=>undoWorkoutChange(el.dataset.revisionId),'history-template':el=>saveWorkoutAsTemplate(el.dataset.workoutId),delete:el=>deleteWorkout(el.dataset.workoutId),
