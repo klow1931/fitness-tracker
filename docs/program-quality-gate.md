@@ -70,6 +70,8 @@ These findings do not automatically edit the program.
 
 ### Competition specificity
 
+Every non-event training week must retain exactly one primary competition-lift exposure for squat, bench and deadlift. A missing or duplicate primary is a blocking structural error.
+
 Peak and taper weeks must use the reviewed competition lift for squat, bench and deadlift.
 
 A variation appearing in peaking/taper or a missing competition-lift exposure is blocking.
