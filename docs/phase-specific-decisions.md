@@ -17,7 +17,7 @@ Available review actions inside accumulation:
 - reduce matching next-week load by one reviewed program increment
 - increase the confirmed competition lift by one reviewed program increment only when the higher accumulation-specific evidence bar is met
 
-Accumulation upward progression requires:
+An **adaptive-controller recommendation** to progress accumulation load requires:
 
 - all planned competition-lift sets completed
 - at least 6 directly comparable competition-lift sets
@@ -33,7 +33,7 @@ At the **accumulation → strength** transition, upward progression is disabled 
 
 Primary objective: **protect competition-specific loading**.
 
-Inside strength, the existing guarded one-increment increase remains available when:
+Inside strength, the existing guarded one-increment increase remains a bounded athlete-review option. An **adaptive-controller recommendation** to use it requires:
 
 - all planned competition-lift work is completed
 - at least 4 competition-lift sets are directly comparable
@@ -56,7 +56,7 @@ Inside peaking:
 - no set-count adjustment is available
 - one load increment lower can be reviewed when at least 2 directly comparable competition-lift peak sets exceed their approved RPE caps
 
-A multi-week capacity trend is not required for that bounded peak correction because a short peak may not contain enough dates to create one. The evidence must come from the competition lift itself.
+A multi-week capacity trend is not required for that bounded peak correction because a short peak may not contain enough dates to create one. The evidence must come from the competition lift itself. Manual review options remain distinct from controller recommendations: the controller may be more conservative than the menu of athlete-approved bounded actions.
 
 Learned action-history patterns from general training phases do not steer peak corrections.
 
