@@ -22,6 +22,9 @@ test('8 12 16 20 and custom week lengths preserve complete phase dates and mock 
   await expect(page.locator('[data-cycle-week]')).toHaveCount(weeks);
   await expect(page.locator('[data-cycle-week="'+weeks+'"]')).toContainText('Mock meet');
   await expect(page.locator('#cycle-preview')).toContainText('Mock meet');
+  await expect(page.locator('[data-program-quality-gate]')).toBeVisible();
+  await expect(page.locator('[data-program-quality-gate]')).not.toHaveAttribute('data-quality-status','blocking');
+  await expect(page.locator('[data-cycle-week="1"]')).toContainText('Quality preview');
  }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.locator('#cycle-close').click();
@@ -37,6 +40,8 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  await page.locator('#cycle-save').click();
  await expect(page.locator('#cycle-dialog')).not.toBeVisible();
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(1);
+ expect(await page.evaluate(()=>data.meetCycles[0].qualityGate?.status)).toBe('pass');
+ expect(await page.evaluate(()=>data.meetCycles[0].decisionEnvironment?.policies?.programQualityGate)).toBe('program-quality-gate-v1');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(before);
  const planned=await page.evaluate(()=>data.meetCycles[0].sessions.length);
  await page.locator('[data-cycle] > summary').click();
@@ -70,4 +75,16 @@ test('builder distinguishes mock meets from named competition meets and supports
  expect(stored).toEqual({type:'competition',name:'State Championships',phase:'meet'});
  await expect(page.locator('[data-cycle]').first()).toHaveAttribute('data-event-type','competition');
  await expect(page.locator('[data-cycle]').first()).toContainText('State Championships');
+});
+
+
+test('20-week preview makes the extended-phase hold explicit without blocking athlete review',async({page})=>{
+ await page.locator('#cycle-new').click();
+ await page.locator('[data-cycle-preset="20"]').click();
+ await page.locator('#cycle-form button[type="submit"]').click();
+ const gate=page.locator('[data-program-quality-gate]');
+ await expect(gate).toHaveAttribute('data-quality-status','review');
+ await expect(gate).toContainText('beyond six progressive weeks');
+ await expect(page.locator('#cycle-save')).toBeEnabled();
+ await page.locator('#cycle-close').click();
 });

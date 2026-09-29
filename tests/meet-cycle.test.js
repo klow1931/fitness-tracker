@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),Meet=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder'),Core=require('../src/core/loadnote-core'),Schedule=require('../src/product/schedule');
+const assert=require('node:assert/strict'),Meet=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder'),Core=require('../src/core/loadnote-core'),Schedule=require('../src/product/schedule'),Observability=require('../src/product/cycle-observability');
 const {phaseFixture}=require('./fixtures/phase-builder');
 const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
 const base=Phase.prepare(state,config,args),reviewed=Phase.save(state,base,{confirmed:true,notes:'Reviewed lift setup'},{...args,id:'base'}),source=reviewed.phasePrograms[0];
@@ -12,6 +12,7 @@ for(const weeks of [8,12,16,20,26,52]){
  assert(p.sessions.every(s=>s.date<date(weeks)&&s.week<weeks));
  assert.deepEqual(p.sessions.filter(s=>s.phase==='taper').flatMap(s=>s.exercises).flatMap(e=>e.sets).map(s=>s.targetRpe),[6,6,6]);
  assert.equal(p.config.accumulationWeeks+p.config.strengthWeeks+p.config.peakWeeks+p.config.taperWeeks+1,weeks);
+ assert(p.qualityGate);assert.notEqual(p.qualityGate.status,'blocking');assert.equal(p.qualityGate.weekly.length,weeks);
  assert(p.sessions.every(s=>s.exercises.every(e=>e.sets.every(set=>set.weight>0&&set.weight<=e.trainingMaxKg*.85+.001))));
  if(weeks>16)assert(p.warnings.some(w=>w.includes('six progressive weeks')));
 }
@@ -20,7 +21,7 @@ assert.equal(p.weekly.filter(w=>w.phase==='peaking').length,2);assert.equal(p.we
 assert.equal(JSON.stringify(reviewed),before);
 assert.throws(()=>Meet.save(reviewed,p,{},args),/Review and approve/);
 const saved=Meet.save(reviewed,p,{confirmed:true,notes:'Mock meet test'},{...args,id:'meet12'});
-assert.equal(saved.meetCycles.length,1);assert.equal(saved.meetCycles[0].scheduledAt,null);assert.equal(saved.meetCycles[0].decisionEnvironment.releaseVersion,'2.66.0');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.meetCycle,'meet-cycle-v1');
+assert.equal(saved.meetCycles.length,1);assert.equal(saved.meetCycles[0].scheduledAt,null);assert.equal(saved.meetCycles[0].decisionEnvironment.releaseVersion,'2.67.0');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.meetCycle,'meet-cycle-v1');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.programQualityGate,'program-quality-gate-v1');assert.equal(saved.meetCycles[0].qualityGate.status,'pass');assert.equal(Observability.audit(saved,{cycleId:'meet12',asOf:'2026-09-24'}).blocking,0);
 assert.equal(JSON.stringify(saved.workouts),JSON.stringify(reviewed.workouts));
 assert.deepEqual(Meet.validate(structuredClone(saved.meetCycles)),saved.meetCycles);
 const scheduled=Meet.schedule(saved,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});
@@ -41,6 +42,7 @@ assert.deepEqual(Meet.prepare(tomorrow,source,p.config,args),p,'As-known profile
 const old=Core.normalizeState({schemaVersion:22,workouts:reviewed.workouts,phasePrograms:reviewed.phasePrograms});
 assert.equal(old.schemaVersion,25);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
 assert.deepEqual(Core.normalizeState({...scheduled}).meetCycles,scheduled.meetCycles);
+const legacyCycles=structuredClone(saved.meetCycles);delete legacyCycles[0].qualityGate;delete legacyCycles[0].decisionEnvironment.policies.programQualityGate;assert.deepEqual(Meet.validate(legacyCycles),legacyCycles,'v2.66 meet cycles without quality-gate snapshots remain valid');
 
 const competitionDate=(()=>{const d=new Date(config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(12-1)*7+2);return d.toISOString().slice(0,10);})();
 const competition=Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'competition',eventName:'State Championships'},args);
