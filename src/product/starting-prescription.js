@@ -12,7 +12,7 @@
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const median=values=>{const a=[...values].sort((x,y)=>x-y),n=a.length;return n?n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2:null;};
   const mondayIndex=day=>(new Date(day+'T12:00:00Z').getUTCDay()+6)%7;
-  const finite=value=>Number.isFinite(Number(value))?Number(value):null;
+  const finite=value=>value===null||value===undefined||value===''?null:Number.isFinite(Number(value))?Number(value):null;
   function chooseDays(available,counts,count,preferred){
     const list=[...available];
     if(!list.length||count<1)return [];
