@@ -40,8 +40,9 @@
      return '<div class="program-lifecycle-empty"><p class="eyebrow">TRAINING PLAN</p><h3>'+esc(r.nextAction?.label||'No active program')+'</h3><p>'+esc(r.nextAction?.detail||'')+'</p><button type="button" class="btn-secondary" data-lifecycle-action>'+esc(actionLabel(r.nextAction?.kind))+'</button></div>';
    }
    const kind=r.program.kind==='meet-cycle'?(r.program.eventType==='competition'?'Competition cycle':'Mock-meet cycle'):'Phase program';
+   const missed=(r.missedReviews||[]).length?'<p class="program-lifecycle-history-note">'+r.missedReviews.length+' earlier review window'+(r.missedReviews.length===1?' passed':'s passed')+' without a saved review. Past prescriptions stay unchanged; this does not block current training.</p>':'';
    return '<div class="program-lifecycle-head"><div><p class="eyebrow">'+esc(kind.toUpperCase())+'</p><h3>'+esc(r.program.name)+'</h3><p class="program-lifecycle-meta">'+esc(programLine(r))+'</p></div><span class="badge">'+esc(r.status==='completed'?'Handoff':r.status==='upcoming'?'Upcoming':'Active')+'</span></div>'+
-     '<div class="program-lifecycle-next"><span>Next action</span><b>'+esc(r.nextAction.label)+'</b><p>'+esc(r.nextAction.detail)+'</p></div>'+
+     '<div class="program-lifecycle-next"><span>Next action</span><b>'+esc(r.nextAction.label)+'</b><p>'+esc(r.nextAction.detail)+'</p></div>'+missed+
      '<div class="program-lifecycle-actions"><button type="button" class="btn-'+(compact?'secondary':'primary')+'" data-lifecycle-action>'+esc(actionLabel(r.nextAction.kind))+'</button>'+(r.schedule?.next&&r.nextAction.kind!=='next-session'?'<button type="button" class="btn-secondary" data-lifecycle-calendar>Calendar</button>':'')+'</div>';
  }
  function bind(host,r){
