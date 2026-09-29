@@ -92,3 +92,18 @@ test('v2.62 entered work requires confirmation before destructive removal',async
  await row.locator('[data-workout-action="remove-set"]').click();
  await expect(row.locator('.logger-set')).toHaveCount(0);
 });
+
+
+test('v2.62 an in-progress workout still saves when the network disappears',async({page,context})=>{
+ await page.locator('.ex-name').fill('Bench Press');
+ await page.locator('.set-weight').fill('100');
+ await page.locator('.set-reps').fill('5');
+ await page.locator('.set-rpe').fill('8');
+ await context.setOffline(true);
+ await page.locator('#gym-floor-dock').getByRole('button',{name:'Finish'}).click();
+ await expect(page.locator('#workout-review')).toBeVisible();
+ await page.locator('#confirm-workout-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
+ expect(await page.evaluate(()=>localStorage.getItem('loadnote-workout-draft-v1'))).toBeNull();
+ await context.setOffline(false);
+});
