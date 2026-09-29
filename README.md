@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.62.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.63.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.63 — Secure Production Coach Boundary
+
+The normal consumer Coach path now uses a server-owned AI boundary. The browser sends only the athlete's question, bounded recent conversation history, and structured Loadnote training context. The Loadnote server owns provider credentials, provider/model selection, the trusted Coach system prompt, upstream timeout handling, and structured-response validation.
+
+Production online Coach requests require an authenticated Loadnote account and the existing cookie/CSRF or bearer-session boundary. Raw provider-style message arrays, browser API keys, model names, provider choices, custom base URLs, and client-supplied system prompts are rejected. Historical browser API keys from older development builds are removed on upgrade and are no longer used by the consumer app.
+
+Coach context is now explicit about units: stored workout, PR, bodyweight, goal, trend, and recommendation weights are represented as kilograms before leaving the device, while the athlete display unit remains separate metadata. Current athlete goals and the v2.61 active-program lifecycle are included as structured context. AI output remains advisory only and cannot directly modify a workout, program, training max, or adaptive decision. When the athlete is signed out, offline deterministic coaching remains available without sending an online Coach request.
+
+No training-data schema migration is introduced in v2.63. Schema v25 remains unchanged.
 
 ## v2.62 — Gym-Floor Mobile Polish
 
