@@ -70,3 +70,38 @@ test('v2.60 keeps account and sync inside Profile while low-level remote writes 
  await expect(account.getByRole('link',{name:'Continue with Test ID'})).toHaveAttribute('href','/api/auth/login?returnTo=%2F');
  expect(logoutHeaders['x-loadnote-csrf']).toBe('browser-csrf');
 });
+
+
+test('v2.60 deletes the server account from Profile without erasing local training',async({page})=>{
+ let deleteHeaders=null;
+ await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
+ await page.route('**/api/auth/session',route=>route.fulfill({
+  status:200,contentType:'application/json',
+  body:JSON.stringify({authenticated:true,account:{id:'acct_browser_delete_test',displayName:'Delete Athlete',email:'delete@example.com',emailVerified:true,providers:['test-idp']},expiresAt:'2030-09-29T00:00:00.000Z',csrf:'delete-csrf',transport:'cookie',loginAvailable:true,provider:{id:'test-idp',name:'Continue with Test ID'}})
+ }));
+ await page.route('**/api/sync/status',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({protocol:'loadnote-sync-v1',status:'empty',hasSnapshot:false,revision:0})}));
+ await page.route('**/api/account',async route=>{
+  if(route.request().method()!=='DELETE')return route.fulfill({status:405,contentType:'application/json',body:'{}'});
+  deleteHeaders=await route.request().allHeaders();
+  return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({deleted:true,remoteTrainingDeleted:false,localDeviceDataDeleted:false})});
+ });
+ await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
+ await page.goto('/');
+ await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
+ await page.evaluate(async()=>{
+  data.workouts=[{id:'local-survives-delete',date:today(),exercises:[]}];
+  await persistNow(data);
+  localStorage.setItem('loadnote_remote_receipt_v1:acct_browser_delete_test','{"revision":1}');
+  await window.LoadnoteDeviceStorage.set(window.LoadnoteSyncCoordinator.key('acct_browser_delete_test'),{temporary:true});
+  showTab('profile');
+ });
+ const account=page.locator('#account-status');
+ await account.locator('.account-danger-zone > summary').click();
+ page.once('dialog',dialog=>dialog.accept());
+ await account.getByRole('button',{name:'Delete Loadnote account'}).click();
+ await expect(account).toContainText('Back up and sync training across devices');
+ expect(deleteHeaders['x-loadnote-csrf']).toBe('delete-csrf');
+ expect(await page.evaluate(()=>(data.workouts||[]).some(w=>w.id==='local-survives-delete'))).toBe(true);
+ await expect.poll(()=>page.evaluate(()=>window.LoadnoteDeviceStorage.get(window.LoadnoteSyncCoordinator.key('acct_browser_delete_test')))).toBeNull();
+ expect(await page.evaluate(()=>localStorage.getItem('loadnote_remote_receipt_v1:acct_browser_delete_test'))).toBeNull();
+});
