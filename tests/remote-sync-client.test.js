@@ -59,5 +59,7 @@ assert.equal(JSON.stringify(state),before,'preparing remote data must not mutate
 
  const invalid=structuredClone(pkg);invalid.data.collections.workouts[0].date='tampered-again';
  await assert.rejects(()=>Remote.uploadPackage(invalid,{expectedRevision:1,request:async()=>{throw Error('should not call');}}),/invalid training sync package/);
- console.log('v2.59 explicit remote client status, prepared-package verification, revision upload and receipt behavior passed');
+ Remote.clearReceipt('acct_test_remote_account_1234567890',storage);
+ assert.equal(Remote.loadReceipt('acct_test_remote_account_1234567890',storage),null);
+ console.log('v2.60 explicit remote client status, prepared-package verification, revision upload and receipt cleanup behavior passed');
 })().catch(error=>{console.error(error);process.exit(1);});
