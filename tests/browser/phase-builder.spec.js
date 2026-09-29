@@ -268,7 +268,7 @@ test('evidence-backed starting suggestion is explicit, editable and frozen on sa
  await expect(card).toContainText('Low RPE alone');
  await expect(page.locator('#phase-starting-apply')).toBeVisible();
  await page.locator('#phase-starting-apply').click();
- await expect(page.locator('#phase-squat-sets')).toHaveValue('4');
+ await expect(page.locator('#phase-squat-sets')).toHaveValue('3');
  await expect(page.locator('#phase-bench-sets')).toHaveValue('3');
  await expect(page.locator('#phase-deadlift-sets')).toHaveValue('2');
  await expect(page.locator('#phase-bench-step')).toHaveValue('1');
