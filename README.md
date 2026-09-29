@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.63.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.64.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.64 — Evidence-Backed Starting Prescription Intelligence
+
+Before a new phase-based powerlifting program is approved, Loadnote can now summarize the athlete's last 28 days of auditable squat, bench and deadlift training and form a conservative starting-structure suggestion. The evidence stays lift-specific and uses confirmed competition identities plus confirmed close variations for workload context; only competition-lift RPE-aware estimates contribute to capacity direction.
+
+The suggestion can propose 1–3 exposures per lift, 2–4 working sets per exposure, recent compatible training weekdays, straight versus repeated top/back-off primary structure, and a 0.5 or 1.0 percentage-point weekly progression step. It never infers a training max. Sparse logs remain explicit, and low RPE by itself never earns a larger progression step. High recent effort or a supported lower estimated-capacity direction may only make the initial weekly step more conservative.
+
+Nothing is applied automatically. The athlete can explicitly choose **Use evidence suggestion**, then edit every field before generating the program. The full preview compares the selected structure with the evidence suggestion, and newly reviewed phase programs freeze that comparison as an additive starting-prescription audit snapshot so the eventual training cycle can be reconstructed accurately.
+
+No top-level training-data schema migration is introduced in v2.64. Schema v25 remains unchanged.
 
 ## v2.63 — Secure Production Coach Boundary
 

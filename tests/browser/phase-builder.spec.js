@@ -253,3 +253,32 @@ test('next-program handoff blocks when an unfinished workout draft exists',async
  await expect(handoff).toContainText('unfinished workout draft');
  await expect(handoff.locator('[data-next-block-start]')).toHaveCount(0);
 });
+
+test('evidence-backed starting suggestion is explicit, editable and frozen on save',async({page})=>{
+ await page.evaluate(()=>{
+  const rows=[];const add=(id,date,exerciseId,name,sets)=>rows.push({id,date,createdAt:date+'T20:00:00.000Z',exercises:[{exerciseId,name,type:'strength',trackBy:'reps',sets}]});
+  for(const [i,date] of ['2026-09-05','2026-09-12','2026-09-19'].entries())add('sq'+i,date,'s','Competition Squat',[{weight:140+i*5,reps:1,rpe:7},{weight:120+i*2,reps:5,rpe:7},{weight:117.5+i*2,reps:5,rpe:7.5},{weight:115+i*2,reps:5,rpe:8},{weight:112.5+i*2,reps:5,rpe:8}]);
+  for(const [i,date] of ['2026-09-08','2026-09-10','2026-09-15','2026-09-17','2026-09-22','2026-09-24'].entries())add('be'+i,date,'b','Competition Bench',[{weight:90+i,reps:5,rpe:6},{weight:87.5+i,reps:5,rpe:6.5},{weight:85+i,reps:5,rpe:6.5}]);
+  for(const [i,date] of ['2026-09-05','2026-09-10','2026-09-12','2026-09-17','2026-09-19','2026-09-24'].entries())add('dl'+i,date,'d','Competition Sumo Deadlift',[{weight:170+i,reps:4,rpe:8.5},{weight:165+i,reps:4,rpe:9}]);
+  data.workouts=rows;data.workoutRevisions=[];renderPhaseBuilder();
+ });
+ await page.locator('#phase-new').click();
+ const card=page.locator('[data-starting-prescription]').first();
+ await expect(card).toContainText('Evidence-backed starting structure');
+ await expect(card).toContainText('Low RPE alone');
+ await expect(page.locator('#phase-starting-apply')).toBeVisible();
+ await page.locator('#phase-starting-apply').click();
+ await expect(page.locator('#phase-squat-sets')).toHaveValue('4');
+ await expect(page.locator('#phase-bench-sets')).toHaveValue('3');
+ await expect(page.locator('#phase-deadlift-sets')).toHaveValue('2');
+ await expect(page.locator('#phase-bench-step')).toHaveValue('1');
+ await expect(page.locator('#phase-deadlift-step')).toHaveValue('0.5');
+ const checked=await page.locator('[data-phase-day]:checked').evaluateAll(rows=>rows.map(x=>Number(x.value)));
+ expect(checked).toEqual([1,3,5]);
+ for(const [i,l]of ['squat','bench','deadlift'].entries()){await page.locator('.phase-lift > summary').nth(i).click();await page.locator('#phase-'+l+'-tm').fill(String([160,120,220][i]));}
+ await page.locator('#phase-dialog button[type="submit"]').click();
+ await expect(page.locator('#phase-preview [data-starting-prescription]')).toContainText('Starting prescription audit');
+ await page.locator('#phase-confirm').check();await page.locator('#phase-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.phasePrograms[0]?.startingPrescriptionSnapshot?.status)).toBe('reviewed-comparison');
+ expect(await page.evaluate(()=>data.phasePrograms[0].startingPrescriptionSnapshot.lifts.deadlift.recommendation.stepPct)).toBe(.5);
+});

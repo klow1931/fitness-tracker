@@ -1,3 +1,23 @@
+# v2.64.0 — Evidence-Backed Starting Prescription Intelligence
+
+- Add a deterministic 28-day starting-prescription evidence model for confirmed squat, bench and deadlift identities.
+- Keep competition-lift and confirmed close-variation workload evidence separate from competition-lift capacity evidence.
+- Require at least three matching exposure dates spanning 14 days before recent frequency is treated as a supported starting reference.
+- Derive a bounded 1–3 exposures/week suggestion from recent matching exposure frequency.
+- Derive a bounded 2–4 sets/exposure suggestion from recent 3–8 rep development work; apply the 25% weekly-set guardrail only when all four recent seven-day windows contain matching work so missing weeks are not treated as low tolerance.
+- Keep the default weekly progression suggestion at 1 percentage point of training max and allow only a conservative reduction to 0.5 when recent matching-set effort is high or supported competition-lift capacity direction is lower.
+- Explicitly prevent low RPE alone from increasing the suggested weekly progression step.
+- Suggest top/back-off primary structure only after repeated recent competition-lift sessions show that pattern.
+- Suggest recent compatible training weekdays only within the active programming profile.
+- Add an explicit **Use evidence suggestion** action in the phase builder; all fields remain editable and athlete-reviewed.
+- Compare the final selected program structure with the suggestion before save and surface differences as review prompts, not errors.
+- Freeze the point-in-time starting-prescription comparison on newly reviewed phase programs for later audit/reproducibility.
+- Recheck that evidence before scheduling newly reviewed v2.64 programs so changed pre-launch evidence requires fresh review.
+- Keep old phase programs valid without the new additive snapshot.
+- Add deterministic tests and browser coverage for evidence isolation, future-data exclusion, conservative step logic, UI application and snapshot persistence.
+- Add `docs/starting-prescription.md`.
+- No top-level schema migration; schema v25 remains unchanged.
+
 # v2.63.0 — Secure Production Coach Boundary
 
 - Route the normal consumer online Coach exclusively through the Loadnote server.
