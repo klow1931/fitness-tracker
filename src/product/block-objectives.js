@@ -7,6 +7,7 @@
  const LIFTS=['squat','bench','deadlift'];
  const copy=x=>JSON.parse(JSON.stringify(x));
  const round=(x,n=1)=>{const p=10**n;return Math.round(Number(x)*p)/p;};
+ const finite=x=>x===null||x===undefined||x===''?null:Number.isFinite(Number(x))?Number(x):null;
  function validTransition(x){return x&&[1,2].includes(x.version)&&typeof x.id==='string'&&typeof x.programId==='string'&&typeof x.createdAt==='string'&&x.goalAtStart&&x.schedule&&x.lifts;}
  function latestTransition(state,goalId,asOf){
    return (state.transitionSnapshots||[]).filter(validTransition).filter(x=>x.asOf<=asOf&&x.goalAtStart?.status==='ready'&&x.goalAtStart?.goal?.id===goalId).sort((a,b)=>a.asOf.localeCompare(b.asOf)||a.createdAt.localeCompare(b.createdAt)).at(-1)||null;
@@ -18,7 +19,7 @@
    const base=goalLift?.objective||{code:'no-target',label:'No lift target',reason:'No target context is available.'};
    if(!goalLift?.targetKg)return {code:'no-target',label:'No lift target',reason:'No explicit target is saved for this lift.',source:'goal-only',base};
    if(!transitionLift||!sameExercise)return {code:base.code,label:base.label,reason:(transitionLift&&!sameExercise?'The competition exercise identity changed since the last transition, so its response is not used. ':'No comparable frozen transition response is available. ')+base.reason,source:'goal-only',base};
-   const expected=Number(schedule?.expected||0),completed=Number(schedule?.completed||0),coverage=expected?completed/expected:null,pending=Number(schedule?.unconfirmed||0)+Number(schedule?.upcoming||0),change=Number.isFinite(Number(transitionLift.changePct))?Number(transitionLift.changePct):null,rpe=Number.isFinite(Number(transitionLift.recent28d?.averageRpe))?Number(transitionLift.recent28d.averageRpe):null;
+   const expected=Number(schedule?.expected||0),completed=Number(schedule?.completed||0),coverage=expected?completed/expected:null,pending=Number(schedule?.unconfirmed||0)+Number(schedule?.upcoming||0),change=finite(transitionLift.changePct),rpe=finite(transitionLift.recent28d?.averageRpe);
    if(coverage==null||coverage<.75||pending>0)return {code:'restore-consistency',label:'Restore consistent training exposure',reason:'The prior block has insufficient completed-session coverage for an aggressive response-based progression. Preserve the long-term goal direction while rebuilding a cleaner evidence base.',source:'transition',base,signals:{coveragePct:coverage==null?null:round(coverage*100),changePct:change,averageRpe:rpe,adjustments}};
    if(change==null)return {code:'establish-response',label:'Establish a clearer block response',reason:'The block was sufficiently covered, but no comparable competition-lift capacity change is available. Keep the next block evidence-focused rather than escalating from an unknown response.',source:'transition',base,signals:{coveragePct:round(coverage*100),changePct:null,averageRpe:rpe,adjustments}};
    if(change<=-2||rpe!=null&&rpe>=9)return {code:'rebuild-tolerance',label:'Rebuild tolerable loading',reason:'The prior block ended with a declining capacity comparison or very high recent effort. Use the next block to restore productive training tolerance before adding more stress.',source:'transition',base,signals:{coveragePct:round(coverage*100),changePct:change,averageRpe:rpe,adjustments}};
