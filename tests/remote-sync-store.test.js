@@ -73,9 +73,13 @@ assert.match(verification.reason,/relationship/i);
 
 assert.throws(()=>store.commit(accountA,second,{expectedRevision:-1}),error=>error.code==='invalid_revision');
 
+assert.equal(store.remove(accountA).deleted,true);
+assert.equal(store.status(accountA).status,'empty');
+assert.equal(store.remove(accountA).deleted,false,'repeated remote deletion should be idempotent');
+
 const corruptFile=store.fileFor(accountB),corrupt=JSON.parse(fs.readFileSync(corruptFile,'utf8'));
 corrupt.package.data.collections.nutrition[0].calories=999;
 fs.writeFileSync(corruptFile,JSON.stringify(corrupt));
 assert.throws(()=>makeStore().status(accountB),/integrity verification|metadata does not match/,'persisted remote corruption must fail closed');
 
-console.log('v2.58 remote store revisions, idempotency, account isolation, persistence and package validation passed');
+console.log('v2.60 remote store revisions, idempotency, isolation, persistence, deletion and package validation passed');
