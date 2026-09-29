@@ -31,6 +31,9 @@ test('weekly review is compact, explains missing evidence, and requires approval
  await host.locator('#cycle-review-confirm').check();
  await host.locator('#cycle-review-save').click();
  await expect.poll(()=>page.evaluate(()=>data.meetCycles[0].weeklyReviews?.length)).toBe(1);
+ expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].version)).toBe(5);
+ expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].controllerSnapshot?.environment?.releaseVersion)).toBe('2.66.0');
+ await expect(page.locator('#cycle-journal')).toContainText('Cycle journal');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduledSessions:data.scheduledSessions,original:data.meetCycles[0].sessions}))).toBe(before);
  await page.reload();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();});
  await expect(page.locator('#cycle-week-review')).not.toContainText('1 awaiting review');
@@ -101,6 +104,13 @@ test('learned-history guardrail suppresses controller upward choice without remo
  await expect(benchLabel).toContainText('Repeated exact follow-ups');
  await host.locator('#cycle-controller-use').click();
  await expect(bench).toHaveValue('keep');
+ await bench.selectOption('increase-load');
+ await host.locator('#cycle-review-confirm').check();
+ await host.locator('#cycle-review-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.meetCycles[0].weeklyReviews?.[0]?.version)).toBe(5);
+ expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].controllerSnapshot.recommendation.choices.bench)).toBe('keep');
+ expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].choices.bench)).toBe('increase-load');
+ await expect(page.locator('#cycle-journal')).toContainText('overrode displayed recommendation');
  await page.evaluate(()=>{LoadnoteAdaptiveOutcomeLearning.analyze=window.__realAdaptiveLearning;LoadnoteCycleResponse.inspect=window.__realCycleResponse;});
 });
 
