@@ -63,6 +63,11 @@
         if(rpe==null||rpe<1||rpe>10)add('rpe-cap','blocking','A generated set has an invalid RPE cap.',{week:session.week,date:session.date,lift:exercise.lift});
       }
     }
+    for(const w of weeks.filter(w=>w.phase!=='mock-meet'&&w.phase!=='meet'))for(const lift of LIFTS){
+      const row=w.lifts[lift];
+      if(row.exposures<1)add('missing-lift-week','blocking',lift+' has no planned exposure in a training week.',{lift,week:w.week,phase:w.phase});
+      if(row.primaryCompetitionExposures!==1)add('primary-competition-count','blocking',lift+' must have exactly one primary competition-lift exposure in every training week.',{lift,week:w.week,phase:w.phase,primaryCompetitionExposures:row.primaryCompetitionExposures});
+    }
     for(let i=1;i<weeks.length;i++){
       const prev=weeks[i-1],next=weeks[i];
       for(const lift of LIFTS){
