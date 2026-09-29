@@ -20,6 +20,12 @@ test('v2.60 onboarding leads into reusable training setup and Profile stays comp
  await expect(page.locator('#programming-profile-dialog')).not.toBeVisible();
  await expect(page.locator('#profile-training-setup')).toContainText('General powerlifting');
  await expect(page.locator('#profile-training-setup')).toContainText('Mon, Wed, Fri');
+ await expect(page.locator('#profile-training-setup')).toContainText('0/3 competition lifts confirmed');
+ await page.locator('#profile-lift-mapping').click();
+ await expect(page.locator('#panel-coach')).toBeVisible();
+ await expect(page.locator('#decision-readiness-card .decision-review-tools')).toHaveAttribute('open','');
+ await expect(page.locator('#decision-readiness-card details', {hasText:'Confirm exercise roles and lift relationships'})).toHaveAttribute('open','');
+ await page.evaluate(()=>showTab('profile'));
 
  await page.locator('[data-profile-unit="lb"]').click();
  expect(await page.evaluate(()=>data.unit)).toBe('lb');
