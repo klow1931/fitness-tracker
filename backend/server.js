@@ -250,7 +250,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
    return send(req,res,404,{error:'Not found'});
   }catch(error){
    const status=Number(error.statusCode)||(/OIDC state|OIDC nonce|sign-in state|authorization code|ID token|audience|issuer|authorized-party|signature|expired/i.test(error.message||'')?400:500);
-   return send(req,res,status,{error:error.message||'Server error'});
+   return send(req,res,status,{error:error.message||'Server error',...(error.code?{code:error.code}:{})});
   }
  });
  server.loadnote={port,auth,authRequired,coachAuthRequired,aiConfigured:!!apiKey,devAuthEnabled,oidc,accountStore,syncStore,maxSyncBytes,allowedOrigins:[...allowedOrigins]};
