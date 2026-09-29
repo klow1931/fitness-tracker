@@ -8,7 +8,8 @@ Paths below are under `src/product/` unless otherwise noted.
 
 | Files | Responsibility |
 | --- | --- |
-| `state-store.js`, `persistence.js` | State defaults, normalization, IndexedDB/localStorage loading and serialized snapshot writes |
+| `state-store.js`, `persistence.js` | State defaults, normalization, IndexedDB/localStorage loading, serialized snapshot writes and device-only records such as the acknowledged sync base |
+| `sync-model.js`, `remote-sync.js`, `sync-coordinator.js`, `account-session.js`, `account-ui.js` | Deterministic account-data merge rules, authenticated remote transport, manual sync orchestration, session boundary and consumer account/sync UI |
 | `data-integrity.js`, `data-integrity-ui.js` | Stable exercise identity, aliases, workout revisions, recovery snapshots and import previews |
 | `decision-readiness.js`, `decision-readiness-ui.js` | Revisioned exercise roles, explicit-date evidence snapshots, point-in-time replay and per-lift readiness UI |
 | `session-intent.js`, `session-intent-ui.js` | Planned-work validation/comparison, session roles, deviation context and logger presentation |
@@ -41,7 +42,7 @@ Paths below are under `src/product/` unless otherwise noted.
 - Fatigue scoring requires 28 days of history and three distinct recent training days. Plateau labels use the analytics minimum-session guard. These are product heuristics, not clinical diagnoses.
 - Draft migration preserves named fields, units, completion, order, edit context and optional prescription snapshots. Schema 12 wraps integrity metadata around the existing workout payload shape.
 - Persistence serializes snapshots. IndexedDB resolves on transaction completion. Marked localStorage fallback remains preferred after reload to avoid reviving stale IndexedDB data.
-- Storage is browser-local. Simultaneous tabs and cross-device sync are not coordinated.
+- Primary app state remains device-local. v2.59 can manually synchronize the structured account record across signed-in devices using a device-only shared base, conflict-first three-way merge and server revisions. Background sync and simultaneous-tab coordination are not implemented.
 - Decision-readiness results are evidence-quality classifications, not training prescriptions. The v2 decision engine remains disabled.
 
 ## Remaining boundaries
