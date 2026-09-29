@@ -9,6 +9,7 @@ const Account=require('../src/product/account-session');
   if(url==='/api/auth/session')return new Response(JSON.stringify({authenticated:true,account:{id:'acct_test',displayName:'Athlete',email:'athlete@example.com',emailVerified:true,providers:['oidc']},expiresAt:'2026-09-29T00:00:00.000Z',csrf:'csrf-token',transport:'cookie',loginAvailable:true,provider:{id:'oidc',name:'Continue with OIDC'}}),{status:200,headers:{'Content-Type':'application/json'}});
   if(url==='/api/coach')return new Response('{}',{status:200,headers:{'Content-Type':'application/json'}});
   if(url==='/api/auth/logout')return new Response(JSON.stringify({ok:true}),{status:200,headers:{'Content-Type':'application/json'}});
+  if(url==='/api/account'&&String(options.method||'GET').toUpperCase()==='DELETE')return new Response(JSON.stringify({deleted:true}),{status:200,headers:{'Content-Type':'application/json'}});
   return new Response('',{status:404});
  };
  let snapshot=await Account.refresh(fakeFetch);
@@ -34,10 +35,17 @@ const Account=require('../src/product/account-session');
  assert.equal(snapshot.loginAvailable,true,'signing out should keep the configured provider available');
  assert.equal(snapshot.provider.name,'Continue with OIDC');
 
+ await Account.refresh(fakeFetch);
+ await Account.deleteAccount(fakeFetch);
+ snapshot=Account.snapshot();
+ assert.equal(snapshot.status,'anonymous');
+ const deletion=calls.find(call=>call.url==='/api/account'&&call.options.method==='DELETE');
+ assert.equal(deletion.options.headers.get('X-Loadnote-CSRF'),'csrf-token');
+
  Account._resetForTest('unknown');
  const unavailable=await Account.refresh(async()=>new Response('',{status:404}));
  assert.equal(unavailable.status,'unavailable');
  assert.equal(unavailable.loginAvailable,false);
  assert.equal(unavailable.provider,null);
- console.log('v2.57 in-memory account profile, provider availability and CSRF request handling passed');
+ console.log('v2.60 in-memory account profile, CSRF, sign-out and account deletion handling passed');
 })().catch(error=>{console.error(error);process.exit(1);});
