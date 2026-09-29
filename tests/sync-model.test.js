@@ -40,6 +40,16 @@ plan=Sync.planThreeWay(base,localUpdate,remoteUpdate);
 assert.equal(plan.status,'conflict');
 assert.equal(plan.counts.conflicts,1);
 assert.equal(Sync.mergeThreeWay(base,localUpdate,remoteUpdate).state,null);
+const conflictKey=Sync.itemKey(plan.items.find(item=>item.resolution==='conflict'));
+let resolved=Sync.mergeThreeWayResolved(base,localUpdate,remoteUpdate,{[conflictKey]:'local'});
+assert.equal(resolved.status,'merged');
+assert.equal(resolved.state.workouts[0].notes,'local edit');
+resolved=Sync.mergeThreeWayResolved(base,localUpdate,remoteUpdate,{[conflictKey]:'remote'});
+assert.equal(resolved.status,'merged');
+assert.equal(resolved.state.workouts[0].notes,'remote edit');
+resolved=Sync.mergeThreeWayResolved(base,localUpdate,remoteUpdate,{});
+assert.equal(resolved.status,'conflict');
+assert.deepEqual(resolved.plan.unresolved,[conflictKey]);
 
 const identical=state({workouts:[workout('w','same edit')]});
 plan=Sync.planThreeWay(base,identical,structuredClone(identical));
