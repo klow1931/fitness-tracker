@@ -79,7 +79,7 @@
       out.decisionFingerprint=fingerprint(decisionPayload(out));return out;
     }
     const evidence=phaseEvidence(source,profile),automatic=autoPhases(weeks,evidence),custom=overridePhases(request.phaseOverride,weeks),phases=custom||automatic,mode=custom?'athlete-customized':'decisions';
-    const config={version:1,weeks,peakWeeks:phases.peakWeeks,taperWeeks:phases.taperWeeks,accumulationWeeks:phases.accumulationWeeks,strengthWeeks:phases.strengthWeeks,meetDate:eventDate,eventType,eventName:eventType==='competition'?eventName:null};
+    const config={version:1,sourceProgramId:source.id||null,weeks,peakWeeks:phases.peakWeeks,taperWeeks:phases.taperWeeks,meetDate:eventDate,eventType,eventName:eventType==='competition'?eventName:null,accumulationWeeks:phases.accumulationWeeks,strengthWeeks:phases.strengthWeeks,startDate};
     const reasons=[
       weeks+' weeks are available from the reviewed start week '+startDate+' through the event week containing '+eventDate+'.',
       custom?'You opened advanced controls and overrode the default phase allocation; the meet date still fixes the total timeline.':evidence.reason,
