@@ -1116,21 +1116,21 @@
         </div>
       </div>
 
-      <!-- Active Program + Library -->
+      <!-- Legacy generator selection + library; reviewed scheduled programs use Program Lifecycle above. -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold">Active Program</h2>
-          <button onclick="deactivateProgram()" class="btn-secondary text-sm" id="clear-prog-btn" style="display:none">Deactivate</button>
+          <div><h2 class="font-semibold">Legacy generator selection</h2><p class="text-xs text-slate-500">Separate from your reviewed current program above.</p></div>
+          <button onclick="deactivateProgram()" class="btn-secondary text-sm" id="clear-prog-btn" style="display:none">Clear selection</button>
         </div>
         <div id="program-display">
-          <p class="text-slate-500 text-sm">No active program. Generate one or activate from your library.</p>
+          <p class="text-slate-500 text-sm">No legacy generator program selected.</p>
         </div>
         <div id="adaptive-program-next" class="mt-5"></div>
         <div id="program-progression-status"></div>
       </div>
 
       <div class="card">
-        <h2 class="font-semibold mb-3">Program Library</h2>
+        <h2 class="font-semibold mb-3">Legacy program library</h2>
         <div id="programs-list" class="space-y-2 text-sm"></div>
       </div>
       </div><!-- /coach-programming-content -->
