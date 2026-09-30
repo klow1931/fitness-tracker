@@ -32,7 +32,7 @@ test('weekly review is compact, explains missing evidence, and requires approval
  await host.locator('#cycle-review-save').click();
  await expect.poll(()=>page.evaluate(()=>data.meetCycles[0].weeklyReviews?.length)).toBe(1);
  expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].version)).toBe(5);
- expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].controllerSnapshot?.environment?.releaseVersion)).toBe('2.69.1');
+ expect(await page.evaluate(()=>data.meetCycles[0].weeklyReviews[0].controllerSnapshot?.environment?.releaseVersion)).toBe('2.69.2');
  await expect(page.locator('#cycle-journal')).toContainText('Cycle journal');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduledSessions:data.scheduledSessions,original:data.meetCycles[0].sessions}))).toBe(before);
  await page.reload();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();});
