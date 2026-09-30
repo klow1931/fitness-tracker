@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.67.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.68.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.68 — Programming Workspace Simplification
+
+Coach → Programming now starts with one **Program planner** instead of presenting the four-week builder, programming profile and phase designer as competing primary choices. Loadnote uses the saved training setup to route the athlete to one next action: setup, a quick return/re-entry block, the main Program designer, guided meet prep, an already reviewed cycle, the current program or existing-program adoption. The underlying program engines remain reviewed and deterministic.
+
+The former phase-based builder is presented as the main **Program designer**. The older four-week template remains available but is explicitly labeled **Quick 4-week return/base block** and lives with the other alternate tools in a collapsed section. For meet preparation, the main designer can flow directly from reviewed lift setup into the full Meet timeline.
+
+v2.68 also removes avoidable profile/date friction. The optional profile event date is a default rather than an exact-match requirement; a reviewed meet cycle may use another valid event date with a warning. Phase lift setup is no longer blocked merely because its standalone sequence overlaps that profile date. Soft profile edits such as notes or the event-date default no longer invalidate a compatible reviewed plan at scheduling time, while real hard constraints—days, session time, equipment, avoided exercises and exercise-role identities—remain enforced.
+
+Program weeks remain Monday-based for compatibility, but a non-Monday start selected in the UI is moved to the next Monday instead of being rejected. Schema v25 and all v2.64–v2.67 training/decision policies remain unchanged. See `docs/programming-workspace.md`.
 
 ## v2.67 — Program Simulation & Pre-Cycle Quality Gate
 
