@@ -38,10 +38,11 @@
   let records;try{records=LoadnoteMeetCycle.validate(data.meetCycles||[]);}catch(error){host.innerHTML='<p role="alert">'+esc(error.message)+'</p>';return;}
   host.innerHTML='<div class="decision-section-heading"><span class="eyebrow">MEET TIMELINE</span><h3>Finish meet preparation</h3><p>Choose the event. Decisions calculates how many prep weeks are actually available, then allocates accumulation, strength, peak and taper before the whole-cycle quality gate runs.</p></div>'+
     (sources.length?'<label>Reviewed lift setup<select id="cycle-source" class="input">'+sources.slice().reverse().map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · '+esc(p.config.startDate)+'</option>').join('')+'</select></label><button id="cycle-new" type="button" class="btn-primary">Build a meet-prep cycle</button>':'<p>No reviewed lift setup is available yet. Use the Program planner to start meet prep; it will bring you here automatically after the lift setup is saved.</p>')+
-    records.slice().reverse().map(r=>{const type=LoadnoteMeetCycle.eventType(r.config),event=type==='competition'?(r.config.eventName||'Competition meet'):'Mock meet';return '<details class="more-details" data-cycle="'+esc(r.id)+'" data-event-type="'+esc(type)+'"><summary>'+esc(r.sourceProgram.config.name)+' · '+r.config.weeks+' weeks · '+esc(event)+' · '+(r.scheduledAt?'Scheduled':'Reviewed')+'</summary><p>Start '+esc(r.config.startDate)+' · '+esc(event)+' '+esc(r.config.meetDate)+'</p><p>Accumulation '+r.config.accumulationWeeks+' · Strength '+r.config.strengthWeeks+' · Peak '+r.config.peakWeeks+' · Taper '+r.config.taperWeeks+' · Meet 1</p><p>Planning: <b>'+esc(r.planningDecision?(r.planningDecision.mode==='athlete-customized'?'ATHLETE CUSTOMIZED':'DECISIONS CALCULATED'):'LEGACY')+'</b> · Quality gate: <b>'+esc(r.qualityGate?qualityLabel(r.qualityGate.status):'LEGACY')+'</b> · Approved '+esc(r.createdAt)+'. Original program preserved for future comparisons.</p><details class="more-details"><summary>Original weekly outline</summary>'+r.weekly.map(w=>'<p>Week '+w.week+': '+esc(w.phase)+' · '+w.sessionCount+' workout(s)'+(w.meetDate?' · '+esc(event)+' '+esc(w.meetDate):'')+'</p>').join('')+'</details>'+(r.scheduledAt?'<p>Open workouts from Calendar. Future changes must be approved separately.</p>':'<button type="button" class="btn-primary" data-cycle-schedule="'+esc(r.id)+'">Schedule reviewed workouts</button>')+'</details>'}).join('')+
+    records.slice().reverse().map(r=>{const type=LoadnoteMeetCycle.eventType(r.config),event=type==='competition'?(r.config.eventName||'Competition meet'):'Mock meet';return '<details class="more-details" data-cycle="'+esc(r.id)+'" data-event-type="'+esc(type)+'"><summary>'+esc(r.sourceProgram.config.name)+' · '+r.config.weeks+' weeks · '+esc(event)+' · '+(r.scheduledAt?'Scheduled':'Reviewed')+'</summary><p>Start '+esc(r.config.startDate)+' · '+esc(event)+' '+esc(r.config.meetDate)+'</p><p>Accumulation '+r.config.accumulationWeeks+' · Strength '+r.config.strengthWeeks+' · Peak '+r.config.peakWeeks+' · Taper '+r.config.taperWeeks+' · Meet 1</p><p>Planning: <b>'+esc(r.planningDecision?(r.planningDecision.mode==='athlete-customized'?'ATHLETE CUSTOMIZED':'DECISIONS CALCULATED'):'LEGACY')+'</b> · Quality gate: <b>'+esc(r.qualityGate?qualityLabel(r.qualityGate.status):'LEGACY')+'</b> · Approved '+esc(r.createdAt)+'. Original program preserved for future comparisons.</p><details class="more-details"><summary>Original weekly outline</summary>'+r.weekly.map(w=>'<p>Week '+w.week+': '+esc(w.phase)+' · '+w.sessionCount+' workout(s)'+(w.meetDate?' · '+esc(event)+' '+esc(w.meetDate):'')+'</p>').join('')+'</details>'+(r.scheduledAt?'<p>This is now your reviewed scheduled training plan. Future changes must be approved separately.</p><button type="button" class="btn-secondary" data-cycle-current="'+esc(r.id)+'">View current program</button>':'<button type="button" class="btn-primary" data-cycle-schedule="'+esc(r.id)+'">Schedule reviewed workouts</button>')+'</details>'}).join('')+
     '<p id="cycle-status" role="alert"></p>';
   host.querySelector('#cycle-new')?.addEventListener('click',()=>open(sources.find(p=>p.id===host.querySelector('#cycle-source').value)));
   host.querySelectorAll('[data-cycle-schedule]').forEach(b=>b.addEventListener('click',()=>schedule(b.dataset.cycleSchedule)));
+  host.querySelectorAll('[data-cycle-current]').forEach(b=>b.addEventListener('click',showCurrentProgram));
   window.renderMockMeet?.();
  }
  function open(source){
@@ -77,10 +78,16 @@
   dlg.querySelector('#cycle-close').onclick=()=>{if(!busy)dlg.close();};
   dlg.oncancel=e=>{if(busy)e.preventDefault();};dlg.showModal();
  }
+ function showCurrentProgram(){
+  window.renderProgramLifecycle?.();
+  window.renderTodayTraining?.();
+  const current=document.getElementById('decision-action-center');
+  if(current)current.scrollIntoView({behavior:'smooth',block:'start'});
+ }
  async function schedule(id){
   if(busy||!confirm('Schedule all reviewed meet-prep cycle workouts? No existing Calendar sessions will be replaced. Event-day attempts are not selected.'))return;
   busy=true;const host=document.getElementById('meet-cycle');try{
-   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();showToast('Reviewed meet-prep cycle scheduled','success');
+   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();window.renderProgramLifecycle?.();window.renderTodayTraining?.();showToast('Reviewed meet-prep cycle scheduled · current program updated','success');setTimeout(showCurrentProgram,50);
   }catch(err){host.querySelector('#cycle-status').textContent=err.message;}finally{busy=false;}
  }
  window.LoadnoteMeetCycleUI={open};
