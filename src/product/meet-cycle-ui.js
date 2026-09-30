@@ -88,7 +88,7 @@
  async function schedule(id){
   if(busy||!confirm('Schedule all reviewed meet-prep cycle workouts? No existing Calendar sessions will be replaced. Event-day attempts are not selected.'))return;
   busy=true;const host=document.getElementById('meet-cycle');try{
-   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();window.renderProgramLifecycle?.();window.renderTodayTraining?.();showToast('Reviewed meet-prep cycle scheduled · current program updated','success');setTimeout(()=>showCurrentProgram(id),50);
+   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();window.renderProgramLifecycle?.();window.renderTodayTraining?.();showToast('Reviewed meet-prep cycle scheduled · current program updated','success');setTimeout(()=>document.getElementById('decision-action-center')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
   }catch(err){host.querySelector('#cycle-status').textContent=err.message;}finally{busy=false;}
  }
  window.LoadnoteMeetCycleUI={open};
