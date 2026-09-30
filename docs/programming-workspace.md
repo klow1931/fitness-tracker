@@ -43,7 +43,7 @@ It is no longer presented as a peer to the main Program designer. Its UI is labe
 Meet preparation is presented as the second part of one guided flow:
 
 1. confirm lift setup in Program designer
-2. choose total cycle length, peak, taper and event date in Meet timeline
+2. choose the event in Meet timeline; Decisions calculates total prep length plus accumulation, strength, peak and taper
 3. review the whole-cycle v2.67 quality gate
 4. save
 5. schedule separately
@@ -68,7 +68,7 @@ Planning context/defaults include:
 - reported priorities/notes
 - optional event date
 
-The optional event date is now a default for meet planning rather than a second independent source of truth that must exactly equal the reviewed cycle date.
+The optional event date is now a default for meet planning rather than a second independent source of truth that must exactly equal the reviewed cycle date. In v2.69, the reviewed event date also becomes the anchor from which Decisions calculates total prep duration and phase allocation.
 
 ## Event-date behavior
 
@@ -131,3 +131,8 @@ v2.68 does not change the training-data schema. Schema v25 remains unchanged.
 Existing reviewed programs, phase programs, meet cycles, Calendar records, workout history, decision snapshots, quality gates and transition records remain valid.
 
 The full end-to-end cycle rehearsal originally planned for v2.68 moves to the next release after this UX simplification is validated.
+
+
+## v2.69 planning ownership
+
+The v2.68 Program planner remains the routing layer. v2.69 adds `program-planning-decision.js` beneath the meet-prep route so timeline arithmetic and default phase lengths are no longer user-owned calculations. Manual phase controls remain available only as an explicit advanced override. See `docs/program-planning-decision.md`.
