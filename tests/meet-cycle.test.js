@@ -41,7 +41,7 @@ assert.throws(()=>Meet.validate(altered),/differs/);
 const invalid=overrides=>({...p.config,...overrides});
 for(const bad of [invalid({weeks:6}),invalid({weeks:53}),invalid({peakWeeks:5}),invalid({taperWeeks:3}),invalid({weeks:7,peakWeeks:4}),invalid({meetDate:'2026-12-26'}),invalid({meetDate:'2026-12-15'})])assert.throws(()=>Meet.config(bad,source));
 const tomorrow={...reviewed,programmingProfiles:[...reviewed.programmingProfiles,{...reviewed.programmingProfiles[0],id:'later',recordedAt:'2026-09-25T12:00:00.000Z',context:{...reviewed.programmingProfiles[0].context,notes:'Later'}}]};
-assert.deepEqual(Meet.prepare(tomorrow,source,p.config,args),p,'As-known profile cutoff');
+assert.deepEqual(Meet.prepare(tomorrow,source,{planningInput:p.planningDecision.input},args),p,'As-known profile cutoff');
 const old=Core.normalizeState({schemaVersion:22,workouts:reviewed.workouts,phasePrograms:reviewed.phasePrograms});
 assert.equal(old.schemaVersion,25);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
 assert.deepEqual(Core.normalizeState({...scheduled}).meetCycles,scheduled.meetCycles);
