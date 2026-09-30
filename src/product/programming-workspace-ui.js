@@ -16,7 +16,7 @@
       '<div class="programming-workspace-actions"><button type="button" class="btn-primary" id="programming-workspace-primary">'+esc(primaryLabel(route.primaryAction))+'</button>'+
       (p?'<button type="button" class="btn-secondary" id="programming-workspace-profile">Edit setup</button>':'')+
       '<button type="button" class="btn-secondary" id="programming-workspace-tools">Show all program tools</button></div>'+
-      '<p class="more-hint">Loadnote chooses one primary route from your saved setup. The 4-week builder, manual designer and adoption tools still exist, but they no longer compete for attention.</p>';
+      '<p class="more-hint">Decisions chooses one primary route from your saved setup and calculates supported program structure where possible. The 4-week builder, manual controls and adoption tools still exist, but they no longer compete for attention.</p>';
     host.querySelector('#programming-workspace-profile')?.addEventListener('click',()=>window.openProgrammingProfile?.());
     host.querySelector('#programming-workspace-tools').addEventListener('click',()=>panel('programming-tools-panel'));
     host.querySelector('#programming-workspace-primary').addEventListener('click',()=>{
