@@ -67,6 +67,13 @@ let meetState=Phase.save(meetStateBase,Phase.prepare(meetStateBase,meetConfig,ar
 const proposal=Meet.prepare(meetState,meetState.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args);
 meetState=Meet.save(meetState,proposal,{confirmed:true,notes:'Full cycle reviewed'},{...args,id:'life-meet'});
 meetState=Meet.schedule(meetState,'life-meet',{...args,now:'2026-09-24T13:00:00.000Z'});
+const visibleState=structuredClone(meetState);visibleState.programs=[];visibleState.activeProgramId=null;
+report=Lifecycle.inspect(visibleState,{asOf:'2026-09-24'});
+assert.equal(report.status,'upcoming','a scheduled reviewed meet cycle is the canonical upcoming program even when the legacy program library is empty');
+assert.equal(report.program.id,'life-meet');
+assert.equal(report.program.kind,'meet-cycle');
+assert.equal(report.nextAction.kind,'program-upcoming');
+assert.equal(report.schedule.next?.date,visibleState.meetCycles[0].sessions[0].date);
 const cycle=meetState.meetCycles[0],week1=cycle.weekly[0],week2=cycle.weekly[1];
 completeThrough(meetState,'meet:life-meet:',week1.endDate);
 report=Lifecycle.inspect(meetState,{asOf:week1.endDate});
