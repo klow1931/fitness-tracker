@@ -77,6 +77,8 @@
    return {meetDate:raw?.meetDate||null,eventType:eventType(raw),eventName:raw?.eventName||'',phaseOverride:override?copy(override):null};
  }
  function legacyPlanningInput(c){return {meetDate:c.meetDate,eventType:eventType(c),eventName:c.eventName||'',phaseOverride:{accumulationWeeks:c.accumulationWeeks,strengthWeeks:c.strengthWeeks,peakWeeks:c.peakWeeks,taperWeeks:c.taperWeeks}};}
+ function comparablePlanningDecision(value){const out=copy(value);if(out){delete out.cutoff;delete out.inputFingerprint;delete out.decisionFingerprint;}return out;}
+ function comparablePrepared(value){const out=copy(value);if(out?.planningDecision)out.planningDecision=comparablePlanningDecision(out.planningDecision);return out;}
  function prepare(state,source,raw,{asOf,now=new Date().toISOString()}={}){
    if(!Schedule.date(asOf)||!iso(now)||now.slice(0,10)<asOf)throw Error('Choose a valid current review date');
    const planningDecision=Planning.plan(state,source,planningInput(raw),{asOf,now});if(planningDecision.status!=='ready')throw Error(planningDecision.summary);
@@ -116,7 +118,7 @@
      const expected=r.sourceProgram.roleSnapshot;
      if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.length!==expected.length||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt)||expected.some(e=>!r.roleSnapshot.some(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift)))throw Error('Invalid competition exercise snapshot');
      if(r.scheduledAt!=null&&(!iso(r.scheduledAt)||r.scheduledAt<r.createdAt))throw Error('Invalid scheduling timestamp');
-     if(r.planningDecision!==undefined)Planning.validate(r.planningDecision,r.sourceProgram,built.config);
+     if(r.planningDecision!==undefined){Planning.validate(r.planningDecision,r.sourceProgram,built.config);if(r.planningDecision.cutoff>r.createdAt)throw Error('Program-planning decision cutoff cannot be after cycle approval');}
      if(r.qualityGate!==undefined)QualityGate.validate(r.qualityGate,{...built,profileSnapshot:r.profileSnapshot,roleSnapshot:r.roleSnapshot});
      if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');if(r.qualityGate!==undefined&&env.policies.programQualityGate!==QualityGate.POLICY)throw Error('Invalid program quality-gate policy identity');if(r.planningDecision!==undefined&&env.policies.programPlanning!==Planning.POLICY)throw Error('Invalid program-planning decision policy identity');}
      return copy(r);
@@ -126,7 +128,7 @@
    if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review and approve the full cycle before saving');
    if(proposal?.qualityGate?.status==='blocking')throw Error('Resolve blocking program quality-gate findings before saving');
    const fresh=prepare(state,proposal.sourceProgram,{planningInput:proposal.planningDecision?.input||legacyPlanningInput(proposal.config)},{asOf,now});
-   if(JSON.stringify(fresh)!==JSON.stringify(proposal))throw Error('Training context, dates or Calendar evidence changed; regenerate the cycle');
+   if(JSON.stringify(comparablePrepared(fresh))!==JSON.stringify(comparablePrepared(proposal)))throw Error('Training context, dates or Calendar evidence changed; regenerate the cycle');
    const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:POLICY,programQualityGate:QualityGate.POLICY,programPlanning:Planning.POLICY}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
    return {...state,meetCycles:validate([...(state.meetCycles||[]),row])};
  }
