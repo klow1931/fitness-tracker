@@ -27,7 +27,7 @@
         case 'phase-meet': window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;
         case 'meet': {const source=phaseSource(route.sourceId);if(source)window.LoadnoteMeetCycleUI?.open?.(source);else window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;}
         case 'view-reviewed-cycle': panel('programming-tools-panel');panel('phase-builder-panel');setTimeout(()=>document.getElementById('meet-cycle')?.scrollIntoView({behavior:'smooth',block:'start'}),50);break;
-        case 'view-current': document.getElementById('decision-action-center')?.scrollIntoView({behavior:'smooth',block:'start'});break;
+        case 'view-current': window.renderProgramLifecycle?.();window.renderTodayTraining?.();document.getElementById('decision-action-center')?.scrollIntoView({behavior:'smooth',block:'start'});break;
         case 'adopt': panel('programming-tools-panel');panel('program-adoption-panel');break;
       }
     });
