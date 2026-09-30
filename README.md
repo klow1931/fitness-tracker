@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.69.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.69.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
 
 ## v2.69 — Decisions-Driven Program Planning
 
