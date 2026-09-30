@@ -16,7 +16,7 @@ for(const weeks of [8,12,16,20,26,52]){
  assert(p.sessions.every(s=>s.exercises.every(e=>e.sets.every(set=>set.weight>0&&set.weight<=e.trainingMaxKg*.85+.001))));
  if(weeks>16)assert(p.warnings.some(w=>w.includes('six progressive weeks')));
 }
-const p=Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:date(12)},args);
+const p=Meet.prepare(reviewed,source,{version:1,meetDate:date(12),eventType:'mock'},args);
 assert.equal(p.planningDecision.totalWeeks,12);assert.equal(p.planningDecision.config.weeks,12);assert.equal(p.config.accumulationWeeks+p.config.strengthWeeks+p.config.peakWeeks+p.config.taperWeeks+1,12);
 assert.equal(p.weekly.filter(w=>w.phase==='peaking').length,2);assert.equal(p.weekly.filter(w=>w.phase==='taper').length,1);
 const profileContext=Profile.current(reviewed.programmingProfiles).context,mismatchedProfile={...reviewed,programmingProfiles:Profile.save([],{...profileContext,eventDate:'2026-12-27'},{id:'profile-date-override',now:'2026-09-23T11:00:00.000Z'})},mismatchProposal=Meet.prepare(mismatchedProfile,source,p.config,args);assert(mismatchProposal.warnings.some(w=>w.includes('reviewed cycle date is allowed to override')),'Explicit cycle event dates should not have to equal the profile default');
