@@ -5,6 +5,7 @@ const ASSETS = [
   './src/product/program-review-ui.js',
   './src/product/cycle-observability.js',
   './src/product/program-quality-gate.js',
+  './src/product/program-planning-decision.js',
   './src/product/starting-prescription.js',
   './src/product/phase-builder.js',
   './src/product/lift-workload.js',
