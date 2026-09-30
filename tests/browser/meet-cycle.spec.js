@@ -40,6 +40,8 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  await page.locator('#cycle-confirm').check();
  await page.locator('#cycle-save').click();
  await expect(page.locator('#cycle-dialog')).not.toBeVisible();
+ await expect(page.locator('#phase-builder [data-phase-schedule]')).toHaveCount(0);
+ await expect(page.locator('#phase-builder')).toContainText('Used as meet-prep lift setup');
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(1);
  expect(await page.evaluate(()=>data.meetCycles[0].qualityGate?.status)).toBe('pass');
  expect(await page.evaluate(()=>data.meetCycles[0].decisionEnvironment?.policies?.programQualityGate)).toBe('program-quality-gate-v1');
