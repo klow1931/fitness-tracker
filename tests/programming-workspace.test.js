@@ -17,5 +17,5 @@ r=Workspace.route(general,{asOf:'2026-09-29'});assert.equal(r.primaryAction,'pha
 const hyp={...state,programmingProfiles:Profile.save([],{...p,goal:'hypertrophy'},{id:'hyp',now:'2026-09-28T12:00:00.000Z'})};
 r=Workspace.route(hyp,{asOf:'2026-09-29'});assert.equal(r.primaryAction,'adopt');
 const futureProfile={...general,programmingProfiles:[...general.programmingProfiles,{version:1,id:'future',recordedAt:'2026-10-01T12:00:00.000Z',context:{...p,goal:'return',consistency:'returning'}}]};
-r=Workspace.route(futureProfile,{asOf:'2026-09-29'});assert.equal(r.primaryAction,'phase','Future profile revisions must not rewrite today's planner route');
+r=Workspace.route(futureProfile,{asOf:'2026-09-29'});assert.equal(r.primaryAction,'phase',"Future profile revisions must not rewrite today\'s planner route");
 console.log('v2.68 programming workspace routing and date helper tests passed');
