@@ -467,7 +467,8 @@
         <div id="calendar-grid" class="calendar-days"></div>
         <div id="calendar-plan" class="card"></div>
         <div class="flex flex-wrap gap-3 mt-4 text-xs text-slate-500">
-          <span><span class="inline-block w-3 h-3 rounded bg-indigo-500 align-middle mr-1"></span> Workout</span>
+          <span><span class="inline-block w-3 h-3 rounded bg-indigo-500 align-middle mr-1"></span> Logged workout</span>
+          <span><span class="calendar-planned-key inline-block w-3 h-3 rounded align-middle mr-1"></span> Planned workout</span>
           <span><span class="inline-block w-3 h-3 rounded bg-emerald-400 align-middle mr-1"></span> Cardio only</span>
           <span><span class="inline-block w-3 h-3 rounded bg-slate-200 align-middle mr-1"></span> Rest / empty</span>
           <span><span class="inline-block w-3 h-3 rounded ring-2 ring-indigo-500 align-middle mr-1"></span> Today</span>
@@ -1361,7 +1362,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.69.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.69.2 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2011,6 +2012,8 @@
   <script src="src/product/phase-feedback.js" defer></script>
   <script src="src/product/phase-review-ui.js" defer></script>
   <script src="src/product/program-lifecycle.js" defer></script>
+  <script src="src/product/program-workout-viewer.js" defer></script>
+  <script src="src/product/program-workout-viewer-ui.js" defer></script>
   <script src="src/product/program-lifecycle-ui.js" defer></script>
   <script src="src/product/program-outcomes.js" defer></script>
   <script src="src/product/program-outcomes-ui.js" defer></script>
