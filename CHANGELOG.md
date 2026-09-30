@@ -1,3 +1,16 @@
+# v2.69.1 — Current Program Visibility Hotfix
+
+- Treat the scheduled reviewed program lifecycle as the canonical current/upcoming training plan even when the legacy `programs` library is empty and `activeProgramId` is null.
+- Refresh Home, Today/Train and Coach current-program surfaces immediately after a meet-prep cycle is scheduled.
+- After scheduling, return the athlete to the current-program card instead of leaving the newly accepted plan buried in setup tools.
+- Add a **View current program** action to already scheduled meet-cycle records.
+- Show program dates and the next scheduled session on the current-program lifecycle card.
+- Refresh the lifecycle card before the Program planner's **View current program** route scrolls to it.
+- Relabel the older generated-program area as a legacy generator selection/library so its `activeProgramId` state is not confused with the reviewed current program.
+- Coach reminders now prefer the reviewed scheduled lifecycle and only describe the old generator selection as legacy.
+- Add unit and browser regressions for the exact state seen in the September 30 export: scheduled meet cycle present, scheduled sessions present, legacy `programs: []`, and `activeProgramId: null`.
+- No training-policy, scheduling-rule, weight-unit or schema change; schema remains v25.
+
 # v2.69.0 — Decisions-Driven Program Planning
 
 - Add deterministic `program-planning-decision-v1` as the authority for meet-prep timeline arithmetic and phase allocation.
