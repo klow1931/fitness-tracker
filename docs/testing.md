@@ -87,3 +87,15 @@ Earlier release-time execution notes described the tests available then. Current
 - Verify the same gate result under kg and lb display settings because all gate calculations operate on internal kg and explicit exercise training maxes.
 - On desktop and 390px mobile, verify the full-cycle preview shows gate status, findings, weekly lift frequency/sets/%TM/specificity and session-time demand without horizontal overflow.
 - Confirm a newly saved cycle freezes the quality-gate snapshot/policy identity and a legacy v2.66 cycle without the snapshot still validates.
+
+
+### v2.68 programming-workspace acceptance
+
+- Coach → Programming shows one Program planner before alternate creation tools; the alternate tools section is collapsed by default on desktop and 390px mobile.
+- With no programming setup, the planner routes to setup. Return/re-entry routes to the quick four-week block. General/strength routes to Program designer. Meet/event-date context routes through Program designer into Meet timeline. A scheduled current/upcoming program routes back to current-program workflow.
+- A Sunday/non-Monday start entered in Program designer or the quick four-week builder is aligned to the next Monday and the preview shows the stored Monday date instead of returning a validation error.
+- A profile event date overlapping the standalone phase setup produces a review warning rather than blocking lift-setup creation.
+- A valid meet cycle whose reviewed event date differs from the profile default can be previewed and saved; the mismatch must remain explicit in warnings.
+- Soft profile changes (notes/event-date default) after program review do not independently block scheduling. Hard incompatibilities in available days, time, equipment, avoided exercises or exercise roles must still block.
+- The legacy four-week, phase, meet-cycle and adoption records remain loadable and retain their existing persistence/history behavior.
+- Full static, Node, mobile-package and desktop + 390px Playwright suites must pass before release.
