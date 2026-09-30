@@ -24,14 +24,15 @@
   function route(state,{asOf}={}){
     if(!validDate(asOf))throw Error('Choose a valid programming workspace date');
     const profile=Profile.current(state?.programmingProfiles||[]),summary=profileSummary(profile);
-    const phases=Phase.validate(state?.phasePrograms||[]).filter(p=>p.config.startDate>=asOf).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    const allPhases=Phase.validate(state?.phasePrograms||[]).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),phases=allPhases.filter(p=>!p.scheduledAt&&p.config.startDate>=asOf);
     const cycles=Meet.validate(state?.meetCycles||[]).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     const activeCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate<=asOf&&c.config.meetDate>=asOf)||null;
     const upcomingCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate>asOf)||null;
+    const scheduledPhase=allPhases.find(p=>p.scheduledAt&&(p.sessions||[]).some(s=>s.date>=asOf))||null;
     const reviewedCycle=cycles.find(c=>!c.scheduledAt&&c.config.meetDate>=asOf)||null;
-    if(activeCycle||upcomingCycle){
+    if(activeCycle||upcomingCycle||scheduledPhase){
       const cycle=activeCycle||upcomingCycle;
-      return {version:1,policy:POLICY,status:'scheduled',profile:summary,primaryAction:'view-current',title:activeCycle?'Current cycle is already scheduled':'Your next cycle is already scheduled',reason:'Use the current-program controls above for training and reviews. New program tools stay tucked away unless you intentionally want another plan.',cycleId:cycle.id,sourceId:cycle.sourceProgram?.id||null};
+      return {version:1,policy:POLICY,status:'scheduled',profile:summary,primaryAction:'view-current',title:activeCycle?'Current cycle is already scheduled':upcomingCycle||scheduledPhase?'Your next/current program is already scheduled':'Program scheduled',reason:'Use the current-program controls above for training and reviews. New program tools stay tucked away unless you intentionally want another plan.',cycleId:cycle?.id||null,sourceId:cycle?.sourceProgram?.id||scheduledPhase?.id||null};
     }
     if(!profile)return {version:1,policy:POLICY,status:'needs-profile',profile:null,primaryAction:'profile',title:'Set up your training once',reason:'Tell Loadnote your goal, available days, session time and equipment. The program planner will reuse those settings instead of asking you to reconcile multiple builders.'};
     const p=profile.context;
