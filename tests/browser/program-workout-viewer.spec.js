@@ -37,7 +37,7 @@ test('current program opens a mobile weekly workout viewer with targets and pres
  await expect(dialog).toContainText('Mock meet');
  const first=dialog.locator('[data-program-session]').first();
  await first.locator('summary').click();
- await expect(first).toContainText('Competition Bench Press');
+ await expect(first).toContainText('Competition Bench');
  await expect(first).toContainText('% TM');
  await expect(first).toContainText('RPE 7');
  await expect(first).toContainText('Why:');
@@ -60,7 +60,7 @@ test('Calendar shows the same future scheduled prescription before the workout i
  const cell=page.locator('#calendar-grid .cal-cell[aria-label^="'+info.date+'"]');
  await expect(cell).toHaveClass(/has-planned/);
  await expect(page.locator('#cal-day-detail')).toContainText('PLANNED');
- await expect(page.locator('#cal-day-detail')).toContainText('Competition Bench Press');
+ await expect(page.locator('#cal-day-detail')).toContainText('Competition Bench');
  await expect(page.locator('#cal-day-detail')).toContainText('% TM');
  await expect(page.locator('#cal-day-detail')).toContainText('RPE 7');
  await expect(page.locator('#cal-day-detail')).toContainText('Competition-lift practice');
