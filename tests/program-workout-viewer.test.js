@@ -21,9 +21,10 @@ record.revisions.at(-1).context.prescription.plannedExercises[0].sets[0].weight+
 view=Viewer.view(phase,{asOf:'2026-09-24',programId:'viewer-phase'});
 assert.equal(view.sessions[0].exercises[0].sets[0].weight,record.revisions.at(-1).context.prescription.plannedExercises[0].sets[0].weight,'viewer must use the current scheduled prescription, not a stale source copy');
 
-const source=phase.phasePrograms[0],meetDate=(()=>{const d=new Date(source.config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+11*7+5);return d.toISOString().slice(0,10);})();
-const proposal=Meet.prepare(phase,source,{version:1,meetDate,eventType:'mock'},args);
-let meet=Meet.save(phase,proposal,{confirmed:true,notes:'viewer meet'},{...args,id:'viewer-meet'});
+const meetBase=Phase.save(state,Phase.prepare(state,config,args),{confirmed:true,notes:'viewer meet source'},{...args,id:'viewer-meet-source'});
+const source=meetBase.phasePrograms[0],meetDate=(()=>{const d=new Date(source.config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+11*7+5);return d.toISOString().slice(0,10);})();
+const proposal=Meet.prepare(meetBase,source,{version:1,meetDate,eventType:'mock'},args);
+let meet=Meet.save(meetBase,proposal,{confirmed:true,notes:'viewer meet'},{...args,id:'viewer-meet'});
 meet=Meet.schedule(meet,'viewer-meet',{...args,now:'2026-09-24T14:00:00.000Z'});
 view=Viewer.view(meet,{asOf:'2026-09-24',programId:'viewer-meet'});
 assert.equal(view.program.kind,'meet-cycle');
