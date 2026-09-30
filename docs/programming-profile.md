@@ -27,3 +27,12 @@ New reviewed programs retain a `profileSnapshot` of the revision used during gen
 Profile history and program snapshots participate in existing JSON export/import and recovery snapshots. Import previews include revision counts. Older backups remain importable with an empty profile history. CSV is not a full backup. Failed persistence does not adopt the candidate profile state.
 
 Automated tests cover revisions, clearing, chronology, malformed imports, profile constraints, stale preview/scheduling, immutable snapshots, legacy migration, offline reload, responsive UI, backup round trips and failed writes. Physical iPhone validation remains separate from Chromium mobile emulation.
+
+
+## v2.68 planner setup semantics
+
+Coach → Programming now presents this record as **Training setup** feeding one Program planner. Structured availability, session time, equipment and avoided exercise IDs remain hard constraints. Goal, experience, priorities/notes and the optional event date remain recorded context.
+
+The optional event date is a planning default rather than an exact-match lock. The Meet timeline may use a different explicitly reviewed valid event date and records the mismatch as a warning. Changing soft context after program review no longer prevents scheduling by itself; scheduling still re-runs the current hard constraints and blocks incompatible days, time, equipment, avoided exercises or exercise-role mappings.
+
+See `docs/programming-workspace.md`.
