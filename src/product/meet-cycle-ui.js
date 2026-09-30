@@ -1,4 +1,4 @@
-/* v2.35 — review, save and explicitly schedule mock or competition meet cycles. */
+/* v2.69.2 — meet-cycle review, scheduling and current-program workout access. */
 (function(){
  'use strict';
  let busy=false,preview=null,asOf='',chosenSource=null;
@@ -42,7 +42,7 @@
     '<p id="cycle-status" role="alert"></p>';
   host.querySelector('#cycle-new')?.addEventListener('click',()=>open(sources.find(p=>p.id===host.querySelector('#cycle-source').value)));
   host.querySelectorAll('[data-cycle-schedule]').forEach(b=>b.addEventListener('click',()=>schedule(b.dataset.cycleSchedule)));
-  host.querySelectorAll('[data-cycle-current]').forEach(b=>b.addEventListener('click',showCurrentProgram));
+  host.querySelectorAll('[data-cycle-current]').forEach(b=>b.addEventListener('click',()=>showCurrentProgram(b.dataset.cycleCurrent)));
   window.renderMockMeet?.();
  }
  function open(source){
@@ -78,7 +78,8 @@
   dlg.querySelector('#cycle-close').onclick=()=>{if(!busy)dlg.close();};
   dlg.oncancel=e=>{if(busy)e.preventDefault();};dlg.showModal();
  }
- function showCurrentProgram(){
+ function showCurrentProgram(id){
+  if(window.LoadnoteProgramWorkoutViewerUI?.open){window.LoadnoteProgramWorkoutViewerUI.open(id);return;}
   window.renderProgramLifecycle?.();
   window.renderTodayTraining?.();
   const current=document.getElementById('decision-action-center');
@@ -87,7 +88,7 @@
  async function schedule(id){
   if(busy||!confirm('Schedule all reviewed meet-prep cycle workouts? No existing Calendar sessions will be replaced. Event-day attempts are not selected.'))return;
   busy=true;const host=document.getElementById('meet-cycle');try{
-   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();window.renderProgramLifecycle?.();window.renderTodayTraining?.();showToast('Reviewed meet-prep cycle scheduled · current program updated','success');setTimeout(showCurrentProgram,50);
+   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();window.renderProgramLifecycle?.();window.renderTodayTraining?.();showToast('Reviewed meet-prep cycle scheduled · current program updated','success');setTimeout(()=>showCurrentProgram(id),50);
   }catch(err){host.querySelector('#cycle-status').textContent=err.message;}finally{busy=false;}
  }
  window.LoadnoteMeetCycleUI={open};
