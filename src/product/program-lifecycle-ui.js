@@ -1,4 +1,4 @@
-/* v2.61 — active-program lifecycle surfaces for Home, Coach and post-workout recap. */
+/* v2.69.2 — active-program lifecycle surfaces plus direct workout viewing. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -46,10 +46,11 @@
    const missed=(r.missedReviews||[]).length?'<p class="program-lifecycle-history-note">'+r.missedReviews.length+' earlier review window'+(r.missedReviews.length===1?' passed':'s passed')+' without a saved review. Past prescriptions stay unchanged; this does not block current training.</p>':'';
    return '<div class="program-lifecycle-head"><div><p class="eyebrow">'+esc(kind.toUpperCase())+'</p><h3>'+esc(r.program.name)+'</h3><p class="program-lifecycle-meta">'+esc(programLine(r))+'</p></div><span class="badge">'+esc(r.status==='completed'?'Handoff':r.status==='upcoming'?'Upcoming':'Active')+'</span></div>'+
      '<div class="program-lifecycle-next"><span>Next action</span><b>'+esc(r.nextAction.label)+'</b><p>'+esc(r.nextAction.detail)+'</p></div>'+missed+
-     '<div class="program-lifecycle-actions"><button type="button" class="btn-'+(compact?'secondary':'primary')+'" data-lifecycle-action>'+esc(actionLabel(r.nextAction.kind))+'</button>'+(r.schedule?.next&&r.nextAction.kind!=='next-session'?'<button type="button" class="btn-secondary" data-lifecycle-calendar>Calendar</button>':'')+'</div>';
+     '<div class="program-lifecycle-actions"><button type="button" class="btn-'+(compact?'secondary':'primary')+'" data-lifecycle-action>'+esc(actionLabel(r.nextAction.kind))+'</button><button type="button" class="btn-secondary" data-lifecycle-workouts>View workouts</button>'+(r.schedule?.next&&r.nextAction.kind!=='next-session'?'<button type="button" class="btn-secondary" data-lifecycle-calendar>Calendar</button>':'')+'</div>';
  }
  function bind(host,r){
    host?.querySelector('[data-lifecycle-action]')?.addEventListener('click',()=>route(r));
+   host?.querySelector('[data-lifecycle-workouts]')?.addEventListener('click',()=>window.LoadnoteProgramWorkoutViewerUI?.open?.(r?.program?.id));
    host?.querySelector('[data-lifecycle-calendar]')?.addEventListener('click',()=>showTab('calendar'));
  }
  function home(r=currentReport()){
