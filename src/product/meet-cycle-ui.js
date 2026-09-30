@@ -35,8 +35,8 @@
   const host=document.getElementById('meet-cycle');if(!host)return;
   const sources=LoadnotePhaseBuilder.validate(data.phasePrograms||[]);
   let records;try{records=LoadnoteMeetCycle.validate(data.meetCycles||[]);}catch(error){host.innerHTML='<p role="alert">'+esc(error.message)+'</p>';return;}
-  host.innerHTML='<div class="decision-section-heading"><span class="eyebrow">FLEXIBLE CYCLE</span><h3>Meet preparation</h3><p>Build 7–52 weeks toward either a mock meet or a competition meet. 8, 12, 16 and 20 weeks are presets, not fixed limits.</p></div>'+
-    (sources.length?'<label>Reviewed lift setup<select id="cycle-source" class="input">'+sources.slice().reverse().map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · '+esc(p.config.startDate)+'</option>').join('')+'</select></label><button id="cycle-new" type="button" class="btn-primary">Build a meet-prep cycle</button>':'<p>First create and save a phase-based proposal above to confirm competition-lift identities, working sets, training maxes and exposure days. The proposal is used as lift setup; no workouts are scheduled by creating it.</p>')+
+  host.innerHTML='<div class="decision-section-heading"><span class="eyebrow">MEET TIMELINE</span><h3>Finish meet preparation</h3><p>After lift setup, choose the full 7–52 week timeline, peak, taper and event. Your reviewed cycle date can differ from the profile default.</p></div>'+
+    (sources.length?'<label>Reviewed lift setup<select id="cycle-source" class="input">'+sources.slice().reverse().map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · '+esc(p.config.startDate)+'</option>').join('')+'</select></label><button id="cycle-new" type="button" class="btn-primary">Build a meet-prep cycle</button>':'<p>No reviewed lift setup is available yet. Use the Program planner to start meet prep; it will bring you here automatically after the lift setup is saved.</p>')+
     records.slice().reverse().map(r=>{const type=LoadnoteMeetCycle.eventType(r.config),event=type==='competition'?(r.config.eventName||'Competition meet'):'Mock meet';return '<details class="more-details" data-cycle="'+esc(r.id)+'" data-event-type="'+esc(type)+'"><summary>'+esc(r.sourceProgram.config.name)+' · '+r.config.weeks+' weeks · '+esc(event)+' · '+(r.scheduledAt?'Scheduled':'Reviewed')+'</summary><p>Start '+esc(r.config.startDate)+' · '+esc(event)+' '+esc(r.config.meetDate)+'</p><p>Accumulation '+r.config.accumulationWeeks+' · Strength '+r.config.strengthWeeks+' · Peak '+r.config.peakWeeks+' · Taper '+r.config.taperWeeks+' · Meet 1</p><p>Quality gate: <b>'+esc(r.qualityGate?qualityLabel(r.qualityGate.status):'LEGACY')+'</b> · Approved '+esc(r.createdAt)+'. Original program preserved for future comparisons.</p><details class="more-details"><summary>Original weekly outline</summary>'+r.weekly.map(w=>'<p>Week '+w.week+': '+esc(w.phase)+' · '+w.sessionCount+' workout(s)'+(w.meetDate?' · '+esc(event)+' '+esc(w.meetDate):'')+'</p>').join('')+'</details>'+(r.scheduledAt?'<p>Open workouts from Calendar. Future changes must be approved separately.</p>':'<button type="button" class="btn-primary" data-cycle-schedule="'+esc(r.id)+'">Schedule reviewed workouts</button>')+'</details>'}).join('')+
     '<p id="cycle-status" role="alert"></p>';
   host.querySelector('#cycle-new')?.addEventListener('click',()=>open(sources.find(p=>p.id===host.querySelector('#cycle-source').value)));
@@ -46,20 +46,20 @@
  function open(source){
   if(!source||busy)return;chosenSource=source;preview=null;
   let dlg=document.getElementById('cycle-dialog');if(!dlg){dlg=document.createElement('dialog');dlg.id='cycle-dialog';dlg.className='card schedule-dialog';document.body.append(dlg);}
-  const start=source.config.startDate;
-  dlg.innerHTML='<form id="cycle-form"><h2>Build your meet-prep cycle</h2><p>Using reviewed lift setup: '+esc(source.config.name)+'. Start: '+esc(start)+'. Current work and approved source remain unchanged.</p>'+
+  const start=source.config.startDate,profile=LoadnoteProgrammingProfile.current(data.programmingProfiles||[]),profileContext=profile?.context||null;
+  dlg.innerHTML='<form id="cycle-form"><h2>Meet-prep timeline</h2><p>Using reviewed lift setup: '+esc(source.config.name)+'. Start: '+esc(start)+'. Current work and approved source remain unchanged.</p>'+
    '<label>Event type<select class="input" id="cycle-event-type"><option value="mock" selected>Mock meet</option><option value="competition">Competition meet</option></select></label><label id="cycle-event-name-wrap" hidden style="display:none">Competition meet name<input class="input" id="cycle-event-name" maxlength="120" placeholder="Meet name"></label>'+ 
    '<label>Program length (weeks, includes meet week)<input class="input" type="number" id="cycle-weeks" min="7" max="52" step="1" value="12"></label>'+
    '<div class="cycle-presets" role="group" aria-label="Program length presets">'+[8,12,16,20].map(w=>'<button class="btn-secondary" data-cycle-preset="'+w+'" type="button">'+w+' weeks</button>').join('')+'</div>'+
    '<label>Peak duration (weeks)<select class="input" id="cycle-peak"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></label>'+
    '<label>Taper duration (weeks)<select class="input" id="cycle-taper"><option value="1" selected>1</option><option value="2">2</option></select></label>'+
-   '<label><span id="cycle-date-label">Mock meet (Saturday or Sunday of the final week)</span><input class="input" id="cycle-meet-date" type="date"></label>'+
+   '<label><span id="cycle-date-label">Mock meet (Saturday or Sunday of the final week)</span><input class="input" id="cycle-meet-date" type="date"></label><p class="more-hint" id="cycle-profile-date-hint">'+(profileContext?.eventDate?'Profile event date '+esc(profileContext.eventDate)+' is used as a starting default when it fits this cycle. You can change the reviewed cycle date here without editing your profile.':'No profile event date is required; choose the date for this cycle here.')+'</p>'+
    '<p class="more-hint">Remaining weeks split between accumulation and strength; each gets at least two weeks. Beyond six weeks in a phase, the last supported loading target holds rather than automatically increasing indefinitely.</p>'+
    '<button class="btn-primary" type="submit">Preview every week</button><div id="cycle-preview"></div><p id="cycle-error" role="alert"></p><button type="button" id="cycle-close" class="btn-secondary">Close</button></form>';
   const type=dlg.querySelector('#cycle-event-type'),name=dlg.querySelector('#cycle-event-name'),nameWrap=dlg.querySelector('#cycle-event-name-wrap'),dateLabel=dlg.querySelector('#cycle-date-label'),length=dlg.querySelector('#cycle-weeks'),meet=dlg.querySelector('#cycle-meet-date'),output=dlg.querySelector('#cycle-preview'),error=dlg.querySelector('#cycle-error');
   const recalc=()=>meet.value=move(start,(Number(length.value)-1)*7+5);
   const syncType=()=>{const competition=type.value==='competition';nameWrap.hidden=!competition;nameWrap.style.display=competition?'grid':'none';name.required=competition;dateLabel.textContent=competition?'Competition meet date (inside the final week)':'Mock meet (Saturday or Sunday of the final week)';if(!competition)name.value='';};
-  recalc();syncType();
+  const profileWeeks=profileContext?.eventDate&&window.LoadnoteProgrammingWorkspace?.weeksToEvent?window.LoadnoteProgrammingWorkspace.weeksToEvent(start,profileContext.eventDate):null,profileEventDay=profileContext?.eventDate?new Date(profileContext.eventDate+'T12:00:00Z').getUTCDay():null;if(profileContext?.goal==='meet'||(profileContext?.eventDate&&!([0,6].includes(profileEventDay))))type.value='competition';if(profileWeeks){length.value=String(profileWeeks);meet.value=profileContext.eventDate;}else recalc();syncType();
   const invalidate=()=>{preview=null;output.replaceChildren();error.textContent='';};
   length.addEventListener('input',()=>{recalc();invalidate();});
   meet.addEventListener('input',invalidate);type.addEventListener('change',()=>{syncType();invalidate();});name.addEventListener('input',invalidate);
@@ -74,7 +74,7 @@
   async function save(){
    if(busy||!preview)return;busy=true;try{
      const next=LoadnoteMeetCycle.save(data,preview,{confirmed:dlg.querySelector('#cycle-confirm').checked,notes:dlg.querySelector('#cycle-notes').value},{asOf:today()});
-     clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();dlg.close();showToast('Original meet-prep cycle saved · schedule separately','success');
+     clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();window.renderProgrammingWorkspace?.();dlg.close();showToast('Meet-prep cycle saved · schedule when ready','success');
    }catch(err){error.textContent=err.message;}finally{busy=false;}
   }
   dlg.querySelector('#cycle-close').onclick=()=>{if(!busy)dlg.close();};
@@ -83,8 +83,9 @@
  async function schedule(id){
   if(busy||!confirm('Schedule all reviewed meet-prep cycle workouts? No existing Calendar sessions will be replaced. Event-day attempts are not selected.'))return;
   busy=true;const host=document.getElementById('meet-cycle');try{
-   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();showToast('Reviewed meet-prep cycle scheduled','success');
+   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();window.renderProgrammingWorkspace?.();showToast('Reviewed meet-prep cycle scheduled','success');
   }catch(err){host.querySelector('#cycle-status').textContent=err.message;}finally{busy=false;}
  }
+ window.LoadnoteMeetCycleUI={open};
  window.renderMeetCycle=render;
 })();
