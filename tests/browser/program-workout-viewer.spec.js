@@ -57,8 +57,8 @@ test('Calendar shows the same future scheduled prescription before the workout i
    calSelectedDate=day;
    renderCalendar();
  },info.date);
- const cell=page.locator('#calendar-grid .cal-cell').filter({hasText:String(Number(info.date.slice(-2)))});
- await expect(page.locator('#calendar-grid .cal-cell.has-planned')).toHaveCount(1);
+ const cell=page.locator('#calendar-grid .cal-cell[aria-label^="'+info.date+'"]');
+ await expect(cell).toHaveClass(/has-planned/);
  await expect(page.locator('#cal-day-detail')).toContainText('PLANNED');
  await expect(page.locator('#cal-day-detail')).toContainText('Competition Bench Press');
  await expect(page.locator('#cal-day-detail')).toContainText('% TM');
