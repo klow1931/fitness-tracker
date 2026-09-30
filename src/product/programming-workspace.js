@@ -23,9 +23,9 @@
   }
   function route(state,{asOf}={}){
     if(!validDate(asOf))throw Error('Choose a valid programming workspace date');
-    const profile=Profile.current(state?.programmingProfiles||[]),summary=profileSummary(profile);
-    const allPhases=Phase.validate(state?.phasePrograms||[]).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),phases=allPhases.filter(p=>!p.scheduledAt&&p.config.startDate>=asOf);
-    const cycles=Meet.validate(state?.meetCycles||[]).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    const cutoff=asOf+'T23:59:59.999Z',profile=Profile.current(state?.programmingProfiles||[],cutoff),summary=profileSummary(profile);
+    const allPhases=Phase.validate(state?.phasePrograms||[]).filter(p=>p.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),phases=allPhases.filter(p=>!p.scheduledAt&&p.config.startDate>=asOf);
+    const cycles=Meet.validate(state?.meetCycles||[]).filter(c=>c.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     const activeCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate<=asOf&&c.config.meetDate>=asOf)||null;
     const upcomingCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate>asOf)||null;
     const scheduledPhase=allPhases.find(p=>p.scheduledAt&&(p.sessions||[]).some(s=>s.date>=asOf))||null;
