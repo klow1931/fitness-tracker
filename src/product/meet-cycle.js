@@ -1,8 +1,8 @@
 /* v2.30 — flexible, reviewed meet-cycle proposals built on the existing phase-plan engine. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'));
- else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'),require('./program-planning-decision'));
+ else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate,root.LoadnoteProgramPlanningDecision);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate,Planning){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x));
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -18,7 +18,9 @@
    if(!Number.isInteger(raw.peakWeeks)||raw.peakWeeks<1||raw.peakWeeks>4||!Number.isInteger(raw.taperWeeks)||raw.taperWeeks<1||raw.taperWeeks>2)throw Error('Choose 1–4 peak weeks and 1–2 taper weeks');
    const baseWeeks=raw.weeks-raw.peakWeeks-raw.taperWeeks-1;
    if(baseWeeks<4)throw Error('Reserve at least two accumulation weeks and two strength weeks before peaking');
-   const accumulationWeeks=Math.max(2,Math.min(baseWeeks-2,Math.round(baseWeeks*.55))),strengthWeeks=baseWeeks-accumulationWeeks;
+   const explicit=Number.isInteger(raw.accumulationWeeks)||Number.isInteger(raw.strengthWeeks);let accumulationWeeks,strengthWeeks;
+   if(explicit){if(!Number.isInteger(raw.accumulationWeeks)||!Number.isInteger(raw.strengthWeeks)||raw.accumulationWeeks<2||raw.strengthWeeks<2||raw.accumulationWeeks+raw.strengthWeeks!==baseWeeks)throw Error('Accumulation and strength weeks must match the date-derived base timeline');accumulationWeeks=raw.accumulationWeeks;strengthWeeks=raw.strengthWeeks;}
+   else{accumulationWeeks=Math.max(2,Math.min(baseWeeks-2,Math.round(baseWeeks*.55)));strengthWeeks=baseWeeks-accumulationWeeks;}
    const meetWeekStart=move(base.startDate,(raw.weeks-1)*7),meetDate=raw.meetDate;
    if(!Schedule.date(meetDate)||meetDate<meetWeekStart||meetDate>move(meetWeekStart,6))throw Error('Event date must fall inside the final program week');
    if(type==='mock'&&![0,6].includes(new Date(meetDate+'T12:00:00Z').getUTCDay()))throw Error('Mock meet must be Saturday or Sunday of the final program week');
@@ -61,9 +63,16 @@
    if(sourceRecord.scheduledAt)warnings.push('The source phase program is already scheduled; its Calendar sessions must not overlap this new cycle.');
    return {version:1,config:c,sourceProgram:copy(sourceRecord),sessions,weekly,warnings};
  }
+ function planningInput(raw){
+   if(raw?.planningInput)return copy(raw.planningInput);
+   const override=raw?.phaseOverride||raw?.manualPhaseOverride||null;
+   return {meetDate:raw?.meetDate||null,eventType:eventType(raw),eventName:raw?.eventName||'',phaseOverride:override?copy(override):null};
+ }
+ function legacyPlanningInput(c){return {meetDate:c.meetDate,eventType:eventType(c),eventName:c.eventName||'',phaseOverride:{accumulationWeeks:c.accumulationWeeks,strengthWeeks:c.strengthWeeks,peakWeeks:c.peakWeeks,taperWeeks:c.taperWeeks}};}
  function prepare(state,source,raw,{asOf,now=new Date().toISOString()}={}){
    if(!Schedule.date(asOf)||!iso(now)||now.slice(0,10)<asOf)throw Error('Choose a valid current review date');
-   const result=build(source,raw),c=result.config,base=result.sourceProgram.config,cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
+   const planningDecision=Planning.plan(state,source,planningInput(raw),{asOf,now});if(planningDecision.status!=='ready')throw Error(planningDecision.summary);
+   const result=build(source,planningDecision.config),c=result.config,base=result.sourceProgram.config,cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
    if(result.sourceProgram.createdAt>cutoff)throw Error('Reviewed lift setup was not known on this date');
    if(c.startDate<asOf)throw Error('Start the cycle today or later');
    const profile=Profile.current(state.programmingProfiles||[],cutoff);if(!profile)throw Error('Create a programming profile first');
@@ -86,7 +95,7 @@
    if(existing.length)result.warnings.push(existing.length+' existing Calendar session(s) fall within this proposed cycle; conflicts must be resolved before scheduling.');
    if(result.weekly.some(w=>(w.phase==='mock-meet'||w.phase==='meet')&&w.sessionCount))throw Error('Meet day must not receive inferred training attempts');
    const qualityGate=QualityGate.inspect(result);
-   return {...result,profileSnapshot:copy(profile),roleSnapshot:snapshot,qualityGate};
+   return {...result,planningDecision,profileSnapshot:copy(profile),roleSnapshot:snapshot,qualityGate};
  }
  function validate(records){
    if(!Array.isArray(records)||records.length>40)throw Error('Invalid meet cycles');
@@ -99,23 +108,24 @@
      const expected=r.sourceProgram.roleSnapshot;
      if(!Array.isArray(r.roleSnapshot)||r.roleSnapshot.length!==expected.length||r.roleSnapshot.some(role=>role.updatedAt>r.createdAt)||expected.some(e=>!r.roleSnapshot.some(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift)))throw Error('Invalid competition exercise snapshot');
      if(r.scheduledAt!=null&&(!iso(r.scheduledAt)||r.scheduledAt<r.createdAt))throw Error('Invalid scheduling timestamp');
+     if(r.planningDecision!==undefined)Planning.validate(r.planningDecision,r.sourceProgram,built.config);
      if(r.qualityGate!==undefined)QualityGate.validate(r.qualityGate,{...built,profileSnapshot:r.profileSnapshot,roleSnapshot:r.roleSnapshot});
-     if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');if(r.qualityGate!==undefined&&env.policies.programQualityGate!==QualityGate.POLICY)throw Error('Invalid program quality-gate policy identity');}
+     if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!==POLICY)throw Error('Invalid meet-cycle decision policy identity');if(r.qualityGate!==undefined&&env.policies.programQualityGate!==QualityGate.POLICY)throw Error('Invalid program quality-gate policy identity');if(r.planningDecision!==undefined&&env.policies.programPlanning!==Planning.POLICY)throw Error('Invalid program-planning decision policy identity');}
      return copy(r);
    });
  }
  function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
    if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review and approve the full cycle before saving');
    if(proposal?.qualityGate?.status==='blocking')throw Error('Resolve blocking program quality-gate findings before saving');
-   const fresh=prepare(state,proposal.sourceProgram,proposal.config,{asOf,now});
+   const fresh=prepare(state,proposal.sourceProgram,{planningInput:proposal.planningDecision?.input||legacyPlanningInput(proposal.config)},{asOf,now});
    if(JSON.stringify(fresh)!==JSON.stringify(proposal))throw Error('Training context, dates or Calendar evidence changed; regenerate the cycle');
-   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:POLICY,programQualityGate:QualityGate.POLICY}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+   const row={...copy(fresh),id,createdAt:now,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'meet-cycle-review',policies:{meetCycle:POLICY,programQualityGate:QualityGate.POLICY,programPlanning:Planning.POLICY}}),review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
    return {...state,meetCycles:validate([...(state.meetCycles||[]),row])};
  }
  function schedule(state,id,{asOf,now=new Date().toISOString()}={}){
    if(!Schedule.date(asOf)||!iso(now)||now.slice(0,10)<asOf)throw Error('Choose a valid scheduling date');
    const all=validate(state.meetCycles||[]),record=all.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Reviewed meet cycle unavailable or already scheduled');
-   const fresh=prepare(state,record.sourceProgram,record.config,{asOf,now});
+   const fresh=prepare(state,record.sourceProgram,{planningInput:record.planningDecision?.input||legacyPlanningInput(record.config)},{asOf,now});
    if(JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot))throw Error('Competition exercise roles changed; review a fresh cycle');
    const scheduled=Schedule.list(state.scheduledSessions||[]);
    if(scheduled.some(s=>s.status==='scheduled'&&s.date>=record.config.startDate&&s.date<=record.config.meetDate))throw Error('Calendar conflict: resolve existing sessions before scheduling the meet cycle');
@@ -128,5 +138,5 @@
    record.scheduledAt=now;
    return {...state,meetCycles:validate(all),scheduledSessions:sessions};
  }
- return {POLICY,EVENT_TYPES,eventType,config,build,prepare,validate,save,schedule};
+ return {POLICY,EVENT_TYPES,eventType,config,build,prepare,validate,save,schedule,planningInput};
 });
