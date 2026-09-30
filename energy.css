@@ -668,3 +668,28 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 #meet-cycle .mock-meet-recap { margin:.7rem 0; }
 #meet-cycle .mock-meet-recap article { padding:.5rem 0; border-top:1px solid var(--line); }
 #meet-cycle [data-meet-error] { font-size:.77rem; }
+
+
+/* v2.68 — simplified programming workspace */
+#panel-coach .programming-workspace { display:grid; gap:.7rem; min-width:0; }
+#panel-coach .programming-workspace-head { display:flex; align-items:flex-start; justify-content:space-between; gap:.8rem; min-width:0; }
+#panel-coach .programming-workspace-head > div { min-width:0; }
+#panel-coach .programming-workspace-head h3 { margin:.15rem 0 .25rem; font-size:1.05rem; line-height:1.25; }
+#panel-coach .programming-workspace-head p { margin:0; font-size:.8rem; color:var(--muted); line-height:1.5; }
+#panel-coach .programming-workspace-meta { display:flex; flex-wrap:wrap; align-items:center; gap:.35rem .6rem; padding:.65rem .7rem; border:1px solid var(--line); border-radius:.75rem; background:rgba(148,163,184,.08); font-size:.78rem; }
+#panel-coach .programming-workspace-meta span { color:var(--muted); overflow-wrap:anywhere; }
+#panel-coach .programming-workspace-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+#panel-coach .programming-tools-panel { min-width:0; padding:.7rem .85rem; margin:0; }
+#panel-coach .programming-tools-panel > summary { display:flex; align-items:center; justify-content:space-between; gap:.7rem; list-style:none; cursor:pointer; min-height:48px; }
+#panel-coach .programming-tools-panel > summary::-webkit-details-marker { display:none; }
+#panel-coach .programming-tools-panel > summary::after { content:'⌄'; color:var(--muted); font-size:1.2rem; flex:0 0 auto; }
+#panel-coach .programming-tools-panel[open] > summary::after { transform:rotate(180deg); }
+#panel-coach .programming-tools-panel > summary b { display:block; font-size:.88rem; line-height:1.35; }
+#panel-coach .programming-tools-panel > summary small { display:block; color:var(--muted); font-size:.72rem; line-height:1.4; margin-top:.1rem; }
+#panel-coach .programming-tools-panel[open] > summary { margin-bottom:.7rem; border-bottom:1px solid var(--line); padding-bottom:.5rem; }
+#panel-coach .programming-tools-content { margin-top:.1rem; }
+@media(max-width:480px){
+  #panel-coach .programming-workspace-head { display:grid; grid-template-columns:1fr; }
+  #panel-coach .programming-workspace-head .readiness-status { width:max-content; }
+  #panel-coach .programming-workspace-actions > button { flex:1 1 100%; }
+}
