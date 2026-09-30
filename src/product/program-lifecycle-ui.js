@@ -22,7 +22,7 @@
    if(a.kind==='record-event'){window.openMeetResult?.(a.cycleId);return;}
    if(a.kind==='save-transition'){window.LoadnoteTransitionBaselineUI?.open?.(a.programId);return;}
    if(a.kind==='review-next-program'){window.LoadnoteNextBlockHandoffUI?.open?.(data,today());return;}
-   if(a.kind==='review-handoff'){openCoachPrograms();const panel=document.getElementById('phase-builder-panel');if(panel)panel.open=true;setTimeout(()=>document.getElementById('next-block-handoff')?.scrollIntoView({behavior:'smooth',block:'start'}),50);return;}
+   if(a.kind==='review-handoff'){openCoachPrograms();const tools=document.getElementById('programming-tools-panel'),panel=document.getElementById('phase-builder-panel');if(tools)tools.open=true;if(panel)panel.open=true;setTimeout(()=>document.getElementById('next-block-handoff')?.scrollIntoView({behavior:'smooth',block:'start'}),50);return;}
    openCoachPrograms();
  }
  function actionLabel(kind){
