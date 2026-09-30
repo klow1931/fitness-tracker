@@ -74,7 +74,7 @@
   async function save(){
    if(busy||!preview)return;busy=true;try{
      const next=LoadnoteMeetCycle.save(data,preview,{confirmed:dlg.querySelector('#cycle-confirm').checked,notes:dlg.querySelector('#cycle-notes').value},{asOf:today()});
-     clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();window.renderProgrammingWorkspace?.();dlg.close();showToast('Meet-prep cycle saved · schedule when ready','success');
+     clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();dlg.close();showToast('Meet-prep cycle saved · schedule when ready','success');
    }catch(err){error.textContent=err.message;}finally{busy=false;}
   }
   dlg.querySelector('#cycle-close').onclick=()=>{if(!busy)dlg.close();};
@@ -83,7 +83,7 @@
  async function schedule(id){
   if(busy||!confirm('Schedule all reviewed meet-prep cycle workouts? No existing Calendar sessions will be replaced. Event-day attempts are not selected.'))return;
   busy=true;const host=document.getElementById('meet-cycle');try{
-   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderSchedule?.();window.renderProgrammingWorkspace?.();showToast('Reviewed meet-prep cycle scheduled','success');
+   const next=LoadnoteMeetCycle.schedule(data,id,{asOf:today()});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();render();window.renderPhaseBuilder?.();window.renderSchedule?.();window.renderProgrammingWorkspace?.();showToast('Reviewed meet-prep cycle scheduled','success');
   }catch(err){host.querySelector('#cycle-status').textContent=err.message;}finally{busy=false;}
  }
  window.LoadnoteMeetCycleUI={open};
