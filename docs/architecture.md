@@ -25,6 +25,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `nutrition-model.js`, `nutrition-ui.js`, `nutrition-forms.js` | Nutrient/portion rules, day summaries, food entry/edit and barcode review |
 | `navigation.js`, `profile-ui.js`, `home-activity.js` | Primary/secondary navigation, consumer Profile composition and weekly activity model |
 | `program-lifecycle.js`, `program-lifecycle-ui.js` | Deterministic active-program state and workflow routing across training, reviews, events, transition baselines and next-block handoff |
+| `programming-workspace.js`, `programming-workspace-ui.js` | Read-only programming-route selection and compact consumer workspace over the existing profile/build/adoption engines |
 | `program-quality-gate.js`, `meet-cycle.js`, `meet-cycle-ui.js` | Whole-cycle structural simulation/quality review, immutable meet-cycle generation and athlete-facing full-cycle preview |
 | `units.js` | Display-unit conversion |
 | `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and deterministic/structured coaching rules |
@@ -77,3 +78,10 @@ No generic analytics/event ledger is introduced. The Cycle Journal is reconstruc
 `program-quality-gate.js` is a pure read-only structural inspector over an already generated meet-cycle proposal. It may classify findings as pass/review/blocking, but it never changes loads, sets, frequency, exercise selection, phase duration or Calendar state. `meet-cycle.js` remains the generator and approval boundary; blocking quality findings prevent save, while review findings remain athlete-review prompts.
 
 The gate fingerprints only the source-program identity/configuration plus generated cycle configuration/sessions/weekly outline. Newly reviewed meet cycles freeze the gate snapshot and policy identity for later audit. Older cycles without that additive metadata remain valid. Internal kg remains authoritative; unit display cannot change quality results.
+
+
+### v2.68 programming workspace boundary
+
+`programming-workspace.js` is a pure routing layer. It decides which existing programming workflow should be primary from the current reviewed state; it does not generate sessions, choose loads, approve plans or mutate data. `programming-workspace-ui.js` presents that route and keeps alternate creation tools collapsed by default.
+
+The underlying four-week, phase, meet-cycle and adoption engines remain separate for backward compatibility and auditability. v2.68 changes their consumer-facing organization and soft-context handling rather than merging their stored record types. Monday-based program records remain unchanged; UI date alignment happens before a proposal is built.

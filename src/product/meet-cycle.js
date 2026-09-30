@@ -70,7 +70,7 @@
    const p=profile.context;
    if(!['strength','general','meet'].includes(p.goal)||p.consistency==='returning')throw Error('Choose a suitable strength, general powerlifting or meet preparation profile');
    if(base.days.some(day=>!p.availableDays.includes(day))||base.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Cycle exceeds available days, equipment or time budget');
-   if(p.eventDate&&p.eventDate!==c.meetDate)throw Error('Meet date differs from the profile event date; confirm or update your profile');
+   if(p.eventDate&&p.eventDate!==c.meetDate)result.warnings.push('Cycle event date '+c.meetDate+' differs from the programming-profile event date '+p.eventDate+'. The reviewed cycle date is allowed to override the profile default; update the profile later only if you want future plans to use the new date.');
    const roles=Readiness.list(state.exerciseRoles||[],cutoff),snapshot=[];
    for(const lift of Phase.LIFTS){
      const l=base.lifts[lift],matches=roles.filter(r=>r.role==='competition'&&r.competitionLift===lift);
@@ -116,7 +116,7 @@
    if(!Schedule.date(asOf)||!iso(now)||now.slice(0,10)<asOf)throw Error('Choose a valid scheduling date');
    const all=validate(state.meetCycles||[]),record=all.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Reviewed meet cycle unavailable or already scheduled');
    const fresh=prepare(state,record.sourceProgram,record.config,{asOf,now});
-   if(JSON.stringify(fresh.profileSnapshot)!==JSON.stringify(record.profileSnapshot)||JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot))throw Error('Profile or exercise roles changed; review a fresh cycle');
+   if(JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot))throw Error('Competition exercise roles changed; review a fresh cycle');
    const scheduled=Schedule.list(state.scheduledSessions||[]);
    if(scheduled.some(s=>s.status==='scheduled'&&s.date>=record.config.startDate&&s.date<=record.config.meetDate))throw Error('Calendar conflict: resolve existing sessions before scheduling the meet cycle');
    if((state.meetCycles||[]).some(r=>r.id!==id&&r.scheduledAt&&r.config.startDate<=record.config.meetDate&&r.config.meetDate>=record.config.startDate))throw Error('An existing scheduled meet cycle overlaps this cycle');

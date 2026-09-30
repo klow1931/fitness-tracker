@@ -10,6 +10,7 @@ test.beforeEach(async({page})=>{
   data=LoadnotePhaseBuilder.save(data,proposal,{confirmed:true,notes:'Cycle lift setup'},{asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z',id:'cycle-base'});
   showTab('coach');showSubTab('coach','co-programs');renderPhaseBuilder();
  },{...phaseFixture().state,__cycleFixtureConfig:phaseFixture().config});
+ await page.locator('#programming-tools-panel > summary').click();
  await page.locator('#phase-builder-panel > summary').click();
 });
 test('8 12 16 20 and custom week lengths preserve complete phase dates and mock meet',async({page})=>{
@@ -39,6 +40,8 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  await page.locator('#cycle-confirm').check();
  await page.locator('#cycle-save').click();
  await expect(page.locator('#cycle-dialog')).not.toBeVisible();
+ await expect(page.locator('#phase-builder [data-phase-schedule]')).toHaveCount(0);
+ await expect(page.locator('#phase-builder')).toContainText('Used as meet-prep lift setup');
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(1);
  expect(await page.evaluate(()=>data.meetCycles[0].qualityGate?.status)).toBe('pass');
  expect(await page.evaluate(()=>data.meetCycles[0].decisionEnvironment?.policies?.programQualityGate)).toBe('program-quality-gate-v1');
@@ -53,7 +56,7 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  expect(await page.evaluate(()=>data.workouts.length)).toBe(phaseFixture().state.workouts.length);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.reload();
- await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();});
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');document.getElementById('programming-tools-panel').open=true;document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();});
  await expect(page.locator('[data-cycle]')).toContainText('Scheduled');
 });
 

@@ -1,3 +1,22 @@
+# v2.68.0 — Programming Workspace Simplification
+
+- Replace multiple equally prominent programming builders with one deterministic **Program planner** as the primary Coach → Programming entry point.
+- Route athletes from saved context to one next action: training setup, quick return block, main Program designer, guided meet prep, reviewed cycle, current program, or existing-program adoption.
+- Collapse Training setup, Quick 4-week return block, Program designer and program adoption under **Program setup & alternate tools** so they do not all compete for attention.
+- Reposition the legacy four-week builder as **Quick 4-week return/base block** instead of a general peer to the longer program designer.
+- Rename the phase-based UI to **Program designer** while preserving its existing reviewed accumulation → strength → deload engine.
+- Add a guided meet-prep path that saves reviewed lift setup and can continue directly into the full Meet timeline.
+- Treat the programming-profile event date as a planning default rather than requiring the full meet cycle to match it exactly.
+- Change phase setup event-date overlap from a hard failure to an explicit warning when the standalone sequence is being used as lift setup.
+- Allow an explicitly reviewed meet-cycle event date to override the profile event-date default with a visible warning.
+- Re-run hard profile constraints before scheduling without requiring byte-for-byte profile snapshot equality; soft note/event-default edits no longer invalidate otherwise compatible reviewed plans.
+- Continue blocking scheduling when current available days, time, equipment, avoided exercises or exercise-role mappings are incompatible.
+- Let non-Monday start intent in the Program designer and quick return builder automatically align to the next Monday instead of failing validation.
+- Prefill meet-cycle length/date from the profile event date when it maps cleanly to the supported 7–52 week timeline.
+- Add desktop/mobile browser coverage for the single-path workspace, collapsed alternate tools and Sunday-to-Monday start alignment.
+- Add `docs/programming-workspace.md`.
+- No training-policy or top-level schema change; schema v25 remains unchanged.
+
 # v2.67.0 — Program Simulation & Pre-Cycle Quality Gate
 
 - Add a deterministic whole-cycle quality gate before meet-cycle approval.

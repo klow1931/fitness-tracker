@@ -7,7 +7,7 @@ test('saved user program can be adopted, scheduled and reviewed without rewritin
    data.programs=[{id:7,name:'My Program',days:[{day:'Bench Day',exercises:['Competition Bench 3×5']}],daysPerWeek:1,level:'intermediate',focus:'strength',generated:'2026-09-01'}];
    data.exerciseCatalog=[{id:'bench',name:'Competition Bench',aliases:[]}];
    data.workouts=[{id:'prior',date:'2026-09-01',createdAt:'2026-09-01T18:00:00.000Z',exercises:[{name:'Competition Bench',exerciseId:'bench',type:'strength',sets:[{reps:5,weight:100,rpe:8}]}]}];
-   showTab('coach');showSubTab('coach','co-programs');renderProgramAdoption();document.getElementById('program-adoption-panel').open=true;
+   showTab('coach');showSubTab('coach','co-programs');renderProgramAdoption();document.getElementById('programming-tools-panel').open=true;document.getElementById('program-adoption-panel').open=true;
  });
  const host=page.locator('#program-adoption');await expect(host).toContainText('Adopt an existing program');
  await host.locator('#adoption-open').click();await page.locator('#adoption-start').fill('2026-09-07');await page.locator('#adoption-weeks').fill('2');

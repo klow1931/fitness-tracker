@@ -24,17 +24,24 @@ test('Decisions prioritizes plan, compact lift summaries, grouped programs and e
  await page.locator('#decision-open-logger').click();
  await expect(page.locator('[data-panel="workouts"][data-sub="wo-log"]')).toBeVisible();
 });
-test('Decisions cards fit a small iPhone in light and dark modes without hiding programming tools',async({page})=>{
+test('Decisions cards fit a small iPhone while alternate programming tools stay collapsed but accessible',async({page})=>{
  await page.setViewportSize({width:375,height:812});
  for(const dark of [false,true]){
   await page.evaluate(dark=>{data.dark=dark;applyDark();},dark);
   await expect(page.locator('#phase-review-panel')).toBeVisible();
+  await expect(page.locator('#programming-workspace')).toBeVisible();
+  await expect(page.locator('#programming-tools-panel')).not.toHaveAttribute('open','');
+  await expect(page.locator('#programming-profile-panel')).not.toBeVisible();
+  await expect(page.locator('#phase-builder-panel')).not.toBeVisible();
+  await page.locator('#programming-workspace-tools').click();
+  await expect(page.locator('#programming-tools-panel')).toHaveAttribute('open','');
   await expect(page.locator('#programming-profile-panel')).toBeVisible();
   await expect(page.locator('#phase-builder-panel')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-  const panels=await page.locator('#panel-coach .decision-workspace > details.card > summary,#panel-coach .decision-build-tools > details.card > summary').evaluateAll(nodes=>nodes.map(el=>({heading:getComputedStyle(el.querySelector('b')).display,detail:getComputedStyle(el.querySelector('small')).display,right:el.getBoundingClientRect().right})));
+  const panels=await page.locator('#panel-coach .decision-workspace > details.card > summary,#programming-tools-panel > summary,#panel-coach .decision-build-tools > details.card > summary').evaluateAll(nodes=>nodes.filter(el=>el.offsetParent!==null).map(el=>({heading:getComputedStyle(el.querySelector('b')).display,detail:getComputedStyle(el.querySelector('small')).display,right:el.getBoundingClientRect().right})));
   expect(panels.every(row=>row.heading==='block'&&row.detail==='block'&&row.right<=376)).toBe(true);
   const status=await page.locator('[data-decision-lift]').first().locator('.readiness-status').evaluate(el=>({color:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));
   expect(status.color).not.toBe(status.bg);
+  await page.evaluate(()=>{document.getElementById('programming-tools-panel').open=false;});
  }
 });

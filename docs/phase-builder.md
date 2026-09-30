@@ -87,3 +87,14 @@ Using the suggestion is explicit. The athlete can apply it to the editable build
 Meet-cycle reviews now resolve an explicit policy from the completed phase and next phase. Accumulation, strength, peaking and taper no longer share one generic recommendation mindset. See `docs/phase-specific-decisions.md` for the complete deterministic rules.
 
 Accumulation uses a higher evidence bar for optional upward loading and never stacks an additional increase onto the planned accumulation → strength transition. Strength retains guarded competition-specific progression. Peaking never adds load or volume; repeated directly comparable above-cap competition work can support one reviewed load increment lower inside the peak. Taper and event week remain protected. All changes stay athlete-approved, future-only and next-week bounded.
+
+
+## v2.68 Program designer workflow
+
+The phase-based engine remains unchanged, but its consumer-facing role is now the main **Program designer**. The old four-week builder is labeled as a quick return/base path rather than an equivalent general generator.
+
+For meet preparation, a reviewed phase proposal is treated as lift setup and can flow directly into the flexible Meet timeline. A profile event date that overlaps the standalone accumulation/strength/deload sequence is now a review warning instead of blocking creation of that lift setup. The full meet-cycle step remains responsible for validating the actual event week, peak and taper.
+
+The UI also accepts a non-Monday start intent and aligns the stored program to the next Monday. The underlying record format remains Monday-based for compatibility.
+
+See `docs/programming-workspace.md`.

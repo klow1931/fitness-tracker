@@ -2431,6 +2431,7 @@
       window.renderProgramAdoption?.();
       window.renderPowerliftingBuilder?.();
       window.renderPhaseBuilder?.();
+      window.renderProgrammingWorkspace?.();
       window.renderPhaseReview?.();
       window.LoadnoteProgramLifecycleUI?.coach?.();
       window.renderProgramWeekReview?.();
