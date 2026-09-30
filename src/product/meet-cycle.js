@@ -65,7 +65,13 @@
  }
  function planningInput(raw){
    if(raw?.planningInput)return copy(raw.planningInput);
-   const override=raw?.phaseOverride||raw?.manualPhaseOverride||null;
+   let override=raw?.phaseOverride||raw?.manualPhaseOverride||null;
+   // Backward compatibility: pre-v2.69 callers supplied total weeks + peak/taper.
+   // Preserve that reviewed structure only when it is explicit; the consumer UI no longer sends these fields.
+   if(!override&&Number.isInteger(raw?.weeks)&&Number.isInteger(raw?.peakWeeks)&&Number.isInteger(raw?.taperWeeks)){
+     const baseWeeks=raw.weeks-raw.peakWeeks-raw.taperWeeks-1;
+     if(baseWeeks>=4){const accumulationWeeks=Math.max(2,Math.min(baseWeeks-2,Math.round(baseWeeks*.55))),strengthWeeks=baseWeeks-accumulationWeeks;override={accumulationWeeks,strengthWeeks,peakWeeks:raw.peakWeeks,taperWeeks:raw.taperWeeks};}
+   }
    return {meetDate:raw?.meetDate||null,eventType:eventType(raw),eventName:raw?.eventName||'',phaseOverride:override?copy(override):null};
  }
  function legacyPlanningInput(c){return {meetDate:c.meetDate,eventType:eventType(c),eventName:c.eventName||'',phaseOverride:{accumulationWeeks:c.accumulationWeeks,strengthWeeks:c.strengthWeeks,peakWeeks:c.peakWeeks,taperWeeks:c.taperWeeks}};}
