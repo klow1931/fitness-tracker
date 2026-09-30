@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),Meet=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder'),Core=require('../src/core/loadnote-core'),Schedule=require('../src/product/schedule'),Observability=require('../src/product/cycle-observability');
+const assert=require('node:assert/strict'),Meet=require('../src/product/meet-cycle'),Phase=require('../src/product/phase-builder'),Profile=require('../src/product/programming-profile'),Core=require('../src/core/loadnote-core'),Schedule=require('../src/product/schedule'),Observability=require('../src/product/cycle-observability');
 const {phaseFixture}=require('./fixtures/phase-builder');
 const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
 const base=Phase.prepare(state,config,args),reviewed=Phase.save(state,base,{confirmed:true,notes:'Reviewed lift setup'},{...args,id:'base'}),source=reviewed.phasePrograms[0];
@@ -18,12 +18,14 @@ for(const weeks of [8,12,16,20,26,52]){
 }
 const p=Meet.prepare(reviewed,source,{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:date(12)},args);
 assert.equal(p.weekly.filter(w=>w.phase==='peaking').length,2);assert.equal(p.weekly.filter(w=>w.phase==='taper').length,1);
+const profileContext=Profile.current(reviewed.programmingProfiles).context,mismatchedProfile={...reviewed,programmingProfiles:Profile.save([],{...profileContext,eventDate:'2026-12-27'},{id:'profile-date-override',now:'2026-09-23T11:00:00.000Z'})},mismatchProposal=Meet.prepare(mismatchedProfile,source,p.config,args);assert(mismatchProposal.warnings.some(w=>w.includes('reviewed cycle date is allowed to override')),'Explicit cycle event dates should not have to equal the profile default');
 assert.equal(JSON.stringify(reviewed),before);
 assert.throws(()=>Meet.save(reviewed,p,{},args),/Review and approve/);
 const saved=Meet.save(reviewed,p,{confirmed:true,notes:'Mock meet test'},{...args,id:'meet12'});
 assert.equal(saved.meetCycles.length,1);assert.equal(saved.meetCycles[0].scheduledAt,null);assert.equal(saved.meetCycles[0].decisionEnvironment.releaseVersion,'2.68.0');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.meetCycle,'meet-cycle-v1');assert.equal(saved.meetCycles[0].decisionEnvironment.policies.programQualityGate,'program-quality-gate-v1');assert.equal(saved.meetCycles[0].qualityGate.status,'pass');assert.equal(Observability.audit(saved,{cycleId:'meet12',asOf:'2026-09-24'}).blocking,0);
 assert.equal(JSON.stringify(saved.workouts),JSON.stringify(reviewed.workouts));
 assert.deepEqual(Meet.validate(structuredClone(saved.meetCycles)),saved.meetCycles);
+const softProfile={...saved,programmingProfiles:Profile.save(saved.programmingProfiles,{...profileContext,notes:'Updated planning note after cycle review'},{id:'soft-profile',now:'2026-09-24T12:30:00.000Z'})},softScheduled=Meet.schedule(softProfile,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});assert.equal(softScheduled.meetCycles[0].scheduledAt,'2026-09-24T13:00:00.000Z','Soft profile changes should not invalidate a compatible reviewed cycle');const hardProfile={...saved,programmingProfiles:Profile.save(saved.programmingProfiles,{...profileContext,availableDays:[0,2,4]},{id:'hard-profile',now:'2026-09-24T12:30:00.000Z'})};assert.throws(()=>Meet.schedule(hardProfile,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'}),/available days/);
 const scheduled=Meet.schedule(saved,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});
 assert.equal(scheduled.scheduledSessions.length,p.sessions.length);
 assert.equal(scheduled.meetCycles[0].scheduledAt,'2026-09-24T13:00:00.000Z');
