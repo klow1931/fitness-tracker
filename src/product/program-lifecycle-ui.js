@@ -32,8 +32,10 @@
  function programLine(r){
    if(!r.program)return '';
    const progress=r.progress?'Week '+r.progress.week+' of '+r.progress.totalWeeks+(r.progress.phaseLabel?' · '+r.progress.phaseLabel+(r.progress.phaseWeek?' '+r.progress.phaseWeek:''):''):'';
+   const dates=r.program.startDate&&r.program.endDate?r.program.startDate+' → '+r.program.endDate:'';
    const schedule=r.schedule?r.schedule.completed+'/'+r.schedule.planned+' scheduled sessions logged':'';
-   return [progress,schedule].filter(Boolean).join(' · ');
+   const next=r.schedule?.next?'Next '+r.schedule.next.date:'';
+   return [progress,dates,schedule,next].filter(Boolean).join(' · ');
  }
  function card(r,{compact=false}={}){
    if(!r)return '';
