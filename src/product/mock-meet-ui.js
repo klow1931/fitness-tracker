@@ -61,6 +61,7 @@
  }
  function open(cycleId){
   showTab('coach');showSubTab('coach','co-programs');
+  const tools=document.getElementById('programming-tools-panel');if(tools)tools.open=true;
   const panel=document.getElementById('phase-builder-panel');if(panel)panel.open=true;
   window.renderMeetCycle?.();
   const card=[...document.querySelectorAll('[data-cycle]')].find(el=>el.dataset.cycle===cycleId);
