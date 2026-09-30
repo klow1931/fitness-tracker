@@ -18,4 +18,4 @@ assert.throws(()=>Planning.plan(sourceState,source,{meetDate:event11,eventType:'
 const evidenceSource=structuredClone(source);evidenceSource.objectiveSnapshot={recommendation:{label:'Rebuild-development block',accumulationWeeks:4,strengthWeeks:2,driver:'rebuild-tolerance',reason:'Frozen transition evidence favors development.'}};
 const evidence=Planning.plan(sourceState,evidenceSource,{meetDate:event11,eventType:'mock'},args);assert(evidence.phases.accumulationWeeks>evidence.phases.strengthWeeks);assert.equal(evidence.phaseEvidence.source,'transition-objective');
 const before=JSON.stringify(sourceState);Planning.plan(sourceState,source,{meetDate:event11,eventType:'mock'},args);assert.equal(JSON.stringify(sourceState),before,'planning decisions are read-only');
-console.log('v2.68 meet-date anchored deterministic program-planning decision tests passed');
+console.log('v2.69 meet-date anchored deterministic program-planning decision tests passed');
