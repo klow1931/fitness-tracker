@@ -68,7 +68,9 @@
    let override=raw?.phaseOverride||raw?.manualPhaseOverride||null;
    // Backward compatibility: pre-v2.69 callers supplied total weeks + peak/taper.
    // Preserve that reviewed structure only when it is explicit; the consumer UI no longer sends these fields.
-   if(!override&&Number.isInteger(raw?.weeks)&&Number.isInteger(raw?.peakWeeks)&&Number.isInteger(raw?.taperWeeks)){
+   if(!override&&Number.isInteger(raw?.accumulationWeeks)&&Number.isInteger(raw?.strengthWeeks)&&Number.isInteger(raw?.peakWeeks)&&Number.isInteger(raw?.taperWeeks)){
+     override={accumulationWeeks:raw.accumulationWeeks,strengthWeeks:raw.strengthWeeks,peakWeeks:raw.peakWeeks,taperWeeks:raw.taperWeeks};
+   }else if(!override&&Number.isInteger(raw?.weeks)&&Number.isInteger(raw?.peakWeeks)&&Number.isInteger(raw?.taperWeeks)){
      const baseWeeks=raw.weeks-raw.peakWeeks-raw.taperWeeks-1;
      if(baseWeeks>=4){const accumulationWeeks=Math.max(2,Math.min(baseWeeks-2,Math.round(baseWeeks*.55))),strengthWeeks=baseWeeks-accumulationWeeks;override={accumulationWeeks,strengthWeeks,peakWeeks:raw.peakWeeks,taperWeeks:raw.taperWeeks};}
    }
