@@ -1976,12 +1976,16 @@
         }
       });
 
-      // Program reminder
+      // Program reminder: reviewed/scheduled lifecycle is canonical. Legacy generator selection is secondary.
+      let lifecycleProgram = null;
+      try { lifecycleProgram = window.LoadnoteProgramLifecycle?.inspect(data, { asOf: today() }) || null; } catch {}
       const activeProg = getActiveProgram();
-      if (activeProg) {
-        tips.push(`Active program: ${activeProg.name}. Use “Start this day” on a session, then Last weights / + Jump on each lift.`);
+      if (lifecycleProgram?.program) {
+        tips.push(`Current training plan: ${lifecycleProgram.program.name}. ${lifecycleProgram.nextAction?.label || 'Follow the reviewed schedule'}.`);
+      } else if (activeProg) {
+        tips.push(`Legacy generator selection: ${activeProg.name}. This is separate from the reviewed current-program lifecycle.`);
       } else {
-        tips.push('No active program. Generate one above or activate one from your library.');
+        tips.push('No reviewed program is scheduled. Use Program planner when you are ready to build or schedule one.');
       }
 
       // Deload signal
@@ -2542,18 +2546,18 @@
       const progs = data.programs || [];
       if (!libEl) return;
       if (!progs.length) {
-        libEl.innerHTML = '<p class="text-slate-500">No saved programs yet. Generate one above.</p>';
+        libEl.innerHTML = '<p class="text-slate-500">No legacy generated programs saved.</p>';
       } else {
         libEl.innerHTML = progs.slice().reverse().map(p => {
           const isActive = data.activeProgramId === p.id;
           return `
             <div class="border border-slate-200 rounded-lg p-3 flex justify-between items-center ${isActive ? 'bg-indigo-50 border-indigo-200' : ''}">
               <div>
-                <div class="font-medium">${p.name} ${isActive ? '<span class="text-xs text-indigo-600">• Active</span>' : ''}</div>
+                <div class="font-medium">${p.name} ${isActive ? '<span class="text-xs text-indigo-600">• Library selection</span>' : ''}</div>
                 <div class="text-xs text-slate-500">${p.level} · ${p.daysPerWeek} days · ${p.focus} · ${formatDate(p.generated)}</div>
               </div>
               <div class="flex gap-2">
-                ${!isActive ? `<button onclick="activateProgram(${p.id})" class="text-xs text-indigo-600 hover:underline">Activate</button>` : ''}
+                ${!isActive ? `<button onclick="activateProgram(${p.id})" class="text-xs text-indigo-600 hover:underline">Select</button>` : ''}
                 <button onclick="deleteProgram(${p.id})" class="btn-danger text-xs">Delete</button>
               </div>
             </div>
