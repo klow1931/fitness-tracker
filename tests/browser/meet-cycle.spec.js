@@ -1,4 +1,5 @@
 const {test,expect}=require('playwright/test'),{phaseFixture}=require('../fixtures/phase-builder');
+const eventDate=(weeks,offset=5)=>{const d=new Date('2026-09-28T12:00:00Z');d.setUTCDate(d.getUTCDate()+(weeks-1)*7+offset);return d.toISOString().slice(0,10);};
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-09-24T12:00:00Z')});
@@ -13,13 +14,14 @@ test.beforeEach(async({page})=>{
  await page.locator('#programming-tools-panel > summary').click();
  await page.locator('#phase-builder-panel > summary').click();
 });
-test('8 12 16 20 and custom week lengths preserve complete phase dates and mock meet',async({page})=>{
+test('meet date determines 8 12 16 20 and 26-week timelines automatically',async({page})=>{
  await page.locator('#cycle-new').click();
+ await expect(page.locator('#cycle-weeks')).toHaveCount(0);
  for(const weeks of [8,12,16,20,26]){
-  if(weeks===26)await page.locator('#cycle-weeks').fill('26');
-  else await page.locator('[data-cycle-preset="'+weeks+'"]').click();
+  await page.locator('#cycle-meet-date').fill(eventDate(weeks));
   await page.locator('#cycle-form button[type="submit"]').click();
   await expect(page.locator('#cycle-preview')).toContainText('Review all '+weeks+' weeks');
+  await expect(page.locator('[data-program-planning-decision]')).toContainText('Decisions calculated your prep');
   await expect(page.locator('[data-cycle-week]')).toHaveCount(weeks);
   await expect(page.locator('[data-cycle-week="'+weeks+'"]')).toContainText('Mock meet');
   await expect(page.locator('#cycle-preview')).toContainText('Mock meet');
@@ -33,7 +35,7 @@ test('8 12 16 20 and custom week lengths preserve complete phase dates and mock 
 test('athlete-approved cycle schedules separate Calendar revisions and keeps history and draft unchanged',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}));
  await page.locator('#cycle-new').click();
- await page.locator('[data-cycle-preset="8"]').click();
+ await page.locator('#cycle-meet-date').fill(eventDate(8));
  await page.locator('#cycle-form button[type="submit"]').click();
  await page.locator('#cycle-save').click();
  await expect(page.locator('#cycle-error')).toContainText('Review and approve');
@@ -45,6 +47,8 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(1);
  expect(await page.evaluate(()=>data.meetCycles[0].qualityGate?.status)).toBe('pass');
  expect(await page.evaluate(()=>data.meetCycles[0].decisionEnvironment?.policies?.programQualityGate)).toBe('program-quality-gate-v1');
+ expect(await page.evaluate(()=>data.meetCycles[0].decisionEnvironment?.policies?.programPlanning)).toBe('program-planning-decision-v1');
+ expect(await page.evaluate(()=>data.meetCycles[0].planningDecision?.mode)).toBe('decisions');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,phasePrograms:data.phasePrograms,scheduledSessions:data.scheduledSessions}))).toBe(before);
  const planned=await page.evaluate(()=>data.meetCycles[0].sessions.length);
  await page.locator('[data-cycle] > summary').click();
@@ -67,7 +71,6 @@ test('builder distinguishes mock meets from named competition meets and supports
  await page.locator('#cycle-event-type').selectOption('competition');
  await expect(page.locator('#cycle-event-name-wrap')).toBeVisible();
  await page.locator('#cycle-event-name').fill('State Championships');
- await page.locator('[data-cycle-preset="12"]').click();
  await page.locator('#cycle-meet-date').fill('2026-12-16');
  await page.locator('#cycle-form button[type="submit"]').click();
  await expect(page.locator('#cycle-preview')).toContainText('State Championships');
@@ -81,13 +84,33 @@ test('builder distinguishes mock meets from named competition meets and supports
 });
 
 
-test('20-week preview makes the extended-phase hold explicit without blocking athlete review',async({page})=>{
+test('20-week date-derived preview makes the extended-phase hold explicit without blocking athlete review',async({page})=>{
  await page.locator('#cycle-new').click();
- await page.locator('[data-cycle-preset="20"]').click();
+ await page.locator('#cycle-meet-date').fill(eventDate(20));
  await page.locator('#cycle-form button[type="submit"]').click();
  const gate=page.locator('[data-program-quality-gate]');
  await expect(gate).toHaveAttribute('data-quality-status','review');
  await expect(gate).toContainText('beyond six progressive weeks');
  await expect(page.locator('#cycle-save')).toBeEnabled();
  await page.locator('#cycle-close').click();
+});
+
+
+test('advanced phase override is optional and cannot change the meet-date total',async({page})=>{
+ await page.locator('#cycle-new').click();
+ await page.locator('#cycle-meet-date').fill(eventDate(11));
+ await page.locator('#cycle-form button[type="submit"]').click();
+ await expect(page.locator('[data-program-planning-decision]')).toContainText('11 weeks');
+ await page.locator('#cycle-advanced > summary').click();
+ await page.locator('#cycle-customize').check();
+ await page.locator('#cycle-accumulation').fill('3');
+ await page.locator('#cycle-strength').fill('4');
+ await page.locator('#cycle-peak').fill('2');
+ await page.locator('#cycle-taper').fill('1');
+ await page.locator('#cycle-form button[type="submit"]').click();
+ await expect(page.locator('[data-program-planning-decision]')).toContainText('advanced phase overrides');
+ await expect(page.locator('#cycle-preview')).toContainText('Accumulation 3 weeks · Strength 4 · Peak 2 · Taper 1');
+ await page.locator('#cycle-strength').fill('5');
+ await page.locator('#cycle-form button[type="submit"]').click();
+ await expect(page.locator('#cycle-error')).toContainText('add up');
 });
