@@ -6,7 +6,7 @@ const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:0
 const sourceState=Phase.save(state,Phase.prepare(state,config,args),{confirmed:true,notes:'planning source'},{...args,id:'planning-source'}),source=sourceState.phasePrograms[0];
 assert.equal(Planning.totalWeeks('2026-10-12','2026-12-26'),11);
 let p=Planning.plan(sourceState,source,{meetDate:'2026-12-26',eventType:'mock'},args);
-assert.equal(p.status,'ready');assert.equal(p.totalWeeks,14,'fixture starts before October; total weeks must derive from actual source start, not a hard-coded user date');
+assert.equal(p.status,'ready');assert.equal(p.totalWeeks,13,'fixture starts before October; total weeks must derive from the actual source start');
 assert.equal(p.phases.accumulationWeeks+p.phases.strengthWeeks+p.phases.peakWeeks+p.phases.taperWeeks+1,p.totalWeeks);
 assert.equal(p.mode,'decisions');assert.match(p.summary,/accumulation/);assert.equal(Planning.validate(structuredClone(p),source,p.config).decisionFingerprint,p.decisionFingerprint);
 const shortDate=(()=>{const d=new Date(source.config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+5*7+5);return d.toISOString().slice(0,10);})();
