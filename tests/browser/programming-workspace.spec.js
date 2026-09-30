@@ -53,7 +53,8 @@ test('meet profile uses one guided meet-prep path and treats profile event date 
   await expect(planner).toContainText('event 2026-12-26');
   await expect(planner.locator('#programming-workspace-primary')).toHaveText('Start meet-prep setup');
   await planner.locator('#programming-workspace-primary').click();
-  await expect(page.locator('#phase-dialog')).toContainText('save this setup and continue directly into the full event timeline');
+  await expect(page.locator('#phase-dialog')).toContainText('save this setup and continue directly into the event timeline');
+  await expect(page.locator('#phase-dialog')).toContainText('Decisions calculates the actual prep length from the meet date');
   await expect(page.locator('#phase-dialog')).toContainText('does not need to end on your profile event date');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });

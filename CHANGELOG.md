@@ -1,3 +1,20 @@
+# v2.69.0 — Decisions-Driven Program Planning
+
+- Add deterministic `program-planning-decision-v1` as the authority for meet-prep timeline arithmetic and phase allocation.
+- Make the reviewed start week + event date determine total prep length automatically; remove the normal need to enter a separate week count.
+- Reject timelines shorter than the supported seven-week minimum instead of silently compressing accumulation, strength, peak, taper and event week.
+- Reserve the event week, one taper week and a bounded peak automatically, then allocate the remaining base weeks between accumulation and strength.
+- Reuse frozen transition/block objectives first, then frozen starting-prescription evidence/recent consistency, then the existing conservative 55/45 base split.
+- Keep long-phase holds explicit when accumulation or strength exceeds the six-week progressive engine window.
+- Move manual phase lengths under an advanced **Customize phase lengths** control; overrides must still sum exactly to the date-derived timeline.
+- Freeze whether the approved structure was Decisions-calculated or athlete-customized, plus evidence source, reasons and deterministic fingerprints.
+- Record `programPlanning: program-planning-decision-v1` in new meet-cycle decision environments.
+- Show the frozen planning decision in the Cycle Journal and audit its config/fingerprint/policy lineage.
+- Keep profile event date as a default rather than a second source of truth.
+- Preserve existing hard constraints, quality-gate review, athlete approval and separate scheduling.
+- Preserve older meet cycles without planning-decision metadata.
+- No adaptive-threshold or top-level schema change; schema v25 remains unchanged.
+
 # v2.68.0 — Programming Workspace Simplification
 
 - Replace multiple equally prominent programming builders with one deterministic **Program planner** as the primary Coach → Programming entry point.

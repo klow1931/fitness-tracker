@@ -99,3 +99,15 @@ Earlier release-time execution notes described the tests available then. Current
 - Soft profile changes (notes/event-date default) after program review do not independently block scheduling. Hard incompatibilities in available days, time, equipment, avoided exercises or exercise roles must still block.
 - The legacy four-week, phase, meet-cycle and adoption records remain loadable and retain their existing persistence/history behavior.
 - Full static, Node, mobile-package and desktop + 390px Playwright suites must pass before release.
+
+
+### v2.69 Decisions planning acceptance
+
+- Confirm start week + event date derives total prep weeks without a separate duration input.
+- Confirm 7 weeks uses the minimum supported base/peak/taper structure and <7 weeks is rejected clearly.
+- Confirm transition-derived objectives can bias accumulation versus strength while phase minimums remain valid.
+- Confirm advanced phase overrides cannot change the date-derived total and are stored as athlete-customized.
+- Confirm new saved cycles freeze `program-planning-decision-v1`, its decision environment identity and deterministic fingerprints.
+- Confirm the Cycle Journal/audit preserves and validates the original planning decision without recomputing it from later data.
+- Confirm existing meet cycles without planning-decision metadata remain valid.
+- Confirm desktop and 390px mobile meet-prep flows no longer expose a competing total-week input by default.

@@ -43,8 +43,8 @@
     if(meetIntent){
       const linked=new Set(cycles.map(c=>c.sourceProgram?.id||c.config?.sourceProgramId).filter(Boolean));
       const source=phases.find(p=>!linked.has(p.id))||null;
-      if(source)return {version:1,policy:POLICY,status:'meet-timeline',profile:summary,primaryAction:'meet',title:'Continue your meet-prep cycle',reason:'Your lift setup is already reviewed. Next, choose the full cycle length, peak, taper and event date.',sourceId:source.id};
-      return {version:1,policy:POLICY,status:'meet-setup',profile:summary,primaryAction:'phase-meet',title:'Build your meet-prep cycle',reason:'One guided path: first confirm lift setup, then Loadnote takes you directly to the meet timeline. Your profile event date is a default, not an exact-match requirement.'};
+      if(source)return {version:1,policy:POLICY,status:'meet-timeline',profile:summary,primaryAction:'meet',title:'Continue your meet-prep cycle',reason:'Your lift setup is already reviewed. Choose the event date next; Decisions calculates the available prep length and phase allocation automatically.',sourceId:source.id};
+      return {version:1,policy:POLICY,status:'meet-setup',profile:summary,primaryAction:'phase-meet',title:'Build your meet-prep cycle',reason:'One guided path: confirm lift setup, then choose the event. Decisions calculates prep length, accumulation, strength, peak and taper from that timeline. Your profile event date is only a default.'};
     }
     return {version:1,policy:POLICY,status:'phase',profile:summary,primaryAction:'phase',title:'Build your next training cycle',reason:'Use the main program designer for accumulation, strength and deload. The old 4-week builder is kept only as an alternate return/base tool.'};
   }

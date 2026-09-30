@@ -117,7 +117,7 @@
     const events=[];
     const source=cycle.sourceProgram||null;
     if(source?.createdAt&&source.createdAt<=cutoff)events.push({kind:'starting-program',at:source.createdAt,date:source.config?.startDate||null,label:'Starting program reviewed',environment:copy(source.decisionEnvironment||null),startingPrescription:copy(source.startingPrescriptionSnapshot||null)});
-    if(cycle.createdAt&&cycle.createdAt<=cutoff)events.push({kind:'cycle-reviewed',at:cycle.createdAt,date:cycle.config?.startDate||null,label:'Meet cycle reviewed',environment:copy(cycle.decisionEnvironment||null),qualityGate:copy(cycle.qualityGate||null),weeks:cycle.config?.weeks||null,eventType:cycle.config?.eventType||'mock'});
+    if(cycle.createdAt&&cycle.createdAt<=cutoff)events.push({kind:'cycle-reviewed',at:cycle.createdAt,date:cycle.config?.startDate||null,label:'Meet cycle reviewed',environment:copy(cycle.decisionEnvironment||null),planningDecision:copy(cycle.planningDecision||null),qualityGate:copy(cycle.qualityGate||null),weeks:cycle.config?.weeks||null,eventType:cycle.config?.eventType||'mock'});
     for(const review of (cycle.weeklyReviews||[]).filter(r=>r.createdAt<=cutoff).sort((a,b)=>a.createdAt.localeCompare(b.createdAt))){
       const controller=review.controllerSnapshot?validateControllerSnapshot(review.controllerSnapshot,review.report,{savedAt:review.createdAt}):null;
       const lifts={};
@@ -146,6 +146,13 @@
     for(const cycle of cycles){
       if(cycle.decisionEnvironment){try{const env=validateEnvironment(cycle.decisionEnvironment,{capturedAt:cycle.createdAt,purpose:'meet-cycle-review'});if(env.policies.meetCycle!=='meet-cycle-v1')throw Error('Meet-cycle policy identity does not match this recorded cycle format');}catch(e){add('invalid-cycle-environment','blocking',e.message,{cycleId:cycle.id});}}
       else add('legacy-cycle-without-environment','warning','This meet cycle predates frozen decision-environment metadata.',{cycleId:cycle.id});
+      if(cycle.planningDecision){try{
+        const decision=cycle.planningDecision,check=copy(decision);delete check.decisionFingerprint;
+        if(decision.version!==1||decision.policy!=='program-planning-decision-v1'||decision.status!=='ready'||decision.sourceProgramId!==(cycle.sourceProgram?.id||null)||fingerprint(check)!==decision.decisionFingerprint||canonical(decision.config)!==canonical(cycle.config))throw Error('Program-planning decision does not match the saved original cycle');
+        if(cycle.decisionEnvironment?.policies?.programPlanning!==decision.policy)throw Error('Program-planning policy identity is missing or mismatched in the cycle decision environment');
+      }catch(e){add('invalid-program-planning-decision','blocking',e.message,{cycleId:cycle.id});}}
+      else if(cycle.decisionEnvironment?.policies?.programPlanning)add('missing-program-planning-decision','blocking','The cycle decision environment names a planning policy but the frozen planning decision is missing.',{cycleId:cycle.id});
+      else add('legacy-cycle-without-planning-decision','warning','This meet cycle predates frozen Decisions-owned meet-prep planning metadata.',{cycleId:cycle.id});
       if(cycle.qualityGate){try{
         const gate=cycle.qualityGate,expected=fingerprint({config:copy(cycle.config||null),sourceProgram:{id:cycle.sourceProgram?.id||null,config:copy(cycle.sourceProgram?.config||null)},sessions:copy(cycle.sessions||[]),weekly:copy(cycle.weekly||[])});
         if(gate.version!==1||gate.policy!=='program-quality-gate-v1'||gate.inputFingerprint!==expected||!['pass','review','blocking'].includes(gate.status)||!Array.isArray(gate.findings)||!gate.counts)throw Error('Program quality-gate snapshot does not match the saved original cycle');

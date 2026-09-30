@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.68.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.69.0 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.69 — Decisions-Driven Program Planning
+
+Meet prep is now date-first. The athlete supplies the reviewed start week and event; **Decisions calculates the available prep length and default accumulation → strength → peak → taper structure**. A separate total-week input no longer has to agree with the meet date.
+
+The automatic allocation reuses frozen transition/block objectives when available, then starting-prescription evidence and recent consistency, before falling back to the existing conservative base split. The complete result still passes through the v2.67 whole-program quality gate and requires athlete approval before scheduling. Advanced users can override phase lengths, but the override must still fit the date-derived timeline and is stored distinctly from a Decisions-calculated structure.
+
+New meet cycles freeze the planning decision, explanation and fingerprints for the v2.66 Cycle Journal/audit. Existing cycles remain valid. See `docs/program-planning-decision.md`.
 
 ## v2.68 — Programming Workspace Simplification
 

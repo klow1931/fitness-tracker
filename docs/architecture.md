@@ -26,6 +26,7 @@ Paths below are under `src/product/` unless otherwise noted.
 | `navigation.js`, `profile-ui.js`, `home-activity.js` | Primary/secondary navigation, consumer Profile composition and weekly activity model |
 | `program-lifecycle.js`, `program-lifecycle-ui.js` | Deterministic active-program state and workflow routing across training, reviews, events, transition baselines and next-block handoff |
 | `programming-workspace.js`, `programming-workspace-ui.js` | Read-only programming-route selection and compact consumer workspace over the existing profile/build/adoption engines |
+| `program-planning-decision.js` | Deterministic date-first meet-prep duration/phase calculation and frozen planning-decision snapshots |
 | `program-quality-gate.js`, `meet-cycle.js`, `meet-cycle-ui.js` | Whole-cycle structural simulation/quality review, immutable meet-cycle generation and athlete-facing full-cycle preview |
 | `units.js` | Display-unit conversion |
 | `src/core/`, `src/training/`, `src/coach/` | Core schema, training analytics/progression and deterministic/structured coaching rules |
@@ -85,3 +86,10 @@ The gate fingerprints only the source-program identity/configuration plus genera
 `programming-workspace.js` is a pure routing layer. It decides which existing programming workflow should be primary from the current reviewed state; it does not generate sessions, choose loads, approve plans or mutate data. `programming-workspace-ui.js` presents that route and keeps alternate creation tools collapsed by default.
 
 The underlying four-week, phase, meet-cycle and adoption engines remain separate for backward compatibility and auditability. v2.68 changes their consumer-facing organization and soft-context handling rather than merging their stored record types. Monday-based program records remain unchanged; UI date alignment happens before a proposal is built.
+
+
+### v2.69 Decisions planning boundary
+
+`program-planning-decision.js` owns meet-date arithmetic and default accumulation/strength/peak/taper allocation. It consumes the reviewed lift setup plus frozen objective/starting-prescription evidence and current structured profile context. It does not create workouts or Calendar records. `meet-cycle.js` consumes the resulting explicit configuration, the v2.67 quality gate inspects the generated cycle, and athlete approval remains the save boundary.
+
+Manual phase overrides are preserved as an explicit input and recorded as athlete-customized rather than being attributed to Decisions. New planning snapshots are additive; legacy meet cycles remain valid.
