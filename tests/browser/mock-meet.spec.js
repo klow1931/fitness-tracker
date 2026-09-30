@@ -10,7 +10,7 @@ test.beforeEach(async({page})=>{
   const plan=LoadnoteMeetCycle.prepare(data,data.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args);
   data=LoadnoteMeetCycle.save(data,plan,{confirmed:true},{...args,id:'meet12'});
   data=LoadnoteMeetCycle.schedule(data,'meet12',{...args,now:'2026-09-24T13:00:00.000Z'});
-  showTab('coach');showSubTab('coach','co-programs');document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();
+  showTab('coach');showSubTab('coach','co-programs');document.getElementById('programming-tools-panel').open=true;document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();
  },phaseFixture());
  await page.locator('[data-cycle="meet12"] > summary').click();
  await page.locator('[data-mock-meet="meet12"] .mock-meet-results > summary').click();
@@ -37,7 +37,7 @@ test('meet execution captures only athlete-entered made/missed/passed attempts, 
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduledSessions:data.scheduledSessions,original:data.meetCycles[0].sessions}))).toBe(before);
  const report=await page.evaluate(()=>LoadnoteMockMeet.inspect(data,{cycleId:'meet12',asOf:today()}));
  expect(report.totalKg).toBe(430);expect(report.lifts.squat.missed).toBe(1);
- await page.reload();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();});
+ await page.reload();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');document.getElementById('programming-tools-panel').open=true;document.getElementById('phase-builder-panel').open=true;renderPhaseBuilder();});
  await page.locator('[data-cycle="meet12"] > summary').click();
  await page.locator('[data-mock-meet="meet12"] .mock-meet-results > summary').click();
  await expect(page.locator('[data-mock-meet="meet12"]')).toContainText('430');
