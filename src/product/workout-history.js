@@ -24,7 +24,7 @@ function duplicateReviewHtml(report){
    group.workoutIds.map(id=>'<button type="button" class="btn-secondary" data-workout-action="edit" data-workout-id="'+escapeHtml(id)+'">Review '+escapeHtml(String(id).slice(-6))+'</button>').join('')+'</div></article>').join('');
 }
 function workoutHistoryCardHtml(w,report){
- const vol=calcVolume(w),id=escapeHtml(w.id),kind=window.LoadnoteHistoryReliability?.source(w)||'manual',issues=report?.issues?.[String(w.id)]||[];
+ const reliability=typeof LoadnoteHistoryReliability!=='undefined'?LoadnoteHistoryReliability:null,vol=calcVolume(w),id=escapeHtml(w.id),kind=reliability?.source(w)||'manual',issues=report?.issues?.[String(w.id)]||[];
  const badges='<div class="history-session-badges"><span class="badge">'+escapeHtml(historySourceLabel(kind))+'</span>'+(issues.length?'<span class="badge history-review-badge">Review</span>':'')+'</div>';
  const intentEngine=typeof LoadnoteIntent!=='undefined'?LoadnoteIntent:null,comparison=intentEngine?.compare(w),role=w.sessionIntent&&intentEngine?.SESSION_ROLES[w.sessionIntent.role],intentSummary=role?'<p class="text-sm"><b>'+escapeHtml(role)+'</b>'+(w.sessionIntent.goal?' · '+escapeHtml(w.sessionIntent.goal):'')+(comparison?' · '+comparison.completedSets+'/'+comparison.plannedSets+' planned sets represented':'')+'</p>':'';
  const issueHtml=issues.length?'<details class="history-session-review"><summary>Why review this record?</summary>'+issues.map(row=>'<p>'+escapeHtml(row.detail)+'</p>').join('')+'</details>':'';
