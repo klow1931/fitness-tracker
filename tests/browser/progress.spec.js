@@ -90,24 +90,64 @@ test('Progress record book searches compact rows and hides destructive action',a
  expect(await page.evaluate(()=>data.prs.map(p=>p.id))).toEqual(['bench-one','squat-three']);
 });
 
-test('Progress compares useful 4-week evidence without turning sparse data into a score',async({page})=>{
+test('Progress tells a compact strength story without turning sparse data into a score',async({page})=>{
  await page.evaluate(()=>{
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
-  const asOf=today(),dates=[move(asOf,-49),move(asOf,-35),move(asOf,-21),move(asOf,-7)];
+  const asOf=today(),dates=[move(asOf,-77),move(asOf,-63),move(asOf,-21),move(asOf,-7)];
   data.exerciseCatalog=[{id:'s',name:'Competition Squat',aliases:[]}];
   data.exerciseRoles=LoadnoteReadiness.replace([],[{exerciseId:'s',role:'competition',competitionLift:'squat'}],{now:dates[0]+'T00:00:00.000Z',createId:()=> 'progress-role'});
-  data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*2.5,reps:5,rpe:8}]}]}));
-  data.scheduledSessions=[];data.prs=[];invalidateViews();showTab('prs');
+  data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*5,reps:5,rpe:8}]},...(i>=2?[{name:'Chest-Supported Row',exerciseId:'row',type:'strength',trackBy:'reps',sets:[{weight:60+(i-2)*2.5,reps:8,rpe:8}]}]:[])]}));
+  data.scheduledSessions=[];data.phasePrograms=[];data.meetCycles=[];data.phaseReviews=[];data.prs=[];invalidateViews();showTab('prs');
  });
  const host=page.locator('#progress-analytics');
- await expect(host).toContainText('Training progress');
- await expect(host).toContainText('Confirmed competition lift');
- await expect(host).toContainText('4-week best estimate change');
- await expect(host).toContainText('2 capacity-evidence days');
+ await expect(host).toContainText('What your training is doing.');
+ await expect(host).toContainText('Strength direction');
+ await expect(host).toContainText('Recent evidence is higher');
+ await expect(host).toContainText('Plan adherence');
  await page.evaluate(()=>setUnit('lb'));
  await expect(host).toContainText('lb');
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
- await host.getByRole('button',{name:'Details',exact:true}).click();
+ await host.getByRole('tab',{name:'Strength'}).click();
+ await expect(host).toContainText('Confirmed competition lift');
+ await expect(host).toContainText('Best recent set');
+ await expect(host).toContainText('Recent demonstrated capacity');
+ await host.locator('[data-progress-exercise]').selectOption('id:row');
+ await expect(host).toContainText('Chest-Supported Row');
+ await expect(host).toContainText('2 sessions');
+ await host.getByRole('button',{name:'Exercise details'}).click();
  await expect(page.locator('#exercise-detail')).toBeVisible();
- await expect(page.locator('#exercise-detail-title')).toContainText('Competition Squat');
+ await expect(page.locator('#exercise-detail-title')).toContainText('Chest-Supported Row');
+});
+
+test('Progress separates adherence from unresolved sessions and shows accepted program decisions',async({page})=>{
+ await page.evaluate(()=>{
+  const asOf=today(),move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+  const plan=LoadnoteIntent.createPrescription([{exerciseId:'s',name:'Competition Squat',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:8}]}],{type:'program',label:'Squat'},move(asOf,-40)+'T08:00:00.000Z');
+  data.exerciseCatalog=[{id:'s',name:'Competition Squat',aliases:[]}];
+  data.exerciseRoles=LoadnoteReadiness.replace([],[{exerciseId:'s',role:'competition',competitionLift:'squat'}],{now:move(asOf,-80)+'T00:00:00.000Z',createId:()=> 'progress-role'});
+  data.workouts=[{id:'done',date:move(asOf,-7),createdAt:move(asOf,-7)+'T20:00:00.000Z',exercises:[{exerciseId:'s',name:'Competition Squat',type:'strength',trackBy:'reps',sets:[{weight:110,reps:5,rpe:8}]}],sessionIntent:{version:1,role:'volume',goal:'Squat',prescription:plan,deviationReason:'none',deviationNotes:'',schedule:{id:'manual-complete',revisionAt:move(asOf,-40)+'T08:00:00.000Z'}}}];
+  data.scheduledSessions=[];
+  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions,{name:'Completed squat',date:move(asOf,-7),role:'volume',goal:'Squat',prescription:plan},{id:'manual-complete',now:move(asOf,-40)+'T08:00:00.000Z'});
+  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions,{name:'Skipped squat',date:move(asOf,-6),role:'volume',goal:'Squat',prescription:plan},{id:'manual-skip',now:move(asOf,-40)+'T08:01:00.000Z'});
+  data.scheduledSessions=LoadnoteSchedule.change(data.scheduledSessions,'manual-skip',{status:'skipped',reason:'Travel'},move(asOf,-6)+'T07:00:00.000Z');
+  data.scheduledSessions=LoadnoteSchedule.create(data.scheduledSessions,{name:'Unresolved squat',date:move(asOf,-5),role:'volume',goal:'Squat',prescription:plan},{id:'manual-open',now:move(asOf,-40)+'T08:02:00.000Z'});
+  const before={recordedAt:move(asOf,-15)+'T10:00:00.000Z',context:{prescription:plan}};
+  const afterPlan=LoadnoteIntent.createPrescription([{exerciseId:'s',name:'Competition Squat',type:'strength',trackBy:'reps',sets:[{weight:102.5,reps:5,targetRpe:8}]}],{type:'program',label:'Squat'},move(asOf,-14)+'T10:00:00.000Z');
+  const after={recordedAt:move(asOf,-14)+'T10:00:00.000Z',context:{prescription:afterPlan}};
+  data.phaseReviews=[{id:'progress-review',programId:'old-program',phase:'accumulation',createdAt:move(asOf,-14)+'T10:00:00.000Z',choices:{squat:'progress',bench:'keep',deadlift:'keep'},exerciseLifts:{s:'squat'},findings:{squat:{name:'Competition Squat',reason:'Matched exposures stayed within the reviewed effort margin.',completedSessions:3,expectedSessions:3,comparedSets:9,overCapSessions:0,underCapSessions:3,averageRpe:7.5},bench:{name:'Bench'},deadlift:{name:'Deadlift'}},changes:[{id:'phase:old-program:w2d1',before,after}]}];
+  data.phasePrograms=[];data.meetCycles=[];invalidateViews();showTab('prs');
+ });
+ const host=page.locator('#progress-analytics');
+ await host.getByRole('tab',{name:'Adherence'}).click();
+ const recent=host.locator('[data-progress-adherence="recent"]');
+ await expect(recent.locator('[data-progress-count="completed"] b')).toHaveText('1');
+ await expect(recent.locator('[data-progress-count="skipped"] b')).toHaveText('1');
+ await expect(recent.locator('[data-progress-count="unconfirmed"] b')).toHaveText('1');
+ await expect(recent).toContainText('50%');
+ await expect(recent).toContainText('not counted as failures');
+ await host.getByRole('tab',{name:'Program history'}).click();
+ await expect(host).toContainText('accumulation phase review');
+ await expect(host).toContainText('1 changed');
+ await expect(host).toContainText('Competition Squat');
+ await expect(host).toContainText('Load progressed');
 });

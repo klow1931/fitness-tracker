@@ -1,3 +1,15 @@
+# v2.72.0 — Progress That Explains Training
+
+- Replace the default Progress analytics presentation with a compact story organized into Overview, Strength, Adherence, and Program history.
+- Add selectable 8-, 12-, and 24-week evidence windows without changing saved workout data.
+- Build movement stories from actual logged load/reps/RPE evidence, keeping exercise identities and variations separate; feature confirmed competition lifts first and let the athlete explore any logged rep-based strength exercise.
+- Require at least two demonstrated-capacity days in both the start and recent comparison windows, then compare median daily capacity evidence before showing higher/lower/similar direction so one unusual session has less influence.
+- Show best recent sets, recent demonstrated-capacity estimates, four-week volume, average logged RPE, and linked exercise details.
+- Show current reviewed-program context and program-to-date resolved-session adherence when available.
+- Keep adherence defined as completed / (completed + explicitly skipped); unresolved, upcoming, and cancelled sessions are not counted as failures.
+- Add an accepted-decision timeline from stored weekly/phase review history, including kept plans and changed future prescriptions, without claiming causation.
+- Preserve all existing training policies, RPE/e1RM/training-max calculations, internal kg storage, and schema v25.
+
 # v2.71.0 — Adaptive Handoff & Change Transparency
 
 - Add a deterministic post-session handoff model that classifies the next step as unchanged, review available, updated, or no later workout.
