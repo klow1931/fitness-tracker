@@ -15,29 +15,23 @@
   // not received stable exercise IDs yet, so names keep pre-save and saved records comparable.
   return 'name:'+norm(exercise?.name);
  }
- function setShape(set,trackBy){
-  return trackBy==='duration'
-   ?{duration:number(set?.duration)||0,weight:number(set?.weight)||0,rpe:number(set?.rpe)}
-   :{reps:number(set?.reps)||0,weight:number(set?.weight)||0,rpe:number(set?.rpe)};
+ function setShape(set){
+  return {reps:number(set?.reps)||0,duration:number(set?.duration)||0,weight:number(set?.weight)||0,rpe:number(set?.rpe)};
  }
  function exerciseShape(exercise){
-  const type=exercise?.type==='cardio'?'cardio':'strength';
-  if(type==='cardio')return {identity:identity(exercise),name:norm(exercise?.name),type,duration:number(exercise?.duration)||0,distance:number(exercise?.distance)||0,distanceUnit:norm(exercise?.distanceUnit||'km'),avgHr:number(exercise?.avgHr)};
-  const trackBy=exercise?.trackBy==='duration'?'duration':'reps';
-  return {identity:identity(exercise),name:norm(exercise?.name),type,trackBy,sets:(exercise?.sets||[]).map(s=>setShape(s,trackBy))};
- }
- function intentShape(intent){
-  if(!intent)return null;
   return {
-   role:norm(intent.role),goal:norm(intent.goal),deviationReason:norm(intent.deviationReason||'none'),deviationNotes:norm(intent.deviationNotes),
-   sourceType:norm(intent.prescription?.source?.type),sourceReference:String(intent.prescription?.source?.referenceId||'')
+   name:norm(exercise?.name),
+   duration:number(exercise?.duration)||0,distance:number(exercise?.distance)||0,distanceUnit:norm(exercise?.distanceUnit||''),
+   avgHr:number(exercise?.avgHr),sets:(exercise?.sets||[]).map(setShape)
   };
  }
  function workoutSignature(workout){
+  // Possible-duplicate review is deliberately based on visible performed content,
+  // not internal IDs or planning metadata. That keeps a pre-save draft comparable
+  // with the normalized saved record while remaining advisory rather than destructive.
   return JSON.stringify({
    date:workout?.date||'',notes:norm(workout?.notes),
-   exercises:(workout?.exercises||[]).map(exerciseShape),
-   intent:intentShape(workout?.sessionIntent)
+   exercises:(workout?.exercises||[]).map(exerciseShape)
   });
  }
  function duplicateGroups(workouts){
