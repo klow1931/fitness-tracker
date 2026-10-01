@@ -82,12 +82,12 @@
   if(!next){
    status='no-next';label='No later workout scheduled';
    reason='This workout is saved as training history, but there is no later scheduled session to compare or revise.';
-  }else if(adaptation?.changedLifts?.length){
-   status='updated';label='Next workout updated';
-   reason='An athlete-approved review changed the current scheduled prescription. The accepted before/after revision is shown below.';
   }else if(reviewKind){
    status='review-available';label=reviewKind==='review-week'?'Weekly review available':'Phase review available';
    reason=life.nextAction.detail+' No future prescription changes until you review and approve a supported choice.';
+  }else if(adaptation?.changedLifts?.length){
+   status='updated';label='Next workout updated';
+   reason='An athlete-approved review changed the current scheduled prescription. The accepted before/after revision is shown below.';
   }else if(!linked){
    reason='This workout was not linked to a scheduled prescription, so saving it did not revise the reviewed program.';
   }else if(!evidence?.comparison){
