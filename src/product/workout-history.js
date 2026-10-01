@@ -68,7 +68,7 @@ function renderWorkoutHistory(){
  const signature=JSON.stringify(options);if(signature!==historyFilterSignature){historyPage=0;historyFilterSignature=signature;}
  if(options.from&&options.to&&options.from>options.to){el.textContent='Choose an end date on or after the start date.';return;}
  const report=window.LoadnoteHistoryReliability?.inspect(data)||{counts:{total:(data.workouts||[]).length,needsReview:0},duplicates:[],issues:{},lastExportDate:data.lastExportDate||null,backupLabel:data.lastExportDate?'Last JSON backup: '+data.lastExportDate:'No JSON backup recorded on this device'};
- const list=window.LoadnoteHistoryReliability?.filter(data,options)||LoadnoteProgress.filter(data.workouts,options),pages=Math.max(1,Math.ceil(list.length/HISTORY_PAGE_SIZE));historyPage=Math.min(historyPage,pages-1);
+ const list=window.LoadnoteHistoryReliability?.filter(data,{...options,issuesById:report.issues})||LoadnoteProgress.filter(data.workouts,options),pages=Math.max(1,Math.ceil(list.length/HISTORY_PAGE_SIZE));historyPage=Math.min(historyPage,pages-1);
  const summary=document.getElementById('history-reliability-summary');if(summary)summary.innerHTML=historyReliabilityHtml(report,list.length);duplicateReviewHtml(report);
  if(!list.length){el.innerHTML=workoutChangesHtml()+'<div class="empty-state"><p class="empty-title">'+(options.query||options.from||options.to||options.sourceKind!=='all'||options.quality!=='all'?'No matches':'No workouts yet')+'</p><p>Adjust the filters or log a workout.</p></div>';return;}
  el.innerHTML=workoutChangesHtml()+'<p role="status">'+list.length+' workouts · Page '+(historyPage+1)+' of '+pages+'</p>'+list.slice(historyPage*HISTORY_PAGE_SIZE,(historyPage+1)*HISTORY_PAGE_SIZE).map(w=>workoutHistoryCardHtml(w,report)).join('')+
