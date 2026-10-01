@@ -1,4 +1,4 @@
-/* v2.70 — current-program workout viewer with direct workout deep links. */
+/* v2.71 — current-program workout viewer with adaptation transparency. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,9 +39,12 @@
  function sessionHtml(session,{open=false,calendar=false}={}){
    const summary=(calendar?'Planned workout':'')+(calendar?' · ':'')+dateLabel(session.date)+' · '+session.exercises.map(e=>e.name).join(' / ');
    const start=session.state==='scheduled'&&session.date===today()?'<button type="button" class="btn-primary" data-program-start="'+esc(session.id)+'">Start workout</button>':'';
-   const state='<span class="program-workout-state" data-state="'+esc(session.state)+'">'+esc(statusLabel(session.state))+'</span>';
+   let adaptation=null;try{adaptation=window.LoadnoteAdaptationExplanation?.forSession?.(data,session.id)||null;}catch{}
+   const adapted=!!adaptation?.changedLifts?.length;
+   const state='<span class="program-workout-state" data-state="'+esc(session.state)+'">'+esc(adapted&&session.state==='scheduled'?'Updated':statusLabel(session.state))+'</span>';
+   const adaptationHtml=adapted?(window.LoadnoteAdaptationExplanationUI?.render?.(adaptation,{summary:'Why this prescription changed'})||''):'';
    return '<details class="program-workout-session" data-program-session="'+esc(session.id)+'" '+(open?'open':'')+'><summary><span><b>'+esc(summary)+'</b><small>'+esc(session.name)+(session.estimatedMinutes?' · ~'+session.estimatedMinutes+' min':'')+'</small></span>'+state+'</summary>'+
-     '<div class="program-workout-session-body">'+session.exercises.map(exerciseHtml).join('')+actualSummary(session.completedWorkout)+(session.reason?'<p class="more-hint">'+esc(session.reason)+'</p>':'')+
+     '<div class="program-workout-session-body">'+session.exercises.map(exerciseHtml).join('')+adaptationHtml+actualSummary(session.completedWorkout)+(session.reason?'<p class="more-hint">'+esc(session.reason)+'</p>':'')+
      '<div class="program-workout-session-actions">'+start+'</div></div></details>';
  }
  function phaseStrip(view){
