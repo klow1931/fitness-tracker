@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.74.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.75.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.75 — Execution-First Workout Screen
+
+Once a workout contains meaningful training work, Loadnote now shifts the logger into an execution-first state. Setup controls such as date, template loading, session-intent editing, add-exercise controls, clear/save-template controls, and legacy rest controls move behind **Workout options** instead of competing with the active set.
+
+The current exercise stays expanded, completed exercises collapse automatically, and later exercises stay compact until they become current or the athlete opens them. Within the current exercise, the current set receives the strongest visual emphasis while completed and later sets are visually quieter.
+
+The sticky training cockpit becomes the single primary finish/review action during execution. Active rest timing is surfaced directly in the cockpit with countdown, pause/resume, +30 seconds, and stop controls. The mobile gym-floor dock continues to provide current-set/rest access but no longer duplicates the finish action while execution mode is active.
+
+Execution mode is only a presentation layer. Manual workout setup remains unchanged until meaningful work exists, saved-workout editing remains in the full editor, and **Workout options** can reveal the hidden controls without discarding the draft. v2.75 does not change schema v25, workout storage, kg conversion, RPE/e1RM/training-max math, progression, or adaptive programming. See `docs/execution-first-workout.md`.
 
 ## v2.74 — Frictionless Training Mode
 
