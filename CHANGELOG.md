@@ -1,3 +1,14 @@
+# v2.71.0 — Adaptive Handoff & Change Transparency
+
+- Add a deterministic post-session handoff model that classifies the next step as unchanged, review available, updated, or no later workout.
+- Show paired target-versus-actual RPE evidence alongside planned-set completion and exact load/rep matching after save.
+- Keep single-session saves evidence-only unless the existing weekly/phase lifecycle says a review window is open.
+- Surface the existing weekly or phase review directly from the post-workout handoff instead of implying an automatic adaptation.
+- When an athlete-approved review has changed the next session, show the stored before/after prescription and the existing evidence-based adaptation explanation.
+- Deep-link **View next workout** into the reviewed program session when available, otherwise route to Calendar.
+- Preserve explicit athlete approval, immutable reviewed source prescriptions, current Calendar revisions, local-first behavior, kg storage, and all existing training-policy thresholds.
+- No schema migration; schema remains v25.
+
 # v2.70.0 — Gym-Floor Training Experience
 
 - Make the daily training path more direct: Today can preview the exact reviewed program workout and includes estimated session time when available.
