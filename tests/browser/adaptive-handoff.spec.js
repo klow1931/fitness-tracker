@@ -34,7 +34,7 @@ test('v2.71 post-workout handoff shows target-vs-actual RPE and accepted before/
   data.phaseReviews=[{id:'phase-review',programId:'p1',phase:'accumulation',createdAt:'2026-10-01T19:00:00.000Z',choices:{squat:'keep',bench:'progress',deadlift:'keep'},exerciseLifts:{b:'bench'},findings:{
    squat:{name:'Squat'},bench:{name:'Competition Bench',reason:'All matched exposures stayed within the reviewed effort margin.',completedSessions:3,expectedSessions:3,comparedSets:9,overCapSessions:0,underCapSessions:3,averageRpe:7.5},deadlift:{name:'Deadlift'}
   },changes:[{id:'phase:p1:w2d1',before,after}]}];
-  showTab('workouts');LoadnoteTrainingContinuityUI.renderRecap(workout,data,{asOf:'2026-10-01'});
+  showTab('workouts');document.getElementById('workout-recap').hidden=false;LoadnoteTrainingContinuityUI.renderRecap(workout,data,{asOf:'2026-10-01'});
  });
  const card=page.locator('.adaptive-handoff');
  await expect(card).toContainText('Next workout updated');
@@ -64,7 +64,7 @@ test('v2.71 completed program week surfaces the existing athlete-approved review
    data.workouts.push({id:'logged-'+session.key,date:session.date,createdAt:session.date+'T20:00:00.000Z',exercises:prescription.plannedExercises.map(e=>({...e,sets:(e.sets||[]).map(s=>({weight:s.weight,reps:s.reps,duration:s.duration,rpe:s.targetRpe}))})),sessionIntent:{version:1,role:revision.context.role,goal:revision.context.goal,prescription,deviationReason:'none',deviationNotes:'',schedule:{id,revisionAt:revision.recordedAt}}});
   }
   const last=data.workouts.filter(w=>String(w.id).startsWith('logged-')).sort((a,b)=>a.date.localeCompare(b.date)).at(-1);
-  showTab('workouts');LoadnoteTrainingContinuityUI.renderRecap(last,data,{asOf:week.endDate});
+  showTab('workouts');document.getElementById('workout-recap').hidden=false;LoadnoteTrainingContinuityUI.renderRecap(last,data,{asOf:week.endDate});
  },phaseFixture());
  const card=page.locator('.adaptive-handoff');
  await expect(card).toContainText('Weekly review available');
