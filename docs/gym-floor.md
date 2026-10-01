@@ -1,14 +1,18 @@
-# Gym-floor workout experience (v2.62)
+# Gym-floor workout experience (v2.70)
 
 ## Goal
 
-The workout logger is Loadnote's highest-priority interface. v2.62 improves speed and resilience between sets while leaving the existing workout, programming and persistence models in place.
+The workout logger is Loadnote's highest-priority interface. v2.70 builds on the v2.62 mobile ergonomics so the athlete can move from today’s prescription through set entry and post-session handoff with fewer detours, while leaving the existing workout, programming and persistence models in place.
 
 ## One-handed mobile dock
 
 When Train → Log contains an unfinished draft, mobile viewports show a compact fixed dock with the current exercise/set, the existing deadline-based rest timer, and Finish. Finish opens the normal workout review; it does not bypass review or save directly.
 
 Navigating away does not discard the draft. The Train navigation receives a small in-progress indicator while the device-local draft contains work. When the browser visual viewport indicates a large keyboard-height reduction, the dock and mobile bottom navigation hide to avoid covering numeric inputs. This is an ergonomic heuristic, not a platform-level keyboard API.
+
+## Today → workout
+
+For reviewed scheduled programs, Today can expose the source session’s estimated duration and open that exact workout inside the read-only Program Workout Viewer. The viewer deep-link opens the correct week and session, so inspection does not require routing through Calendar.
 
 ## Between-set entry
 
@@ -24,9 +28,17 @@ Use last copies only:
 - load
 - reps, or hold duration
 
-It does not copy RPE, completion/check state, or readiness/fatigue interpretation.
+A blank set after an entered set may also expose **Same as set N**. That copies the immediately prior set’s display-unit load plus reps/hold duration. It never copies RPE or completion state.
+
+Neither quick-fill path copies RPE, completion/check state, or readiness/fatigue interpretation.
 
 Workout storage remains kilograms. Prior stored kg are converted with the existing unit helpers before being placed into a display-unit input. Normal session save converts the display value back to storage kg.
+
+## Live progress and post-workout handoff
+
+The mobile dock shows the current exercise/set plus completed-set and completed-exercise counts. The main workout progress line also names the next exercise/set when one is available. These are derived from the draft currently on screen and do not change the prescription.
+
+After save, the continuity recap summarizes planned sets represented, exact captured load/reps matches and RPE coverage. **Done** returns Home; **View next workout** opens the next reviewed program session when possible, otherwise it routes to Calendar. No future prescription is changed by these controls.
 
 ## Destructive actions
 
