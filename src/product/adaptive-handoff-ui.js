@@ -28,7 +28,7 @@
   const c=p.comparison,parts=[c.completedSets+'/'+c.plannedSets+' planned sets represented',c.exactRate+'% matched captured load/reps'];
   if(p.comparableRpeSets)parts.push('target RPE '+p.averageTargetRpe+' · actual RPE '+p.averageActualRpe+' across '+p.comparableRpeSets+' paired set'+(p.comparableRpeSets===1?'':'s'));
   const exercises=(p.exercises||[]).filter(x=>x.comparableRpeSets).map(x=>'<li><b>'+esc(x.name)+'</b><span>Target '+esc(x.averageTargetRpe)+' · Actual '+esc(x.averageActualRpe)+' · '+x.comparableRpeSets+' paired set'+(x.comparableRpeSets===1?'':'s')+'</span></li>').join('');
-  return '<p class="adaptive-handoff-evidence">'+parts.map(esc).join(' · ')+'</p>'+(exercises?'<details class="adaptive-handoff-rpe"><summary>RPE evidence by exercise</summary><ul>'+exercises+'</ul></details>':'');
+  return '<p class="adaptive-handoff-evidence"><b>Plan vs actual:</b> '+parts.map(esc).join(' · ')+'</p>'+(exercises?'<details class="adaptive-handoff-rpe"><summary>RPE evidence by exercise</summary><ul>'+exercises+'</ul></details>':'');
  }
  function changesHtml(report){
   if(report.status!=='updated'||!report.changes?.length)return '';
