@@ -1,4 +1,4 @@
-/* v2.69.2 — current-program workout viewer and Calendar plan details. */
+/* v2.70 — current-program workout viewer with direct workout deep links. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -53,13 +53,13 @@
    const name=p.eventType==='competition'?(p.eventName||'Competition meet'):'Mock meet';
    return '<p class="program-workout-event">'+esc(name)+' · '+esc(p.eventDate)+'</p>';
  }
- function viewerHtml(view){
-   const currentWeek=view.progress?.week||null;
+ function viewerHtml(view,{sessionId=null}={}){
+   const selected=view.sessions.find(s=>s.id===sessionId)||null,currentWeek=selected?.week||view.progress?.week||null;
    const weeks=view.weeks.map(w=>{
      const open=w.week===currentWeek;
      const event=!w.sessions.length&&w.eventDate?'<div class="program-workout-event-week"><b>'+esc(w.phaseLabel)+'</b><p>'+esc(w.eventDate)+' · Event day. Attempt loads are not automatically prescribed.</p></div>':'';
      return '<details class="program-workout-week" data-program-week="'+w.week+'" '+(open?'open':'')+'><summary><span><b>Week '+w.week+' — '+esc(w.phaseLabel)+'</b><small>'+w.sessions.length+' workout'+(w.sessions.length===1?'':'s')+(w.startDate?' · '+esc(w.startDate)+(w.endDate&&w.endDate!==w.startDate?' – '+esc(w.endDate):''):'')+'</small></span></summary>'+
-       '<div class="program-workout-week-body">'+event+w.sessions.map(s=>sessionHtml(s,{open:false})).join('')+'</div></details>';
+       '<div class="program-workout-week-body">'+event+w.sessions.map(s=>sessionHtml(s,{open:s.id===sessionId})).join('')+'</div></details>';
    }).join('');
    return '<div class="program-workout-viewer-head"><div><p class="eyebrow">CURRENT PROGRAM</p><h2>'+esc(view.program.name)+'</h2><p>'+esc(view.program.totalWeeks+' weeks · '+view.program.startDate+' → '+view.program.endDate)+'</p>'+eventLine(view.program)+'</div><button type="button" class="btn-secondary" data-program-close>Close</button></div>'+
      phaseStrip(view)+'<p class="program-workout-help">Open any workout to see its current scheduled prescription, target RPE, training-max context and why it was prescribed.</p>'+weeks;
@@ -68,13 +68,14 @@
    host.querySelectorAll('[data-program-start]').forEach(b=>b.addEventListener('click',()=>window.startScheduledWorkout?.(b.dataset.programStart)));
    host.querySelector('[data-program-close]')?.addEventListener('click',()=>host.closest('dialog')?.close());
  }
- function open(programId=null){
+ function open(programId=null,sessionId=null){
    if(!window.LoadnoteProgramWorkoutViewer)return;
    let view;try{view=LoadnoteProgramWorkoutViewer.view(data,{asOf:today(),programId});}catch(error){showToast?.(error.message,'error');return;}
    if(!view){showToast?.('No reviewed scheduled program is available.','info');return;}
    let dlg=document.getElementById('program-workout-dialog');
    if(!dlg){dlg=document.createElement('dialog');dlg.id='program-workout-dialog';dlg.className='card program-workout-dialog';document.body.append(dlg);}
-   dlg.innerHTML=viewerHtml(view);bind(dlg);dlg.showModal();
+   dlg.innerHTML=viewerHtml(view,{sessionId});bind(dlg);dlg.showModal();
+   if(sessionId)setTimeout(()=>{const target=[...dlg.querySelectorAll('[data-program-session]')].find(x=>x.dataset.programSession===sessionId);target?.scrollIntoView({block:'center',behavior:'smooth'});},40);
  }
  function calendarDayHtml(day,rows){
    if(!rows?.length)return '';
