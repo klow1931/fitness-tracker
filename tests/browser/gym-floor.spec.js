@@ -47,6 +47,33 @@ test('v2.62 numeric keyboards and Enter advance to the next unfinished set',asyn
  await expect.poll(()=>page.evaluate(()=>document.activeElement?.classList.contains('set-weight'))).toBe(true);
 });
 
+test('v2.70 same-set quick fill and dock progress reduce between-set taps',async({page})=>{
+ await page.locator('.ex-name').fill('Bench Press');
+ await page.evaluate(()=>{
+   const row=document.querySelector('#exercise-rows > div'),container=row.querySelector('.sets-container');
+   addSetToContainer(container,{reps:'',weight:'',rpe:'',showCompletion:true},'reps');
+   refreshGymFloorUI();
+ });
+ const sets=page.locator('.logger-set');await expect(sets).toHaveCount(2);
+ await sets.first().locator('.set-weight').fill('100');
+ await sets.first().locator('.set-reps').fill('5');
+ await sets.first().locator('.set-rpe').fill('8');
+ await sets.first().locator('.set-rpe').press('Enter');
+ await expect(sets.first().locator('.set-done-check')).toBeChecked();
+ const quick=sets.nth(1).locator('.gym-set-history');
+ await expect(quick.getByRole('button',{name:'Same as set 1'})).toBeVisible();
+ await quick.getByRole('button',{name:'Same as set 1'}).click();
+ await expect(sets.nth(1).locator('.set-weight')).toHaveValue('100');
+ await expect(sets.nth(1).locator('.set-reps')).toHaveValue('5');
+ await expect(sets.nth(1).locator('.set-rpe')).toHaveValue('');
+ await expect(page.locator('#gym-floor-dock')).toContainText('1/2 sets · 0/1 exercises');
+ await sets.nth(1).locator('.set-rpe').fill('7.5');
+ await sets.nth(1).locator('.set-rpe').press('Enter');
+ await expect(page.locator('#gym-floor-dock')).toContainText('2/2 sets · 1/1 exercises');
+ await expect(page.locator('#gym-floor-dock').getByRole('button',{name:'Review'})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
+
 test('v2.62 mobile dock follows the draft, rest timer and navigation without losing work',async({page})=>{
  await page.locator('.ex-name').fill('Bench Press');
  await page.locator('.set-weight').fill('100');
