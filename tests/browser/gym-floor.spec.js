@@ -87,7 +87,7 @@ test('v2.74 cockpit pairs today target with last performance and adjusts display
  await expect(cockpit).toContainText('Bench focus');
  await expect(cockpit).toContainText('Today');
  await expect(cockpit).toContainText('220.5 lb');
- await expect(cockpit).toContainText('target RPE 7.5');
+ await expect(cockpit).toContainText('@7.5');
  await expect(cockpit).toContainText('Last');
  await expect(cockpit).toContainText('198.4 lb');
  await cockpit.getByRole('button',{name:'Use target'}).click();
