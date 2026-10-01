@@ -98,10 +98,13 @@ test('saving a shortened scheduled workout closes the loop to the next session',
  await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  const recap=page.locator('#workout-recap .training-continuity-recap');
- await expect(recap).toContainText('What Loadnote learned');
+ await expect(recap).toContainText('Session result');
  await expect(recap).toContainText('Partial session preserved: 1/2 planned sets represented');
+ await expect(recap).toContainText('Plan vs actual:');
  await expect(recap).toContainText('Time constraint');
  await expect(recap).toContainText('Next: '+tomorrow+' · Next squat');
+ await expect(recap.getByRole('button',{name:'Done'})).toBeVisible();
+ await expect(recap.getByRole('button',{name:'View next workout'})).toBeVisible();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  const home=page.locator('#today-training');
  await expect(home).toContainText('Training logged');
