@@ -2,6 +2,8 @@ const assert=require('node:assert/strict');
 const Execution=require('../src/product/training-execution');
 
 assert.equal(Execution.meaningful([{type:'strength',name:'Bench',sets:[{measure:'',weight:'',rpe:'',done:false}]}]),false);
+assert.equal(Execution.meaningful([{type:'strength',name:'Bench',sets:[{measure:'',weight:'100',rpe:'',done:false}]}]),false);
+assert.equal(Execution.meaningful([{type:'strength',name:'Bench',sets:[{measure:'',weight:'',rpe:'8',done:false}]}]),false);
 assert.equal(Execution.meaningful([{type:'strength',name:'Bench',sets:[{measure:'5',weight:'',rpe:'',done:false}]}]),true);
 assert.equal(Execution.meaningful([{type:'strength',name:'',sets:[{measure:'5',weight:'100',rpe:'8',done:false}]}]),false);
 assert.equal(Execution.meaningful([{type:'cardio',name:'Bike',duration:'20',distance:'',done:false}]),true);
