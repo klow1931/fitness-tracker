@@ -1,4 +1,4 @@
-/* v2.62 — deterministic gym-floor logger helpers. */
+/* v2.70 — deterministic gym-floor training-flow helpers. */
 (function(root,factory){
  if(typeof module==='object'&&module.exports)module.exports=factory();
  else root.LoadnoteGymFloor=factory();
@@ -27,5 +27,26 @@
   const layout=Number(layoutHeight),visible=Number(viewportHeight),cut=Number(threshold);
   return layout>0&&visible>0&&Number.isFinite(cut)&&layout-visible>=cut;
  }
- return {inputMode,previousPayload,nextUnfinishedIndex,keyboardLikelyOpen};
+ function sessionProgress(rows){
+  const list=Array.isArray(rows)?rows:[];
+  let totalSets=0,doneSets=0,totalExercises=0,doneExercises=0,currentExerciseIndex=-1,currentSetIndex=-1;
+  for(let i=0;i<list.length;i++){
+   const row=list[i]||{};
+   if(row.type==='cardio'){
+    if(row.entered===false)continue;
+    totalExercises++;totalSets++;
+    if(row.done){doneExercises++;doneSets++;}
+    else if(currentExerciseIndex<0){currentExerciseIndex=i;currentSetIndex=0;}
+    continue;
+   }
+   const sets=(Array.isArray(row.sets)?row.sets:[]).filter(s=>s&&s.entered!==false);
+   if(!sets.length)continue;
+   totalExercises++;totalSets+=sets.length;
+   const completed=sets.filter(s=>!!s.done).length;doneSets+=completed;
+   if(completed===sets.length)doneExercises++;
+   else if(currentExerciseIndex<0){currentExerciseIndex=i;currentSetIndex=sets.findIndex(s=>!s.done);}
+  }
+  return {totalSets,doneSets,remainingSets:Math.max(0,totalSets-doneSets),totalExercises,doneExercises,currentExerciseIndex,currentSetIndex,complete:totalSets>0&&doneSets===totalSets};
+ }
+ return {inputMode,previousPayload,nextUnfinishedIndex,keyboardLikelyOpen,sessionProgress};
 });
