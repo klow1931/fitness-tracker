@@ -17,6 +17,9 @@ const plan={plannedExercises:[
 assert.deepEqual(Cockpit.targetSet(plan,{exerciseId:'bench',name:'Bench',trackBy:'reps'},1),{
  exercise:'id:bench',weight:102.5,reps:5,duration:null,targetRpe:8
 });
+assert.deepEqual(Cockpit.targetSet(plan,{name:'Competition Bench',trackBy:'reps'},0),{
+ exercise:'id:bench',weight:100,reps:5,duration:null,targetRpe:7
+});
 assert.deepEqual(Cockpit.targetSet(plan,{name:'Plank',trackBy:'duration'},0),{
  exercise:'name:plank',weight:0,reps:null,duration:30,targetRpe:6
 });
