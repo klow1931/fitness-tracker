@@ -114,7 +114,8 @@
       data.backupBannerDismissed = null;
       saveData(data);
       updateBackupBanner();
-      showToast('Verified JSON backup downloaded (photos excluded — use Photos tab to export them)', 'success');
+      if(typeof renderWorkoutHistory==='function'&&document.getElementById('panel-workouts')&&!document.getElementById('panel-workouts').classList.contains('hidden'))renderWorkoutHistory();
+      showToast('Verified JSON backup downloaded · '+(data.workouts||[]).length+' workouts protected (photos excluded)', 'success');
     }
 
     function exportPhotosBackup() {
