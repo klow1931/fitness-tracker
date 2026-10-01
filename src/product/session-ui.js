@@ -36,7 +36,8 @@ function reviewWorkout(){
   if(!draft.date)return showToast('Please select a date','error');
   const workout=LoadnoteSession.fromDraft(draft,workoutEdit?.id || window.LoadnoteCore.createId());
   if(!workout.exercises.length)return showToast('Add at least one strength set or cardio entry','error');
-  reviewedSession={draft:JSON.stringify(draft),workout,edit:workoutEdit?JSON.parse(JSON.stringify(workoutEdit)):null,program:pendingProgramSession?JSON.parse(JSON.stringify(pendingProgramSession)):null};
+  const duplicateMatches=window.LoadnoteHistoryReliability?.duplicateMatches?.(data.workouts||[],workout,{excludeId:workoutEdit?.id})||[];
+  reviewedSession={draft:JSON.stringify(draft),workout,edit:workoutEdit?JSON.parse(JSON.stringify(workoutEdit)):null,program:pendingProgramSession?JSON.parse(JSON.stringify(pendingProgramSession)):null,duplicateIds:duplicateMatches.map(w=>String(w.id))};
   const content=document.getElementById('workout-review-content');content.replaceChildren();
   const add=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;content.appendChild(el);return el;};
   document.getElementById('workout-review-title').textContent=workoutEdit?'Review workout changes':'Review your workout';
@@ -55,10 +56,11 @@ function reviewWorkout(){
     else add('p',exercise.sets.map((s,i)=>`${i+1}. ${formatStrengthSet(s)}`).join(' / '));
   }
   if(workout.notes)add('p','Notes: '+workout.notes);
+  if(duplicateMatches.length){const warning=add('p','Possible duplicate: '+duplicateMatches.length+' saved workout'+(duplicateMatches.length===1?' has':'s have')+' the same date and recorded content. Save only if this is intentionally a separate session.');warning.className='workout-duplicate-warning';}
   if(workout.sessionIntent&&(workout.sessionIntent.deviationReason!=='none'||workout.sessionIntent.deviationNotes)){const reason=window.LoadnoteIntent.DEVIATION_REASONS[workout.sessionIntent.deviationReason]||'Other';add('p','Plan change: '+reason+(workout.sessionIntent.deviationNotes?' · '+workout.sessionIntent.deviationNotes:''));}
   const unchecked=draft.rows.reduce((n,r)=>n+(r.sets || []).filter(s=>Number(s.reps || s.duration)>0 && !s.done).length,0);
   add('p',unchecked?`${unchecked} entered sets are unchecked. They are included in this review and will be saved.`:'All entered sets shown above will be saved.');
-  const button=document.getElementById('confirm-workout-save');button.textContent=workoutEdit?'Save changes':'Save workout';button.disabled=false;
+  const button=document.getElementById('confirm-workout-save');button.textContent=duplicateMatches.length?(workoutEdit?'Save duplicate change anyway':'Save duplicate anyway'):(workoutEdit?'Save changes':'Save workout');button.disabled=false;
   const dialog=document.getElementById('workout-review');if(!dialog.open)dialog.showModal();
 }
 function closeWorkoutReview(){if(!window.loggerSaving){document.getElementById('workout-review').close();reviewedSession=null;}}
@@ -76,6 +78,9 @@ async function commitReviewedWorkout(){
   }
   let next;
   try{
+    const currentDuplicates=window.LoadnoteHistoryReliability?.duplicateMatches?.(data.workouts||[],reviewedSession.workout,{excludeId:reviewedSession.edit?.id})||[];
+    const reviewedIds=(reviewedSession.duplicateIds||[]).slice().sort().join('|'),currentIds=currentDuplicates.map(w=>String(w.id)).sort().join('|');
+    if(reviewedIds!==currentIds){reviewWorkout();showToast('Workout history changed. Review the duplicate warning before saving.','info');return;}
     next=LoadnoteSession.apply(data,reviewedSession.workout,reviewedSession.edit,reviewedSession.program,estimated1RM,()=>window.LoadnoteCore.createId());
     next.exerciseNotes=next.exerciseNotes || {};
     for(const row of JSON.parse(reviewedSession.draft).rows)if(row.type!=='cardio' && row.name.trim() && row.note.trim())next.exerciseNotes[row.name.trim()]=row.note.trim();
