@@ -1,7 +1,7 @@
 /* v2.72 — compact Progress story: overview, strength, adherence and program decisions. */
 (function(){
  'use strict';
- let activeView='overview',storyWeeks=12;
+ let activeView='overview',storyWeeks=12,selectedMovementKey='';
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const displayKg=value=>value==null?'—':Math.round(toDisplay(value)*10)/10+' '+unitLabel();
  const pct=value=>value==null?'—':value+'%';
@@ -66,8 +66,11 @@
    '<p class="more-hint">'+esc(d.note||d.reason||story.notice)+'</p></article>';
  }
  function strengthHtml(report){
-  return '<div class="progress-story-section-head"><div><h3>Strength</h3><p>Follow individual movements without mixing variations or turning one session into a trend.</p></div></div>'+
-   (report.movements.length?'<div class="progress-story-strength-list">'+report.movements.map(movementDetail).join('')+'</div>':'<p>No rep-based strength movement has enough recent history to feature yet.</p>');
+  const options=report.movementOptions||[],picker=options.length?'<label class="progress-story-exercise-picker">Explore an exercise<select class="input" data-progress-exercise><option value="">Featured movements</option>'+options.map(x=>'<option value="'+esc(x.key)+'">'+esc(x.name)+' · '+x.sessions+' session'+(x.sessions===1?'':'s')+'</option>').join('')+'</select></label>':'';
+  const selected=report.customMovement;
+  const content=selected?'<div class="progress-story-strength-list">'+movementDetail(selected)+'</div>':
+   report.movements.length?'<div class="progress-story-strength-list">'+report.movements.map(movementDetail).join('')+'</div>':'<p>No rep-based strength movement has enough recent history to feature yet.</p>';
+  return '<div class="progress-story-section-head"><div><h3>Strength</h3><p>Follow individual movements without mixing variations or turning one session into a trend.</p></div>'+picker+'</div>'+content;
  }
  function adherenceHtml(report){
   const plan=report.overview.schedule,p=report.program;
@@ -93,13 +96,15 @@
  }
  function render(){
   const host=document.getElementById('progress-analytics');if(!host||!window.LoadnoteProgressStory)return;
-  let report;try{report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks});}catch(error){host.innerHTML='<h2>Training progress</h2><p>'+esc(error.message)+'</p>';return;}
+  let report;try{report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks,movementKey:selectedMovementKey||null});}catch(error){host.innerHTML='<h2>Training progress</h2><p>'+esc(error.message)+'</p>';return;}
+  if(selectedMovementKey&&!report.customMovement){selectedMovementKey='';report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks});}
   host.innerHTML='<div class="progress-story-head"><div><p class="eyebrow">PROGRESS STORY</p><h2>What your training is doing.</h2><p>Strength, adherence, and program decisions from the evidence you actually logged.</p></div><label>Window<select class="input" data-progress-window><option value="8">8 weeks</option><option value="12">12 weeks</option><option value="24">24 weeks</option></select></label></div>'+
    '<div class="progress-story-tabs" role="tablist" aria-label="Progress sections">'+
     [['overview','Overview'],['strength','Strength'],['adherence','Adherence'],['decisions','Program history']].map(([key,label])=>'<button type="button" role="tab" aria-selected="'+String(activeView===key)+'" class="'+(activeView===key?'active':'')+'" data-progress-view="'+key+'">'+label+'</button>').join('')+
    '</div><div class="progress-story-body" data-progress-story-body>'+bodyHtml(report)+'</div>'+
    '<details class="progress-story-method"><summary>How Progress works</summary>'+report.notes.map(x=>'<p>'+esc(x)+'</p>').join('')+'<p>Strength stories compare the first four weeks of the selected window with the most recent four weeks. At least two demonstrated-capacity days are required in each window before showing direction.</p></details>';
   const select=host.querySelector('[data-progress-window]');select.value=String(storyWeeks);select.onchange=()=>{storyWeeks=Number(select.value);render();};
+  const exercise=host.querySelector('[data-progress-exercise]');if(exercise){exercise.value=selectedMovementKey;exercise.onchange=()=>{selectedMovementKey=exercise.value;render();};}
   host.querySelectorAll('[data-progress-view]').forEach(button=>button.onclick=()=>{activeView=button.dataset.progressView;render();});
   host.querySelectorAll('[data-progress-open-exercise]').forEach(button=>button.onclick=()=>openExerciseDetail(button.dataset.progressOpenExercise,'reps'));
  }
