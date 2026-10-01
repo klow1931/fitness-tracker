@@ -169,12 +169,14 @@
  }
  function refreshRest(){
   const host=document.getElementById('training-cockpit');if(!host||host.hidden)return;
-  const current=host.querySelector('[data-cockpit-rest]'),html=restHtml();
-  if(!html){current?.remove();return;}
+  const snap=window.LoadnoteRestTimer?.snapshot?.(),current=host.querySelector('[data-cockpit-rest]');
+  if(!snap?.active){current?.remove();return;}
   if(current){
-   const wrap=document.createElement('div');wrap.innerHTML=html;current.replaceWith(wrap.firstElementChild);
-  }else host.insertAdjacentHTML('beforeend',html);
-  bindRest(host);
+   const label=current.querySelector('b');if(label)label.textContent=snap.label;
+   const pause=current.querySelector('[data-cockpit-rest-pause]');if(pause)pause.textContent=snap.paused?'Resume':'Pause';
+   return;
+  }
+  host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);
  }
  function render(){
   const host=ensure();if(!host)return;
