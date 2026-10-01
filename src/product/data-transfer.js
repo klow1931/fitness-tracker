@@ -43,8 +43,11 @@
         ['Workouts',preview.workouts],['Calendar sessions',preview.scheduledSessions],['Workout revisions',preview.workoutRevisions],
         ['Training blocks',preview.trainingBlocks],['Meet cycles',preview.meetCycles],['Athlete goals',preview.athleteGoals],
         ['Reviewed programs',preview.reviewedPrograms],['Phase programs',preview.phasePrograms],['Phase reviews',preview.phaseReviews],
-        ['Program reviews',preview.programReviews],['Programming profiles',preview.programmingProfiles],['Templates',preview.templates],
-        ['Exercise roles',preview.exerciseRoles],['Transition baselines',preview.transitionSnapshots]
+        ['Program reviews',preview.programReviews],['Programming profiles',preview.programmingProfiles],['Adopted programs',preview.adoptedPrograms],
+        ['Decision history',preview.decisionEvents],['Transition baselines',preview.transitionSnapshots],['Templates',preview.templates],
+        ['Exercise catalog',preview.exerciseCatalog],['Exercise roles',preview.exerciseRoles],['PR records',preview.prs],
+        ['Nutrition days',preview.nutrition],['Bodyweight entries',preview.bodyweight],['Measurements',preview.measurements],
+        ['Progress-photo records',preview.progressPhotos],['Rest days',preview.restDays]
       ];
       source.textContent=(fileName||'JSON backup')+' · This will replace local structured data only after you confirm.';
       host.innerHTML='<div class="import-review-status">'+
