@@ -136,11 +136,12 @@ test('Progress separates adherence from unresolved sessions and shows accepted p
  });
  const host=page.locator('#progress-analytics');
  await host.getByRole('tab',{name:'Adherence'}).click();
- await expect(host).toContainText('1 completed');
- await expect(host).toContainText('1 explicitly skipped');
- await expect(host).toContainText('1 unresolved');
- await expect(host).toContainText('50%');
- await expect(host).toContainText('not counted as failures');
+ const recent=host.locator('[data-progress-adherence="recent"]');
+ await expect(recent.locator('[data-progress-count="completed"] b')).toHaveText('1');
+ await expect(recent.locator('[data-progress-count="skipped"] b')).toHaveText('1');
+ await expect(recent.locator('[data-progress-count="unconfirmed"] b')).toHaveText('1');
+ await expect(recent).toContainText('50%');
+ await expect(recent).toContainText('not counted as failures');
  await host.getByRole('tab',{name:'Program history'}).click();
  await expect(host).toContainText('accumulation phase review');
  await expect(host).toContainText('1 changed');
