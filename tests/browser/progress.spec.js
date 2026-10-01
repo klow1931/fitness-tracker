@@ -96,7 +96,7 @@ test('Progress tells a compact strength story without turning sparse data into a
   const asOf=today(),dates=[move(asOf,-77),move(asOf,-63),move(asOf,-21),move(asOf,-7)];
   data.exerciseCatalog=[{id:'s',name:'Competition Squat',aliases:[]}];
   data.exerciseRoles=LoadnoteReadiness.replace([],[{exerciseId:'s',role:'competition',competitionLift:'squat'}],{now:dates[0]+'T00:00:00.000Z',createId:()=> 'progress-role'});
-  data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*5,reps:5,rpe:8}]}]}));
+  data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*5,reps:5,rpe:8}]},...(i>=2?[{name:'Chest-Supported Row',exerciseId:'row',type:'strength',trackBy:'reps',sets:[{weight:60+(i-2)*2.5,reps:8,rpe:8}]}]:[])]}));
   data.scheduledSessions=[];data.phasePrograms=[];data.meetCycles=[];data.phaseReviews=[];data.prs=[];invalidateViews();showTab('prs');
  });
  const host=page.locator('#progress-analytics');
@@ -111,9 +111,12 @@ test('Progress tells a compact strength story without turning sparse data into a
  await expect(host).toContainText('Confirmed competition lift');
  await expect(host).toContainText('Best recent set');
  await expect(host).toContainText('Recent demonstrated capacity');
+ await host.locator('[data-progress-exercise]').selectOption('id:row');
+ await expect(host).toContainText('Chest-Supported Row');
+ await expect(host).toContainText('2 sessions');
  await host.getByRole('button',{name:'Exercise details'}).click();
  await expect(page.locator('#exercise-detail')).toBeVisible();
- await expect(page.locator('#exercise-detail-title')).toContainText('Competition Squat');
+ await expect(page.locator('#exercise-detail-title')).toContainText('Chest-Supported Row');
 });
 
 test('Progress separates adherence from unresolved sessions and shows accepted program decisions',async({page})=>{
