@@ -64,21 +64,15 @@
  }
  function targetText(ctx,value){
   if(!value)return 'No captured target for this set';
-  const parts=[];
-  if(value.weight!=null)parts.push(weightText(value.weight));
-  if(ctx.row.dataset.trackBy==='duration'&&value.duration!=null)parts.push(value.duration+' sec');
-  else if(value.reps!=null)parts.push(value.reps+' reps');
-  if(value.targetRpe!=null)parts.push('target RPE '+value.targetRpe);
-  return parts.join(' × ');
+  const load=value.weight!=null?weightText(value.weight):'';
+  const measure=ctx.row.dataset.trackBy==='duration'&&value.duration!=null?value.duration+' sec':value.reps!=null?String(value.reps):'';
+  return [load,measure].filter(Boolean).join(' × ')+(value.targetRpe!=null?' @'+value.targetRpe:'');
  }
  function previousText(ctx,value){
   if(!value)return 'No earlier matching set';
-  const parts=[];
-  if(Number.isFinite(Number(value.weight)))parts.push(weightText(value.weight));
-  if(ctx.row.dataset.trackBy==='duration'&&Number(value.duration)>0)parts.push(value.duration+' sec');
-  else if(Number(value.reps)>0)parts.push(value.reps+' reps');
-  if(Number(value.rpe)>=1&&Number(value.rpe)<=10)parts.push('RPE '+value.rpe);
-  return parts.join(' × ');
+  const load=Number.isFinite(Number(value.weight))?weightText(value.weight):'';
+  const measure=ctx.row.dataset.trackBy==='duration'&&Number(value.duration)>0?value.duration+' sec':Number(value.reps)>0?String(value.reps):'';
+  return [load,measure].filter(Boolean).join(' × ')+(Number(value.rpe)>=1&&Number(value.rpe)<=10?' @'+value.rpe:'');
  }
  function workoutMeta(){
   let scheduled=null,timing=null;
