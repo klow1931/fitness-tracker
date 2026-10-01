@@ -83,7 +83,8 @@
    card.addEventListener('input',queue);
    card.addEventListener('change',queue);
    card.addEventListener('focusin',event=>{
-    if(active&&!event.target.closest?.('.execution-secondary,.execution-row-options,[data-cockpit-options]'))closeOptions();
+    if(!active||!optionsOpen)return;
+    if(event.target.matches?.('.set-weight,.set-reps,.set-duration,.set-rpe,.cardio-duration,.cardio-distance,.cardio-hr'))closeOptions();
    });
   }
   const rows=document.getElementById('exercise-rows');if(rows)new MutationObserver(queue).observe(rows,{childList:true,subtree:true});
