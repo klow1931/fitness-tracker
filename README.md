@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.70.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.71.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.71 — Adaptive Handoff & Change Transparency
+
+v2.71 closes the visible training loop after a workout is saved. Loadnote now distinguishes between a next workout that is **unchanged**, a review window that is **available**, and a next workout that was **updated by an athlete-approved review**.
+
+The post-workout handoff reports planned sets represented, exact load/rep matches, paired target-versus-actual RPE evidence, and the current next-workout status. Accepted programming changes show a stored before/after prescription and reuse the existing adaptation explanation so the athlete can see what changed, why, and which evidence supported the reviewed decision.
+
+Loadnote still does not silently revise training from a single workout. Weekly and phase changes continue through the existing deterministic review gates and require athlete approval. v2.71 adds visibility and routing around those systems; it does not change progression thresholds, RPE/e1RM logic, training-max rules, kg storage, meet-cycle policy, or schema v25.
 
 ## v2.70 — Gym-Floor Training Experience
 
