@@ -748,6 +748,8 @@ body.training-execution-active:not(.training-execution-options-open) .logger-set
 body.training-execution-active .training-session-bar,
 body.training-execution-active #workout-actions,
 body.training-execution-active #exercise-rows + .flex{margin-block:0}
+body.training-execution-active .training-session-bar [data-workout-action="review"],
+body.training-execution-active #workout-actions>[data-workout-action="review"],
 body.training-execution-active .gym-floor-finish{display:none!important}
 @media(max-width:768px){
  body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto}
