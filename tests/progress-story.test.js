@@ -40,6 +40,16 @@ assert.equal(report.decisions.rows.length,1);
 assert.equal(report.decisions.rows[0].changedLifts,1);
 assert.equal(report.program,null);
 
+const withRow={...state,workouts:[...state.workouts,
+ {id:'row-1',date:'2026-09-10',createdAt:'2026-09-10T20:00:00.000Z',exercises:[{exerciseId:'row',name:'Chest-Supported Row',type:'strength',trackBy:'reps',sets:[{weight:60,reps:8,rpe:8}]}]},
+ {id:'row-2',date:'2026-09-24',createdAt:'2026-09-24T20:00:00.000Z',exercises:[{exerciseId:'row',name:'Chest-Supported Row',type:'strength',trackBy:'reps',sets:[{weight:62.5,reps:8,rpe:8}]}]}
+]};
+const options=Story.movementOptions(withRow,{asOf,weeks:12});
+assert(options.some(x=>x.key==='id:row'&&x.name==='Chest-Supported Row'));
+const rowReport=Story.analyze(withRow,{asOf,weeks:12,movementKey:'id:row'});
+assert.equal(rowReport.customMovement.name,'Chest-Supported Row');
+assert.equal(rowReport.customMovement.overall.sessions,2);
+
 const sparse=Story.movementStory({...state,workouts:[workout('only-start','2026-07-10',100,8),workout('only-recent','2026-09-21',110,8)]},report.overview.markers[0],{asOf,weeks:12});
 assert.equal(sparse.direction.status,'sparse');
 assert.match(sparse.direction.reason,/At least two/);
