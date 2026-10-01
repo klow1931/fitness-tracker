@@ -1718,3 +1718,81 @@ body.dark .import-review-recovery{background:rgba(99,102,241,.12)}
  .import-review .session-review-actions{display:grid;grid-template-columns:1fr}
  .import-review .session-review-actions button{width:100%}
 }
+
+
+/* v2.74 — frictionless training mode */
+.training-cockpit{
+ position:sticky;
+ top:.55rem;
+ z-index:35;
+ width:100%;
+ max-width:100%;
+ min-width:0;
+ box-sizing:border-box;
+ margin:0 0 .85rem;
+ padding:.72rem .78rem;
+ border:1px solid rgba(79,70,229,.28);
+ border-radius:.9rem;
+ background:rgba(255,255,255,.96);
+ box-shadow:0 8px 24px rgba(15,23,42,.08);
+ backdrop-filter:blur(10px);
+ overflow:hidden
+}
+.training-cockpit[hidden]{display:none}
+.training-cockpit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem}
+.training-cockpit-title{min-width:0}
+.training-cockpit-title>span,.training-cockpit-title>b,.training-cockpit-title>small{display:block}
+.training-cockpit-title>span{font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#6366f1}
+.training-cockpit-title>b{margin:.05rem 0;font-size:.92rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.training-cockpit-title>small{font-size:.69rem;line-height:1.35;color:#64748b}
+.training-cockpit-actions{display:flex;gap:.4rem;flex:0 0 auto}
+.training-cockpit-actions button{min-height:38px;padding:.4rem .65rem;font-size:.75rem}
+.training-cockpit-current{display:grid;grid-template-columns:minmax(8rem,.7fr) 1.3fr auto;gap:.6rem;align-items:center;margin-top:.6rem;padding-top:.55rem;border-top:1px solid rgba(100,116,139,.15)}
+.training-cockpit-current>div:first-child>span,.training-cockpit-current>div:first-child>b{display:block}
+.training-cockpit-current>div:first-child>span{font-size:.63rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+.training-cockpit-current>div:first-child>b{font-size:.86rem;line-height:1.25}
+.training-cockpit-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem;min-width:0}
+.training-cockpit-comparison>div{min-width:0;padding:.4rem .5rem;border-radius:.58rem;background:rgba(148,163,184,.075)}
+.training-cockpit-comparison span,.training-cockpit-comparison b{display:block}
+.training-cockpit-comparison span{font-size:.61rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+.training-cockpit-comparison b{margin-top:.08rem;font-size:.71rem;line-height:1.3;overflow-wrap:anywhere}
+.training-cockpit-link{min-height:34px;padding:.25rem .45rem;border:0;background:transparent;color:#4f46e5;font-size:.72rem;font-weight:750}
+.training-cockpit-quick{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap;margin-top:.55rem}
+.training-cockpit-quick button{min-height:36px;padding:.35rem .55rem;border:1px solid #cbd5e1;border-radius:.55rem;background:#fff;color:#334155;font-size:.72rem;font-weight:750}
+.training-cockpit-quick .btn-secondary{border-color:#c7d2fe}
+.training-cockpit-quick button:active,.training-cockpit-quick button:hover{border-color:#6366f1;background:#eef2ff;color:#3730a3}
+.training-cockpit-transition{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin-top:.6rem;padding:.6rem .65rem;border-radius:.65rem;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.24)}
+.training-cockpit-transition span,.training-cockpit-transition b,.training-cockpit-transition small{display:block}
+.training-cockpit-transition span{font-size:.63rem;text-transform:uppercase;letter-spacing:.05em;color:#047857}
+.training-cockpit-transition b{font-size:.82rem}
+.training-cockpit-transition small{font-size:.69rem}
+.training-cockpit-transition button{min-height:40px;flex:0 0 auto}
+body.dark .training-cockpit{background:rgba(15,23,42,.96);border-color:rgba(129,140,248,.38);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+body.dark .training-cockpit-title>span{color:#a5b4fc}
+body.dark .training-cockpit-title>small,
+body.dark .training-cockpit-current>div:first-child>span,
+body.dark .training-cockpit-comparison span{color:#94a3b8}
+body.dark .training-cockpit-comparison>div{background:rgba(148,163,184,.09)}
+body.dark .training-cockpit-link{color:#a5b4fc}
+body.dark .training-cockpit-quick button{background:#111827;border-color:#475569;color:#e2e8f0}
+body.dark .training-cockpit-quick button:active,body.dark .training-cockpit-quick button:hover{background:#312e81;border-color:#6366f1;color:#eef2ff}
+body.dark .training-cockpit-transition{background:rgba(16,185,129,.11);border-color:rgba(16,185,129,.3)}
+body.dark .training-cockpit-transition span{color:#6ee7b7}
+@media(max-width:640px){
+ .training-cockpit{top:.35rem;margin-left:0;margin-right:0;padding:.65rem}
+ .training-cockpit-top{display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem;min-width:0}
+ .training-cockpit-title{min-width:0}
+ .training-cockpit-title>b{max-width:100%}
+ .training-cockpit-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;min-width:0}
+ .training-cockpit-actions button{min-width:0;padding:.35rem .5rem}
+ .training-cockpit-current{grid-template-columns:minmax(0,1fr) auto;gap:.45rem;min-width:0}
+ .training-cockpit-current>div:first-child{grid-column:1;min-width:0}
+ .training-cockpit-current>div:first-child>b{overflow-wrap:anywhere}
+ .training-cockpit-comparison{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+ .training-cockpit-link{grid-column:2;grid-row:1}
+ .training-cockpit-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
+ .training-cockpit-quick .btn-secondary{grid-column:1/-1}
+ .training-cockpit-quick button{min-width:0;max-width:100%;padding:.35rem .25rem}
+ .training-cockpit-transition{align-items:stretch;flex-direction:column;min-width:0}
+ .training-cockpit-transition button{width:100%}
+}

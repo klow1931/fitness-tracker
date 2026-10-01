@@ -20,6 +20,7 @@ test('Home makes today scheduled training a one-tap start and resumes the draft 
  await expect(page.locator('.ex-name')).toHaveValue('Competition Bench Press');
  await expect(page.locator('.set-weight').first()).toHaveValue('100');
  await expect(page.locator('.set-rpe').first()).toHaveValue('');
+ const cockpit=page.locator('#training-cockpit');await expect(cockpit).toBeVisible();await expect(cockpit).toContainText('Bench day');await expect(cockpit).toContainText('Exercise 1 of 1');await expect(cockpit).toContainText('Today');await expect(cockpit).toContainText('@7');
  expect(await page.evaluate(()=>document.getElementById('wo-date').value===today())).toBe(true);
  await page.locator('.set-rpe').first().fill('7.5');
  await page.reload();await expect(page.locator('.ex-name')).toHaveValue('Competition Bench Press');
@@ -27,6 +28,7 @@ test('Home makes today scheduled training a one-tap start and resumes the draft 
  await expect(page.locator('#today-training')).toContainText('Workout in progress');
  await page.getByRole('button',{name:'Resume workout',exact:true}).click();
  await expect(page.locator('.set-rpe').first()).toHaveValue('7.5');
+ await expect(page.locator('#training-cockpit')).toBeVisible();
 });
 test('scheduled session must be rescheduled to today before it can start',async({page})=>{
  await page.evaluate(()=>{

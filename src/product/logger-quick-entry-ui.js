@@ -1,4 +1,4 @@
-/* v2.49 — one-tap RPE + completion and automatic next-set focus. */
+/* v2.74 — one-tap RPE, completion, and exercise-aware next-set flow. */
 (function(){
  'use strict';
  let focusedSet=null;
@@ -37,12 +37,16 @@
   const all=rows(),index=all.indexOf(set);focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
   const model=all.map(row=>({done:!!row.querySelector('.set-done-check')?.checked})),nextIndex=window.LoadnoteGymFloor?.nextUnfinishedIndex(model,index)??-1,next=nextIndex>=0?all[nextIndex]:null;
   if(next){
-    focusedSet=next;refresh();next.scrollIntoView({block:'center',behavior:'smooth'});
-    const weight=next.querySelector('.set-weight'),measure=next.querySelector('.set-reps,.set-duration'),rpeInput=next.querySelector('.set-rpe');
-    const target=weight&&weight.value===''?weight:measure&&measure.value===''?measure:rpeInput||measure||weight;
-    setTimeout(()=>{target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
+    const transitioned=window.LoadnoteTrainingCockpitUI?.onSetComplete?.(set,next)||false;
+    focusedSet=transitioned?null:next;refresh();
+    if(!transitioned){
+      next.scrollIntoView({block:'center',behavior:'smooth'});
+      const weight=next.querySelector('.set-weight'),measure=next.querySelector('.set-reps,.set-duration'),rpeInput=next.querySelector('.set-rpe');
+      const target=weight&&weight.value===''?weight:measure&&measure.value===''?measure:rpeInput||measure||weight;
+      setTimeout(()=>{target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
+    }
   }
-  window.refreshGymFloorUI?.();
+  window.refreshGymFloorUI?.();window.refreshTrainingCockpit?.();
  }
  document.addEventListener('focusin',event=>{
   const input=event.target.matches?.('.set-reps,.set-duration,.set-weight,.set-rpe')?event.target:null;

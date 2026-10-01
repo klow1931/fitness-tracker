@@ -1,3 +1,14 @@
+# v2.74.0 — Frictionless Training Mode
+
+- Add a sticky in-workout cockpit with current session, exercise/set position, live set progress, and elapsed time when session timing is available.
+- Pair the current planned set with the matching set from the athlete's previous exact exercise exposure.
+- Add **Use target** for the current set; it fills captured load plus reps/hold duration while leaving actual RPE blank.
+- Add display-unit load nudges: ±1.25/2.5 kg or ±2.5/5 lb. The existing logger still owns conversion back to internal kg storage.
+- Keep automatic focus between sets of the same exercise, but pause at exercise boundaries with a lightweight **Up next** transition and one-tap **Start next exercise** action.
+- Route Today/Resume into the focused training cockpit instead of the top of the full workout form.
+- Keep scheduled-workout **Why?** context available from the cockpit through the existing approved-target explanation.
+- Preserve draft recovery, rest timing, workout review/save, immutable planned-work snapshots, schema v25, and all existing training/adaptive calculations.
+
 # v2.73.0 — History & Data Reliability Polish
 
 - Expand Workout History search to exercise names, notes, session roles, and session goals.

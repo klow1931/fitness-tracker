@@ -74,6 +74,55 @@ test('v2.70 same-set quick fill and dock progress reduce between-set taps',async
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
+test('v2.74 cockpit pairs today target with last performance and adjusts display-unit load quickly',async({page})=>{
+ await page.evaluate(()=>{
+  data.unit='lb';updateUnitToggle();
+  data.workouts=[{id:'cockpit-previous',date:'2026-09-20',createdAt:'2026-09-20T18:00:00.000Z',exercises:[{name:'Cockpit Bench',type:'strength',trackBy:'reps',sets:[{weight:90,reps:5,rpe:8}]}]}];
+  const name=document.querySelector('#exercise-rows .ex-name');name.value='Cockpit Bench';name.dispatchEvent(new Event('input',{bubbles:true}));
+  setPrescriptionFromExercises([{name:'Cockpit Bench',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:7.5}]}],{type:'manual',label:'Bench focus'},{role:'heavy-exposure',goal:'Practice'});
+  refreshTrainingCockpit();
+ });
+ const cockpit=page.locator('#training-cockpit');
+ await expect(cockpit).toBeVisible();
+ await expect(cockpit).toContainText('Bench focus');
+ await expect(cockpit).toContainText('Today');
+ await expect(cockpit).toContainText('220.5 lb');
+ await expect(cockpit).toContainText('@7.5');
+ await expect(cockpit).toContainText('Last');
+ await expect(cockpit).toContainText('198.4 lb');
+ await cockpit.getByRole('button',{name:'Use target'}).click();
+ const set=page.locator('.logger-set').first();
+ await expect(set.locator('.set-weight')).toHaveValue('220.5');
+ await expect(set.locator('.set-reps')).toHaveValue('5');
+ await expect(set.locator('.set-rpe')).toHaveValue('');
+ await cockpit.locator('[data-cockpit-adjust="5"]').click();
+ await expect(set.locator('.set-weight')).toHaveValue('225.5');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+});
+
+test('v2.74 finishing an exercise pauses at a lightweight next-exercise transition',async({page})=>{
+ await page.evaluate(()=>{
+  data.unit='kg';updateUnitToggle();
+  const first=document.querySelector('#exercise-rows > div');
+  first.querySelector('.ex-name').value='Bench Press';
+  first.querySelector('.set-weight').value='100';
+  first.querySelector('.set-reps').value='5';
+  addExerciseRow({name:'Chest-Supported Row',type:'strength',trackBy:'reps',sets:[{weight:60,reps:8,rpe:''}]});
+  saveLoggerDraft();refreshGymFloorUI();refreshTrainingCockpit();
+ });
+ const first=page.locator('#exercise-rows > div').first(),second=page.locator('#exercise-rows > div').nth(1);
+ await first.locator('.set-rpe').fill('8');
+ await first.locator('.set-rpe').press('Enter');
+ const transition=page.locator('#training-cockpit [data-cockpit-transition]');
+ await expect(transition).toBeVisible();
+ await expect(transition).toContainText('Bench Press complete');
+ await expect(transition).toContainText('Up next: Chest-Supported Row');
+ await expect(second.locator('.set-rpe')).not.toBeFocused();
+ await transition.getByRole('button',{name:'Start next exercise'}).click();
+ await expect.poll(()=>page.evaluate(()=>document.activeElement?.classList.contains('set-rpe'))).toBe(true);
+ await expect(transition).toHaveCount(0);
+});
+
 test('v2.62 mobile dock follows the draft, rest timer and navigation without losing work',async({page})=>{
  await page.locator('.ex-name').fill('Bench Press');
  await page.locator('.set-weight').fill('100');
