@@ -424,17 +424,26 @@
       <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-history">
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 class="font-semibold">Workout History</h2>
+          <div><h2 class="font-semibold">Workout History</h2><p class="more-hint">Find a session quickly, review questionable records, and keep backups close to the data they protect.</p></div>
           <div class="flex flex-wrap gap-2">
-            <input type="text" id="history-search" class="input text-sm w-40" placeholder="Search exercise…" data-workout-input="history-search" />
-            <button data-workout-action="export-json" class="btn-secondary text-sm">Export JSON</button>
+            <button data-workout-action="export-json" class="btn-primary text-sm">Back up JSON</button>
             <button data-workout-action="export-csv" class="btn-secondary text-sm">Export CSV</button>
-            <button data-workout-action="import" class="btn-secondary text-sm">Import</button>
-            <input type="file" id="import-file" accept=".json" class="hidden" data-workout-change="import-file" />
+            <button data-workout-action="import" class="btn-secondary text-sm">Restore / import</button>
+            <input type="file" id="import-file" accept=".json,application/json" class="hidden" data-workout-change="import-file" />
           </div>
         </div>
-        <details id="history-cleanup" class="card"></details>
-        <div class="progress-controls"><label>From <input type="date" id="history-from" class="input" data-workout-change="history-date" /></label><label>To <input type="date" id="history-to" class="input" data-workout-change="history-date" /></label><button type="button" class="btn-secondary" data-workout-action="clear-history-filters">Clear filters</button></div>
+        <div id="history-reliability-summary" aria-live="polite"></div>
+        <div class="history-filter-grid">
+          <label>Search<input type="search" id="history-search" class="input text-sm" placeholder="Exercise, note, role…" autocomplete="off" data-workout-input="history-search" /></label>
+          <label>From<input type="date" id="history-from" class="input" data-workout-change="history-filter" /></label>
+          <label>To<input type="date" id="history-to" class="input" data-workout-change="history-filter" /></label>
+          <label>Source<select id="history-source" class="input" data-workout-change="history-filter"><option value="all">All sources</option><option value="scheduled">Calendar-linked</option><option value="planned">Planned manual</option><option value="repeated">Repeated workout</option><option value="manual">Manual</option></select></label>
+          <label>Record status<select id="history-quality" class="input" data-workout-change="history-filter"><option value="all">All records</option><option value="review">Needs review</option><option value="clear">No current flags</option></select></label>
+          <label>Order<select id="history-sort" class="input" data-workout-change="history-filter"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
+          <button type="button" class="btn-secondary" data-workout-action="clear-history-filters">Clear filters</button>
+        </div>
+        <details id="history-duplicate-review" class="history-duplicate-review" hidden></details>
+        <details id="history-cleanup" class="history-cleanup"></details>
         <div id="workout-history" class="space-y-3"></div>
       </div>
       </div><!-- /wo-history -->
@@ -1939,6 +1948,7 @@
   <script src="src/product/logger-quick-entry-ui.js" defer></script>
   <script src="src/product/data-transfer.js" defer></script>
   <script src="src/product/data-integrity-ui.js" defer></script>
+  <script src="src/product/history-reliability.js" defer></script>
   <script src="src/product/workout-events.js" defer></script>
   <script src="src/product/draft-model.js" defer></script>
   <script src="src/product/persistence.js" defer></script>
@@ -1949,6 +1959,14 @@
     <div class="session-review-actions">
       <button id="back-to-workout" type="button" class="btn-secondary" data-workout-action="review-back">Back to workout</button>
       <button id="confirm-workout-save" type="button" class="btn-primary" data-workout-action="review-save">Save workout</button>
+    </div>
+  </dialog>
+  <dialog id="import-review" aria-labelledby="import-review-title" class="session-review import-review">
+    <div class="import-review-head"><p class="eyebrow">DATA RESTORE</p><h2 id="import-review-title">Review backup before replacing data</h2><p id="import-review-source" class="more-hint"></p></div>
+    <div id="import-review-content"></div>
+    <div class="session-review-actions">
+      <button id="cancel-import-review" type="button" class="btn-secondary">Cancel</button>
+      <button id="confirm-import-review" type="button" class="btn-primary">Replace current data</button>
     </div>
   </dialog>
   <script src="src/product/workout-session.js" defer></script>
