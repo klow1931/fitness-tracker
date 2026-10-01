@@ -7,14 +7,14 @@ test.beforeEach(async({page})=>{
 });
 async function enter(page){await page.locator('.set-weight').fill('100');await page.locator('.set-reps').fill('5');await page.locator('.ex-name').fill('Bench Press');}
 test('Focus collapses completed exercises and can reopen them',async({page})=>{
- await enter(page);await page.locator('#training-focus').check();await page.locator('.set-done-check').check();
+ await enter(page);await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();await page.locator('#training-focus').check();await page.locator('#training-cockpit').getByRole('button',{name:'Close options'}).click();await page.locator('.set-done-check').check();
  await expect(page.locator('.set-weight')).not.toBeVisible();await expect(page.locator('#training-progress-label')).toContainText('1/1 sets');await expect(page.locator('#training-progress-label')).toContainText('Ready to review');
  await page.getByRole('button',{name:'Show sets',exact:true}).click();await expect(page.locator('.set-weight')).toHaveValue('100');
  await page.locator('.set-done-check').uncheck();await expect(page.locator('#exercise-rows > div')).toHaveClass(/training-current/);
 });
 test('Reorder and swap preserve sets and survive refresh',async({page})=>{
  await enter(page);await page.locator('.set-rpe').fill('8');await page.locator('.set-done-check').check();
- await page.getByRole('button',{name:'+ Add Strength',exact:true}).click();
+ await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();await page.getByRole('button',{name:'+ Add Strength',exact:true}).click();
  const second=page.locator('#exercise-rows > div').nth(1);await second.locator('.ex-name').fill('Squat');await second.getByRole('button',{name:'Move exercise up'}).click();
  const bench=page.locator('#exercise-rows > div').nth(1);await bench.getByRole('button',{name:'Swap',exact:true}).click();
  await page.locator('#swap-name').fill('Machine Press');await page.getByRole('button',{name:'Swap and keep sets'}).click();
@@ -33,7 +33,7 @@ test('Paused rest survives refresh and expired rest completes once',async({page}
 });
 test('Finish reviews before saving and recap shows matching prior sets',async({page})=>{
  await page.evaluate(()=>{data.workouts=[{id:'previous',date:'2026-01-01',exercises:[{name:'Bench Press',type:'strength',trackBy:'reps',sets:[{reps:5,weight:80}]}]}];});
- await enter(page);await page.getByRole('button',{name:'Finish workout',exact:true}).click();
+ await enter(page);await page.locator('#training-cockpit').getByRole('button',{name:'Finish',exact:true}).click();
  await expect(page.locator('#workout-recap')).not.toBeVisible();await page.locator('#confirm-workout-save').click();
  await expect(page.locator('#workout-recap')).toContainText('Session saved');await expect(page.locator('#workout-recap')).toContainText('80kg');await expect(page.locator('#workout-recap')).toContainText('100kg');
 });
