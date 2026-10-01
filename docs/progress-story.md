@@ -29,7 +29,7 @@ Shows one story per confirmed competition lift when mappings exist; otherwise it
 - session/set counts in the selected evidence window
 - accepted programming reviews linked to the lift
 
-Direction compares the first four weeks of the selected evidence window with the most recent four weeks. Both windows require at least two demonstrated-capacity days. The comparison uses the best RPE-aware demonstrated-capacity estimate in each window and is not a tested 1RM or a fitted growth rate.
+Direction compares the first four weeks of the selected evidence window with the most recent four weeks. Both windows require at least two demonstrated-capacity days. The comparison uses the median of each day’s best RPE-aware demonstrated-capacity estimate in each window, reducing the influence of a single unusually high or low session. It is not a tested 1RM or a fitted growth rate.
 
 ### Adherence
 
