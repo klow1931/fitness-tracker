@@ -8,7 +8,7 @@ test.beforeEach(async({page})=>{
 async function enter(page){await page.locator('.set-weight').fill('100');await page.locator('.set-reps').fill('5');await page.locator('.ex-name').fill('Bench Press');}
 test('Focus collapses completed exercises and can reopen them',async({page})=>{
  await enter(page);await page.locator('#training-focus').check();await page.locator('.set-done-check').check();
- await expect(page.locator('.set-weight')).not.toBeVisible();await expect(page.locator('#training-progress-label')).toContainText('1/1 entered strength sets');
+ await expect(page.locator('.set-weight')).not.toBeVisible();await expect(page.locator('#training-progress-label')).toContainText('1/1 sets');await expect(page.locator('#training-progress-label')).toContainText('Ready to review');
  await page.getByRole('button',{name:'Show sets',exact:true}).click();await expect(page.locator('.set-weight')).toHaveValue('100');
  await page.locator('.set-done-check').uncheck();await expect(page.locator('#exercise-rows > div')).toHaveClass(/training-current/);
 });
