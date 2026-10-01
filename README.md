@@ -1,6 +1,18 @@
 # Loadnote
 
-**v2.69.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.70.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.70 — Gym-Floor Training Experience
+
+v2.70 tightens the primary consumer loop: **see today’s workout → inspect it → train → move through sets → save → know what comes next**.
+
+- Today now shows estimated session time for reviewed program workouts and opens the exact planned workout without routing through Calendar.
+- The program viewer can deep-link directly to a workout, opening its week and prescription automatically.
+- The mobile gym-floor dock now shows live set/exercise progress and changes to **Review** when all entered work is checked complete.
+- Blank working sets can copy load plus reps/hold duration from the immediately prior set without copying RPE or completion state.
+- The in-workout progress line identifies the next exercise/set instead of only reporting counts.
+- The post-workout recap now shows a concise plan-vs-actual execution summary and provides **Done** / **View next workout** actions.
+- No training-policy, data-schema, RPE, e1RM, training-max, scheduling, or weight-storage rules changed. Schema remains v25.
 
 ## v2.69.2 — Program Workout Viewer & Calendar Integration
 
