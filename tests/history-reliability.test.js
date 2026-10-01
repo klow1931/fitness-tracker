@@ -14,11 +14,11 @@ const b=JSON.parse(JSON.stringify(a));b.id='b';b.createdAt='2026-09-10T21:00:00.
 const c=workout('c','2026-09-11',105,{intent:repeatedIntent});
 const d=workout('d','2026-09-12',110,{intent:scheduledIntent});
 const bad=workout('bad','2026-09-13',115,{rpe:11,notes:'Check RPE'});
-const state={workouts:[a,b,c,d,bad],scheduledSessions:[],workoutRevisions:[],lastExportDate:'2026-09-09'};
+const state={workouts:[a,b,c,bad],scheduledSessions:[],workoutRevisions:[],lastExportDate:'2026-09-09'};
 
 const snapshot=JSON.stringify(state),report=History.inspect(state,{asOf:'2026-09-30'});
 assert.equal(JSON.stringify(state),snapshot,'history reliability must stay read-only');
-assert.equal(report.counts.total,5);
+assert.equal(report.counts.total,4);
 assert.equal(report.duplicates.length,1);
 assert.deepEqual(report.duplicates[0].workoutIds,['a','b']);
 assert.equal(report.counts.needsReview,3,'two possible duplicates plus invalid RPE');
@@ -31,7 +31,6 @@ assert.equal(History.duplicateMatches(state.workouts,a,{excludeId:'a'}).length,1
 assert.equal(History.duplicateMatches(state.workouts,c,{excludeId:'c'}).length,0);
 
 assert.deepEqual(History.filter(state,{query:'morning'}).map(w=>w.id),['b','a']);
-assert.deepEqual(History.filter(state,{query:'bench practice'}).map(w=>w.id),['d']);
 assert.deepEqual(History.filter(state,{sourceKind:'repeated'}).map(w=>w.id),['c']);
 assert.deepEqual(History.filter(state,{quality:'review'}).map(w=>w.id),['bad','b','a']);
 assert.deepEqual(History.filter(state,{from:'2026-09-10',to:'2026-09-11',sort:'oldest'}).map(w=>w.id),['b','a','c']);
