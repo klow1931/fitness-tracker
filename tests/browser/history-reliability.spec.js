@@ -49,8 +49,9 @@ test('v2.73 workout review warns about an exact same-day duplicate but still let
   updateUnitToggle();invalidateViews();showTab('workouts');showSubTab('workouts','wo-log');
  });
  await page.locator('.ex-name').fill('Bench Press');
- await page.locator('.set-reps').fill('5');
- await page.locator('.set-weight').fill('100');
+ await page.locator('.ex-name').blur();
+ await expect(page.locator('.set-reps')).toHaveValue('5');
+ await expect(page.locator('.set-weight')).toHaveValue('100');
  await page.locator('.set-rpe').fill('8');
  const duplicateDebug=await page.evaluate(()=>{
   const candidate=LoadnoteSession.fromDraft(captureLoggerDraft(),'candidate');
