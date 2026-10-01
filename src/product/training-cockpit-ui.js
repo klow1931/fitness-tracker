@@ -23,6 +23,11 @@
  function setDone(set){return !!set?.querySelector('.set-done-check')?.checked;}
  function current(){
   const all=rows(),usable=all.filter(row=>row.querySelector('.ex-name')?.value.trim()||rowEntered(row));
+  const active=document.querySelector('#exercise-rows .logger-active-set');
+  if(active&&!setDone(active)){
+   const row=active.closest('#exercise-rows > div'),exerciseIndex=usable.indexOf(row),sets=setRows(row),setIndex=sets.indexOf(active);
+   if(exerciseIndex>=0&&setIndex>=0)return {rows:usable,row,exerciseIndex,set:active,setIndex,setCount:sets.length};
+  }
   for(let exerciseIndex=0;exerciseIndex<usable.length;exerciseIndex++){
    const row=usable[exerciseIndex];
    if(row.dataset.type==='cardio'){
