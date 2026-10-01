@@ -43,9 +43,10 @@ test('v2.73 History filters notes/source/review state and surfaces exact duplica
 
 test('v2.73 workout review warns about an exact same-day duplicate but still lets the athlete save intentionally',async({page})=>{
  await page.evaluate(()=>{
-  const date=today();
-  data=normalizeDataShape({...data,workouts:[{id:'existing',date,createdAt:date+'T12:00:00.000Z',notes:'',exercises:[{name:'Bench Press',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,rpe:8}]}]}],scheduledSessions:[],workoutRevisions:[]});
-  invalidateViews();showTab('workouts');showSubTab('workouts','wo-log');
+  const date=today(),existing=LoadnoteSession.fromDraft({date,notes:'',unit:'kg',sessionIntent:null,rows:[{name:'Bench Press',type:'strength',trackBy:'reps',sets:[{weight:'100',reps:'5',rpe:'8'}]}]},'existing');
+  existing.createdAt=date+'T12:00:00.000Z';existing.updatedAt=existing.createdAt;
+  data=normalizeDataShape({...data,unit:'kg',workouts:[existing],scheduledSessions:[],workoutRevisions:[]});
+  updateUnitToggle();invalidateViews();showTab('workouts');showSubTab('workouts','wo-log');
  });
  await page.locator('.ex-name').fill('Bench Press');
  await page.locator('.set-reps').fill('5');
