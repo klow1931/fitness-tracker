@@ -92,6 +92,25 @@
   return {...copy(marker),from,to:asOf,weeks:span,days,baseline,recent,overall,direction:trend,reviews,
    latest:days.at(-1)||null,notice:'Performance direction is descriptive. Loadnote does not treat volume, RPE, or an estimated capacity change as a diagnosis or proof that a program caused the result.'};
  }
+ function movementOptions(state,{asOf,weeks=12}={}){
+  if(!Schedule.date(asOf))throw Error('Choose a valid movement range date.');
+  const span=Math.max(8,Math.min(52,Number(weeks)||12)),from=move(asOf,-span*7+1),rows=new Map();
+  for(const workout of state?.workouts||[]){
+   if(!Schedule.date(workout?.date)||workout.date<from||workout.date>asOf)continue;
+   const seen=new Set();
+   for(const exercise of workout.exercises||[]){
+    if(!strength(exercise)||exercise.trackBy==='duration')continue;
+    const usable=(exercise.sets||[]).some(s=>finite(s?.weight)>0&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);if(!usable)continue;
+    const key=exercise.exerciseId?'id:'+exercise.exerciseId:'name:'+nameKey(exercise.name);if(seen.has(key))continue;seen.add(key);
+    const row=rows.get(key)||{key,exerciseId:exercise.exerciseId||null,name:exercise.name||'Strength exercise',label:exercise.name||'Strength exercise',source:'exercise',lift:null,sessions:0,lastDate:''};
+    row.sessions++;if(workout.date>row.lastDate){row.lastDate=workout.date;row.name=exercise.name||row.name;row.label=row.name;}rows.set(key,row);
+   }
+  }
+  const roles=Readiness.list(state?.exerciseRoles||[]),competition=new Map();
+  for(const role of roles)if(role.role==='competition'&&role.competitionLift)competition.set(role.exerciseId,role.competitionLift);
+  return [...rows.values()].map(row=>row.exerciseId&&competition.has(row.exerciseId)?{...row,lift:competition.get(row.exerciseId),source:'competition'}:row)
+   .sort((a,b)=>b.sessions-a.sessions||b.lastDate.localeCompare(a.lastDate)||a.name.localeCompare(b.name));
+ }
  function selectedProgram(state,asOf){
   try{
    const chosen=Lifecycle.select(state,asOf);if(chosen.status!=='selected'||!chosen.program)return null;
@@ -120,11 +139,13 @@
   }
   return {from,to:asOf,rows:rows.sort((a,b)=>b.date.localeCompare(a.date)||String(b.reviewId).localeCompare(String(a.reviewId)))};
  }
- function analyze(state,{asOf,weeks=12}={}){
+ function analyze(state,{asOf,weeks=12,movementKey=null}={}){
   if(!Schedule.date(asOf))throw Error('Choose a valid progress story date.');
-  const snapshot=Analytics.analyze(state,{asOf}),markers=snapshot.markers.map(m=>movementStory(state,m,{asOf,weeks}));
-  return {version:1,asOf,weeks,overview:snapshot,program:selectedProgram(state,asOf),movements:markers,decisions:decisionTimeline(state,{asOf,weeks}),
+  const snapshot=Analytics.analyze(state,{asOf}),markers=snapshot.markers.map(m=>movementStory(state,m,{asOf,weeks})),options=movementOptions(state,{asOf,weeks});
+  const selected=movementKey?options.find(x=>x.key===movementKey)||null:null;
+  const existing=selected?markers.find(x=>x.key===selected.key)||null:null,customMovement=selected?(existing||movementStory(state,selected,{asOf,weeks})):null;
+  return {version:1,asOf,weeks,overview:snapshot,program:selectedProgram(state,asOf),movements:markers,movementOptions:options,customMovement,decisions:decisionTimeline(state,{asOf,weeks}),
    notes:['Progress is descriptive evidence, not a readiness score.','Unresolved scheduled sessions are not treated as failures.','Accepted programming changes are shown from stored review history; Loadnote does not infer that a change caused a later performance result.']};
  }
- return {analyze,movementStory,exerciseEvidence,windowSummary,direction,reviewMarkers,selectedProgram,decisionTimeline};
+ return {analyze,movementStory,movementOptions,exerciseEvidence,windowSummary,direction,reviewMarkers,selectedProgram,decisionTimeline};
 });
