@@ -1,8 +1,8 @@
-/* v2.70 — Today → Train flow with direct workout preview and gym-floor context. */
+/* v2.74 — Today → focused training cockpit. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- function goTrain(){showTab('workouts');showSubTab('workouts','wo-log');document.getElementById('workout-mode-title')?.scrollIntoView({block:'start'});}
+ function goTrain(){showTab('workouts');showSubTab('workouts','wo-log');window.refreshTrainingCockpit?.();requestAnimationFrame(()=>{const cockpit=document.getElementById('training-cockpit');(cockpit&&!cockpit.hidden?cockpit:document.getElementById('workout-mode-title'))?.scrollIntoView({block:'start'});});}
  function render(){
   const host=document.getElementById('today-training');if(!host||!window.LoadnoteTodayTraining)return;
   const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null,report=LoadnoteTodayTraining.inspect(data,{day:today(),draft});
