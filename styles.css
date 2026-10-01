@@ -1725,13 +1725,18 @@ body.dark .import-review-recovery{background:rgba(99,102,241,.12)}
  position:sticky;
  top:.55rem;
  z-index:35;
+ width:100%;
+ max-width:100%;
+ min-width:0;
+ box-sizing:border-box;
  margin:0 0 .85rem;
  padding:.72rem .78rem;
  border:1px solid rgba(79,70,229,.28);
  border-radius:.9rem;
  background:rgba(255,255,255,.96);
  box-shadow:0 8px 24px rgba(15,23,42,.08);
- backdrop-filter:blur(10px)
+ backdrop-filter:blur(10px);
+ overflow:hidden
 }
 .training-cockpit[hidden]{display:none}
 .training-cockpit-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem}
@@ -1774,17 +1779,20 @@ body.dark .training-cockpit-quick button:active,body.dark .training-cockpit-quic
 body.dark .training-cockpit-transition{background:rgba(16,185,129,.11);border-color:rgba(16,185,129,.3)}
 body.dark .training-cockpit-transition span{color:#6ee7b7}
 @media(max-width:640px){
- .training-cockpit{top:.35rem;margin-left:-.15rem;margin-right:-.15rem;padding:.65rem}
- .training-cockpit-top{gap:.45rem}
- .training-cockpit-title>b{max-width:54vw}
- .training-cockpit-actions button{padding:.35rem .5rem}
- .training-cockpit-current{grid-template-columns:1fr auto;gap:.45rem}
- .training-cockpit-current>div:first-child{grid-column:1}
- .training-cockpit-comparison{grid-column:1/-1;grid-row:2}
+ .training-cockpit{top:.35rem;margin-left:0;margin-right:0;padding:.65rem}
+ .training-cockpit-top{display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem;min-width:0}
+ .training-cockpit-title{min-width:0}
+ .training-cockpit-title>b{max-width:100%}
+ .training-cockpit-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;min-width:0}
+ .training-cockpit-actions button{min-width:0;padding:.35rem .5rem}
+ .training-cockpit-current{grid-template-columns:minmax(0,1fr) auto;gap:.45rem;min-width:0}
+ .training-cockpit-current>div:first-child{grid-column:1;min-width:0}
+ .training-cockpit-current>div:first-child>b{overflow-wrap:anywhere}
+ .training-cockpit-comparison{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
  .training-cockpit-link{grid-column:2;grid-row:1}
- .training-cockpit-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+ .training-cockpit-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
  .training-cockpit-quick .btn-secondary{grid-column:1/-1}
- .training-cockpit-quick button{min-width:0;padding:.35rem .25rem}
- .training-cockpit-transition{align-items:stretch;flex-direction:column}
+ .training-cockpit-quick button{min-width:0;max-width:100%;padding:.35rem .25rem}
+ .training-cockpit-transition{align-items:stretch;flex-direction:column;min-width:0}
  .training-cockpit-transition button{width:100%}
 }
