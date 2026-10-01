@@ -1,12 +1,67 @@
     // Import / Export helpers
+    let pendingImportReview=null;
+    const importEsc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     function importData() {
       document.getElementById('import-file').click();
+    }
+    function importChangeRow(label,row){
+      const changed=row.added+row.changed+row.removed;
+      return '<div class="import-review-row"><span>'+importEsc(label)+'</span><b>'+row.before+' → '+row.after+'</b><small>'+(changed?(row.added+' added · '+row.changed+' changed · '+row.removed+' removed'):'No changes')+'</small></div>';
+    }
+    function closeImportReview(){
+      const dialog=document.getElementById('import-review');if(dialog?.open)dialog.close();
+      pendingImportReview=null;const input=document.getElementById('import-file');if(input)input.value='';
+    }
+    async function commitImportReview(){
+      if(!pendingImportReview)return;
+      const button=document.getElementById('confirm-import-review'),cancel=document.getElementById('cancel-import-review');button.disabled=true;cancel.disabled=true;
+      const {incoming,previousState}=pendingImportReview;
+      try{
+        let next=LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
+        clearTimeout(saveTimer);await persistNow(next);
+        data=next;invalidateViews();applyDark();updateUnitToggle();closeImportReview();showTab('dashboard');window.renderDataIntegrityTools?.();updateBackupBanner();
+        showToast('Import complete · previous data saved in Recovery snapshots','success');
+      }catch(error){
+        data=previousState;button.disabled=false;cancel.disabled=false;reportStorageFailure(error);showToast('Import could not be saved. Current data is unchanged.','error');
+      }
+    }
+    function showImportReview(fileName,backup,preview,reliability,incoming,previousState){
+      const dialog=document.getElementById('import-review'),host=document.getElementById('import-review-content'),source=document.getElementById('import-review-source');
+      if(!dialog||!host)throw Error('Import review is unavailable.');
+      const health=reliability.training,relationships=reliability.relationships;
+      const backupTitle=backup.verified?'Integrity fingerprint verified':'Legacy backup';
+      const backupDetail=backup.verified?('Exported '+backup.exportedAt+' · schema '+(backup.schemaVersion??'—')+'.'):'No Loadnote integrity fingerprint is present. Structural validation passed, but file corruption cannot be fingerprint-verified.';
+      const healthTitle=health.status==='clean'?'Training entries passed current value checks':'Training entries need review';
+      const healthDetail=health.status==='clean'
+        ?('RPE coverage '+(health.current.rpeCoverage??'—')+'% · no invalid or extreme current strength-set entries detected.')
+        :((health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads)+' current load/RPE issue(s) · RPE coverage '+(health.current.rpeCoverage??'—')+'%.');
+      const linkTitle=relationships.blocking?'Record links need review':relationships.warnings?'Record links usable with history warnings':'Record links are internally consistent';
+      const linkDetail=relationships.blocking
+        ?relationships.blocking+' blocking relationship issue(s) must be reviewed before adaptive evidence is trusted.'
+        :relationships.warnings?relationships.warnings+' revision-history warning(s); current workout/Calendar relationships remain usable.':'Workout, Calendar, and planned-work references passed relationship checks.';
+      const rows=[
+        ['Workouts',preview.workouts],['Calendar sessions',preview.scheduledSessions],['Workout revisions',preview.workoutRevisions],
+        ['Training blocks',preview.trainingBlocks],['Meet cycles',preview.meetCycles],['Athlete goals',preview.athleteGoals],
+        ['Reviewed programs',preview.reviewedPrograms],['Phase programs',preview.phasePrograms],['Phase reviews',preview.phaseReviews],
+        ['Program reviews',preview.programReviews],['Programming profiles',preview.programmingProfiles],['Templates',preview.templates],
+        ['Exercise roles',preview.exerciseRoles],['Transition baselines',preview.transitionSnapshots]
+      ];
+      source.textContent=(fileName||'JSON backup')+' · This will replace local structured data only after you confirm.';
+      host.innerHTML='<div class="import-review-status">'+
+        '<article data-import-check="backup"><span>Backup file</span><b>'+importEsc(backupTitle)+'</b><small>'+importEsc(backupDetail)+'</small></article>'+
+        '<article data-import-check="training"><span>Training data</span><b>'+importEsc(healthTitle)+'</b><small>'+importEsc(healthDetail)+'</small></article>'+
+        '<article data-import-check="links"><span>Record links</span><b>'+importEsc(linkTitle)+'</b><small>'+importEsc(linkDetail)+'</small></article>'+
+       '</div><div class="import-review-changes"><h3>What will change</h3>'+rows.map(([label,row])=>importChangeRow(label,row)).join('')+'</div>'+
+       '<p class="import-review-recovery"><b>Recovery protection:</b> Loadnote will save your current data as an automatic recovery snapshot before replacement. Import does not silently merge conflicting records.</p>';
+      pendingImportReview={incoming,previousState,backup,preview,reliability,fileName};
+      document.getElementById('confirm-import-review').disabled=false;document.getElementById('cancel-import-review').disabled=false;
+      if(!dialog.open)dialog.showModal();
     }
     function handleImport(ev) {
       const file = ev.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async () => {
+      reader.onload = () => {
         const previousState = data;
         try {
           const parsed = JSON.parse(reader.result);
@@ -27,28 +82,20 @@
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
-          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming),health=reliability.training,relationships=reliability.relationships,line=(label,row)=>`${label}: ${row.before} → ${row.after} (${row.added} added, ${row.changed} changed, ${row.removed} removed)`;
-          const backupLine=backup.verified?`Backup integrity: verified · exported ${backup.exportedAt} · schema ${backup.schemaVersion??'—'}.`:'Backup integrity: legacy backup without a v2.52 fingerprint; structural validation will still run.';
-          const healthLine=health.status==='clean'?`Training data health: no invalid or extreme current strength-set entries detected · RPE coverage ${health.current.rpeCoverage??'—'}%.`:`Training data health: review ${health.current.invalidLoad+health.current.invalidRpe+health.current.suspiciousLoads} current strength-set issue(s) after import · RPE coverage ${health.current.rpeCoverage??'—'}%.`;
-          const relationshipLine=relationships.blocking?`Record links: review ${relationships.blocking} blocking relationship issue(s) before relying on adaptive evidence.`:relationships.warnings?`Record links: core workout/Calendar links are clear · ${relationships.warnings} revision-history warning(s).`:'Record links: workout, Calendar and planned-work references are internally consistent.';
-          const message=['Review import changes',backupLine,line('Workouts',preview.workouts),line('Calendar sessions',preview.scheduledSessions),line('Workout revisions',preview.workoutRevisions),line('Training blocks',preview.trainingBlocks),line('Meet cycles',preview.meetCycles),line('Athlete goals',preview.athleteGoals),line('Reviewed programs',preview.reviewedPrograms),line('Phase programs',preview.phasePrograms),line('Phase reviews',preview.phaseReviews),line('Program reviews',preview.programReviews),line('Programming profile revisions',preview.programmingProfiles),line('Adopted programs',preview.adoptedPrograms),line('Transition baselines',preview.transitionSnapshots),line('Templates',preview.templates),line('Exercise roles',preview.exerciseRoles),'',healthLine,relationshipLine,'','This replaces current data after creating an automatic recovery snapshot.'];
-          if (!confirm(message.join('\n'))) return;
-          data = LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
-          clearTimeout(saveTimer);
-          await persistNow(data).catch(error => { reportStorageFailure(error); throw error; });
-          applyDark();
-          updateUnitToggle();
-          showTab('dashboard');
-          window.renderDataIntegrityTools?.();
-          showToast('Import successful', 'success');
+          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming);
+          showImportReview(file.name,backup,preview,reliability,incoming,previousState);
         } catch (e) {
-          data = previousState;
-          alert('Import failed: ' + e.message);
+          data = previousState;ev.target.value='';alert('Import failed: ' + e.message);
         }
-        ev.target.value = '';
       };
+      reader.onerror=()=>{ev.target.value='';showToast('Could not read this backup file.','error');};
       reader.readAsText(file);
     }
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('cancel-import-review')?.addEventListener('click',closeImportReview);
+      document.getElementById('confirm-import-review')?.addEventListener('click',commitImportReview);
+      document.getElementById('import-review')?.addEventListener('cancel',event=>{event.preventDefault();closeImportReview();});
+    });
 
     function exportData() {
       // Strip large photo binaries from routine backup
