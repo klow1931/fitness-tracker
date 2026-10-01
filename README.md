@@ -1,6 +1,14 @@
 # Loadnote
 
-**v2.69.1 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+**v2.69.2 · Development build.** A local-first strength-training log evolving into an explainable training-decision system for strength athletes.
+
+## v2.69.2 — Program Workout Viewer & Calendar Integration
+
+The reviewed program is now directly inspectable instead of being visible only as a lifecycle status card or a list of Calendar revisions. **Current Program → View workouts** opens the full week-by-week plan, with exercises, scheduled sets/reps/load, target RPE, training-max context and the stored prescription purpose where that context exists.
+
+Calendar now shows scheduled program workouts on their dates before they are performed. Selecting a future date shows the same current prescription used by the program viewer. Loadnote still treats the Calendar revision as the authoritative prescription and uses the immutable reviewed phase/meet-cycle source only to enrich it with training-max, role, format and purpose context, avoiding a duplicate program copy.
+
+Meet event weeks remain visible even when they contain no ordinary workout, completed workouts stay linked to their original prescription, and starting a scheduled workout keeps the existing same-day/reschedule guardrail. Schema v25 and training policies are unchanged.
 
 ## v2.69 — Decisions-Driven Program Planning
 

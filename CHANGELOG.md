@@ -1,3 +1,17 @@
+# v2.69.2 — Program Workout Viewer & Calendar Integration
+
+- Add a first-class **View workouts** action to the reviewed current-program lifecycle on Home and Coach.
+- Group the full reviewed program by week and phase, including event-only meet weeks that contain no ordinary training session.
+- Show the current scheduled prescription for each workout: exercises, sets, reps/holds, displayed load, calculated % training max when source context is available, and target RPE.
+- Preserve the immutable reviewed program as context for training max, lift role, set format and prescription purpose while treating the current Calendar revision as the authority for load/reps/RPE.
+- Show linked completed-workout evidence without replacing or rewriting the planned prescription.
+- Integrate future scheduled workouts into Calendar date cells and Selected day details before the workout has been performed.
+- Keep manual/legacy Calendar sessions supported; program metadata is enriched only when the scheduled session belongs to a reviewed lifecycle program.
+- Route scheduled meet-cycle **View current program** actions directly into the same workout viewer.
+- Keep workout-start rules unchanged: a future scheduled session can be inspected at any time but must still be rescheduled to today before it can be started.
+- Add deterministic model and browser coverage for phase programs, meet cycles, event weeks, current schedule revisions, mobile layout and future Calendar visibility.
+- No stored training-data or training-policy change; schema remains v25.
+
 # v2.69.1 — Current Program Visibility Hotfix
 
 - Treat the scheduled reviewed program lifecycle as the canonical current/upcoming training plan even when the legacy `programs` library is empty and `activeProgramId` is null.

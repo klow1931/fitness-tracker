@@ -723,6 +723,8 @@
       const byDate = workoutsByDateMap();
       const restSet = new Set(data.restDays || []);
       const todayStr = today();
+      let plannedByDate = {};
+      try { plannedByDate = window.LoadnoteProgramWorkoutViewer?.calendarDates(data, { asOf: todayStr }) || {}; } catch {}
 
       let html = '';
       for (let i = 0; i < 42; i++) {
@@ -731,19 +733,27 @@
         const iso = d.toISOString().slice(0, 10);
         const inMonth = d.getMonth() === month;
         const info = byDate[iso];
+        const planned = plannedByDate[iso];
         let cls = 'cal-cell';
         if (!inMonth) cls += ' other-month';
         if (iso === todayStr) cls += ' today';
         if (iso === calSelectedDate) cls += ' selected';
-        if (restSet.has(iso) && !info) cls += ' rest-day';
+        if (restSet.has(iso) && !info && !planned?.count) cls += ' rest-day';
         if (info) {
           if (info.strength && info.cardio) cls += ' has-both';
           else if (info.cardio) cls += ' has-cardio';
           else cls += ' has-workout';
         }
-        let tip = '';
-        if (info) tip = info.list.length + ' session(s)';
-        else if (restSet.has(iso)) tip = 'Rest';
+        if (planned?.count) cls += ' has-planned';
+        const tips = [];
+        if (info) tips.push(info.list.length + ' logged');
+        if (planned?.scheduled) tips.push(planned.scheduled + ' planned');
+        if (planned?.unconfirmed) tips.push(planned.unconfirmed + ' needs outcome');
+        if (planned?.completed) tips.push(planned.completed + ' program completed');
+        if (planned?.skipped) tips.push(planned.skipped + ' skipped');
+        if (planned?.cancelled) tips.push(planned.cancelled + ' cancelled');
+        if (!tips.length && restSet.has(iso)) tips.push('Rest');
+        const tip = tips.join(' · ');
         html += `<button type="button" class="${cls}" aria-label="${iso}${tip ? ', '+tip : ''}" aria-pressed="${iso === calSelectedDate}" onclick="selectCalDay('${iso}')">
           <span class="cal-num">${d.getDate()}</span>
           <span class="cal-dot">${tip}</span>
@@ -764,13 +774,19 @@
       const detail = document.getElementById('cal-day-detail');
       if (!label || !detail) return;
       label.textContent = formatDate(iso) + (iso === today() ? ' (today)' : '');
-      const sessions = (data.workouts || []).filter(w => w.date === iso);
+      let plannedSessions = [];
+      try { plannedSessions = window.LoadnoteProgramWorkoutViewer?.day(data, iso, { asOf: today() }) || []; } catch {}
+      const linkedWorkoutIds = new Set(plannedSessions.map(s => s.completedWorkout?.id).filter(Boolean));
+      const sessions = (data.workouts || []).filter(w => w.date === iso && !linkedWorkoutIds.has(w.id));
       const isRest = (data.restDays || []).includes(iso);
-      if (!sessions.length && !isRest) {
-        detail.innerHTML = '<p class="text-slate-500">No workout logged. Rest day or open day.</p>';
+      if (!plannedSessions.length && !sessions.length && !isRest) {
+        detail.innerHTML = '<p class="text-slate-500">No workout logged or scheduled. Rest day or open day.</p>';
         return;
       }
       let html = '';
+      if (plannedSessions.length && window.LoadnoteProgramWorkoutViewerUI?.calendarDayHtml) {
+        html += window.LoadnoteProgramWorkoutViewerUI.calendarDayHtml(iso, plannedSessions);
+      }
       if (isRest) html += '<p class="text-slate-600">Marked as <b>rest day</b>.</p>';
       sessions.forEach(w => {
         const lines = (w.exercises || []).map(ex => {
@@ -781,11 +797,12 @@
           return `• ${escapeHtml(ex.name)}: ${escapeHtml(sets)}`;
         }).join('<br>');
         html += `<div class="border border-slate-200 rounded-lg p-2 mb-2">
-          <div class="font-medium">Session${w.notes ? ' — ' + escapeHtml(w.notes) : ''}</div>
+          <div class="font-medium">Logged session${w.notes ? ' — ' + escapeHtml(w.notes) : ''}</div>
           <div class="text-slate-600 mt-1">${lines || 'No exercises'}</div>
         </div>`;
       });
       detail.innerHTML = html;
+      window.LoadnoteProgramWorkoutViewerUI?.bindCalendarDay?.(detail);
     }
 
     function logWorkoutOnSelectedDay() {
