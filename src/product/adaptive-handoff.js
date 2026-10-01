@@ -88,6 +88,8 @@
   }else if(adaptation?.changedLifts?.length){
    status='updated';label='Next workout updated';
    reason='An athlete-approved review changed the current scheduled prescription. The accepted before/after revision is shown below.';
+  }else if(life?.nextAction?.kind==='resolve-overdue'){
+   reason=life.nextAction.detail+' Loadnote keeps the next workout unchanged until those earlier sessions have explicit outcomes.';
   }else if(!linked){
    reason='This workout was not linked to a scheduled prescription, so saving it did not revise the reviewed program.';
   }else if(!evidence?.comparison){
