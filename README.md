@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.73.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.74.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.74 — Frictionless Training Mode
+
+The active workout now has a compact sticky training cockpit so the athlete can stay oriented without scrolling back through the logger. It shows the current program/session context, exercise and set position, live completed-set progress, elapsed time when a session start was recorded, the current planned target, and the matching set from the previous performance when available.
+
+For the current strength set, **Use target** fills the captured load plus reps/hold duration without copying target RPE into actual RPE. Display-unit load controls provide small and large jumps (1.25/2.5 kg or 2.5/5 lb), while all saved loads continue through the existing display-to-kg conversion path.
+
+Completing the last set of an exercise now produces a lightweight **Up next** transition rather than immediately moving keyboard focus into the next exercise. The athlete can start the next exercise with one tap; within an exercise, existing automatic next-set focus and one-tap RPE completion stay intact.
+
+Today/Resume routes into the focused cockpit, and scheduled workouts keep the existing **Why?** path to approved target context. v2.74 does not change prescriptions, RPE/e1RM/training-max math, adaptive decisions, progression rules, or schema v25. See `docs/frictionless-training-mode.md`.
 
 ## v2.73 — History & Data Reliability Polish
 
