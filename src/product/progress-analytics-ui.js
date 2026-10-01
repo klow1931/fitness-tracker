@@ -7,6 +7,7 @@
  const displayVolume=value=>value==null?'—':Math.round(toDisplay(value)*10)/10+' '+unitLabel()+'·reps';
  const pct=value=>value==null?'—':value+'%';
  const signed=value=>Number(value)>0?'+'+value:String(value);
+ const signedWeight=value=>Number(value)>0?'+'+displayKg(value):displayKg(value);
  const fmtDate=value=>{try{return typeof formatDate==='function'?formatDate(value):value;}catch{return value;}};
  function statusTone(status){return status==='higher'?'Higher':status==='lower'?'Lower':status==='similar'?'Similar':'More data';}
  function bestSet(row){
@@ -15,7 +16,7 @@
  }
  function directionLine(story){
   const d=story.direction;if(!d)return 'Not enough comparable evidence';
-  if(['higher','lower','similar'].includes(d.status))return d.label+' · '+signed(displayKg(d.deltaKg))+' ('+signed(d.deltaPct)+'%)';
+  if(['higher','lower','similar'].includes(d.status))return d.label+' · '+signedWeight(d.deltaKg)+' ('+signed(d.deltaPct)+'%)';
   return d.label;
  }
  function programHtml(program){
