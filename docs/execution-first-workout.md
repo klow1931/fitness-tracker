@@ -14,7 +14,7 @@ It activates when either:
 
 - the current draft belongs to a scheduled workout
 - an explicit workout start timestamp exists
-- a named strength exercise has meaningful entered work such as reps/hold, load, RPE, or completion
+- a named strength exercise has a positive reps/hold entry or an explicit completion mark
 - a named cardio exercise has duration, distance, or completion
 
 A name by itself is not enough to switch the interface into execution mode.
