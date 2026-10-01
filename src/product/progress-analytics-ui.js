@@ -4,6 +4,7 @@
  let activeView='overview',storyWeeks=12,selectedMovementKey='';
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const displayKg=value=>value==null?'—':Math.round(toDisplay(value)*10)/10+' '+unitLabel();
+ const displayVolume=value=>value==null?'—':Math.round(toDisplay(value)*10)/10+' '+unitLabel()+'·reps';
  const pct=value=>value==null?'—':value+'%';
  const signed=value=>Number(value)>0?'+'+value:String(value);
  const fmtDate=value=>{try{return typeof formatDate==='function'?formatDate(value):value;}catch{return value;}};
@@ -52,7 +53,7 @@
  }
  function movementDetail(story){
   const d=story.direction,recent=story.recent,overall=story.overall;
-  const volume=recent.volumeKg?displayKg(recent.volumeKg):'—';
+  const volume=recent.volumeKg?displayVolume(recent.volumeKg):'—';
   return '<article class="progress-story-strength-card">'+
    '<div class="progress-story-strength-head"><div><span>'+esc(story.source==='competition'?'Confirmed competition lift':'Training movement')+'</span><h3>'+esc(story.label||story.name)+'</h3><p>'+esc(directionLine(story))+'</p></div><span class="badge">'+esc(statusTone(d.status))+'</span></div>'+
    '<div class="progress-story-strength-metrics">'+
