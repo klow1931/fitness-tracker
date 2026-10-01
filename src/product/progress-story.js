@@ -15,11 +15,14 @@
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
- const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
  const finite=x=>Number.isFinite(Number(x))?Number(x):null;
  const validRpe=x=>Number.isFinite(Number(x))&&Number(x)>=1&&Number(x)<=10;
  const strength=e=>e?.type!=='cardio'&&e?.trackBy!=='duration';
  const nameKey=x=>String(x||'').trim().toLowerCase();
+ function median(values){
+  const rows=(values||[]).filter(Number.isFinite).slice().sort((a,b)=>a-b);if(!rows.length)return null;
+  const mid=Math.floor(rows.length/2);return Core.round(rows.length%2?rows[mid]:(rows[mid-1]+rows[mid])/2,1);
+ }
  function matches(exercise,marker){
   if(!strength(exercise))return false;
   if(marker?.exerciseId)return exercise.exerciseId===marker.exerciseId;
@@ -55,18 +58,20 @@
   const rows=(days||[]).filter(x=>x.date>=from&&x.date<=to),sets=rows.flatMap(x=>x.sets||[]);
   const capacity=rows.map(x=>x.bestCapacity).filter(Boolean),loads=rows.map(x=>x.bestLoad).filter(Boolean);
   const rpeSets=sets.filter(s=>s.rpe!=null),volumeKg=Core.round(rows.reduce((n,x)=>n+Number(x.volumeKg||0),0),1);
-  const bestCapacity=capacity.sort((a,b)=>b.capacityKg-a.capacityKg)[0]||null,bestLoad=loads.sort((a,b)=>b.weight-a.weight||b.reps-a.reps)[0]||null;
-  return {from,to,sessions:rows.length,sets:sets.length,capacityDays:capacity.length,bestCapacity,bestLoad,volumeKg,
+  const bestCapacity=capacity.slice().sort((a,b)=>b.capacityKg-a.capacityKg)[0]||null,bestLoad=loads.slice().sort((a,b)=>b.weight-a.weight||b.reps-a.reps)[0]||null;
+  return {from,to,sessions:rows.length,sets:sets.length,capacityDays:capacity.length,bestCapacity,bestLoad,medianCapacityKg:median(capacity.map(x=>x.capacityKg)),volumeKg,
    averageRpe:rpeSets.length?Core.round(rpeSets.reduce((n,x)=>n+x.rpe,0)/rpeSets.length,1):null,rpeSets:rpeSets.length};
  }
  function direction(baseline,recent){
-  if(!baseline?.bestCapacity||!recent?.bestCapacity)return {status:'insufficient',label:'Not enough comparable evidence',reason:'Both start and recent windows need RPE-aware demonstrated-capacity evidence.'};
+  if(!baseline?.capacityDays||!recent?.capacityDays)return {status:'insufficient',label:'Not enough comparable evidence',reason:'Both start and recent windows need RPE-aware demonstrated-capacity evidence.'};
   if(baseline.capacityDays<2||recent.capacityDays<2)return {status:'sparse',label:'More evidence needed',reason:'At least two demonstrated-capacity days are required in both the start and recent windows.'};
-  const start=baseline.bestCapacity.capacityKg,end=recent.bestCapacity.capacityKg,deltaKg=Core.round(end-start,1),deltaPct=start>0?Core.round(deltaKg/start*100,1):null;
+  const start=baseline.medianCapacityKg,end=recent.medianCapacityKg;
+  if(!(start>0&&end>0))return {status:'insufficient',label:'Not enough comparable evidence',reason:'The available capacity evidence could not form a stable window comparison.'};
+  const deltaKg=Core.round(end-start,1),deltaPct=Core.round(deltaKg/start*100,1);
   const status=deltaPct>=1?'higher':deltaPct<=-1?'lower':'similar';
   const label=status==='higher'?'Recent evidence is higher':status==='lower'?'Recent evidence is lower':'Recent evidence is similar';
   return {status,label,deltaKg,deltaPct,startKg:start,endKg:end,
-   note:'Compares the best RPE-aware demonstrated-capacity estimate in the start and recent windows. It is not a tested 1RM or proof that a programming change caused the difference.'};
+   note:'Compares the median of each day’s best RPE-aware demonstrated-capacity estimate in the start and recent windows. It is not a tested 1RM or proof that a programming change caused the difference.'};
  }
  function reviewMarkers(state,marker,from,to){
   if(!Explanation?.accepted)return [];
