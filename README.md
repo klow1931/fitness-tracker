@@ -6,7 +6,7 @@
 
 Progress now starts with a compact evidence story instead of a dense analytics page. The athlete can move between **Overview**, **Strength**, **Adherence**, and **Program history** while keeping the underlying workout and scheduling records read-only.
 
-Strength stories use the existing RPE-aware demonstrated-capacity evidence rules, keep variations separate, require repeated evidence before showing direction, and compare the start of the selected 8/12/24-week window with the most recent four weeks. Adherence continues to use completed / (completed + explicitly skipped), so unresolved and cancelled sessions are not silently treated as failures.
+Strength stories use the existing RPE-aware demonstrated-capacity evidence rules, keep variations separate, require repeated evidence before showing direction, and compare the median daily capacity evidence from the start of the selected 8/12/24-week window with the most recent four weeks. Confirmed competition lifts are featured first, while any logged rep-based strength exercise can be explored directly. Adherence continues to use completed / (completed + explicitly skipped), so unresolved and cancelled sessions are not silently treated as failures.
 
 Accepted weekly/phase programming decisions are shown on the same Progress surface as later performance evidence. Loadnote reports what was changed or kept and reuses the stored review explanation, but does not claim that a programming decision caused a later performance result.
 
