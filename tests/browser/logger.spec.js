@@ -12,7 +12,7 @@ async function enter(page,name='Bench Press'){
  await page.locator('#exercise-rows .ex-name').fill(name);
  await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('100');await page.locator('.set-rpe').fill('8');
 }
-async function openOptions(page){const button=page.locator('#training-cockpit [data-cockpit-options]');if(await button.isVisible()&&await button.textContent()==='Workout options')await button.click();}
+async function openOptions(page){await expect(page.locator('body')).toHaveClass(/training-execution-active/);const button=page.locator('#training-cockpit [data-cockpit-options]');await expect(button).toBeVisible();if((await button.textContent())==='Workout options')await button.click();}
 async function review(page){const cockpit=page.locator('#training-cockpit [data-cockpit-review]');if(await cockpit.isVisible())await cockpit.click();else await page.locator('#workout-actions [data-workout-action="review"]').click();}
 test('delegated dynamic controls and templates bind once',async({page})=>{
  await page.evaluate(()=>{initWorkoutEvents();initWorkoutEvents();});
@@ -20,7 +20,7 @@ test('delegated dynamic controls and templates bind once',async({page})=>{
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);expect((await page.evaluate(()=>readLoggerDraft())).rows[0].sets).toHaveLength(1);
  const dialogs=[];page.on('dialog',d=>{dialogs.push(d.type());return d.accept(d.type()==='prompt'?'Upper body':undefined);});
  await page.getByRole('button',{name:'Save as Template',exact:true}).click();expect(await page.evaluate(()=>data.templates.length)).toBe(1);expect(dialogs.filter(d=>d==='prompt')).toHaveLength(1);
- await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
+ await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');await openOptions(page);
  await page.getByRole('button',{name:'+ Add Cardio',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(1);
  await page.locator('#exercise-rows > div').last().getByRole('button',{name:'Remove',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(0);
 });
