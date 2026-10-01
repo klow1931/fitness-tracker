@@ -760,3 +760,28 @@ body.dark.training-execution-active #exercise-rows>.training-execution-current{b
 body.dark.training-execution-active #exercise-rows>.training-execution-complete{background:rgba(16,185,129,.06)!important}
 body.dark.training-execution-active #exercise-rows>.training-execution-upcoming{background:rgba(148,163,184,.05)!important}
 body.dark.training-execution-active .logger-set.training-execution-set-current{background:rgba(99,102,241,.11);border-color:#6366f1}
+
+.training-cockpit-rest{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.65rem;
+ margin-top:.55rem;
+ padding:.5rem .6rem;
+ border:1px solid rgba(14,165,233,.24);
+ border-radius:.65rem;
+ background:rgba(14,165,233,.07)
+}
+.training-cockpit-rest>div:first-child span,.training-cockpit-rest>div:first-child b{display:block}
+.training-cockpit-rest>div:first-child span{font-size:.61rem;font-weight:800;letter-spacing:.06em;color:#0369a1}
+.training-cockpit-rest>div:first-child b{font-size:.95rem;font-variant-numeric:tabular-nums}
+.training-cockpit-rest-actions{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end}
+.training-cockpit-rest-actions button{min-height:36px;padding:.3rem .55rem;border:1px solid #bae6fd;border-radius:.5rem;background:#fff;color:#0f172a;font-size:.7rem;font-weight:750}
+body.dark .training-cockpit-rest{background:rgba(14,165,233,.1);border-color:rgba(56,189,248,.3)}
+body.dark .training-cockpit-rest>div:first-child span{color:#7dd3fc}
+body.dark .training-cockpit-rest-actions button{background:#111827;border-color:#334155;color:#e2e8f0}
+@media(max-width:520px){
+ .training-cockpit-rest{align-items:stretch;flex-direction:column}
+ .training-cockpit-rest-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .training-cockpit-rest-actions button{min-width:0}
+}
