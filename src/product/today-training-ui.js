@@ -32,7 +32,12 @@
   }else{
    host.innerHTML='<p class="eyebrow">Today</p><h2>No workout scheduled</h2><p>Train freely or use Calendar to schedule a reviewed plan.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Log workout</button><button type="button" class="btn-secondary" data-today-calendar>Open calendar</button></div>';
   }
-  host.querySelector('[data-today-train]')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.todayTrain;if(active?.draftOpen)goTrain();else window.startScheduledWorkout?.(id);});
+  host.querySelector('[data-today-train]')?.addEventListener('click',e=>{
+    const id=e.currentTarget.dataset.todayTrain;
+    if(active?.draftOpen){goTrain();return;}
+    window.startScheduledWorkout?.(id);
+    requestAnimationFrame(()=>{let draft=null;try{draft=typeof readLoggerDraft==='function'?readLoggerDraft():null;}catch{}if(draft?.sessionIntent?.schedule?.id===id)goTrain();});
+  });
   host.querySelector('[data-today-lifecycle]')?.addEventListener('click',()=>window.LoadnoteProgramLifecycleUI?.route?.(lifecycle));
   host.querySelector('[data-today-view-workout]')?.addEventListener('click',()=>window.LoadnoteProgramWorkoutViewerUI?.open?.(lifecycle?.program?.id,active?.id));
   host.querySelector('[data-today-resume]')?.addEventListener('click',goTrain);
