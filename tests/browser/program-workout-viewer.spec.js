@@ -66,3 +66,23 @@ test('Calendar shows the same future scheduled prescription before the workout i
  await expect(page.locator('#cal-day-detail')).toContainText('Competition-lift practice');
  expect(await page.evaluate(day=>data.workouts.some(w=>w.date===day),info.date)).toBe(false);
 });
+
+
+test('v2.70 Today previews the exact reviewed workout and deep-links its session',async({page})=>{
+ const info=await page.evaluate(()=>{
+   const cycle=data.meetCycles[0],session=cycle.sessions[0];
+   return {day:session.date,id:'meet:'+cycle.id+':'+session.key,name:session.exercises[0].name,minutes:session.estimatedMinutes};
+ });
+ await page.clock.setFixedTime(new Date(info.day+'T12:00:00.000Z'));
+ await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ const todayCard=page.locator('#today-training');
+ await expect(todayCard).toContainText(info.name);
+ await expect(todayCard).toContainText('about '+info.minutes+' min');
+ await todayCard.getByRole('button',{name:'View workout'}).click();
+ const dialog=page.locator('#program-workout-dialog');await expect(dialog).toBeVisible();
+ const target=dialog.locator('[data-program-session="'+info.id+'"]');
+ await expect(target).toHaveAttribute('open','');
+ await expect(target).toContainText(info.name);
+ const week=target.locator('xpath=ancestor::details[@data-program-week]');
+ await expect(week).toHaveAttribute('open','');
+});
