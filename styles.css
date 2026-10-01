@@ -1483,3 +1483,32 @@ body.dark .calendar-days .cal-cell.has-planned{background:rgba(14,165,233,.1)}
  .program-workout-sets li{flex-direction:column;gap:.15rem}
  .program-workout-sets li b{text-align:left}
 }
+
+
+/* v2.70 — gym-floor training experience */
+.gym-set-history{flex-wrap:wrap}
+.gym-set-history-actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-left:auto}
+.gym-copy-prior{
+ flex:0 0 auto;
+ min-height:36px!important;
+ padding:.3rem .55rem;
+ border:1px solid #cbd5e1;
+ border-radius:.5rem;
+ background:#fff;
+ color:#334155;
+ font-size:.72rem;
+ font-weight:700
+}
+.gym-copy-prior:active,.gym-copy-prior:hover{border-color:#6366f1;background:#eef2ff;color:#3730a3}
+body.dark .gym-copy-prior{background:#111827;border-color:#475569;color:#e2e8f0}
+.gym-floor-current small{display:block;max-width:100%;margin-top:.05rem;color:#64748b;font-size:.62rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.dark .gym-floor-current small{color:#94a3b8}
+.training-continuity-execution{padding:.6rem .7rem;border:1px solid var(--measure-line);border-radius:.7rem;background:rgba(148,163,184,.06);font-size:.8rem;line-height:1.45}
+.training-continuity-actions{display:flex;gap:.55rem;flex-wrap:wrap;margin:.8rem 0 .55rem}
+.training-continuity-actions .btn-primary,.training-continuity-actions .btn-secondary{min-height:44px}
+@media(max-width:520px){
+ .gym-set-history-actions{width:100%;margin-left:0}
+ .gym-set-history-actions button{flex:1 1 130px}
+ .training-continuity-actions{display:grid;grid-template-columns:1fr}
+ .training-continuity-actions .btn-primary,.training-continuity-actions .btn-secondary{width:100%}
+}

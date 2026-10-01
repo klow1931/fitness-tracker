@@ -1,4 +1,4 @@
-/* v2.62 — mobile gym-floor logging ergonomics.
+/* v2.70 — mobile gym-floor training ergonomics.
  * Adds input affordances, previous-set context and a one-handed session dock.
  * Training data remains owned by the existing workout logger/session modules.
  */
@@ -34,19 +34,41 @@
   input.setAttribute('enterkeyhint',kind==='rpe'?'done':'next');
   input.setAttribute('data-gym-field',kind);
  }
- function setContext(set,previous,trackBy,index){
+ function currentSetPayload(set,trackBy){
+  if(!set)return null;
+  const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
+  if(!(Number(measure?.value)>0))return null;
+  return {measure:measure.value,weight:weight?.value??''};
+ }
+ function copyCurrentSet(from,to,trackBy){
+  const payload=currentSetPayload(from,trackBy);if(!payload)return false;
+  const weight=to.querySelector('.set-weight'),measure=to.querySelector(trackBy==='duration'?'.set-duration':'.set-reps');
+  if(weight){weight.value=payload.weight;weight.dispatchEvent(new Event('input',{bubbles:true}));}
+  if(measure){measure.value=payload.measure;measure.dispatchEvent(new Event('input',{bubbles:true}));}
+  return true;
+ }
+ function setContext(set,previous,trackBy,index,priorSet){
   let host=set.querySelector('.gym-set-history');
   if(!host){host=document.createElement('div');host.className='gym-set-history';set.appendChild(host);}
-  const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy);
+  const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy),same=currentSetPayload(priorSet,trackBy);
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
-  const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0),signature=label+'|'+blank+'|'+currentUnit();
-  if(host._gymSignature===signature){host.hidden=!label;return;}
+  const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0);
+  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
+  if(host._gymSignature===signature){host.hidden=!(label||canCopySame);return;}
   host._gymSignature=signature;
-  if(!label){host.hidden=true;host.replaceChildren();return;}
+  if(!label&&!canCopySame){host.hidden=true;host.replaceChildren();return;}
   host.hidden=false;
-  host.innerHTML='<span>Last: '+esc(label)+'</span>'+(blank?'<button type="button" class="gym-use-last" data-gym-use-last>Use last</button>':'');
-  const button=host.querySelector('[data-gym-use-last]');
-  if(button)button.onclick=()=>{
+  host.innerHTML=(label?'<span>Last: '+esc(label)+'</span>':'<span>Quick fill</span>')+
+    '<div class="gym-set-history-actions">'+
+    (canCopySame?'<button type="button" class="gym-copy-prior" data-gym-copy-prior>Same as set '+index+'</button>':'')+
+    (canUseLast?'<button type="button" class="gym-use-last" data-gym-use-last>Use last session</button>':'')+
+    '</div>';
+  host.querySelector('[data-gym-copy-prior]')?.addEventListener('click',()=>{
+    if(!copyCurrentSet(priorSet,set,trackBy))return;
+    saveLoggerDraft();updateTrainingFlow();refresh();
+    set.querySelector('.set-rpe')?.focus({preventScroll:true});
+  });
+  host.querySelector('[data-gym-use-last]')?.addEventListener('click',()=>{
     const payload=H()?.previousPayload(prior,trackBy);if(!payload)return;
     if(weight&&payload.weight!=null){weight.value=String(toDisplay(payload.weight));weight.dispatchEvent(new Event('input',{bubbles:true}));}
     if(trackBy==='duration'){
@@ -55,8 +77,8 @@
       const reps=set.querySelector('.set-reps');if(reps&&payload.reps!=null){reps.value=String(payload.reps);reps.dispatchEvent(new Event('input',{bubbles:true}));}
     }
     saveLoggerDraft();updateTrainingFlow();refresh();
-    (trackBy==='duration'?set.querySelector('.set-duration'):set.querySelector('.set-reps'))?.focus({preventScroll:true});
-  };
+    set.querySelector('.set-rpe')?.focus({preventScroll:true});
+  });
  }
  function decorateRows(){
   if(!H())return;
@@ -68,19 +90,20 @@
       continue;
     }
     const trackBy=row.dataset.trackBy==='duration'?'duration':'reps',previous=rowPrevious(row);
-    [...row.querySelectorAll('.sets-container > div')].forEach((set,index)=>{
+    const sets=[...row.querySelectorAll('.sets-container > div')];
+    sets.forEach((set,index)=>{
       configureInput(set.querySelector('.set-weight'),'weight');
       configureInput(set.querySelector('.set-reps'),'reps');
       configureInput(set.querySelector('.set-duration'),'duration');
       configureInput(set.querySelector('.set-rpe'),'rpe');
-      setContext(set,previous,trackBy,index);
+      setContext(set,previous,trackBy,index,index>0?sets[index-1]:null);
     });
   }
  }
  function dock(){
   let host=document.getElementById('gym-floor-dock');if(host)return host;
   host=document.createElement('aside');host.id='gym-floor-dock';host.className='gym-floor-dock';host.setAttribute('aria-label','Workout quick controls');
-  host.innerHTML='<button type="button" class="gym-floor-current" data-gym-current><span>Current set</span><b data-gym-current-label>Workout</b></button><button type="button" class="gym-floor-rest" data-gym-rest aria-label="Rest timer"><span>Rest</span><b id="rest-timer-sticky">—</b></button><button type="button" class="btn-primary gym-floor-finish" data-gym-finish>Finish</button>';
+  host.innerHTML='<button type="button" class="gym-floor-current" data-gym-current><span>Current set</span><b data-gym-current-label>Workout</b><small data-gym-progress></small></button><button type="button" class="gym-floor-rest" data-gym-rest aria-label="Rest timer"><span>Rest</span><b id="rest-timer-sticky">—</b></button><button type="button" class="btn-primary gym-floor-finish" data-gym-finish>Finish</button>';
   document.body.appendChild(host);
   host.querySelector('[data-gym-current]').onclick=()=>{const set=document.querySelector('#exercise-rows .logger-active-set')||firstUnfinishedSet();set?.scrollIntoView({block:'center',behavior:'smooth'});};
   host.querySelector('[data-gym-rest]').onclick=()=>document.querySelector('.training-rest-controls')?.scrollIntoView({block:'center',behavior:'smooth'});
@@ -95,13 +118,24 @@
   const row=set.closest('#exercise-rows > div'),sets=[...row.querySelectorAll('.sets-container > div')],number=sets.indexOf(set)+1,name=row.querySelector('.ex-name')?.value.trim()||'Exercise';
   return name+' · Set '+Math.max(1,number);
  }
+ function progressState(){
+  const rows=[...document.querySelectorAll('#exercise-rows > div')].map(row=>{
+    if(row.dataset.type==='cardio')return {type:'cardio',entered:Number(row.querySelector('.cardio-duration')?.value)>0||Number(row.querySelector('.cardio-distance')?.value)>0,done:!!row.querySelector('.cardio-done')?.checked};
+    const trackBy=row.dataset.trackBy==='duration'?'duration':'reps';
+    return {type:'strength',sets:[...row.querySelectorAll('.sets-container > div')].map(set=>({entered:Number(set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps')?.value)>0,done:!!set.querySelector('.set-done-check')?.checked}))};
+  });
+  return H()?.sessionProgress(rows)||null;
+ }
  function updateDock(){
-  const host=dock(),hasDraft=(()=>{try{return loggerHasContent();}catch{return false;}})();
+  const host=dock(),hasDraft=(()=>{try{return loggerHasContent();}catch{return false;}})(),progress=progressState();
   const show=loggerVisible()&&hasDraft;
   host.classList.toggle('gym-floor-dock-active',show);
   document.body.classList.toggle('gym-floor-dock-visible',show);
   host.setAttribute('aria-hidden',String(!show));
   const label=host.querySelector('[data-gym-current-label]');if(label)label.textContent=currentLabel();
+  const progressLabel=host.querySelector('[data-gym-progress]');
+  if(progressLabel)progressLabel.textContent=progress?.totalSets?progress.doneSets+'/'+progress.totalSets+' sets · '+progress.doneExercises+'/'+progress.totalExercises+' exercises':'';
+  const finish=host.querySelector('[data-gym-finish]');if(finish)finish.textContent=progress?.complete?'Review':'Finish';
   const train=document.querySelector('#mobile-nav [data-tab="workouts"]');
   train?.classList.toggle('workout-draft-active',hasDraft);
   if(train)train.setAttribute('aria-label',hasDraft?'Train — workout draft saved':'Train');
@@ -140,7 +174,7 @@
   window.visualViewport?.addEventListener('scroll',viewportState);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){viewportState();refresh();}});
  }
- window.LoadnoteGymFloorUI={init,refresh,decorateRows,updateDock,viewportState,currentLabel};
+ window.LoadnoteGymFloorUI={init,refresh,decorateRows,updateDock,viewportState,currentLabel,progressState};
  window.refreshGymFloorUI=refresh;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

@@ -19,4 +19,13 @@ assert.equal(Gym.keyboardLikelyOpen(844,620),true);
 assert.equal(Gym.keyboardLikelyOpen(844,760),false);
 assert.equal(Gym.keyboardLikelyOpen(0,620),false);
 
-console.log('v2.62 gym-floor input, previous-set and next-set helpers passed');
+const progress=Gym.sessionProgress([
+ {type:'strength',sets:[{entered:true,done:true},{entered:true,done:false}]},
+ {type:'strength',sets:[{entered:true,done:false}]},
+ {type:'cardio',entered:false,done:false}
+]);
+assert.deepEqual(progress,{totalSets:3,doneSets:1,remainingSets:2,totalExercises:2,doneExercises:0,currentExerciseIndex:0,currentSetIndex:1,complete:false});
+assert.equal(Gym.sessionProgress([{type:'strength',sets:[{entered:true,done:true}]}]).complete,true);
+assert.equal(Gym.sessionProgress([{type:'strength',sets:[{entered:false,done:false}]}]).totalSets,0);
+
+console.log('v2.70 gym-floor input, quick-fill, progress and next-set helpers passed');

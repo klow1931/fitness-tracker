@@ -1,4 +1,4 @@
-/* v2.51 — show continuity after save and on Home without changing the plan automatically. */
+/* v2.70 — post-workout continuity with clear next actions. */
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -30,8 +30,18 @@
    const reason=e?.linked&&e?.deviationReason!=='none'?'<p><b>Session change recorded:</b> '+esc(e.deviationLabel)+(e.deviationNotes?' · '+esc(e.deviationNotes):'')+'</p>':'';
    const overdue=report.unresolvedOverdue.length?'<p class="training-continuity-warning"><b>'+report.unresolvedOverdue.length+' earlier scheduled session'+(report.unresolvedOverdue.length===1?' is':'s are')+' unresolved.</b> Resolve '+(report.unresolvedOverdue.length===1?'it':'them')+' in Calendar before relying on week-level adherence/review.</p>':'';
    const adaptation=report.next?window.LoadnoteAdaptationExplanation?.forSession(state,report.next.id):null;
-   section.innerHTML='<h3>What Loadnote learned</h3><p>'+esc(evidenceLine(e))+'</p>'+reason+'<h3>What comes next</h3><p>'+esc(nextLine(report.next))+'</p>'+overdue+(window.LoadnoteAdaptationExplanationUI?.render(adaptation,{summary:'Why the next workout changed'})||'')+'<p class="more-hint">'+esc(report.notice)+'</p>';
+   const comparison=e?.comparison;
+   const execution=comparison?'<p class="training-continuity-execution"><b>Plan vs actual:</b> '+comparison.completedSets+'/'+comparison.plannedSets+' planned sets represented · '+comparison.exactRate+'% matched the captured load/reps exactly · RPE logged on '+e.rpeSets+'/'+e.actualStrengthSets+' strength sets.</p>':'';
+   let nextProgram=null;
+   if(report.next&&window.LoadnoteProgramLifecycle){try{nextProgram=LoadnoteProgramLifecycle.programs(state).find(p=>report.next.id.startsWith(p.prefix))||null;}catch{}}
+   const nextAction=report.next?'<button type="button" class="btn-secondary" data-continuity-next>View next workout</button>':'';
+   section.innerHTML='<h3>Session result</h3><p>'+esc(evidenceLine(e))+'</p>'+execution+reason+'<h3>What comes next</h3><p>'+esc(nextLine(report.next))+'</p>'+overdue+(window.LoadnoteAdaptationExplanationUI?.render(adaptation,{summary:'Why the next workout changed'})||'')+'<div class="training-continuity-actions"><button type="button" class="btn-primary" data-continuity-done>Done</button>'+nextAction+'</div><p class="more-hint">'+esc(report.notice)+'</p>';
    host.appendChild(section);
+   section.querySelector('[data-continuity-done]')?.addEventListener('click',()=>showTab('dashboard'));
+   section.querySelector('[data-continuity-next]')?.addEventListener('click',()=>{
+     if(nextProgram&&window.LoadnoteProgramWorkoutViewerUI?.open){window.LoadnoteProgramWorkoutViewerUI.open(nextProgram.id,report.next.id);return;}
+     showTab('calendar');setTimeout(()=>{if(typeof selectCalDay==='function')selectCalDay(report.next.date);},30);
+   });
    window.LoadnoteProgramLifecycleUI?.recap?.(host,state,asOf);
  }
  window.LoadnoteTrainingContinuityUI={evidenceLine,nextLine,home,renderRecap};

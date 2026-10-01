@@ -23,7 +23,20 @@ function updateTrainingFlow(){
   const expand=bar.querySelector('[data-workout-action="expand-exercise"]');expand.hidden=!trainingFocus||!p.complete;expand.setAttribute('aria-expanded',String(!collapsed));setText(expand,collapsed?'Show sets':'Collapse');
   bar.querySelector('[data-workout-action="move-up"]').disabled=i===0;bar.querySelector('[data-workout-action="move-down"]').disabled=i===rows.length-1;
  });
- const summary=document.getElementById('training-progress-label');if(summary)setText(summary,`${done}/${total} entered strength sets checked · ${finished}/${rows.length} exercises checked complete`);
+ const summary=document.getElementById('training-progress-label');
+ if(summary){
+  let next='';
+  if(current){
+   const name=current.querySelector('.ex-name')?.value.trim()||'Exercise';
+   if(current.dataset.type==='cardio')next=' · Next: '+name;
+   else{
+    const sets=[...current.querySelectorAll('.sets-container > div')],trackBy=current.dataset.trackBy==='duration'?'duration':'reps';
+    const target=sets.findIndex(s=>Number(s.querySelector(trackBy==='duration'?'.set-duration':'.set-reps')?.value)>0&&!s.querySelector('.set-done-check')?.checked);
+    next=' · Next: '+name+(target>=0?' · Set '+(target+1):'');
+   }
+  }else if(total&&done===total)next=' · Ready to review';
+  setText(summary,(total?`${done}/${total} sets · `:'')+`${finished}/${rows.length} exercises`+next);
+ }
  const meter=document.getElementById('training-progress');if(meter){meter.max=Math.max(total,1);meter.value=done;}
  window.refreshLoggerQuickEntry?.();
  window.refreshGymFloorUI?.();

@@ -1,3 +1,14 @@
+# v2.70.0 — Gym-Floor Training Experience
+
+- Make the daily training path more direct: Today can preview the exact reviewed program workout and includes estimated session time when available.
+- Deep-link the program viewer to an individual session so the relevant week and workout open automatically.
+- Add live set/exercise progress to the mobile gym-floor dock and switch the finish action to Review when entered work is complete.
+- Add one-tap **Same as set N** quick fill for blank strength sets; it copies load plus reps/hold duration only and never copies RPE or completion.
+- Make the workout progress line identify the next exercise/set.
+- Add a concise post-save plan-vs-actual execution summary with Done and View next workout actions.
+- Preserve local-first draft recovery, same-day scheduled-workout start guardrails, immutable reviewed prescriptions, and separate actual performance evidence.
+- No schema or training-policy change; schema remains v25.
+
 # v2.69.2 — Program Workout Viewer & Calendar Integration
 
 - Add a first-class **View workouts** action to the reviewed current-program lifecycle on Home and Coach.
