@@ -9,7 +9,7 @@
  const clone=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const norm=x=>String(x??'').trim().replace(/\s+/g,' ').toLowerCase();
  const date=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+'T12:00:00Z'));
- const number=x=>Number.isFinite(Number(x))?Number(x):null;
+ const number=x=>x==null||x===''?null:Number.isFinite(Number(x))?Number(x):null;
  function identity(exercise){
   // Duplicate review compares what the athlete actually sees/entered. Drafts have
   // not received stable exercise IDs yet, so names keep pre-save and saved records comparable.
