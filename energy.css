@@ -693,3 +693,70 @@ body.dark .decision-open-hint { color:#a5b4fc; }
   #panel-coach .programming-workspace-head .readiness-status { width:max-content; }
   #panel-coach .programming-workspace-actions > button { flex:1 1 100%; }
 }
+
+
+/* v2.75 — execution-first workout */
+body.training-execution-active #workout-log-card .execution-secondary{display:none!important}
+body.training-execution-active.training-execution-options-open #workout-log-card .execution-secondary{display:flex!important}
+body.training-execution-active.training-execution-options-open #workout-log-card details.execution-secondary{display:block!important}
+body.training-execution-active.training-execution-options-open #workout-log-card p.execution-secondary{display:block!important}
+body.training-execution-active.training-execution-options-open #workout-log-card .grid.execution-secondary{display:grid!important}
+body.training-execution-active #workout-log-card .execution-row-options{display:none!important}
+body.training-execution-active.training-execution-options-open #workout-log-card .execution-row-options{display:flex!important}
+body.training-execution-active.training-execution-options-open #workout-log-card div.execution-row-options:has(.ex-note){display:block!important}
+
+body.training-execution-active #exercise-rows{display:grid;gap:.65rem}
+body.training-execution-active #exercise-rows>div{
+ margin:0!important;
+ border-radius:.85rem;
+ transition:border-color .14s,background-color .14s,opacity .14s;
+}
+body.training-execution-active #exercise-rows>.training-execution-current{
+ border-color:#818cf8!important;
+ background:rgba(99,102,241,.045)!important;
+ box-shadow:inset 4px 0 0 #6366f1,0 4px 14px rgba(15,23,42,.05)!important
+}
+body.training-execution-active #exercise-rows>.training-execution-complete{background:rgba(16,185,129,.035)!important}
+body.training-execution-active #exercise-rows>.training-execution-upcoming{background:rgba(148,163,184,.035)!important}
+body.training-execution-active #exercise-rows>.training-collapsed .exercise-flow-bar{min-height:44px}
+body.training-execution-active #exercise-rows>.training-collapsed .exercise-flow-bar strong{font-size:.82rem;color:#64748b}
+body.training-execution-active #exercise-rows>.training-execution-current .exercise-flow-bar strong{font-size:.96rem;color:inherit}
+body.training-execution-active:not(.training-execution-options-open) .exercise-flow-buttons [data-workout-action="move-up"],
+body.training-execution-active:not(.training-execution-options-open) .exercise-flow-buttons [data-workout-action="move-down"],
+body.training-execution-active:not(.training-execution-options-open) .exercise-flow-buttons [data-workout-action="swap-exercise"]{display:none!important}
+body.training-execution-active .exercise-flow-buttons [data-workout-action="expand-exercise"]{min-height:36px;padding:.35rem .55rem;font-size:.72rem}
+
+body.training-execution-active .logger-set{
+ border:1px solid transparent;
+ border-radius:.7rem;
+ padding:.4rem;
+ transition:border-color .12s,background-color .12s,opacity .12s
+}
+body.training-execution-active .logger-set.training-execution-set-current{
+ border-color:rgba(99,102,241,.38);
+ background:rgba(99,102,241,.065)
+}
+body.training-execution-active .logger-set.training-execution-set-current :is(.set-reps,.set-duration,.set-weight,.set-rpe){
+ font-weight:750;
+ border-color:#818cf8
+}
+body.training-execution-active .logger-set.training-execution-set-complete{opacity:.68}
+body.training-execution-active .logger-set.training-execution-set-upcoming{opacity:.82}
+body.training-execution-active .logger-set:not(.training-execution-set-current) .gym-set-history,
+body.training-execution-active .logger-set:not(.training-execution-set-current) .set-target-note{display:none!important}
+body.training-execution-active:not(.training-execution-options-open) .logger-set [data-workout-action="remove-set"]{visibility:hidden;pointer-events:none}
+body.training-execution-active .training-session-bar,
+body.training-execution-active #workout-actions,
+body.training-execution-active #exercise-rows + .flex{margin-block:0}
+body.training-execution-active .gym-floor-finish{display:none!important}
+@media(max-width:768px){
+ body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto}
+ body.training-execution-active .training-cockpit{scroll-margin-top:.35rem}
+ body.training-execution-active #workout-log-card{padding:.8rem}
+ body.training-execution-active #exercise-rows>.training-execution-current{padding:.7rem!important}
+ body.training-execution-active .logger-set.training-execution-set-current{padding:.5rem .3rem}
+}
+body.dark.training-execution-active #exercise-rows>.training-execution-current{background:rgba(99,102,241,.1)!important;border-color:#6366f1!important}
+body.dark.training-execution-active #exercise-rows>.training-execution-complete{background:rgba(16,185,129,.06)!important}
+body.dark.training-execution-active #exercise-rows>.training-execution-upcoming{background:rgba(148,163,184,.05)!important}
+body.dark.training-execution-active .logger-set.training-execution-set-current{background:rgba(99,102,241,.11);border-color:#6366f1}
