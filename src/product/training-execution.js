@@ -12,7 +12,7 @@
   return (rows||[]).some(row=>{
    if(!String(row?.name||'').trim())return false;
    if(row?.type==='cardio')return Number(row.duration)>0||Number(row.distance)>0||row.done===true;
-   return (row.sets||[]).some(set=>Number(set.measure)>0||Number(set.weight)>0||(finite(set.rpe)>=1&&finite(set.rpe)<=10)||set.done===true);
+   return (row.sets||[]).some(set=>Number(set.measure)>0||set.done===true);
   });
  }
  function classify(progress){
