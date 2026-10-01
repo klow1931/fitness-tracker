@@ -11,7 +11,9 @@
  const date=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+'T12:00:00Z'));
  const number=x=>Number.isFinite(Number(x))?Number(x):null;
  function identity(exercise){
-  return exercise?.exerciseId?'id:'+exercise.exerciseId:'name:'+norm(exercise?.name);
+  // Duplicate review compares what the athlete actually sees/entered. Drafts have
+  // not received stable exercise IDs yet, so names keep pre-save and saved records comparable.
+  return 'name:'+norm(exercise?.name);
  }
  function setShape(set,trackBy){
   return trackBy==='duration'
