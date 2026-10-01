@@ -7,13 +7,13 @@ test.beforeEach(async({page})=>{
 });
 async function enterPlan(page){
   await page.locator('.ex-name').fill('Back Squat');await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('140');await page.locator('.set-rpe').fill('7');
-  await page.locator('#session-intent > summary').click();
+  await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();await page.locator('#session-intent > summary').click();
   await page.locator('#session-role').selectOption('technique');await page.locator('#session-goal').fill('Competition movement practice');
 }
 test('manual plan keeps target and actual performance separate through save and history',async({page})=>{
   await enterPlan(page);await page.getByRole('button',{name:'Use entered work as plan'}).click();
   await expect(page.locator('#planned-work-summary')).toContainText('1 planned exercises · 1 planned sets');await expect(page.locator('.set-rpe')).toHaveValue('');
-  await page.locator('.set-rpe').fill('6');await page.getByRole('button',{name:'Review workout',exact:true}).click();
+  await page.locator('.set-rpe').fill('6');await page.locator('#training-cockpit [data-cockpit-review]').click();
   await expect(page.locator('#workout-review-content')).toContainText('Session role: Technique / skill');await expect(page.locator('#workout-review-content')).toContainText('1/1 planned sets represented');
   await page.getByRole('button',{name:'Save workout',exact:true}).click();await expect(page.locator('#workout-review')).not.toBeVisible();
   const saved=await page.evaluate(()=>data.workouts[0]);expect(saved.sessionIntent.prescription.plannedExercises[0].sets[0].targetRpe).toBe(7);expect(saved.exercises[0].sets[0].rpe).toBe(6);expect(await page.evaluate(()=>LoadnoteIntent.compare(data.workouts[0]).status)).toBe('as-planned');
@@ -23,7 +23,7 @@ test('modified planned session persists its reason and survives draft refresh',a
   await enterPlan(page);await page.getByRole('button',{name:'+ Same Set',exact:true}).click();await page.getByRole('button',{name:'Use entered work as plan'}).click();
   page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-rpe')).toHaveCount(1);await page.locator('#session-deviation-reason').selectOption('fatigue');await page.locator('#session-deviation-notes').fill('Readiness was lower than expected');
   await page.reload();await page.evaluate(()=>showTab('workouts'));await expect(page.locator('#session-role')).toHaveValue('technique');await expect(page.locator('#session-deviation-reason')).toHaveValue('fatigue');await expect(page.locator('#planned-work-summary')).toContainText('2 planned sets');
-  await page.locator('.set-rpe').fill('8');await page.getByRole('button',{name:'Review workout',exact:true}).click();await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');await expect(page.locator('#workout-review-content')).toContainText('Fatigue / readiness');
+  await page.locator('.set-rpe').fill('8');await page.locator('#training-cockpit [data-cockpit-review]').click();await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');await expect(page.locator('#workout-review-content')).toContainText('Fatigue / readiness');
   await page.getByRole('button',{name:'Save workout',exact:true}).click();
  await expect(page.locator('#workout-review')).not.toBeVisible();
  await expect.poll(()=>page.evaluate(()=>LoadnoteIntent.compare(data.workouts[0])?.status)).toBe('modified');
@@ -38,7 +38,7 @@ test('review counts repeated exercise rows without reusing completed sets',async
  await enterPlan(page);
  await page.getByRole('button',{name:'Use entered work as plan'}).click();
  await page.evaluate(()=>{pendingPrescription.plannedExercises.push(JSON.parse(JSON.stringify(pendingPrescription.plannedExercises[0])));renderPrescriptionSummary();});
- await page.getByRole('button',{name:'Review workout',exact:true}).click();
+ await page.locator('#training-cockpit [data-cockpit-review]').click();
  await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  await page.evaluate(()=>showSubTab('workouts','wo-history'));
