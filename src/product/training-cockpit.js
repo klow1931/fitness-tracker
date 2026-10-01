@@ -33,7 +33,7 @@
    const mode=e.trackBy==='duration'?'duration':'reps';
    if(mode!==trackBy)return false;
    if(exerciseId)return e.exerciseId===exerciseId||(!e.exerciseId&&norm(e.name)===norm(name));
-   return !e.exerciseId&&norm(e.name)===norm(name);
+   return norm(e.name)===norm(name);
   });
   return matches.length===1?matches[0]:null;
  }
