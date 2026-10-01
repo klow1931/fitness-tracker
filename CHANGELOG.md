@@ -1,3 +1,16 @@
+# v2.73.0 — History & Data Reliability Polish
+
+- Expand Workout History search to exercise names, notes, session roles, and session goals.
+- Add date, source, record-status, and newest/oldest filters while keeping bounded history pagination.
+- Label saved sessions by origin: Calendar-linked, planned manual, repeated workout, or manual.
+- Add a compact History reliability summary with saved-session count, current review flags, possible duplicate groups, and last recorded JSON-backup date.
+- Detect exact same-day/content duplicate workout candidates without deleting, merging, or rewriting athlete history automatically.
+- Warn in workout review before saving an exact duplicate while preserving the athlete's ability to save an intentional second session.
+- Replace the long JSON-import confirmation with a structured in-app review showing backup fingerprint status, current training-data health, record-link health, and collection-by-collection replacement counts.
+- Keep current data unchanged until the athlete explicitly confirms replacement; continue creating an automatic recovery snapshot before import.
+- Refresh History backup status immediately after JSON export.
+- Preserve schema v25, internal kg storage, RPE/e1RM/training-max logic, program progression, and adaptive policy.
+
 # v2.72.0 — Progress That Explains Training
 
 - Replace the default Progress analytics presentation with a compact story organized into Overview, Strength, Adherence, and Program history.

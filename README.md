@@ -1,6 +1,16 @@
 # Loadnote
 
-**v2.72.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.73.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.73 — History & Data Reliability Polish
+
+Workout History is now easier to use as a trustworthy training record. Search covers exercises, notes, session roles, and goals; filters can narrow by date, source, record status, and sort order; and each saved session shows whether it came from Calendar, a manual plan, a repeated workout, or manual logging.
+
+Loadnote now surfaces exact same-day/content duplicate candidates as review aids without deleting or merging anything automatically. The workout review also warns before saving an exact duplicate while still allowing an intentional second session.
+
+JSON restore now uses a structured in-app review instead of a long confirmation message. Before replacement, the athlete can see backup-fingerprint status, training-data health, record-link health, and collection-by-collection changes. Existing local data remains untouched until **Replace current data** is chosen, and a recovery snapshot is still created before replacement.
+
+History also exposes current review flags, duplicate groups, and the last locally recorded JSON-backup date. v2.73 remains schema v25 and does not change training calculations, program progression, adaptive policy, or internal kg storage. See `docs/history-data-reliability.md`.
 
 ## v2.72 — Progress That Explains Training
 

@@ -32,7 +32,7 @@ function initWorkoutEvents(){
     'pause-rest':()=>pauseRest(),'add-rest':()=>addRestTime(),
     'capture-plan':()=>capturePlannedWork(),'clear-plan':()=>clearPlannedWork(),'start-session':()=>startWorkoutNow(),
     'exercise-detail':el=>openExerciseDetail(el.dataset.exerciseName,el.dataset.tracking),'compare-session':el=>openSessionComparison(el.dataset.workoutId),
-    'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),
+    'history-prev':()=>changeHistoryPage(-1),'history-next':()=>changeHistoryPage(1),'clear-history-filters':()=>clearHistoryFilters(),'review-duplicate':el=>reviewDuplicateGroup(el.dataset.duplicateIndex),
     'move-up':el=>moveTrainingExercise(el,-1),'move-down':el=>moveTrainingExercise(el,1),'swap-exercise':el=>openExerciseSwap(el),'expand-exercise':el=>expandTrainingExercise(el),
     'export-json':()=>exportData(),'export-csv':()=>exportCSV(),import:()=>importData(),
     'remove-exercise':el=>removeWorkoutExercise(el),'remove-set':el=>removeWorkoutSet(el),
@@ -42,7 +42,7 @@ function initWorkoutEvents(){
     'load-template':el=>loadTemplate(el.dataset.templateId),'delete-template':el=>deleteTemplate(el.dataset.templateId),'focus-date':()=>document.getElementById('wo-date')?.focus(),
     'review-back':()=>closeWorkoutReview(),'review-save':()=>commitReviewedWorkout()
   };
-  const change={'history-date':()=>renderWorkoutHistory(),'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el),'session-intent':()=>saveLoggerDraft()};
+  const change={'history-date':()=>renderWorkoutHistory(),'history-filter':()=>renderWorkoutHistory(),'training-focus':()=>toggleTrainingFocus(),checklist:()=>toggleChecklistMode(),'select-template':el=>loadTemplate(el.value),'import-file':(el,event)=>handleImport(event),'exercise-note':el=>saveExerciseNoteFromRow(el),'session-intent':()=>saveLoggerDraft()};
   const input={'history-search':()=>debouncedHistorySearch()};
   for(const root of [document.getElementById('panel-workouts'),document.getElementById('workout-review')]){
     if(!root || root.dataset.eventsBound)continue;
