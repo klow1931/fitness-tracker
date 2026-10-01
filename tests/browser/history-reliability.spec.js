@@ -52,6 +52,12 @@ test('v2.73 workout review warns about an exact same-day duplicate but still let
  await page.locator('.set-reps').fill('5');
  await page.locator('.set-weight').fill('100');
  await page.locator('.set-rpe').fill('8');
+ const duplicateDebug=await page.evaluate(()=>{
+  const candidate=LoadnoteSession.fromDraft(captureLoggerDraft(),'candidate');
+  return {existing:data.workouts[0],candidate,existingSignature:LoadnoteHistoryReliability.workoutSignature(data.workouts[0]),candidateSignature:LoadnoteHistoryReliability.workoutSignature(candidate),matches:LoadnoteHistoryReliability.duplicateMatches(data.workouts,candidate).map(w=>w.id)};
+ });
+ expect(duplicateDebug.candidateSignature,JSON.stringify(duplicateDebug)).toBe(duplicateDebug.existingSignature);
+ expect(duplicateDebug.matches,JSON.stringify(duplicateDebug)).toContain('existing');
  await page.locator('#workout-actions [data-workout-action="review"]').click();
  const review=page.locator('#workout-review');
  await expect(review).toBeVisible();
