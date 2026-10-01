@@ -12,16 +12,36 @@ function trainingRowProgress(row){
 function updateTrainingFlow(){
  const rows=trainingRows();let total=0,done=0,finished=0;
  const progress=rows.map(row=>{const p=trainingRowProgress(row);total+=p.total;done+=p.done;if(p.complete)finished++;return p;});
- const current=rows.find((row,i)=>!progress[i].complete);
+ const current=rows.find((row,i)=>!progress[i].complete),execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.();
  const setText=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
  rows.forEach((row,i)=>{
   let bar=row.querySelector('.exercise-flow-bar');
   if(!bar){bar=document.createElement('div');bar.className='exercise-flow-bar';bar.innerHTML='<strong></strong><div class="exercise-flow-buttons"><button type="button" data-workout-action="expand-exercise" class="btn-secondary">Show sets</button><button type="button" data-workout-action="move-up" class="btn-secondary" aria-label="Move exercise up">↑</button><button type="button" data-workout-action="move-down" class="btn-secondary" aria-label="Move exercise down">↓</button><button type="button" data-workout-action="swap-exercise" class="btn-secondary">Swap</button></div>';row.prepend(bar);}
-  const p=progress[i],collapsed=trainingFocus&&p.complete&&!expandedTrainingRows.has(row);
-  row.classList.toggle('training-collapsed',collapsed);row.classList.toggle('training-current',trainingFocus&&row===current);
-  setText(bar.querySelector('strong'),`${i+1}. ${row.querySelector('.ex-name').value.trim()||'New exercise'}${p.complete?' · Complete':''}`);
-  const expand=bar.querySelector('[data-workout-action="expand-exercise"]');expand.hidden=!trainingFocus||!p.complete;expand.setAttribute('aria-expanded',String(!collapsed));setText(expand,collapsed?'Show sets':'Collapse');
+  const p=progress[i],expanded=expandedTrainingRows.has(row);
+  const executionCollapsed=execution&&row!==current&&!expanded;
+  const focusCollapsed=!execution&&trainingFocus&&p.complete&&!expanded;
+  const collapsed=executionCollapsed||focusCollapsed;
+  row.classList.toggle('training-collapsed',collapsed);
+  row.classList.toggle('training-current',(execution||trainingFocus)&&row===current);
+  row.classList.toggle('training-execution-current',execution&&row===current);
+  row.classList.toggle('training-execution-complete',execution&&p.complete);
+  row.classList.toggle('training-execution-upcoming',execution&&row!==current&&!p.complete);
+  const status=p.complete?' · Complete':execution&&row!==current?' · Up next':'';
+  setText(bar.querySelector('strong'),`${i+1}. ${row.querySelector('.ex-name').value.trim()||'New exercise'}${status}`);
+  const expand=bar.querySelector('[data-workout-action="expand-exercise"]'),canExpand=execution?row!==current:trainingFocus&&p.complete;
+  expand.hidden=!canExpand;expand.setAttribute('aria-expanded',String(!collapsed));setText(expand,collapsed?'Show sets':'Collapse');
   bar.querySelector('[data-workout-action="move-up"]').disabled=i===0;bar.querySelector('[data-workout-action="move-down"]').disabled=i===rows.length-1;
+  if(row.dataset.type!=='cardio'){
+   const sets=[...row.querySelectorAll('.sets-container > div')],active=row.querySelector('.logger-active-set');
+   let currentSet=active&&!active.querySelector('.set-done-check')?.checked?active:null;
+   if(!currentSet&&row===current)currentSet=sets.find(s=>!s.querySelector('.set-done-check')?.checked)||sets[0]||null;
+   sets.forEach(set=>{
+    const checked=!!set.querySelector('.set-done-check')?.checked;
+    set.classList.toggle('training-execution-set-current',execution&&row===current&&set===currentSet);
+    set.classList.toggle('training-execution-set-complete',execution&&checked);
+    set.classList.toggle('training-execution-set-upcoming',execution&&row===current&&set!==currentSet&&!checked);
+   });
+  }
  });
  const summary=document.getElementById('training-progress-label');
  if(summary){
