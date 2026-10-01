@@ -27,7 +27,8 @@ test('delegated history export and import preserve workout identity',async({page
  const original=await page.evaluate(()=>JSON.stringify(data));
  await page.locator('[data-workout-action="tab-history"]').click();
  const download=page.waitForEvent('download');await page.locator('#panel-workouts [data-workout-action="export-json"]').click();expect((await download).suggestedFilename()).toMatch(/\.json$/);
- page.once('dialog',d=>d.accept());await page.locator('#import-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(original)});
+ await page.locator('#import-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(original)});
+ await expect(page.locator('#import-review')).toBeVisible();await page.locator('#import-review').getByRole('button',{name:'Replace current data'}).click();
  await expect(page.locator('#panel-dashboard')).toBeVisible();
  await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
  await page.evaluate(()=>showTab('workouts'));await page.locator('[data-workout-action="tab-history"]').click();await expect(page.locator('#workout-history [data-hist-id]')).toHaveCount(1);
