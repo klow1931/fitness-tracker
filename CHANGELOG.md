@@ -2,8 +2,8 @@
 
 - Replace the default Progress analytics presentation with a compact story organized into Overview, Strength, Adherence, and Program history.
 - Add selectable 8-, 12-, and 24-week evidence windows without changing saved workout data.
-- Build movement stories from actual logged load/reps/RPE evidence, keeping exercise identities and variations separate.
-- Require at least two demonstrated-capacity days in both the start and recent comparison windows before showing higher/lower/similar direction.
+- Build movement stories from actual logged load/reps/RPE evidence, keeping exercise identities and variations separate; feature confirmed competition lifts first and let the athlete explore any logged rep-based strength exercise.
+- Require at least two demonstrated-capacity days in both the start and recent comparison windows, then compare median daily capacity evidence before showing higher/lower/similar direction so one unusual session has less influence.
 - Show best recent sets, recent demonstrated-capacity estimates, four-week volume, average logged RPE, and linked exercise details.
 - Show current reviewed-program context and program-to-date resolved-session adherence when available.
 - Keep adherence defined as completed / (completed + explicitly skipped); unresolved, upcoming, and cancelled sessions are not counted as failures.
