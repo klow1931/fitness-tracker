@@ -113,6 +113,7 @@ const ASSETS = [
   './src/product/workout-session.js',
   './src/product/progress-model.js',
   './src/product/progress-analytics.js',
+  './src/product/progress-story.js',
   './src/product/progress-analytics-ui.js',
   './src/product/training-blocks.js',
   './src/product/decision-readiness.js',
