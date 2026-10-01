@@ -78,8 +78,8 @@
    ...(workout?.exercises||[]).map(e=>e.name)
   ].map(norm).filter(Boolean).join(' ');
  }
- function filter(state,{query='',from='',to='',sourceKind='all',quality='all',sort='newest'}={}){
-  const issues=issueMap(state),needle=norm(query);
+ function filter(state,{query='',from='',to='',sourceKind='all',quality='all',sort='newest',issuesById=null}={}){
+  const issues=issuesById?new Map(Object.entries(issuesById)):issueMap(state),needle=norm(query);
   let rows=(state?.workouts||[]).filter(w=>{
    if(from&&w.date<from)return false;if(to&&w.date>to)return false;
    if(needle&&!searchText(w).includes(needle))return false;
