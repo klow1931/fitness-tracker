@@ -82,10 +82,6 @@
   if(card){
    card.addEventListener('input',queue);
    card.addEventListener('change',queue);
-   card.addEventListener('focusin',event=>{
-    if(!active||!optionsOpen)return;
-    if(event.target.matches?.('.set-weight,.set-reps,.set-duration,.set-rpe,.cardio-duration,.cardio-distance,.cardio-hr'))closeOptions();
-   });
   }
   const rows=document.getElementById('exercise-rows');if(rows)new MutationObserver(queue).observe(rows,{childList:true,subtree:true});
  }
