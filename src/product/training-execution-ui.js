@@ -49,7 +49,13 @@
   for(const row of document.querySelectorAll('#exercise-rows > div')){
    const header=row.querySelector('.ex-name')?.closest('.flex');
    const note=row.querySelector('.ex-note')?.closest('.mb-2');
-   header?.classList.add('execution-row-options');
+   if(row.dataset.type==='cardio'&&header){
+    // Cardio completion is an execution control, not setup chrome. Keep its
+    // checkbox visible while hiding only the editable header/options around it.
+    header.classList.remove('execution-row-options');
+    const completion=row.querySelector('.cardio-done')?.closest('.cardio-completion-label')||row.querySelector('.cardio-done')?.closest('label');
+    for(const child of header.children)child.classList.toggle('execution-row-options',child!==completion);
+   }else header?.classList.add('execution-row-options');
    note?.classList.add('execution-row-options');
   }
  }
