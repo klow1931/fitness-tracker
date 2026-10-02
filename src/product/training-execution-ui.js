@@ -55,10 +55,12 @@
  }
  function syncViewportInsets(){
   const root=document.documentElement,cockpit=document.getElementById('training-cockpit'),dock=document.getElementById('gym-floor-dock');
+  const transitioning=!!cockpit?.querySelector('[data-cockpit-transition]');
   if(cockpit)cockpit.style.position=active&&optionsOpen?'static':'';
+  if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
   const top=!optionsOpen&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
-  const bottom=dock?.classList.contains('gym-floor-dock-active')?Math.ceil(dock.getBoundingClientRect().height)+12:0;
+  const bottom=!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(dock.getBoundingClientRect().height)+12:0;
   root.style.scrollPaddingTop=top?top+'px':'';
   root.style.scrollPaddingBottom=bottom?bottom+'px':'';
  }
@@ -109,6 +111,16 @@
    });
   }
   const rows=document.getElementById('exercise-rows');if(rows)new MutationObserver(queue).observe(rows,{childList:true,subtree:true});
+  // A restored draft is initialized while Home is visible. Refresh when the
+  // athlete returns to Train so the already-active execution shell can reveal
+  // its cockpit instead of remaining hidden from the initial render.
+  const panel=document.getElementById('panel-workouts'),log=document.querySelector('[data-panel="workouts"][data-sub="wo-log"]');
+  const viewObserver=new MutationObserver(queue);
+  for(const target of [panel,log])if(target)viewObserver.observe(target,{attributes:true,attributeFilter:['class']});
+  // The mobile gym dock is redundant during the explicit exercise-transition
+  // prompt and can cover its primary action. Keep viewport insets synchronized
+  // whenever the cockpit content changes.
+  const cockpit=document.getElementById('training-cockpit');if(cockpit)new MutationObserver(syncViewportSoon).observe(cockpit,{childList:true,subtree:true});
   window.addEventListener('resize',syncViewportSoon,{passive:true});
  }
  window.LoadnoteTrainingExecutionUI={init,refresh:update,isActive:()=>active,optionsOpen:()=>optionsOpen,toggleOptions,closeOptions,rowSnapshot};
