@@ -11,6 +11,7 @@ async function addToday(page,id='today-session'){
   saveData(data);renderDashboard();
  },id);
 }
+async function openOptions(page){const button=page.locator('#training-cockpit [data-cockpit-options]');await expect(button).toBeVisible();if((await button.textContent())==='Workout options')await button.click();}
 test('Home makes today scheduled training a one-tap start and resumes the draft after reload',async({page})=>{
  await addToday(page);
  await expect(page.locator('#today-training')).toContainText('Bench day');
@@ -90,10 +91,10 @@ test('saving a shortened scheduled workout closes the loop to the next session',
   saveData(data);renderDashboard();return day;
  });
  await page.getByRole('button',{name:'Start workout',exact:true}).click();
- await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();
+ await openOptions(page);
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();
  await page.locator('.set-rpe').fill('8');
- await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();
+ await openOptions(page);
  await page.locator('#session-intent > summary').click();
  await expect(page.locator('#session-deviation-reason')).toBeVisible();
  await page.locator('#session-deviation-reason').selectOption('time');
