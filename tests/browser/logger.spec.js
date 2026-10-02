@@ -22,7 +22,7 @@ test('delegated dynamic controls and templates bind once',async({page})=>{
  await page.getByRole('button',{name:'Save as Template',exact:true}).click();expect(await page.evaluate(()=>data.templates.length)).toBe(1);expect(dialogs.filter(d=>d==='prompt')).toHaveLength(1);
  await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');await openOptions(page);
  await page.getByRole('button',{name:'+ Add Cardio',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(1);
- await page.locator('#exercise-rows > div').last().getByRole('button',{name:'Remove',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(0);
+ const cardio=page.locator('#exercise-rows > div').last();await cardio.getByRole('button',{name:'Show sets',exact:true}).click();await cardio.getByRole('button',{name:'Remove',exact:true}).click();await expect(page.locator('.cardio-duration')).toHaveCount(0);
 });
 test('delegated history export and import preserve workout identity',async({page})=>{
  await enter(page);await review(page);await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
