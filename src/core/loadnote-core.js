@@ -6,7 +6,7 @@
   'use strict';
 
   const SCHEMA_VERSION = 25;
-  const RELEASE_VERSION = '2.76.0';
+  const RELEASE_VERSION = '2.77.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -46,7 +46,6 @@
     const state = clone(input) || {};
     const version = Number(state.schemaVersion || 1);
 
-    // v1 → v2: preserve all data while assigning stable IDs to records that lack them.
     if (version < 2) {
       DEFAULT_COLLECTIONS.forEach((key) => {
         state[key] = ensureIds(state[key]);
@@ -54,7 +53,6 @@
       state.schemaVersion = 2;
     }
 
-    // v2 → v3: add an explicit training-intelligence version marker.
     if (Number(state.schemaVersion || 1) < 3) {
       state.trainingIntelligenceVersion = 1;
       state.schemaVersion = 3;
@@ -62,7 +60,6 @@
       state.trainingIntelligenceVersion = 1;
     }
 
-    // v3 → v4: add adaptive-programming state without changing existing workouts.
     if (Number(state.schemaVersion || 1) < 4) {
       state.adaptiveProgrammingVersion = 1;
       state.schemaVersion = 4;
@@ -70,7 +67,6 @@
       state.adaptiveProgrammingVersion = 1;
     }
 
-    // v4 → v5: add coach architecture settings without changing user training data.
     if (Number(state.schemaVersion || 1) < 5) {
       state.coachVersion = 2;
       state.api = { enabled: false, backendEnabled: false, ...(state.api || {}) };
@@ -79,7 +75,6 @@
       state.coachVersion = state.coachVersion || 2;
     }
 
-    // v5 → v6: add adaptive-program session state without changing workout history.
     if (Number(state.schemaVersion || 1) < 6) {
       state.adaptiveProgrammingVersion = 2;
       state.schemaVersion = 6;
@@ -87,7 +82,6 @@
       state.adaptiveProgrammingVersion = state.adaptiveProgrammingVersion || 2;
     }
 
-    // v6 → v7: add an athlete profile for personalized programming without changing workout history.
     if (Number(state.schemaVersion || 1) < 7) {
       state.athleteProfileVersion = 1;
       state.athleteProfile = state.athleteProfile || null;
@@ -96,7 +90,6 @@
       state.athleteProfileVersion = state.athleteProfileVersion || 1;
     }
 
-    // v7 → v8: add persistent adaptive mesocycle state without changing workout history.
     if (Number(state.schemaVersion || 1) < 8) {
       state.mesocycleVersion = 1;
       state.programStates = state.programStates || {};
@@ -106,7 +99,6 @@
       state.programStates = state.programStates || {};
     }
 
-    // v8 → v9: add performance/fatigue engine metadata without changing workout history.
     if (Number(state.schemaVersion || 1) < 9) {
       state.fatigueEngineVersion = 1;
       state.schemaVersion = 9;
@@ -114,7 +106,6 @@
       state.fatigueEngineVersion = state.fatigueEngineVersion || 1;
     }
 
-    // v9 → v10: release metadata and athlete-command-center state.
     if (Number(state.schemaVersion || 1) < 10) {
       state.releaseVersion = '1.0.0';
       state.productVersion = 1;
@@ -125,39 +116,30 @@
     }
 
     if (Number(state.schemaVersion || 1) >= 3) {
-      // Also repair malformed/missing IDs defensively on every load.
       DEFAULT_COLLECTIONS.forEach((key) => {
         state[key] = ensureIds(state[key]);
       });
     }
 
-    // Blocks are independent of workouts. Preserve existing block records verbatim;
-    // strict validation happens on import and block mutations, never by dropping data.
     if(state.trainingBlocks === undefined)state.trainingBlocks=[];
     if(Number(state.schemaVersion||1)<11)state.schemaVersion=11;
-    // v11 → v12: add integrity collections without rewriting workout payloads.
     if(Number(state.schemaVersion||1)<12){
       if(!Array.isArray(state.exerciseCatalog))state.exerciseCatalog=[];
       if(!Array.isArray(state.workoutRevisions))state.workoutRevisions=[];
       if(!Array.isArray(state.recoverySnapshots))state.recoverySnapshots=[];
       state.integrityVersion=1;state.schemaVersion=12;
     }else state.integrityVersion=state.integrityVersion||1;
-    // v12 → v13: add revisioned exercise-role mappings for point-in-time evidence.
     if(Number(state.schemaVersion||1)<13){
       if(!Array.isArray(state.exerciseRoles))state.exerciseRoles=[];
       state.readinessVersion=1;state.schemaVersion=13;
     }else state.readinessVersion=state.readinessVersion||1;
-    // v13 → v14: workouts may carry separate planned-work/session-intent snapshots.
-    // Existing workout payloads remain unchanged and therefore have unknown prescription coverage.
     if(Number(state.schemaVersion||1)<14){
       state.prescriptionVersion=1;state.schemaVersion=14;
     }else state.prescriptionVersion=state.prescriptionVersion||1;
-    // This identifies the application version that most recently normalized the state.
     state.releaseVersion=RELEASE_VERSION;
     state.productVersion=17;
     if(state.scheduledSessions===undefined)state.scheduledSessions=[];
     if(Number(state.schemaVersion||1)<15)state.schemaVersion=15;
-    // v15 → v16: add local decision-feedback history without rewriting training data.
     if(Number(state.schemaVersion||1)<16){
       if(!Array.isArray(state.decisionEvents))state.decisionEvents=[];
       state.decisionFeedbackVersion=1;state.schemaVersion=16;
@@ -165,7 +147,6 @@
       if(!Array.isArray(state.decisionEvents))state.decisionEvents=[];
       state.decisionFeedbackVersion=state.decisionFeedbackVersion||1;
     }
-    // v16 → v17: independent revisioned athlete goals; keep workout history intact.
     if(state.athleteGoals===undefined)state.athleteGoals=[];
     if(Number(state.schemaVersion||1)<17)state.schemaVersion=17;
     if(state.reviewedPrograms===undefined)state.reviewedPrograms=[];
@@ -182,7 +163,6 @@
     if(Number(state.schemaVersion||1)<23)state.schemaVersion=23;
     if(state.adoptedPrograms===undefined)state.adoptedPrograms=[];
     if(Number(state.schemaVersion||1)<24)state.schemaVersion=24;
-    // v24 → v25: immutable end-of-program transition baselines; existing training/program data stays unchanged.
     if(state.transitionSnapshots===undefined)state.transitionSnapshots=[];
     if(Number(state.schemaVersion||1)<25)state.schemaVersion=25;
     return state;
@@ -201,8 +181,7 @@
     const w = Number(weight) || 0;
     const r = Number(reps) || 0;
     if (w <= 0 || r <= 0) return 0;
-    let result = r <= 1 ? w : w * (1 + r / 30); // Epley baseline.
-    // Conservative RPE adjustment. RPE is optional and never overrides the raw set.
+    let result = r <= 1 ? w : w * (1 + r / 30);
     const effort = Number(rpe);
     if (effort >= 6 && effort <= 10 && r > 1) {
       const rir = Math.max(0, 10 - effort);
@@ -211,7 +190,6 @@
     return round(result, 1);
   }
 
-  // Evidence contract v2. Keep legacy estimated1RM/PR behavior unchanged.
   function capacityEvidence(weight, reps, rpe) {
     const w=Number(weight),r=Number(reps),effort=Number(rpe);
     let reason=null;
