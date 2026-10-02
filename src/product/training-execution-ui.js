@@ -100,7 +100,13 @@
     if(event.target.closest?.('#training-cockpit'))event.stopImmediatePropagation();
    },true);
    card.addEventListener('input',queue);
-   card.addEventListener('change',queue);
+   // Text and numeric logger fields already update execution state on `input`.
+   // Their blur-triggered `change` event must not queue a second shell render,
+   // otherwise the cockpit button being tapped can be replaced before click.
+   card.addEventListener('change',event=>{
+    if(event.target.matches?.('input:not([type="checkbox"]):not([type="radio"]),textarea'))return;
+    queue();
+   });
   }
   const rows=document.getElementById('exercise-rows');if(rows)new MutationObserver(queue).observe(rows,{childList:true,subtree:true});
   window.addEventListener('resize',syncViewportSoon,{passive:true});
