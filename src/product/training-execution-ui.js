@@ -80,6 +80,13 @@
   decorateSecondary();update();
   const card=document.getElementById('workout-log-card');
   if(card){
+   // Cockpit controls are re-rendered from workout state. Prevent the cockpit's
+   // card-level focus refresh from replacing a button between pointer-down and
+   // click, which would make otherwise valid gym-floor actions intermittently
+   // non-interactive.
+   card.addEventListener('focusin',event=>{
+    if(event.target.closest?.('#training-cockpit'))event.stopImmediatePropagation();
+   },true);
    card.addEventListener('input',queue);
    card.addEventListener('change',queue);
   }
