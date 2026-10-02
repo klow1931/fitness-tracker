@@ -234,8 +234,16 @@
   const card=document.getElementById('workout-log-card');
   if(card){
    card.addEventListener('input',queueRefresh);
-   card.addEventListener('change',queueRefresh);
+   // Text/number inputs already refresh on `input`. Refreshing again on their
+   // blur-triggered `change` can replace a cockpit button between pointerdown
+   // and click, swallowing Workout options/Finish actions. Keep `change` for
+   // controls whose committed value is the meaningful event instead.
+   card.addEventListener('change',event=>{
+    if(event.target.matches?.('input:not([type="checkbox"]):not([type="radio"]),textarea'))return;
+    queueRefresh();
+   });
    card.addEventListener('focusin',event=>{
+    if(event.target.closest?.('#training-cockpit'))return;
     if(transitionState&&event.target.closest?.('#exercise-rows > div')===transitionState.nextSet?.closest?.('#exercise-rows > div')){transitionState=null;queueRefresh();}
     else queueRefresh();
    });
