@@ -1,4 +1,4 @@
-## v2.77.0 — Fast Start Training
+# Loadnote v2.77.0 — Fast Start Training
 
 - Added a training-first launch surface when the athlete taps Train.
 - Prioritizes Resume whenever an unfinished local workout exists, including when a different session is scheduled today.
