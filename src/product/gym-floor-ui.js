@@ -1,4 +1,4 @@
-/* v2.70 — mobile gym-floor training ergonomics.
+/* v2.75 — mobile gym-floor ergonomics coordinated with execution-first mode.
  * Adds input affordances, previous-set context and a one-handed session dock.
  * Training data remains owned by the existing workout logger/session modules.
  */
@@ -106,7 +106,11 @@
   host.innerHTML='<button type="button" class="gym-floor-current" data-gym-current><span>Current set</span><b data-gym-current-label>Workout</b><small data-gym-progress></small></button><button type="button" class="gym-floor-rest" data-gym-rest aria-label="Rest timer"><span>Rest</span><b id="rest-timer-sticky">—</b></button><button type="button" class="btn-primary gym-floor-finish" data-gym-finish>Finish</button>';
   document.body.appendChild(host);
   host.querySelector('[data-gym-current]').onclick=()=>{const set=document.querySelector('#exercise-rows .logger-active-set')||firstUnfinishedSet();set?.scrollIntoView({block:'center',behavior:'smooth'});};
-  host.querySelector('[data-gym-rest]').onclick=()=>document.querySelector('.training-rest-controls')?.scrollIntoView({block:'center',behavior:'smooth'});
+  host.querySelector('[data-gym-rest]').onclick=()=>{
+   if(window.LoadnoteRestTimer?.snapshot?.().active){document.getElementById('training-cockpit')?.scrollIntoView({block:'nearest',behavior:'smooth'});return;}
+   if(window.LoadnoteTrainingExecutionUI?.isActive?.()&&!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())window.LoadnoteTrainingExecutionUI.toggleOptions();
+   requestAnimationFrame(()=>document.querySelector('.training-rest-controls')?.scrollIntoView({block:'center',behavior:'smooth'}));
+  };
   host.querySelector('[data-gym-finish]').onclick=()=>reviewWorkout();
   return host;
  }

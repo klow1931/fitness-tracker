@@ -6,7 +6,7 @@ test('offline planned draft survives reload and completes only after saving',asy
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await schedule(page);
  await page.locator('#week-plan [data-start]').click();await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
  await page.reload();await page.evaluate(()=>showTab('workouts'));expect(await page.evaluate(()=>pendingScheduledSession.id)).toBeTruthy();
- await page.locator('.set-rpe').fill('8');await page.getByRole('button',{name:'Review workout',exact:true}).click();await page.getByRole('button',{name:'Save workout',exact:true}).click();await expect(page.locator('#workout-review')).not.toBeVisible();
+ await page.locator('.set-rpe').fill('8');await page.locator('#training-cockpit [data-cockpit-review]').click();await page.getByRole('button',{name:'Save workout',exact:true}).click();await expect(page.locator('#workout-review')).not.toBeVisible();
  await page.evaluate(()=>showTab('dashboard'));await expect(page.locator('#week-plan')).toContainText('1 completed');expect(await page.evaluate(()=>data.workouts[0].sessionIntent.schedule.id)).toBeTruthy();
 });
 test('reschedule/skip reasons and failed writes do not silently change the plan',async({page})=>{

@@ -59,7 +59,7 @@ test('v2.73 workout review warns about an exact same-day duplicate but still let
  });
  expect(duplicateDebug.candidateSignature,JSON.stringify(duplicateDebug)).toBe(duplicateDebug.existingSignature);
  expect(duplicateDebug.matches,JSON.stringify(duplicateDebug)).toContain('existing');
- await page.locator('#workout-actions [data-workout-action="review"]').click();
+ await page.locator('#training-cockpit [data-cockpit-review]').click();
  const review=page.locator('#workout-review');
  await expect(review).toBeVisible();
  await expect(review).toContainText('Possible duplicate');

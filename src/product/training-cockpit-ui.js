@@ -1,4 +1,4 @@
-/* v2.74 — focused in-workout cockpit.
+/* v2.75 — execution-first in-workout cockpit.
  * Read-only prescription/previous-performance context plus display-unit input
  * shortcuts. The existing logger remains authoritative for saved performance.
  */
@@ -153,6 +153,31 @@
   if(!transitionState)return '';
   return '<div class="training-cockpit-transition" data-cockpit-transition><div><span>'+esc(transitionState.from)+' complete</span><b>Up next: '+esc(transitionState.to)+'</b><small>'+transitionState.setCount+' set'+(transitionState.setCount===1?'':'s')+'</small></div><button type="button" class="btn-primary" data-cockpit-next>Start next exercise</button></div>';
  }
+ function restHtml(){
+  const snap=window.LoadnoteRestTimer?.snapshot?.();
+  if(!snap?.active)return '';
+  return '<div class="training-cockpit-rest" data-cockpit-rest><div><span>REST</span><b>'+esc(snap.label)+'</b></div><div class="training-cockpit-rest-actions">'+
+   '<button type="button" data-cockpit-rest-pause>'+(snap.paused?'Resume':'Pause')+'</button>'+
+   '<button type="button" data-cockpit-rest-add>+30</button>'+
+   '<button type="button" data-cockpit-rest-stop>Stop</button>'+
+   '</div></div>';
+ }
+ function bindRest(host){
+  host.querySelector('[data-cockpit-rest-pause]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.pause?.());
+  host.querySelector('[data-cockpit-rest-add]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.add?.());
+  host.querySelector('[data-cockpit-rest-stop]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.stop?.());
+ }
+ function refreshRest(){
+  const host=document.getElementById('training-cockpit');if(!host||host.hidden)return;
+  const snap=window.LoadnoteRestTimer?.snapshot?.(),current=host.querySelector('[data-cockpit-rest]');
+  if(!snap?.active){current?.remove();return;}
+  if(current){
+   const label=current.querySelector('b');if(label)label.textContent=snap.label;
+   const pause=current.querySelector('[data-cockpit-rest-pause]');if(pause)pause.textContent=snap.paused?'Resume':'Pause';
+   return;
+  }
+  host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);
+ }
  function render(){
   const host=ensure();if(!host)return;
   let hasDraft=false;try{hasDraft=loggerHasContent();}catch{}
@@ -172,18 +197,21 @@
     '<button type="button" data-cockpit-adjust="'+steps.small+'">+'+steps.small+'</button>'+
     '<button type="button" data-cockpit-adjust="'+steps.large+'">+'+steps.large+'</button>'+
     '</div>':'';
-  const timer=!meta.started&&document.getElementById('wo-date')?.value===today()?'<button type="button" class="btn-secondary" data-cockpit-start>Start timer</button>':'';
+  const timer=!meta.started&&document.getElementById('wo-date')?.value===today()?'<button type="button" class="btn-secondary" data-cockpit-start>Start session</button>':'';
   const why=meta.scheduled?'<button type="button" class="training-cockpit-link" data-cockpit-why>Why?</button>':'';
-  host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+'<button type="button" class="'+(complete?'btn-primary':'btn-secondary')+'" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
+  const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options>'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
+  host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
-    quick+transitionHtml();
+    quick+transitionHtml()+restHtml();
   host.hidden=false;
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.addEventListener('click',()=>adjust(Number(button.dataset.cockpitAdjust))));
   host.querySelector('[data-cockpit-start]')?.addEventListener('click',()=>{startWorkoutNow();queueRefresh();});
+  host.querySelector('[data-cockpit-options]')?.addEventListener('click',()=>window.LoadnoteTrainingExecutionUI?.toggleOptions?.());
   host.querySelector('[data-cockpit-review]')?.addEventListener('click',()=>reviewWorkout());
   host.querySelector('[data-cockpit-why]')?.addEventListener('click',openWhy);
   host.querySelector('[data-cockpit-next]')?.addEventListener('click',startNextExercise);
+  bindRest(host);
  }
  function queueRefresh(){
   if(scheduledRefresh)return;scheduledRefresh=true;requestAnimationFrame(()=>{scheduledRefresh=false;render();});
@@ -206,8 +234,16 @@
   const card=document.getElementById('workout-log-card');
   if(card){
    card.addEventListener('input',queueRefresh);
-   card.addEventListener('change',queueRefresh);
+   // Text/number inputs already refresh on `input`. Refreshing again on their
+   // blur-triggered `change` can replace a cockpit button between pointerdown
+   // and click, swallowing Workout options/Finish actions. Keep `change` for
+   // controls whose committed value is the meaningful event instead.
+   card.addEventListener('change',event=>{
+    if(event.target.matches?.('input:not([type="checkbox"]):not([type="radio"]),textarea'))return;
+    queueRefresh();
+   });
    card.addEventListener('focusin',event=>{
+    if(event.target.closest?.('#training-cockpit'))return;
     if(transitionState&&event.target.closest?.('#exercise-rows > div')===transitionState.nextSet?.closest?.('#exercise-rows > div')){transitionState=null;queueRefresh();}
     else queueRefresh();
    });
@@ -216,7 +252,8 @@
   timer=setInterval(()=>{if(!document.hidden)queueRefresh();},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRefresh();});
  }
- window.LoadnoteTrainingCockpitUI={init,refresh:render,onSetComplete,useTarget,adjust,current,startNextExercise};
+ window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,useTarget,adjust,current,startNextExercise};
  window.refreshTrainingCockpit=render;
+ window.refreshTrainingCockpitRest=refreshRest;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

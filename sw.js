@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.74.0';
+const CACHE = 'loadnote-v2.75.0';
 const ASSETS = [
   './src/product/program-review.js',
   './src/product/program-review-ui.js',
@@ -102,6 +102,7 @@ const ASSETS = [
   './src/product/workout-form.js',
   './src/product/session-intent-ui.js',
   './src/product/workout-templates.js',
+  './src/product/training-execution.js',
   './src/product/rest-timer.js',
   './src/product/training-flow.js',
   './src/product/gym-floor.js',
@@ -110,6 +111,7 @@ const ASSETS = [
   './src/product/logger-quick-entry-ui.js',
   './src/product/gym-floor-ui.js',
   './src/product/training-cockpit-ui.js',
+  './src/product/training-execution-ui.js',
   './src/product/data-transfer.js',
   './src/product/workout-events.js',
 

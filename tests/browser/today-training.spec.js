@@ -11,6 +11,7 @@ async function addToday(page,id='today-session'){
   saveData(data);renderDashboard();
  },id);
 }
+async function openOptions(page){const button=page.locator('#training-cockpit [data-cockpit-options]');await expect(button).toBeVisible();if((await button.textContent())==='Workout options')await button.click();}
 test('Home makes today scheduled training a one-tap start and resumes the draft after reload',async({page})=>{
  await addToday(page);
  await expect(page.locator('#today-training')).toContainText('Bench day');
@@ -43,7 +44,7 @@ test('scheduled session must be rescheduled to today before it can start',async(
 test('Home reports scheduled training as logged after the linked workout is saved',async({page})=>{
  await addToday(page,'complete-me');await page.getByRole('button',{name:'Start workout',exact:true}).click();
  await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7');
- await page.locator('#workout-actions [data-workout-action="review"]').click();
+ await page.locator('#training-cockpit [data-cockpit-review]').click();
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  await expect(page.locator('#today-training')).toContainText('Training logged');
@@ -90,13 +91,15 @@ test('saving a shortened scheduled workout closes the loop to the next session',
   saveData(data);renderDashboard();return day;
  });
  await page.getByRole('button',{name:'Start workout',exact:true}).click();
+ await openOptions(page);
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();
  await page.locator('.set-rpe').fill('8');
+ await openOptions(page);
  await page.locator('#session-intent > summary').click();
  await expect(page.locator('#session-deviation-reason')).toBeVisible();
  await page.locator('#session-deviation-reason').selectOption('time');
  await page.locator('#session-deviation-notes').fill('Shortened for time');
- await page.locator('#workout-actions [data-workout-action="review"]').click();
+ await page.locator('#training-cockpit [data-cockpit-review]').click();
  await expect(page.locator('#workout-review-content')).toContainText('1/2 planned sets represented');
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  const recap=page.locator('#workout-recap .training-continuity-recap');

@@ -19,11 +19,11 @@ async function ready(page){await page.goto(origin);await expect(page.locator('#e
 test('Real assets support offline draft reload, timer, save and chart',async({page,context})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);
  await page.locator('.ex-name').fill('Offline Bench');await page.locator('.set-weight').fill('80');await page.locator('.set-reps').fill('5');
- await expect(page.locator('#logger-draft-status')).toContainText('Draft saved');
+ await expect(page.locator('body')).toHaveClass(/training-execution-active/);await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();await expect(page.locator('#logger-draft-status')).toContainText('Draft saved');await page.locator('#training-cockpit').getByRole('button',{name:'Close options'}).click();
  await context.setOffline(true);await expect(page.locator('#connection-status')).toContainText('Offline');
  await page.reload();await page.evaluate(()=>showTab('workouts'));await expect(page.locator('.ex-name')).toHaveValue('Offline Bench');await expect(page.locator('.set-weight')).toHaveValue('80');
- await page.locator('[data-workout-action="rest-90"]').click();await page.locator('#rest-pause').click();await expect(page.locator('#rest-pause')).toHaveText('Resume');
- await page.locator('#workout-actions [data-workout-action="review"]').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-recap')).toContainText('Session saved');
+ await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();await page.locator('[data-workout-action="rest-90"]').click();await page.locator('#training-cockpit').getByRole('button',{name:'Close options'}).click();await page.locator('#training-cockpit [data-cockpit-rest-pause]').click();await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('paused');
+ await page.locator('#training-cockpit [data-cockpit-review]').click();await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-recap')).toContainText('Session saved');
  await expect(page.locator('#device-save-status')).toHaveText('Saved on this device');
  await page.evaluate(()=>{showTab('dashboard');document.getElementById('progress-exercise').value='Offline Bench';renderProgressChart();});
  expect(await page.evaluate(()=>Chart.version)).toBe('4.4.1');

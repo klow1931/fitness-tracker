@@ -1,3 +1,15 @@
+# v2.75.0 — Execution-First Workout Screen
+
+- Shift the Log screen into an execution-first presentation after meaningful workout work exists or a scheduled/started session is active.
+- Keep manual setup unchanged before execution begins and keep historical workout editing in the full editor.
+- Move date, notes, templates, session-intent setup, add-exercise controls, clear/save-template controls, and legacy rest controls behind **Workout options** during execution.
+- Keep the current exercise expanded while completed and later exercises collapse into compact summaries; athletes can reopen any collapsed exercise.
+- Emphasize the current set and visually quiet completed/later sets without changing saved values.
+- Use the sticky training cockpit as the single primary Finish/Review action while execution mode is active.
+- Surface active rest timing in the cockpit with countdown, pause/resume, +30 seconds, and stop controls.
+- Keep mobile current-set/rest access while suppressing the duplicate mobile Finish action in execution mode.
+- Preserve workout drafts, exercise reordering/swap/remove tools, session-deviation notes, rest persistence, reviewed prescriptions, schema v25, internal kg storage, and all training/adaptive calculations.
+
 # v2.74.0 — Frictionless Training Mode
 
 - Add a sticky in-workout cockpit with current session, exercise/set position, live set progress, and elapsed time when session timing is available.

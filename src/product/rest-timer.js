@@ -7,12 +7,17 @@ function saveRestState(){
  catch(_){const el=document.getElementById('rest-storage-hint');if(el)el.textContent='Timer cannot be recovered after refresh on this device.';}
 }
 function setRestLabels(text){for(const id of ['rest-timer','rest-timer-sticky']){const el=document.getElementById(id);if(el)el.textContent=text;}}
+function publicRestSnapshot(now=Date.now()){
+ if(window.LoadnoteTrainingExecution?.restSnapshot)return window.LoadnoteTrainingExecution.restSnapshot(restState,now);
+ const left=restRemaining(restState,now);return {active:left>0,paused:!!restState?.paused&&left>0,remainingMs:left,totalMs:restState?.total||0,label:left>0?Math.ceil(left/1000)+'s'+(restState?.paused?' · paused':''):'—'};
+}
 function paintRest(){
  const left=restRemaining(restState);setRestLabels(restState?(Math.ceil(left/1000)+'s'+(restState.paused?' · paused':'')):'—');
  const ring=document.getElementById('rest-ring');
  if(ring){ring.style.setProperty('--rest-progress',restState?String(Math.min(1,left/restState.total)):'0');ring.setAttribute('aria-valuenow',String(Math.ceil(left/1000)));ring.setAttribute('aria-valuemax',String(Math.ceil((restState?.total||1000)/1000)));}
  const pause=document.getElementById('rest-pause');if(pause){pause.disabled=!restState;pause.textContent=restState?.paused?'Resume':'Pause';}
  const add=document.getElementById('rest-add');if(add)add.disabled=!restState;
+ if(typeof window!=='undefined')window.refreshTrainingCockpitRest?.();
 }
 function tickRest(){
  if(restState&&!restState.paused&&restRemaining(restState)===0){stopRest();setRestLabels('Done!');showToast('Rest done','success');try{navigator.vibrate?.(200);}catch(_){}}
@@ -31,4 +36,5 @@ function initRestTimer(){
  try{const s=JSON.parse(localStorage.getItem(REST_KEY));if(s&&typeof s.paused==='boolean'&&[s.total,s.deadline,s.remaining].every(Number.isFinite)&&s.total>0&&s.remaining>=0&&s.remaining<=s.total)restState=s;}catch(_){}
  scheduleRest();tickRest();document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickRest();});
 }
+if(typeof window!=='undefined')window.LoadnoteRestTimer={snapshot:publicRestSnapshot,start:startRest,pause:pauseRest,add:addRestTime,stop:stopRest};
 if(typeof module==='object'&&module.exports)module.exports={restRemaining};

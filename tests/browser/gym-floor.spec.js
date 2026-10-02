@@ -70,7 +70,8 @@ test('v2.70 same-set quick fill and dock progress reduce between-set taps',async
  await sets.nth(1).locator('.set-rpe').fill('7.5');
  await sets.nth(1).locator('.set-rpe').press('Enter');
  await expect(page.locator('#gym-floor-dock')).toContainText('2/2 sets · 1/1 exercises');
- await expect(page.locator('#gym-floor-dock').getByRole('button',{name:'Review'})).toBeVisible();
+ await expect(page.locator('#gym-floor-dock').getByRole('button',{name:'Review'})).toBeHidden();
+ await expect(page.locator('#training-cockpit').getByRole('button',{name:'Review workout'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
@@ -131,8 +132,10 @@ test('v2.62 mobile dock follows the draft, rest timer and navigation without los
  await expect(dock).toBeVisible();
  await expect(dock).toContainText('Bench Press · Set 1');
  await expect(page.locator('#mobile-nav [data-tab="workouts"]')).toHaveClass(/workout-draft-active/);
+ await dock.locator('[data-gym-rest]').click();
  await page.getByRole('button',{name:'1m',exact:true}).click();
  await expect(dock.locator('#rest-timer-sticky')).toContainText('60s');
+ await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('60s');
  await page.evaluate(()=>showTab('dashboard'));
  await expect(dock).toBeHidden();
  await page.evaluate(()=>showTab('workouts'));
@@ -162,6 +165,7 @@ test('v2.62 entered work requires confirmation before destructive removal',async
  await row.locator('.ex-name').fill('Deadlift');
  await row.locator('.set-weight').fill('180');
  await row.locator('.set-reps').fill('3');
+ await page.locator('#training-cockpit').getByRole('button',{name:'Workout options'}).click();
  page.once('dialog',dialog=>dialog.dismiss());
  await row.locator('[data-workout-action="remove-set"]').click();
  await expect(row.locator('.logger-set')).toHaveCount(1);
@@ -177,7 +181,7 @@ test('v2.62 an in-progress workout still saves when the network disappears',asyn
  await page.locator('.set-reps').fill('5');
  await page.locator('.set-rpe').fill('8');
  await context.setOffline(true);
- await page.locator('#gym-floor-dock').getByRole('button',{name:'Finish'}).click();
+ await page.locator('#training-cockpit').getByRole('button',{name:'Finish',exact:true}).click();
  await expect(page.locator('#workout-review')).toBeVisible();
  await page.locator('#confirm-workout-save').click();
  await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
