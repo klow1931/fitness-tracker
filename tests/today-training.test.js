@@ -14,4 +14,12 @@ report=Today.inspect(state,{day:'2026-09-28'});
 assert.equal(report.active,null);assert.equal(report.completed,1);assert.equal(report.summary,'Today’s scheduled training is logged');
 report=Today.inspect({scheduledSessions:[],workouts:[]},{day:'2026-09-28',draft:{rows:[{name:'Squat',sets:[{reps:'5'}]}],sessionIntent:{}}});
 assert.equal(report.unlinkedDraft,true);assert.equal(report.summary,'Unfinished workout ready to resume');
-console.log('v2.48 today training state passed');
+
+// v2.77 integrity case: a meaningful unrelated draft stays explicit even when a new session is scheduled today.
+state={scheduledSessions:Schedule.create([],{name:'Bench day',date:'2026-09-28',role:'heavy-exposure',goal:'Bench strength',prescription:plan},{id:'today-bench',now:'2026-09-27T12:00:00.000Z'}),workouts:[]};
+report=Today.inspect(state,{day:'2026-09-28',draft:{rows:[{name:'Manual Squat',sets:[{reps:'5',weight:'100',rpe:'8'}]}],sessionIntent:{}}});
+assert.equal(report.active.id,'today-bench');
+assert.equal(report.openDraft,true);
+assert.equal(report.unlinkedDraft,true);
+assert.equal(report.active.draftOpen,false);
+console.log('v2.77 today training state and unrelated-draft guard passed');
