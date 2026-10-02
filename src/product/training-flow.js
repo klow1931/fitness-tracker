@@ -12,7 +12,11 @@ function trainingRowProgress(row){
 function updateTrainingFlow(){
  const rows=trainingRows();let total=0,done=0,finished=0;
  const progress=rows.map(row=>{const p=trainingRowProgress(row);total+=p.total;done+=p.done;if(p.complete)finished++;return p;});
- const current=rows.find((row,i)=>!progress[i].complete),execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.();
+ const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.();
+ const firstIncomplete=rows.find((row,i)=>!progress[i].complete);
+ const current=execution
+  ? rows.find((row,i)=>row.querySelector('.ex-name')?.value.trim()&&!progress[i].complete)||firstIncomplete
+  : firstIncomplete;
  const setText=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
  rows.forEach((row,i)=>{
   let bar=row.querySelector('.exercise-flow-bar');
