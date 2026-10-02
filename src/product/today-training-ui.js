@@ -7,6 +7,7 @@
  function loggerDraft(){try{return typeof readLoggerDraft==='function'?readLoggerDraft():null;}catch{return null;}}
  function meaningfulDraftRows(draft){return (draft?.rows||[]).filter(row=>row?.name||(row?.sets||[]).some(set=>set?.reps||set?.duration||set?.weight||set?.rpe));}
  function ensureFastStartUI(){
+  if(typeof document==='undefined'||typeof document.getElementById!=='function')return;
   if(!document.getElementById('fast-start-style')){
    const style=document.createElement('style');style.id='fast-start-style';style.textContent=`
     #train-launcher{display:none}
@@ -86,7 +87,6 @@
   const lifecycleGate=belongs&&['resolve-overdue','review-week','review-phase','review-programs'].includes(lifecycle.nextAction?.kind);
   document.body.classList.add('train-launch-mode');document.body.classList.remove('train-fast-start-active','train-fast-options-open');
   let title='',subtitle='',badge='',preview='',primaryAction='',primaryLabel='';
-  // An unrelated unfinished draft always wins over starting a new scheduled session.
   if(active?.draftOpen){
    title=active.name;subtitle='Your scheduled workout is already in progress.';badge='In progress';primaryAction='resume';primaryLabel='Resume workout';
    preview=active.exercises.map(e=>'<div class="train-launch-exercise"><b>'+esc(e.name)+'</b><span>'+esc(e.sets)+' set'+(e.sets===1?'':'s')+'</span></div>').join('');
@@ -119,7 +119,6 @@
   let programSession=null;
   if(active&&belongs&&window.LoadnoteProgramWorkoutViewer){try{programSession=LoadnoteProgramWorkoutViewer.day(data,today(),{asOf:today()}).find(s=>s.id===active.id)||null;}catch{}}
   const sessionMeta=[lifecycleMeta,programSession?.estimatedMinutes?'~'+programSession.estimatedMinutes+' min':''].filter(Boolean).join(' · ');
-  // Preserve entered work: an unrelated local draft has priority over a new scheduled start.
   if(active?.draftOpen){
    const exercises=active.exercises.map(e=>'<span>'+esc(e.name)+(e.sets?' · '+e.sets+' set'+(e.sets===1?'':'s'):'')+'</span>').join('');
    host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>Workout in progress</p></div><span class="badge">In progress</span></div><div class="today-training-exercises">'+exercises+'</div><p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'.</p><div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Resume workout</button></div>';
