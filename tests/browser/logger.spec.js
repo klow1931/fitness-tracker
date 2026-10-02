@@ -38,7 +38,7 @@ test('delegated history export and import preserve workout identity',async({page
 });
 test('draft values and checkmarks survive refresh',async({page})=>{
  await enter(page);await openOptions(page);await page.locator('.set-done-check').check();await page.locator('#wo-notes').fill('Keep my notes');
- await page.reload();await expect(page.locator('.set-weight')).toHaveValue('100');await page.evaluate(()=>showTab('workouts'));
+ await page.reload();await expect(page.locator('.set-weight')).toHaveValue('100');await page.evaluate(()=>showTab('workouts'));await openOptions(page);
  await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-done-check')).toBeChecked();await expect(page.locator('#wo-notes')).toHaveValue('Keep my notes');
  expect(await page.evaluate(()=>readLoggerDraft().version)).toBe(3);
 });
