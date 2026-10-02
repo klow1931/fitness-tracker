@@ -69,7 +69,7 @@ test('v2.77 unrelated unfinished work wins over a new scheduled Start and surviv
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
-test('v2.77 Home Start bypasses the launcher and goes directly to the compact logger',async({page})=>{
+test('v2.77 Home Start bypasses the launcher and hands directly to execution mode',async({page})=>{
  await page.evaluate(()=>{
   const date=today();
   const plan=LoadnoteIntent.createPrescription([{name:'Competition Squat',exerciseId:'squat-fast',type:'strength',trackBy:'reps',sets:[{weight:120,reps:4,targetRpe:7}]}],{type:'manual',label:'Squat day'});
@@ -79,5 +79,8 @@ test('v2.77 Home Start bypasses the launcher and goes directly to the compact lo
  await expect(page.locator('#workout-log-card')).toBeVisible();
  await expect(page.locator('#train-launcher')).toBeHidden();
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Competition Squat');
- await expect(page.locator('#train-fast-options')).toBeVisible();
+ await expect(page.locator('body')).toHaveClass(/training-execution-active/);
+ await expect(page.locator('#training-cockpit')).toBeVisible();
+ await expect(page.locator('#train-fast-options')).toBeHidden();
+ await expect(page.locator('#wo-date')).toBeHidden();
 });
