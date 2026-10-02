@@ -1,4 +1,4 @@
-/* v2.60 — consumer Profile hub. */
+/* v2.76 — consumer Profile hub and home for secondary settings/features. */
 (function(){
  'use strict';
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,7 +20,7 @@
   host.innerHTML=
    '<div class="profile-grid">'+
     '<section class="card profile-card" id="profile-training-setup">'+
-     '<p class="eyebrow">TRAINING SETUP</p>'+
+     '<p class="eyebrow">TRAINING</p>'+
      '<h2>'+esc(setup.title)+'</h2>'+
      (setup.meta?'<p class="profile-meta">'+esc(setup.meta)+'</p>':'')+
      '<p class="more-hint">'+esc(setup.body)+'</p>'+
@@ -31,20 +31,22 @@
      '<div class="profile-setup-extra"><div><b>Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Only needed for squat/bench/deadlift-specific Decisions.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></div>'+
     '</section>'+
     '<section class="card profile-card" id="profile-account-card">'+
-     '<p class="eyebrow">ACCOUNT &amp; SYNC</p>'+
+     '<p class="eyebrow">ACCOUNT &amp; DATA</p><h2>Sync and protect your training</h2>'+
+     '<p class="more-hint">Account actions live here so backup and sync do not interrupt the training flow.</p>'+
      '<div id="account-status" aria-live="polite"><p class="more-hint">Checking account status…</p></div>'+
     '</section>'+
     '<section class="card profile-card" id="profile-preferences">'+
-     '<p class="eyebrow">PREFERENCES</p><h2>Make Loadnote comfortable to use</h2>'+
+     '<p class="eyebrow">PREFERENCES</p><h2>How Loadnote feels</h2>'+
+     '<p class="more-hint">Keep global settings here so Home and Train stay focused on training.</p>'+
      '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Stored training weights remain normalized internally.</p></div><div class="profile-inline-actions"><button type="button" class="btn-secondary" data-profile-unit="kg">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb">lb</button></div></div>'+
      '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger controls for logging between sets.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode">'+(data.gymMode?'On':'Off')+'</button></div>'+
      '<div class="profile-preference-row"><div><b>Appearance</b><p class="more-hint">Switch between light and dark appearance.</p></div><button type="button" class="btn-secondary" id="profile-theme">'+(data.dark?'Dark':'Light')+'</button></div>'+
     '</section>'+
     '<section class="card profile-card profile-secondary" id="profile-more">'+
-     '<p class="eyebrow">MORE</p><h2>Other parts of Loadnote</h2>'+
-     '<p class="more-hint">These stay available without competing with Home, Train, Progress and Coach.</p>'+
+     '<p class="eyebrow">MORE FEATURES</p><h2>Open only what you need</h2>'+
+     '<p class="more-hint">Other parts of Loadnote stay available here without competing with Home, Train, Progress and Coach.</p>'+
      '<div class="profile-destination-grid">'+
-      '<button type="button" class="profile-destination" data-profile-tab="calendar"><b>Calendar</b><small>Plan training days</small></button>'+
+      '<button type="button" class="profile-destination" data-profile-tab="calendar"><b>Calendar</b><small>Plan and review training days</small></button>'+
       '<button type="button" class="profile-destination" data-profile-tab="nutrition"><b>Food</b><small>Nutrition log and targets</small></button>'+
       '<button type="button" class="profile-destination" data-profile-tab="measures"><b>Measurements</b><small>Body check-ins</small></button>'+
       '<button type="button" class="profile-destination" data-profile-tab="photos"><b>Photos</b><small>Photo check-ins</small></button>'+
