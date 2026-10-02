@@ -53,6 +53,16 @@
    note?.classList.add('execution-row-options');
   }
  }
+ function syncViewportInsets(){
+  const root=document.documentElement,cockpit=document.getElementById('training-cockpit'),dock=document.getElementById('gym-floor-dock');
+  if(cockpit)cockpit.style.position=active&&optionsOpen?'static':'';
+  if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
+  const top=!optionsOpen&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
+  const bottom=dock?.classList.contains('gym-floor-dock-active')?Math.ceil(dock.getBoundingClientRect().height)+12:0;
+  root.style.scrollPaddingTop=top?top+'px':'';
+  root.style.scrollPaddingBottom=bottom?bottom+'px':'';
+ }
+ function syncViewportSoon(){requestAnimationFrame(syncViewportInsets);}
  function update(){
   decorateSecondary();
   const next=shouldActivate();
@@ -63,6 +73,7 @@
   window.updateTrainingFlow?.();
   window.refreshTrainingCockpit?.();
   window.refreshGymFloorUI?.();
+  syncViewportSoon();
  }
  function queue(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;update();});}
  function toggleOptions(){
@@ -70,12 +81,13 @@
   optionsOpen=!optionsOpen;
   document.body.classList.toggle('training-execution-options-open',optionsOpen);
   window.refreshTrainingCockpit?.();
+  syncViewportSoon();
   if(optionsOpen){
    const target=document.querySelector('#workout-log-card .execution-secondary');
    requestAnimationFrame(()=>target?.scrollIntoView({block:'nearest',behavior:'smooth'}));
   }
  }
- function closeOptions(){if(!optionsOpen)return;optionsOpen=false;document.body.classList.remove('training-execution-options-open');window.refreshTrainingCockpit?.();}
+ function closeOptions(){if(!optionsOpen)return;optionsOpen=false;document.body.classList.remove('training-execution-options-open');window.refreshTrainingCockpit?.();syncViewportSoon();}
  function init(){
   decorateSecondary();update();
   const card=document.getElementById('workout-log-card');
@@ -91,6 +103,7 @@
    card.addEventListener('change',queue);
   }
   const rows=document.getElementById('exercise-rows');if(rows)new MutationObserver(queue).observe(rows,{childList:true,subtree:true});
+  window.addEventListener('resize',syncViewportSoon,{passive:true});
  }
  window.LoadnoteTrainingExecutionUI={init,refresh:update,isActive:()=>active,optionsOpen:()=>optionsOpen,toggleOptions,closeOptions,rowSnapshot};
  window.refreshTrainingExecution=update;
