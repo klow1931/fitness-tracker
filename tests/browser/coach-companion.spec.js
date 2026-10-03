@@ -5,6 +5,19 @@ test.beforeEach(async({page})=>{
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
 });
 
+async function expectMobileLauncherAboveDock(page){
+ const viewport=page.viewportSize();
+ if(!viewport||viewport.width>640)return;
+ await expect(page.locator('body')).toHaveClass(/gym-floor-dock-visible/);
+ const gap=await page.evaluate(()=>{
+  const launcher=document.getElementById('coach-companion-launcher')?.getBoundingClientRect();
+  const dock=document.getElementById('gym-floor-dock')?.getBoundingClientRect();
+  if(!launcher||!dock)return -1;
+  return dock.top-launcher.bottom;
+ });
+ expect(gap).toBeGreaterThanOrEqual(0);
+}
+
 test('v2.79 Coach Companion stays available across surfaces and handles rest locally',async({page})=>{
  let coachCalls=0;
  await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:false,authConfigured:true,authRequired:true,loginAvailable:true})}));
@@ -19,6 +32,7 @@ test('v2.79 Coach Companion stays available across surfaces and handles rest loc
  await page.locator('#exercise-rows .ex-name').first().fill('Competition Squat');
  await page.locator('#exercise-rows .set-weight').first().fill('180');
  await page.locator('#exercise-rows .set-reps').first().fill('4');
+ await expectMobileLauncherAboveDock(page);
  await page.locator('#coach-companion-launcher').click();
  await expect(page.locator('#cc-context')).toContainText('train');
  await expect(page.locator('#cc-context')).toContainText('Workout active');
@@ -48,6 +62,7 @@ test('v2.79 signed-in companion sends bounded live workout state with explicit k
  await page.locator('#exercise-rows .set-weight').first().fill('405');
  await page.locator('#exercise-rows .set-reps').first().fill('4');
  await page.locator('#exercise-rows .set-rpe').first().fill('8.5');
+ await expectMobileLauncherAboveDock(page);
  await page.locator('#coach-companion-launcher').click();
  await page.locator('#cc-input').fill('Why this set?');
  await page.locator('#cc-form button[type="submit"]').click();
