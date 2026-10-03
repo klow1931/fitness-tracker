@@ -37,6 +37,9 @@
   return snapshot();
  }
  async function refresh(fetchImpl=globalThis.fetch,endpoint='/api/auth/session'){
+  if(globalThis.Capacitor?.isNativePlatform?.()){
+   state.loginAvailable=false;state.provider=null;state.authConfigured=false;state.authRequired=true;reset('unavailable');return snapshot();
+  }
   if(typeof fetchImpl!=='function'){reset('unavailable');return snapshot();}
   try{
    const response=await fetchImpl(endpoint,{method:'GET',credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});
@@ -50,6 +53,7 @@
  }
  function csrfMethod(method){return !['GET','HEAD','OPTIONS'].includes(String(method||'GET').toUpperCase());}
  async function request(url,options={},fetchImpl=globalThis.fetch){
+  if(globalThis.Capacitor?.isNativePlatform?.()){const error=new Error('Native beta is local-only. Account, cloud and online AI are not provisioned.');error.code='native_beta_local_only';throw error;}
   if(typeof fetchImpl!=='function')throw Error('Fetch is unavailable');
   if(state.status==='unknown')await refresh(fetchImpl);
   const headers=new Headers(options.headers||{});

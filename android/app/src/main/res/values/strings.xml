@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Loadnote</string>
+    <string name="title_activity_main">Loadnote</string>
+    <string name="package_name">app.loadnote.mobile</string>
+    <string name="custom_url_scheme">app.loadnote.mobile</string>
+</resources>

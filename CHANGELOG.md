@@ -1,3 +1,7 @@
+# v2.85.0 — Native Beta Foundation
+
+Unsigned Android/iOS source projects, existing Loadnote branding, explicit JSON/photo share-sheet backups, local-only native account boundary and source-configuration CI checks. Native builds, device acceptance, signing and store submission remain uncompleted. Schema v25 and training calculations unchanged. See `docs/native-beta.md`.
+
 # v2.84.0 — Store Readiness Foundation
 
 - Make Today the primary Home workout action; retain training summaries and plan previews without a competing Start button.

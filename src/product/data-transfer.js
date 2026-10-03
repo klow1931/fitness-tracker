@@ -100,12 +100,17 @@
       document.getElementById('import-review')?.addEventListener('cancel',event=>{event.preventDefault();closeImportReview();});
     });
 
-    function exportData() {
+    async function exportData() {
       // Strip large photo binaries from routine backup
       const rawPayload = { ...data, recoverySnapshots:[], progressPhotos: (data.progressPhotos || []).map(p => ({
         id: p.id, date: p.date, tag: p.tag, note: p.note, hasImage: !!p.dataUrl
       })) };
       const payload=LoadnoteIntegrity.addBackupManifest(rawPayload,{releaseVersion:window.LoadnoteCore?.RELEASE_VERSION||data.releaseVersion||''});
+      if(window.Capacitor?.isNativePlatform?.()){
+        try{await window.LoadnoteNativeBackup.share(`loadnote-${today()}.json`,JSON.stringify(payload,null,2));showToast('Backup share sheet closed. Confirm the JSON was saved to Files; reminders remain until verified.','success');}
+        catch(error){showToast('Backup was not confirmed. Keep the app installed and retry Export JSON.','error');}
+        return;
+      }
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -121,9 +126,14 @@
       showToast('Verified JSON backup downloaded · '+(data.workouts||[]).length+' workouts protected (photos excluded)', 'success');
     }
 
-    function exportPhotosBackup() {
+    async function exportPhotosBackup() {
       const list = data.progressPhotos || [];
       if (!list.length) return showToast('No photos to export', 'error');
+      if(window.Capacitor?.isNativePlatform?.()){
+        try{await window.LoadnoteNativeBackup.share(`loadnote-photos-${today()}.json`,JSON.stringify(list,null,2));showToast('Share sheet closed. Confirm the photos JSON was saved to Files.','success');}
+        catch(error){showToast('Photos backup was not confirmed. Keep the app installed and retry.','error');}
+        return;
+      }
       const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -151,6 +161,7 @@
     }
 
     function exportCSV() {
+      if(window.Capacitor?.isNativePlatform?.())return showToast('CSV export is not supported in this native beta. Use Export JSON to save your training.','error');
       // Workouts CSV (one row per set / cardio line)
       const woHeaders = ['date', 'workout_id', 'exercise', 'type', 'set_index', 'reps', 'hold_sec', 'weight_kg', 'rpe', 'duration_min', 'distance', 'distance_unit', 'avg_hr', 'session_role', 'session_goal', 'deviation_reason', 'deviation_notes', 'notes'];
       const woRows = [woHeaders.join(',')];

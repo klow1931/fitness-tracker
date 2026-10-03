@@ -66,6 +66,7 @@
    if(event.type==='error')setState('error',String(event.error?.message||'Realtime voice error'));
   }
   async function start({context=null}={}){
+   if(root.Capacitor?.isNativePlatform?.())throw makeError('Voice is unavailable in the local-only native beta.','native_beta_local_only');
    if(pc)return snapshot();
    if(typeof fetchImpl!=='function'||typeof PeerConnection!=='function'||!mediaDevices?.getUserMedia)throw makeError('Realtime voice is not supported on this device.','voice_unsupported');
    setState('connecting');

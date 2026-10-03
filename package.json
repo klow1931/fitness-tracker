@@ -1,6 +1,6 @@
 {
   "name": "loadnote",
-  "version": "2.84.0",
+  "version": "2.85.0",
   "private": true,
   "description": "Loadnote — adaptive strength-training log",
   "scripts": {
@@ -10,12 +10,18 @@
     "test:browser": "playwright test",
     "build:assets": "node scripts/build-assets.js",
     "sync:www": "node scripts/sync-www.js",
-    "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js"
+    "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js",
+    "native:sync": "npm run sync:www && node scripts/sync-native.js",
+    "check:native": "npm run native:sync && node scripts/check-native.js",
+    "native:android": "cap open android",
+    "native:ios": "cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",
-    "@capacitor/ios": "^7.4.3"
+    "@capacitor/filesystem": "^7.1.9",
+    "@capacitor/ios": "^7.4.3",
+    "@capacitor/share": "^7.0.4"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",

@@ -21,6 +21,7 @@
   return current?.status==='authenticated';
  }
  async function availability({force=false,request=globalThis.LoadnoteAccountSession?.request||globalThis.fetch}={}){
+  if(globalThis.Capacitor?.isNativePlatform?.())return {online:false,authRequired:true,voiceConfigured:false,reason:'native_beta_local_only'};
   const now=Date.now();
   if(!force&&healthCache&&now-healthAt<60000)return healthCache;
   if(typeof request!=='function')return {online:false,reason:'unavailable'};
@@ -33,6 +34,7 @@
   healthAt=now;return healthCache;
  }
  async function ask({question,context,history=[]}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
+  if(globalThis.Capacitor?.isNativePlatform?.()){const error=new Error('Online Coach is unavailable in the native beta. Local workout guidance remains available.');error.code='native_beta_local_only';throw error;}
   if(!await ensureSignedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
   if(typeof request!=='function'){const error=new Error('Secure Coach connection is unavailable.');error.code='coach_unavailable';throw error;}
   const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context,history})});
