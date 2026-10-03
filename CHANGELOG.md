@@ -1,3 +1,7 @@
+# v2.87.0 — Beta Onboarding & Data Safety
+
+Native-local welcome, reviewed browser-to-app restore guidance, honest backup checklist and privacy-minimal save diagnostics. Browser onboarding, schema v25 and training logic unchanged. See `docs/releases-v2.87.md`.
+
 # v2.86.0 — Cloud iOS Compilation
 
 Add shared App scheme and GitHub macOS simulator/device-SDK unsigned compilation with compiled-bundle checks and diagnostic artifacts. No Apple credentials, signing, device launch or distribution. Normalize the generated Windows Gradle wrapper's Git line endings without changing its commands. Schema v25 and training behavior unchanged. See `docs/ios-cloud-build.md`.

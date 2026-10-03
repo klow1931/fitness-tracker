@@ -77,6 +77,12 @@
       </div>
     </header>
 
+    <section id="native-beta-welcome" class="card mb-4" hidden aria-labelledby="native-beta-title">
+      <h2 id="native-beta-title" class="font-semibold">Welcome to the local-only native beta</h2>
+      <p>Your training stays in this app on this device. Browser workouts do not appear here automatically. Deleting the app or losing the device can erase your only copy.</p>
+      <p>Account, cloud sync, online AI and voice are unavailable. Offline workout logging and local text guidance remain available. This beta is not a store-ready release.</p>
+      <div class="flex flex-wrap gap-2"><button id="native-import-guide" type="button" class="btn-primary">Bring my browser workouts</button><button id="native-welcome-dismiss" type="button" class="btn-secondary">Continue with local training</button></div>
+    </section>
     <!-- First-run onboarding -->
     <div id="onboarding-card" class="card onboarding-card hidden mb-4">
       <div class="flex items-start justify-between gap-3 mb-2">
@@ -95,7 +101,7 @@
           <span class="onboard-num">2</span>
           <span><b>Train</b><br><span class="text-slate-500 text-xs">Log sets, reps, load and RPE</span></span>
         </button>
-        <button type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-account-card')?.scrollIntoView({behavior:'smooth'}); }, 50)">
+        <button id="onboarding-account" type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-account-card')?.scrollIntoView({behavior:'smooth'}); }, 50)">
           <span class="onboard-num">3</span>
           <span><b>Account is optional</b><br><span class="text-slate-500 text-xs">Sign in when you want backup and sync</span></span>
         </button>
@@ -1278,6 +1284,19 @@
       </div></details>
 
       <div class="card" id="tools-data">
+        <section id="native-beta-safety" hidden aria-labelledby="native-safety-title">
+          <h2 id="native-safety-title" class="font-semibold">Native beta: protect your data</h2>
+          <div id="native-restore-guide" hidden>
+            <h3>Move existing browser training here</h3>
+            <ol><li>In your original browser, open Tools → Export JSON backup.</li><li>Save that JSON somewhere outside Loadnote and make it accessible on this device.</li><li>Choose Import JSON backup below. Inspect the fingerprint result and added, changed and removed records.</li><li>Confirm only if replacement is intended. Import is not a merge; a local recovery snapshot protects the previous structured data.</li><li>Review your restored history before removing the original browser copy.</li></ol>
+          </div>
+          <h3>Before reinstalling or switching devices</h3>
+          <ul><li>Export JSON and explicitly save it to Files or another destination outside this app.</li><li>Open that destination and check that the saved file exists and is nonempty. A closed share sheet does not prove a backup was saved.</li><li>Check the file through Import review, then Cancel if you only want to validate it. A fingerprint detects corruption, not authenticity or completeness.</li><li>Export photos separately if needed. Routine JSON excludes photo images and recovery snapshots.</li><li>Keep the original app installed until the new device has restored and checked your training.</li></ul>
+          <p>Local recovery snapshots are not external backups and disappear if app data is erased. This checklist does not automatically mark backups verified or dismiss reminders.</p>
+          <p id="native-diagnostics" role="status"></p>
+          <p>Diagnostics show version, platform, storage backend and last save result only. They do not inspect or send training data, and cannot certify storage across reinstall or device loss.</p>
+          <div class="flex flex-wrap gap-2"><button id="native-diagnostics-refresh" type="button" class="btn-secondary">Refresh diagnostics</button><button id="native-welcome-reopen" type="button" class="btn-secondary">Review beta welcome</button></div>
+        </section>
         <h2 class="font-semibold mb-3">Backups & data</h2>
         <p class="text-sm text-slate-500 mb-2" id="storage-info">Storage: —</p>
         <div class="flex flex-wrap gap-2">
@@ -1288,7 +1307,7 @@
           <details class="more-demo"><summary>Demo data</summary><p class="more-hint">Use the sample dataset to explore the app. Review the confirmation before replacing existing records.</p><button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button></details>
         </div>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import.</p>
-        <p class="more-hint">Your records stay in this browser. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
+        <p class="more-hint">Your records stay on this device. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
         <details class="more-details"><summary>Training data &amp; record health</summary><div id="training-data-health" class="more-details-body"></div></details>
         <details class="more-details"><summary>Automatic recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
         <details class="more-details"><summary>Exercise identities & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
@@ -1936,6 +1955,7 @@
   <script src="src/product/training-execution.js" defer></script>
   <script src="src/product/rest-timer.js" defer></script>
   <script src="src/product/native-backup.js" defer></script>
+  <script src="src/product/beta-onboarding.js" defer></script>
   <script src="src/product/platform-runtime.js" defer></script>
   <script src="src/product/app-lifecycle.js" defer></script>
   <script src="src/product/training-flow.js" defer></script>

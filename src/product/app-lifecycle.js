@@ -4,6 +4,7 @@
  async function start(){
   const platform=window.LoadnotePlatform?.detect(window)||{surface:'browser',native:false,nativePlatform:null,standalone:false};
   window.LoadnoteRuntime=window.LoadnotePlatform?.apply(document,platform)||platform;
+  window.LoadnoteBetaOnboarding?.start();
   connection();window.addEventListener('online',connection);window.addEventListener('offline',connection);
   const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh().then(()=>window.renderAccountStatus?.());};
   refreshAccount();window.addEventListener('online',refreshAccount);

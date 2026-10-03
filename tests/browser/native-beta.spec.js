@@ -38,3 +38,38 @@ test('native cancellation preserves reminder state and CSV fails explicitly',asy
  await expect(page.locator('#toast-host')).toContainText('Backup was not confirmed');
  await page.evaluate(()=>exportCSV());await expect(page.locator('#toast-host')).toContainText('CSV export is not supported');
 });
+
+test('native welcome guides reviewed restore and leaves backup reminders untouched',async({page})=>{
+ await expect(page.locator('#native-beta-welcome')).toBeVisible();
+ await expect(page.locator('#onboarding-account')).toContainText('Protect your local data');
+ await page.locator('#native-import-guide').click();
+ await expect(page.locator('#native-restore-guide')).toBeVisible();
+ await expect(page.locator('#native-diagnostics')).toContainText('2.87.0');
+ await expect(page.locator('#native-diagnostics')).toContainText('not a backup');
+ const before=await page.evaluate(()=>({workouts:JSON.stringify(data.workouts),date:data.lastExportDate,dismissed:data.backupBannerDismissed}));
+ const backup=await page.evaluate(()=>JSON.stringify(LoadnoteIntegrity.addBackupManifest({...data,recoverySnapshots:[]},{releaseVersion:'2.87.0'})));
+ await page.locator('#import-file').setInputFiles({name:'loadnote-test.json',mimeType:'application/json',buffer:Buffer.from(backup)});
+ await expect(page.locator('#import-review')).toBeVisible();
+ await expect(page.locator('[data-import-check="backup"]')).toContainText('verified');
+ await page.locator('#cancel-import-review').click();
+ expect(await page.evaluate(()=>({workouts:JSON.stringify(data.workouts),date:data.lastExportDate,dismissed:data.backupBannerDismissed}))).toEqual(before);
+ await page.evaluate(()=>showTab('dashboard'));
+ await page.locator('#native-welcome-dismiss').click();
+ await page.reload();await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
+ await expect(page.locator('#native-beta-welcome')).toBeHidden();
+ await page.evaluate(()=>showTab('tools'));await page.locator('#native-welcome-reopen').click();
+ await expect(page.locator('#native-beta-welcome')).toBeVisible();
+ await page.evaluate(()=>{window.LoadnoteSaveHealth='failed';window.LoadnoteBetaOnboarding.refresh();showTab('tools');});
+ await expect(page.locator('#native-diagnostics')).toContainText('Save failed');
+});
+
+test('browser onboarding retains account guidance and hides native controls',async({page})=>{
+ await page.evaluate(()=>{delete window.Capacitor;});
+ // A fresh page without the native bootstrap exercises the browser surface.
+ const browserPage=await page.context().browser().newPage();
+ await browserPage.goto('/');await expect(browserPage.locator('#exercise-rows .ex-name')).toHaveCount(1);
+ await expect(browserPage.locator('#native-beta-welcome')).toBeHidden();
+ await expect(browserPage.locator('#native-beta-safety')).toBeHidden();
+ await expect(browserPage.locator('#onboarding-account')).toContainText('Account is optional');
+ await browserPage.close();
+});

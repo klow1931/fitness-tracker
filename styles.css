@@ -1796,3 +1796,11 @@ body.dark .training-cockpit-transition span{color:#6ee7b7}
  .training-cockpit-transition{align-items:stretch;flex-direction:column;min-width:0}
  .training-cockpit-transition button{width:100%}
 }
+#native-beta-welcome p, #native-beta-safety p { margin: .65rem 0; }
+#native-beta-safety { margin-bottom: 1.25rem; }
+#native-beta-safety h3 { font-weight: 600; margin-top: 1rem; }
+#native-beta-safety ol, #native-beta-safety ul { padding-left: 1.5rem; margin: .65rem 0; }
+#native-beta-safety ol { list-style: decimal; }
+#native-beta-safety ul { list-style: disc; }
+#native-beta-safety li { margin: .4rem 0; }
+#native-diagnostics { overflow-wrap: anywhere; }
