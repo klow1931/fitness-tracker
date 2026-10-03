@@ -337,7 +337,8 @@
       try { renderAthleteHome(); } catch (e) { console.warn('Athlete home render failed', e); }
 
       // Empty vs active home layout
-      const isEmptyHome = !(data.workouts || []).length && !(data.nutrition || []).length && !(data.prs || []).length;
+      const homeTraining = window.LoadnoteTodayTraining?.inspect(data,{day:today(),draft:readLoggerDraft()});
+      const isEmptyHome = !homeTraining?.openDraft && !homeTraining?.active && !(data.workouts || []).length && !(data.nutrition || []).length && !(data.prs || []).length;
       const homeEmpty = document.getElementById('home-empty');
       const startHere = document.getElementById('start-here-card');
       const statsGrid = document.getElementById('home-stats-grid');
@@ -394,16 +395,15 @@
         const load = ex.weight != null ? `${escapeHtml(String(toDisplay(ex.weight)))} ${unitLabel()}` : 'Auto';
         return `<div class="v1-session-row"><span>${escapeHtml(ex.name)}</span><b>${load} · ${ex.sets} × ${ex.reps}${ex.targetRPE ? ` · RPE ${ex.targetRPE}` : ''}</b></div>`;
       }).join('');
-      const startButton = session ? `<button class="btn-primary text-sm" onclick="startNextAdaptiveWorkout()">Start today's workout</button>` : `<button class="btn-primary text-sm" onclick="showTab('workouts'); showSubTab('workouts','wo-log')">Start / continue workout</button>`;
       const viewPlan = `<button class="btn-secondary text-sm" onclick="document.getElementById('home-week-plan').open=true;document.getElementById('home-week-plan').scrollIntoView({block:'start',behavior:'smooth'})">View today's plan</button>`;
       const count30=(data.workouts||[]).filter(w=>w.date>=new Date(Date.now()-30*86400000).toISOString().slice(0,10)).length;
       const trendLabel=trend==='improving'?'Trending up':trend==='declining'?'Needs attention':trend==='stable'?'Stable':'Not enough data';
       el.innerHTML = `
         <div class="focused-home">
           <span class="eyebrow">YOUR TRAINING</span>
-          <h2 class="v1-command-title">${active ? escapeHtml(session?.dayName || 'Next session') : 'Ready to train?'}</h2>
+          <h2 class="v1-command-title">Training summary</h2>
           ${active ? `<p class="text-sm text-slate-600 mt-1">Week ${session?.week || 1} · Block ${session?.blockIndex || 1} · ${escapeHtml(profile?.goal || 'strength')}</p>` : ''}
-          <div class="home-workout-actions">${startButton}${viewPlan}</div>
+          <div class="home-workout-actions">${viewPlan}</div>
           <p class="focused-home-status" aria-label="Training summary">${count30} workouts in 30 days <span aria-hidden="true">·</span> ${escapeHtml(trendLabel)}</p>
           <details class="focused-home-insights"><summary>Training status &amp; session preview</summary>
             ${exerciseRows ? `<div class="v1-session-list mt-4">${exerciseRows}</div>` : ''}

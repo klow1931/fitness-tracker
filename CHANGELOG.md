@@ -1,3 +1,15 @@
+# v2.84.0 — Store Readiness Foundation
+
+- Make Today the primary Home workout action; retain training summaries and plan previews without a competing Start button.
+- Suppress empty-log onboarding when recoverable work or today's scheduled session exists.
+- Recover drafts linked to another date before starting new scheduled work.
+- Refresh cached Home when a draft is created, edited or cleared without a saved-data revision.
+- Preserve Companion quick-question DOM nodes when live context changes do not change available questions.
+- Remove duplicate Start empty workout controls from the Train launcher.
+- Synchronize release/lockfile metadata and repair documented asset/mobile commands.
+- Add draft-priority, control-stability and release-consistency regression coverage plus an explicit native/store-readiness checklist.
+- Preserve schema v25, kg storage, training calculations and athlete approval boundaries.
+
 # v2.75.0 — Execution-First Workout Screen
 
 - Shift the Log screen into an execution-first presentation after meaningful workout work exists or a scheduled/started session is active.

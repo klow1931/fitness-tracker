@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+let draft=null,renders=0;
+const context=vm.createContext({document:{readyState:'loading',addEventListener(){}},window:{},today:()=> '2026-10-03',readLoggerDraft:()=>draft,performance:{now:()=>0},renderDashboard:()=>renders++});
+vm.runInContext(fs.readFileSync(require.resolve('../src/product/navigation'),'utf8'),context);
+const render=()=>vm.runInContext("renderVisibleView('dashboard')",context);
+render();render();assert.equal(renders,1,'Unchanged Home should remain cached');
+draft={updatedAt:1};render();assert.equal(renders,2,'A new draft must refresh Home');
+render();assert.equal(renders,2);
+draft={updatedAt:2};render();assert.equal(renders,3,'Edited draft must refresh Home');
+draft=null;render();assert.equal(renders,4,'Cleared draft must refresh Home');
+render();assert.equal(renders,4);
+console.log('Home cache refreshes after draft creation/edit/clear while unchanged navigation stays cached');

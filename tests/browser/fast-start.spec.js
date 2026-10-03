@@ -18,6 +18,7 @@ test('v2.77 Train opens a calm launcher and keeps setup behind Workout options',
  const launcher=page.locator('#train-launcher');
  await expect(launcher).toBeVisible();
  await expect(launcher).toContainText('What are you training today?');
+ await expect(launcher.getByRole('button',{name:'Start empty workout',exact:true})).toHaveCount(1);
  await expect(page.locator('#workout-log-card')).toBeHidden();
  await launcher.locator('[data-train-primary="empty"]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();

@@ -51,11 +51,11 @@
  }
  function leaveFastStart(destination){closeLaunchMode();document.body.classList.remove('train-fast-start-active','train-fast-options-open');destination();}
  function goTrain(){openFastStartLogger({compact:true});}
- function otherActions(report){
+ function otherActions(report,primaryAction){
   const parts=[];
   if(!report?.openDraft&&(data.workouts||[]).length)parts.push('<button type="button" class="btn-secondary" data-train-repeat>Repeat last workout</button>');
   if(!report?.openDraft&&(data.templates||[]).length)parts.push('<button type="button" class="btn-secondary" data-train-templates>Choose template</button>');
-  if(!report?.openDraft)parts.push('<button type="button" class="btn-secondary" data-train-empty>Start empty workout</button>');
+  if(!report?.openDraft&&primaryAction!=='empty')parts.push('<button type="button" class="btn-secondary" data-train-empty>Start empty workout</button>');
   if((data.workouts||[]).length)parts.push('<button type="button" class="btn-secondary" data-train-history>Workout history</button>');
   return parts.length?'<div class="train-launch-secondary"><span class="train-launch-secondary-label">Other ways to train</span>'+parts.join('')+'</div>':'';
  }
@@ -101,7 +101,7 @@
   }else{
    title='What are you training today?';subtitle='Nothing is scheduled today. Start simple, repeat something familiar, or choose a saved template.';badge='Open training';primaryAction='empty';primaryLabel='Start empty workout';
   }
-  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(preview?'<div class="train-launch-preview">'+preview+'</div>':'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+otherActions(report);
+  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(preview?'<div class="train-launch-preview">'+preview+'</div>':'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+otherActions(report,primaryAction);
   bindLauncher(host,report,active,lifecycle,lifecycleGate);
  }
  function requestTrainLauncher(){trainLaunchRequested=true;requestAnimationFrame(renderTrainLauncher);}

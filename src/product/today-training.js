@@ -18,11 +18,13 @@
       exercises:plannedExercises.slice(0,4).map(e=>({name:e.name,sets:e.type==='cardio'?1:(e.sets||[]).length})),
       draftOpen:draftScheduleId===s.id,workoutId:linked.length===1?linked[0].id:null};
   });
-  const openDraft=!!draft&&((draft.rows||[]).some(r=>r.name||(r.sets||[]).some(s=>s.reps||s.duration||s.weight||s.rpe))||draftScheduleId);
+  const openDraft=!!(draft&&((draft.rows||[]).some(r=>r.name||(r.sets||[]).some(s=>s.reps||s.duration||s.weight||s.rpe))||draftScheduleId));
   const active=sessions.find(s=>s.draftOpen)||sessions.find(s=>s.status==='scheduled')||null;
   const completed=sessions.filter(s=>s.status==='completed').length;
-  return {version:1,day,sessions,active,openDraft,unlinkedDraft:openDraft&&!draftScheduleId,completed,
-    summary:active?.draftOpen?'Workout in progress':active?'Today’s scheduled workout is ready':completed?'Today’s scheduled training is logged':openDraft?'Unfinished workout ready to resume':'No workout is scheduled today'};
+  // A scheduled draft from another day is still recoverable work, not a
+  // license to replace it with today's scheduled session.
+  return {version:1,day,sessions,active,openDraft,unlinkedDraft:openDraft&&!sessions.some(s=>s.draftOpen),completed,
+    summary:active?.draftOpen?'Workout in progress':openDraft?'Unfinished workout ready to resume':active?'Today’s scheduled workout is ready':completed?'Today’s scheduled training is logged':'No workout is scheduled today'};
  }
  return {inspect};
 });
