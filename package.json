@@ -1,21 +1,14 @@
 {
   "name": "loadnote",
-  "version": "2.79.0",
-  "description": "An adaptive strength-training log that learns how you train.",
+  "version": "2.80.0",
   "private": true,
+  "description": "Loadnote — adaptive strength-training log",
   "scripts": {
-    "test": "node scripts/test.js",
+    "start": "node backend/server.js",
     "check": "node scripts/check.js",
-    "sync": "node scripts/sync-www.js && npx cap sync",
-    "sync:web": "node scripts/sync-www.js",
-    "android": "npm run sync && npx cap open android",
-    "ios": "npm run sync && npx cap open ios",
-    "add:android": "npx cap add android",
-    "add:ios": "npx cap add ios",
-    "start:coach": "node backend/server.js",
+    "test": "node scripts/test.js",
     "test:browser": "playwright test",
-    "serve": "node scripts/serve.js",
-    "build:assets": "node scripts/build-assets.js",
+    "sync:www": "node scripts/sync-www.js",
     "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js"
   },
   "dependencies": {
