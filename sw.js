@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.79.0';
+const CACHE = 'loadnote-v2.80.0';
 const ASSETS = [
   './src/product/program-review.js',
   './src/product/program-review-ui.js',
@@ -72,6 +72,8 @@ const ASSETS = [
   './src/product/coach-client.js',
   './src/product/coach-companion.js',
   './src/product/coach-companion-ui.js',
+  './src/product/coach-voice.js',
+  './src/product/coach-voice-ui.js',
   './src/product/remote-sync.js',
   './src/product/sync-coordinator.js',
   './src/product/account-ui.js',
@@ -116,7 +118,6 @@ const ASSETS = [
   './src/product/training-execution-ui.js',
   './src/product/data-transfer.js',
   './src/product/workout-events.js',
-
   './src/product/workout-session.js',
   './src/product/progress-model.js',
   './src/product/progress-analytics.js',
@@ -158,39 +159,21 @@ const ASSETS = [
   './src/training/fatigue.js',
   './src/training/adaptive.js',
   './src/coach/coach-engine.js',
-
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png'
 ];
-
 const SCOPE = self.registration.scope;
 const assetURLs = new Set(ASSETS.map(path => new URL(path, SCOPE).href));
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
-});
+self.addEventListener('install', event => {event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));});
 self.addEventListener('message', event => {
   if(event.data?.type !== 'APPLY_UPDATE')return;
-  event.waitUntil((async()=>{
-    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-    const appClients=clients.filter(client=>client.url.startsWith(SCOPE));
-    if(appClients.length>1){event.source?.postMessage({type:'UPDATE_BLOCKED'});return;}
-    await self.skipWaiting();
-  })());
+  event.waitUntil((async()=>{const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});const appClients=clients.filter(client=>client.url.startsWith(SCOPE));if(appClients.length>1){event.source?.postMessage({type:'UPDATE_BLOCKED'});return;}await self.skipWaiting();})());
 });
-self.addEventListener('activate', event => {
-  // Retain previous release caches for still-open pages; do not delete unrelated caches.
-  event.waitUntil(self.clients.claim());
-});
+self.addEventListener('activate', event => {event.waitUntil(self.clients.claim());});
 self.addEventListener('fetch', event => {
-  const req=event.request;
-  if(req.method!=='GET')return;
-  const url=new URL(req.url);url.hash='';url.search='';
+  const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);url.hash='';url.search='';
   if(url.origin!==self.location.origin||!assetURLs.has(url.href))return;
-  event.respondWith(caches.open(CACHE).then(async cache=>{
-    const cached=await cache.match(url.href);
-    if(cached)return cached;
-    return fetch(req);
-  }));
+  event.respondWith(caches.open(CACHE).then(async cache=>{const cached=await cache.match(url.href);if(cached)return cached;return fetch(req);}));
 });
