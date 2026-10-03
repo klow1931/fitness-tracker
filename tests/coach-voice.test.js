@@ -62,7 +62,11 @@ const Voice=require('../src/product/coach-voice');
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(tools.length,1,'duplicate realtime tool completion must not execute twice');
 
+ const before=sent.length;assert.equal(controller.announce('Rest complete. Next: Competition Bench set 3.'),true);
+ const proactive=sent.slice(before).find(row=>row.type==='response.create');assert(proactive);assert.match(proactive.response.instructions,/Preserve every number and training fact exactly/);assert.match(proactive.response.instructions,/Rest complete\. Next: Competition Bench set 3\./);assert.doesNotMatch(proactive.response.instructions,/change the program/i);
+ assert.throws(()=>controller.announce(''),/cue is required/i);
+
  controller.stop();assert.equal(track.stopped,true);assert.equal(pcRef.closed,true);assert.equal(controller.snapshot().state,'off');
  assert.equal(states.some(row=>row.state==='connecting'),true);
- console.log('v2.80 realtime voice explicit start, ephemeral WebRTC, transcript de-duplication, mute, stop and tool roundtrip passed');
+ console.log('v2.82 realtime voice explicit start, de-duplication, tools and bounded proactive announcement transport passed');
 })().catch(error=>{console.error(error);process.exit(1);});
