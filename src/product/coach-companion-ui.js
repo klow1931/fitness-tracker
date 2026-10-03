@@ -1,0 +1,172 @@
+/* v2.79 — persistent Coach Companion surface.
+ * Text-first foundation for future realtime voice. The companion reads live
+ * workout state and may control only reversible rest-timer actions here.
+ */
+(function(){
+ 'use strict';
+ const Core=()=>window.LoadnoteCoachCompanion;
+ const Client=()=>window.LoadnoteCoachClient;
+ const history=[];
+ let refreshTimer=null,queued=false;
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function displayUnit(){try{return typeof unitLabel==='function'?unitLabel():'kg';}catch{return 'kg';}}
+ function toKg(value){
+  const n=Number(value);if(!Number.isFinite(n))return null;
+  try{if(typeof toStorage==='function')return Number(toStorage(n));}catch{}
+  return displayUnit()==='lb'?Math.round((n/2.2046226218)*100)/100:n;
+ }
+ function surface(){
+  const rows=[['dashboard','home'],['workouts','train'],['prs','progress'],['coach','coach'],['profile','profile']];
+  for(const [id,label] of rows){const el=document.getElementById('panel-'+id);if(el&&!el.classList.contains('hidden'))return label;}
+  return 'other';
+ }
+ function strengthRows(){return [...document.querySelectorAll('#exercise-rows > div')].filter(row=>row.dataset.type!=='cardio');}
+ function setRows(row){return row?[...row.querySelectorAll('.sets-container > div')]:[];}
+ function setComplete(set){return !!set?.querySelector('.set-done-check')?.checked;}
+ function currentWorkout(){
+  const rows=strengthRows().filter(row=>row.querySelector('.ex-name')?.value.trim()||setRows(row).some(set=>set.querySelector('.set-weight,.set-reps,.set-duration,.set-rpe')?.value!==''));
+  if(!rows.length)return null;
+  let currentRow=null,currentSet=null,currentIndex=-1,setIndex=-1;
+  const active=document.querySelector('#exercise-rows .logger-active-set');
+  if(active&&!setComplete(active)){currentRow=active.closest('#exercise-rows > div');currentIndex=rows.indexOf(currentRow);currentSet=active;setIndex=setRows(currentRow).indexOf(active);}
+  if(!currentRow){
+   for(let i=0;i<rows.length;i++){
+    const sets=setRows(rows[i]);const j=sets.findIndex(set=>!setComplete(set));
+    if(j>=0){currentRow=rows[i];currentSet=sets[j];currentIndex=i;setIndex=j;break;}
+   }
+  }
+  const cockpit=document.getElementById('training-cockpit');
+  const currentComparison=cockpit&&!cockpit.hidden?cockpit.querySelector('.training-cockpit-comparison'):null;
+  const comparisonRows=currentComparison?[...currentComparison.children]:[];
+  const target=comparisonRows[0]?.querySelector('b')?.textContent?.trim()||null;
+  const previous=comparisonRows[1]?.querySelector('b')?.textContent?.trim()||null;
+  const count=currentRow?setRows(currentRow).length:0;
+  const weightInput=currentSet?.querySelector('.set-weight');
+  const repsInput=currentSet?.querySelector('.set-reps');
+  const durationInput=currentSet?.querySelector('.set-duration');
+  const rpeInput=currentSet?.querySelector('.set-rpe');
+  const displayWeight=weightInput?.value===''?null:Number(weightInput?.value);
+  const exerciseSummaries=rows.slice(0,12).map(row=>{
+   const sets=setRows(row);return {name:row.querySelector('.ex-name')?.value.trim()||'Exercise',completedSets:sets.filter(setComplete).length,totalSets:sets.length};
+  });
+  const meta=cockpit&&!cockpit.hidden?cockpit.querySelector('.training-cockpit-title'):null;
+  return {
+   active:true,
+   date:document.getElementById('wo-date')?.value||null,
+   name:meta?.querySelector('b')?.textContent?.trim()||document.getElementById('session-goal')?.value.trim()||'Workout',
+   position:meta?.querySelector('small')?.textContent?.trim()||null,
+   currentExercise:currentRow?{
+    name:currentRow.querySelector('.ex-name')?.value.trim()||'Exercise',index:currentIndex,count:rows.length,
+    set:currentSet?{index:setIndex,count,reps:repsInput?.value===''?null:Number(repsInput?.value),durationSeconds:durationInput?.value===''?null:Number(durationInput?.value),weightKg:displayWeight==null?null:toKg(displayWeight),displayWeight,displayUnit:displayUnit(),rpe:rpeInput?.value===''?null:Number(rpeInput?.value),completed:setComplete(currentSet),target,previous}:null
+   }:null,
+   exercises:exerciseSummaries
+  };
+ }
+ function companionContext(){
+  const live=Core()?.buildContext({surface:surface(),workout:currentWorkout(),rest:window.LoadnoteRestTimer?.snapshot?.()||null});
+  return live||{version:1,surface:surface(),liveWorkout:null,restTimer:{active:false}};
+ }
+ function coachContext(){
+  let base={version:'0.6',unit:displayUnit(),units:{storageWeight:'kg',displayWeight:displayUnit()}};
+  try{if(typeof buildCoachContext==='function')base=buildCoachContext()||base;}catch{}
+  return {...base,companion:companionContext()};
+ }
+ function style(){
+  if(document.getElementById('coach-companion-style'))return;
+  const el=document.createElement('style');el.id='coach-companion-style';el.textContent=`
+  #coach-companion-launcher{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(76px + env(safe-area-inset-bottom));z-index:58;border:0;border-radius:999px;padding:11px 15px;background:#312e81;color:#fff;font:700 14px/1 system-ui;box-shadow:0 10px 28px rgba(15,23,42,.22);cursor:pointer}
+  #coach-companion-launcher[data-live="true"]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#34d399;margin-right:7px}
+  #coach-companion-panel{position:fixed;z-index:60;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));width:min(390px,calc(100vw - 24px));max-height:min(680px,calc(100vh - 100px));background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
+  body.dark #coach-companion-panel{background:#0f172a;color:#e2e8f0;border-color:#334155}
+  .cc-head{display:flex;justify-content:space-between;gap:12px;padding:14px 14px 10px;border-bottom:1px solid #e2e8f0}.cc-head b{display:block}.cc-head small{display:block;color:#64748b;margin-top:3px}.cc-close{border:0;background:transparent;font-size:20px;cursor:pointer;color:inherit}
+  .cc-context{display:flex;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid #e2e8f0}.cc-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.cc-chip.live{background:#ecfdf5;color:#047857}
+  .cc-messages{height:300px;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:9px}.cc-msg{max-width:88%;padding:9px 11px;border-radius:13px;background:#f1f5f9;font-size:13px;line-height:1.4}.cc-msg.user{align-self:flex-end;background:#312e81;color:#fff}.cc-msg small{display:block;margin-top:5px;color:#64748b}.cc-msg.user small{color:#c7d2fe}
+  .cc-quick{display:flex;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
+  .cc-form{display:flex;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
+  @media(max-width:640px){#coach-companion-launcher{bottom:calc(78px + env(safe-area-inset-bottom))}body.gym-floor-dock-visible #coach-companion-launcher{bottom:calc(166px + env(safe-area-inset-bottom))}#coach-companion-panel{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:auto;max-height:calc(100vh - 88px);border-radius:16px}body.gym-floor-dock-visible #coach-companion-panel{bottom:calc(152px + env(safe-area-inset-bottom));max-height:calc(100vh - 168px)}.cc-messages{height:min(42vh,330px)}}`;
+  document.head.appendChild(el);
+ }
+ function ensure(){
+  if(document.getElementById('coach-companion-launcher'))return;
+  style();
+  const launcher=document.createElement('button');launcher.id='coach-companion-launcher';launcher.type='button';launcher.textContent='Coach';launcher.setAttribute('aria-controls','coach-companion-panel');launcher.setAttribute('aria-expanded','false');launcher.addEventListener('click',toggle);document.body.appendChild(launcher);
+  const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><span>Training changes stay with Decisions.</span><button type="button" id="cc-full">Open Coach</button></div>`;
+  panel.querySelector('.cc-close').addEventListener('click',close);
+  panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text)return;input.value='';void ask(text);});
+  panel.querySelector('#cc-full').addEventListener('click',()=>{try{showTab('coach');showSubTab('coach','co-chat');}catch{}close();});
+  document.body.appendChild(panel);
+  append('I’m here throughout Loadnote. During a workout I can read your current set, answer questions from your training context, and control the rest timer.','assistant');
+  refresh();
+  document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
+ }
+ function append(text,role='assistant',meta=''){
+  const host=document.getElementById('cc-messages');if(!host)return;
+  const row=document.createElement('div');row.className='cc-msg '+(role==='user'?'user':'assistant');row.textContent=String(text||'');
+  if(meta){const small=document.createElement('small');small.textContent=meta;row.appendChild(small);}
+  host.appendChild(row);host.scrollTop=host.scrollHeight;
+ }
+ function quickButtons(context){
+  const items=context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
+  if(context.restTimer?.active)items.unshift('How much rest is left?');
+  return items;
+ }
+ function refresh(){
+  const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
+  if(!launcher||!host)return;
+  launcher.dataset.live=context.liveWorkout?.active?'true':'false';
+  const current=Core()?.currentSetSummary(context);
+  status.textContent=current||('Viewing '+context.surface);
+  const chips=[`<span class="cc-chip">${esc(context.surface)}</span>`];
+  if(context.liveWorkout?.active)chips.push('<span class="cc-chip live">Workout active</span>');
+  if(context.restTimer?.active)chips.push(`<span class="cc-chip">Rest ${esc(context.restTimer.remainingSeconds)}s${context.restTimer.paused?' paused':''}</span>`);
+  host.innerHTML=chips.join('');
+  quick.innerHTML=quickButtons(context).map(text=>`<button type="button" data-cc-q="${esc(text)}">${esc(text)}</button>`).join('');
+  quick.querySelectorAll('[data-cc-q]').forEach(button=>button.addEventListener('click',()=>void ask(button.dataset.ccQ)));
+ }
+ function queueRefresh(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh();});}
+ function execute(command){
+  const timer=window.LoadnoteRestTimer;if(!timer)return 'Rest timer controls are unavailable on this screen.';
+  const snap=timer.snapshot?.()||{active:false,paused:false};
+  if(command.kind==='rest_start'){timer.start?.(command.args.seconds);return 'Rest timer started for '+command.args.seconds+' seconds.';}
+  if(command.kind==='rest_pause'){if(!snap.active)return 'No rest timer is running.';if(snap.paused)return 'Rest timer is already paused.';timer.pause?.();return 'Rest timer paused.';}
+  if(command.kind==='rest_resume'){if(!snap.active)return 'No rest timer is running.';if(!snap.paused)return 'Rest timer is already running.';timer.pause?.();return 'Rest timer resumed.';}
+  if(command.kind==='rest_add_30'){if(!snap.active)return 'No rest timer is running.';timer.add?.();return 'Added 30 seconds to your rest.';}
+  if(command.kind==='rest_stop'){if(!snap.active)return 'No rest timer is running.';timer.stop?.();return 'Rest timer stopped.';}
+  return 'That action is not available yet.';
+ }
+ function stripHtml(value){const tmp=document.createElement('div');tmp.innerHTML=String(value||'');return tmp.textContent||tmp.innerText||'';}
+ function formatOnline(snapshot){
+  if(!snapshot)return 'I could not build a coaching response.';
+  let text=String(snapshot.summary||'Coach response ready.').trim();
+  const rec=snapshot.recommendation||{};
+  if(rec.action&&rec.action!=='none'&&rec.reason)text+=' '+String(rec.reason).trim();
+  return text;
+ }
+ async function ask(text){
+  ensure();append(text,'user');
+  const live=companionContext(),command=Core()?.classifyCommand(text);
+  if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
+  const offline=Core()?.offlineReply(live,text);
+  const client=Client();
+  let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
+  if(!signedIn){
+   let reply=offline;
+   if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text));}catch{}
+   reply=reply||'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.';
+   append(reply,'assistant','Built-in companion');history.push({role:'user',content:text},{role:'assistant',content:reply});refresh();return reply;
+  }
+  try{
+   const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
+   const reply=formatOnline(snapshot);append(reply,'assistant',live.liveWorkout?.active?'Live workout context':'Loadnote training context');
+   history.push({role:'user',content:text},{role:'assistant',content:reply});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+  }catch(error){
+   const reply=offline||'Online Coach is unavailable right now. Your workout logger and deterministic Decisions remain available.';append(reply,'assistant','Fallback');refresh();return reply;
+  }
+ }
+ function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher');panel.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
+ function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher');if(panel)panel.hidden=true;if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
+ function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
+ function init(){ensure();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+ window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,ask,context:coachContext,liveContext:companionContext};
+})();
