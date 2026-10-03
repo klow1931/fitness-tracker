@@ -1,4 +1,4 @@
-/* v2.80 — workout-scoped Realtime Voice Companion transport.
+/* v2.82 — workout-scoped Realtime Voice Companion transport.
  * Standard provider credentials remain server-side. This client receives only
  * a short-lived realtime client secret after an explicit athlete action.
  */
@@ -32,6 +32,10 @@
   function snapshot(){return {state,active:!!pc,muted,connected:channel?.readyState==='open'};}
   function setState(next,detail=''){state=next;onState({...snapshot(),detail});}
   function send(event){if(channel?.readyState!=='open')throw makeError('Voice data channel is not ready.','voice_channel_unavailable');channel.send(JSON.stringify(event));}
+  function announce(text){
+   const cue=String(text||'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,600);if(!cue)throw makeError('A proactive cue is required.','voice_cue_missing');
+   send({type:'response.create',response:{instructions:'Speak this Loadnote training cue concisely. Preserve every number and training fact exactly. Do not add advice, diagnoses, motivation, or programming changes. Cue: '+cue}});return true;
+  }
   function emitFinal(role,text,itemId){
    const clean=String(text||'').trim();if(!clean)return;
    const key=[role,itemId||'',clean].join('|');if(finalTranscripts.has(key))return;finalTranscripts.add(key);
@@ -90,7 +94,7 @@
    for(const track of stream?.getTracks?.()||[])try{track.stop();}catch{}stream=null;
    if(remoteAudio){try{remoteAudio.pause?.();remoteAudio.srcObject=null;}catch{}}remoteAudio=null;assistantBuffer='';handledCalls=new Set();finalTranscripts=new Set();muted=false;setState('off');return snapshot();
   }
-  return {start,stop,setMuted,toggleMuted,snapshot,handleEvent,send};
+  return {start,stop,setMuted,toggleMuted,snapshot,handleEvent,send,announce};
  }
  return {CALLS_URL,createController};
 });

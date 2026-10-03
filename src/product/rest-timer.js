@@ -19,8 +19,9 @@ function paintRest(){
  const add=document.getElementById('rest-add');if(add)add.disabled=!restState;
  if(typeof window!=='undefined')window.refreshTrainingCockpitRest?.();
 }
+function emitRestComplete(detail){try{document.dispatchEvent(new CustomEvent('loadnote:rest-complete',{detail}));}catch(_){}}
 function tickRest(){
- if(restState&&!restState.paused&&restRemaining(restState)===0){stopRest();setRestLabels('Done!');showToast('Rest done','success');try{navigator.vibrate?.(200);}catch(_){}}
+ if(restState&&!restState.paused&&restRemaining(restState)===0){const completed={totalMs:restState.total,completedAt:Date.now()};stopRest();setRestLabels('Done!');showToast('Rest done','success');try{navigator.vibrate?.(200);}catch(_){}emitRestComplete(completed);}
  else paintRest();
 }
 function scheduleRest(){clearInterval(restInterval);restInterval=restState&&!restState.paused?setInterval(tickRest,250):null;paintRest();}
