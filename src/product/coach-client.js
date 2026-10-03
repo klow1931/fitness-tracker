@@ -1,4 +1,4 @@
-/* v2.63 — consumer Coach client.
+/* v2.79 — consumer Coach client + Companion bootstrap.
  * Production-facing requests use only the Loadnote server boundary.
  * No provider key, base URL, model or raw system prompt is accepted here.
  */
@@ -48,6 +48,16 @@
  function scrubLegacyCredential(storage=globalThis.localStorage){
   try{storage?.removeItem?.(LEGACY_KEY);return true;}catch{return false;}
  }
+ function bootstrapCompanion(){
+  if(typeof document==='undefined')return;
+  const load=src=>new Promise((resolve,reject)=>{
+   if(document.querySelector('script[data-loadnote-companion="'+src+'"]'))return resolve();
+   const script=document.createElement('script');script.src=src;script.defer=true;script.dataset.loadnoteCompanion=src;script.onload=resolve;script.onerror=()=>reject(new Error('Unable to load '+src));document.head.appendChild(script);
+  });
+  const start=()=>load('src/product/coach-companion.js').then(()=>load('src/product/coach-companion-ui.js')).catch(error=>console.warn('Coach Companion unavailable',error));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+ }
  scrubLegacyCredential();
- return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,ensureSignedIn,availability,ask,resetHealth,scrubLegacyCredential};
+ bootstrapCompanion();
+ return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,ensureSignedIn,availability,ask,resetHealth,scrubLegacyCredential,bootstrapCompanion};
 });
