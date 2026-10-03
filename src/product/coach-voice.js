@@ -28,10 +28,15 @@
   const onTranscript=typeof options.onTranscript==='function'?options.onTranscript:()=>{};
   const onEvent=typeof options.onEvent==='function'?options.onEvent:()=>{};
   const audioFactory=options.audioFactory||(()=>{if(!root.document)return null;const audio=root.document.createElement('audio');audio.autoplay=true;audio.playsInline=true;return audio;});
-  let pc=null,channel=null,stream=null,remoteAudio=null,state='off',muted=false,assistantBuffer='',handledCalls=new Set();
+  let pc=null,channel=null,stream=null,remoteAudio=null,state='off',muted=false,assistantBuffer='',handledCalls=new Set(),finalTranscripts=new Set();
   function snapshot(){return {state,active:!!pc,muted,connected:channel?.readyState==='open'};}
   function setState(next,detail=''){state=next;onState({...snapshot(),detail});}
   function send(event){if(channel?.readyState!=='open')throw makeError('Voice data channel is not ready.','voice_channel_unavailable');channel.send(JSON.stringify(event));}
+  function emitFinal(role,text,itemId){
+   const clean=String(text||'').trim();if(!clean)return;
+   const key=[role,itemId||'',clean].join('|');if(finalTranscripts.has(key))return;finalTranscripts.add(key);
+   onTranscript({role,text:clean,final:true,itemId:itemId||null});
+  }
   async function runTool(item){
    const callId=String(item?.call_id||item?.callId||'');if(!callId||handledCalls.has(callId))return;
    handledCalls.add(callId);
@@ -48,10 +53,10 @@
    onEvent(event);
    if(event.type==='session.created'||event.type==='session.updated')setState(muted?'muted':'listening');
    if(event.type==='input_audio_buffer.speech_started'&&!muted)setState('listening','speech');
-   if(event.type==='conversation.item.input_audio_transcription.completed'&&event.transcript)onTranscript({role:'user',text:String(event.transcript),final:true,itemId:event.item_id||null});
+   if(event.type==='conversation.item.input_audio_transcription.completed'&&event.transcript)emitFinal('user',event.transcript,event.item_id);
    if(event.type==='conversation.item.input_audio_transcription.delta'&&event.delta)onTranscript({role:'user',text:String(event.delta),final:false,itemId:event.item_id||null});
    if(event.type==='response.output_audio_transcript.delta'&&event.delta){assistantBuffer+=String(event.delta);onTranscript({role:'assistant',text:String(event.delta),final:false,itemId:event.item_id||null});}
-   if(event.type==='response.output_audio_transcript.done'){const text=String(event.transcript||assistantBuffer||'').trim();if(text)onTranscript({role:'assistant',text,final:true,itemId:event.item_id||null});assistantBuffer='';}
+   if(event.type==='response.output_audio_transcript.done'){emitFinal('assistant',event.transcript||assistantBuffer,event.item_id);assistantBuffer='';}
    if(event.type==='response.output_item.done'&&event.item?.type==='function_call')void runTool(event.item);
    if(event.type==='response.function_call_arguments.done')void runTool({call_id:event.call_id,name:event.name,arguments:event.arguments});
    if(event.type==='error')setState('error',String(event.error?.message||'Realtime voice error'));
@@ -69,7 +74,9 @@
     remoteAudio=audioFactory();
     pc.ontrack=event=>{if(remoteAudio){const fallback=typeof MediaStream==='function'?new MediaStream([event.track]):null;remoteAudio.srcObject=event.streams?.[0]||fallback;const play=remoteAudio.play?.();if(play?.catch)play.catch(()=>{});}};
     pc.onconnectionstatechange=()=>{const value=pc?.connectionState;if(value==='failed'||value==='disconnected')setState('error','Voice connection lost.');if(value==='connected')setState(muted?'muted':'listening');};
-    channel=pc.createDataChannel('oai-events');channel.addEventListener?.('message',handleEvent);channel.onmessage=handleEvent;channel.onopen=()=>setState(muted?'muted':'listening');channel.onclose=()=>{if(pc)setState('error','Voice connection closed.');};
+    channel=pc.createDataChannel('oai-events');
+    if(typeof channel.addEventListener==='function')channel.addEventListener('message',handleEvent);else channel.onmessage=handleEvent;
+    channel.onopen=()=>setState(muted?'muted':'listening');channel.onclose=()=>{if(pc)setState('error','Voice connection closed.');};
     const offer=await pc.createOffer();await pc.setLocalDescription(offer);
     const response=await fetchImpl(CALLS_URL,{method:'POST',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/sdp'},body:offer.sdp});
     if(!response.ok)throw makeError('Realtime voice connection was rejected.','voice_webrtc_failed');
@@ -81,7 +88,7 @@
   function stop(){
    try{channel?.close?.();}catch{}channel=null;try{pc?.close?.();}catch{}pc=null;
    for(const track of stream?.getTracks?.()||[])try{track.stop();}catch{}stream=null;
-   if(remoteAudio){try{remoteAudio.pause?.();remoteAudio.srcObject=null;}catch{}}remoteAudio=null;assistantBuffer='';handledCalls=new Set();muted=false;setState('off');return snapshot();
+   if(remoteAudio){try{remoteAudio.pause?.();remoteAudio.srcObject=null;}catch{}}remoteAudio=null;assistantBuffer='';handledCalls=new Set();finalTranscripts=new Set();muted=false;setState('off');return snapshot();
   }
   return {start,stop,setMuted,toggleMuted,snapshot,handleEvent,send};
  }
