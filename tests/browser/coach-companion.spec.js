@@ -77,3 +77,31 @@ test('v2.79 signed-in companion sends bounded live workout state with explicit k
  expect(requestBody.context.companion.capabilities.workoutMutation).toBe(false);
  expect(requestBody.context.companion.capabilities.programmingMutation).toBe(false);
 });
+
+test('v2.82.1 mobile dark-mode Companion stays readable, inside the viewport, and dismissible',async({page})=>{
+ await page.setViewportSize({width:390,height:667});
+ await page.goto('/');
+ await page.evaluate(()=>document.body.classList.add('dark'));
+ await page.locator('#coach-companion-launcher').click();
+ await expect(page.locator('#coach-companion-panel')).toBeVisible();
+ await expect(page.locator('.cc-close')).toBeVisible();
+ await expect(page.locator('#coach-companion-backdrop')).toBeVisible();
+ const result=await page.evaluate(()=>{
+  const panel=document.getElementById('coach-companion-panel').getBoundingClientRect();
+  const head=document.querySelector('.cc-head').getBoundingClientRect();
+  const message=getComputedStyle(document.querySelector('.cc-msg.assistant'));
+  return {panelTop:panel.top,panelBottom:panel.bottom,headTop:head.top,headBottom:head.bottom,viewport:window.innerHeight,messageBackground:message.backgroundColor,messageColor:message.color,closeHeight:document.querySelector('.cc-close').getBoundingClientRect().height};
+ });
+ expect(result.panelTop).toBeGreaterThanOrEqual(0);
+ expect(result.panelBottom).toBeLessThanOrEqual(result.viewport+1);
+ expect(result.headTop).toBeGreaterThanOrEqual(result.panelTop-1);
+ expect(result.headBottom).toBeLessThanOrEqual(result.viewport);
+ expect(result.closeHeight).toBeGreaterThanOrEqual(44);
+ expect(result.messageBackground).toBe('rgb(30, 41, 59)');
+ expect(result.messageColor).toBe('rgb(226, 232, 240)');
+ await page.locator('#coach-companion-backdrop').click({position:{x:2,y:2}});
+ await expect(page.locator('#coach-companion-panel')).toBeHidden();
+ await page.locator('#coach-companion-launcher').click();
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#coach-companion-panel')).toBeHidden();
+});
