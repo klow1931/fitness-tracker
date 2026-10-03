@@ -8,7 +8,7 @@
     "check": "node scripts/check.js",
     "test": "node scripts/test.js",
     "test:browser": "playwright test",
-    "sync:www": "node scripts/sync-www.js && node scripts/check-mobile.js",
+    "sync:www": "node scripts/sync-www.js",
     "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js"
   },
   "dependencies": {
