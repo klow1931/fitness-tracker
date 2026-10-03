@@ -158,10 +158,9 @@ function initCalmNavigation(){
     }
   }
 
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.76.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.77.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 
-// Native dropdown stays keyboard-accessible and closes when leaving its menu.
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.getElementById('desktop-more');if(menu?.open){menu.open=false;menu.querySelector('summary')?.focus();}}});
