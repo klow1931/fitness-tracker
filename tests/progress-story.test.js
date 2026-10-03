@@ -25,7 +25,7 @@ const state={
 };
 
 const report=Story.analyze(state,{asOf,weeks:12});
-assert.equal(report.version,1);
+assert.equal(report.version,2);
 assert.equal(report.movements.length,1);
 const squat=report.movements[0];
 assert.equal(squat.lift,'squat');
@@ -39,6 +39,12 @@ assert.equal(squat.reviews[0].changed,true);
 assert.equal(report.decisions.rows.length,1);
 assert.equal(report.decisions.rows[0].changedLifts,1);
 assert.equal(report.program,null);
+assert.equal(report.summary.strength[0].status,'higher');
+assert.equal(report.summary.consistency.mode,'logged');
+assert(report.summary.milestones.some(x=>x.type==='capacity-high'&&x.label==='Squat'));
+assert.equal(report.summary.changes.changed,true);
+assert.equal(report.summary.changes.rows[0].action,'progress');
+assert.match(report.summary.note,/do not create a readiness score/i);
 
 const withRow={...state,workouts:[...state.workouts,
  {id:'row-1',date:'2026-09-10',createdAt:'2026-09-10T20:00:00.000Z',exercises:[{exerciseId:'row',name:'Chest-Supported Row',type:'strength',trackBy:'reps',sets:[{weight:60,reps:8,rpe:8}]}]},
@@ -53,6 +59,7 @@ assert.equal(rowReport.customMovement.overall.sessions,2);
 const sparse=Story.movementStory({...state,workouts:[workout('only-start','2026-07-10',100,8),workout('only-recent','2026-09-21',110,8)]},report.overview.markers[0],{asOf,weeks:12});
 assert.equal(sparse.direction.status,'sparse');
 assert.match(sparse.direction.reason,/At least two/);
+assert.equal(Story.capacityMilestone(sparse),null);
 
 const noRpe=Story.movementStory({...state,workouts:[
  workout('n1','2026-07-10',100,null),workout('n2','2026-07-24',102.5,null),
@@ -61,6 +68,7 @@ const noRpe=Story.movementStory({...state,workouts:[
 assert.equal(noRpe.direction.status,'insufficient');
 assert.equal(noRpe.recent.bestCapacity,null);
 assert(noRpe.recent.bestLoad);
+assert.equal(Story.capacityMilestone(noRpe),null);
 
 const fixture=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
 let programState=Phase.save(fixture.state,Phase.prepare(fixture.state,fixture.config,args),{confirmed:true,notes:'Progress story program'},{...args,id:'story-phase'});
@@ -74,4 +82,4 @@ assert.equal(programSummary.counts.completed,1);
 assert.equal(programSummary.adherence,100);
 assert.match(programSummary.definition,/explicitly skipped/);
 
-console.log('v2.72 progress stories preserve sparse evidence guards, adaptation history and resolved-session adherence');
+console.log('v2.78 progress stories preserve evidence guards and add deterministic summaries without scores');

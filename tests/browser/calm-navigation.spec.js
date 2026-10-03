@@ -18,7 +18,8 @@ test('v2.76 keeps primary navigation global and moves preferences to Profile',as
  await expect(page.locator('#profile-gym-mode')).toBeVisible();
  await expect(page.locator('#profile-theme')).toBeVisible();
  await expect(page.locator('#profile-more')).toContainText('Open only what you need');
- await expect(page.locator('#app-version')).toContainText('v2.77.0');
+ const release=await page.evaluate(()=>window.LoadnoteCore.RELEASE_VERSION);
+ await expect(page.locator('#app-version')).toContainText('v'+release);
 });
 
 test('v2.76 Home defaults to training and keeps secondary evidence behind disclosure',async({page})=>{

@@ -1,5 +1,9 @@
 const {test,expect}=require('playwright/test');
 test.use({serviceWorkers:'allow'});
+async function openProgressExplore(page){
+ const explore=page.locator('#progress-explore');
+ if(!(await explore.evaluate(el=>el.open)))await explore.locator(':scope > summary').click();
+}
 test.beforeEach(async({page})=>{
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>{
@@ -8,6 +12,7 @@ test.beforeEach(async({page})=>{
   data.workouts=ws;data.trainingBlocks=LoadnoteBlocks.upsert([],{name:'Return block',startDate:'2026-06-01',endDate:'2026-09-01',blockType:'return-reentry',loadStrategy:'conservative',progressionIntent:'return-ramp'},{now:'2026-09-01T18:00:00.000Z'});
   showTab('prs');renderTrainingReview();
  });
+ await openProgressExplore(page);
  await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();
 });
@@ -29,6 +34,7 @@ test('review loads offline in dark mode and converts display without rewriting k
  await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);});
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('prs');renderTrainingReview();});
+ await openProgressExplore(page);
  await page.locator('#training-review-panel > summary').click();
  await page.locator('#review-as-of').fill('2026-08-20');await page.locator('#review-refresh').click();await page.locator('.review-lift summary').click();
  await expect(page.locator('.review-lift')).toContainText('lb');

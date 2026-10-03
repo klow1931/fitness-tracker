@@ -1,4 +1,4 @@
-/* v2.72 — read-only training progress stories.
+/* v2.78 — read-only training progress stories.
  * Turns saved training, schedule execution and accepted review history into a
  * compact narrative without creating a new training score or adaptation policy.
  */
@@ -144,13 +144,60 @@
   }
   return {from,to:asOf,rows:rows.sort((a,b)=>b.date.localeCompare(a.date)||String(b.reviewId).localeCompare(String(a.reviewId)))};
  }
+ function strengthSummary(movements){
+  return (movements||[]).map(story=>({
+   key:story.key,name:story.name,label:story.label||story.name,source:story.source,lift:story.lift||null,status:story.direction?.status||'insufficient',
+   startKg:story.direction?.startKg??null,endKg:story.direction?.endKg??null,deltaKg:story.direction?.deltaKg??null,deltaPct:story.direction?.deltaPct??null,
+   baselineDays:story.baseline?.capacityDays||0,recentDays:story.recent?.capacityDays||0,reason:story.direction?.reason||story.direction?.note||story.notice
+  }));
+ }
+ function consistencySummary(report){
+  const plan=report?.overview?.schedule;
+  if(plan?.planned)return {mode:'scheduled',planned:plan.planned,resolved:plan.resolved,adherence:plan.adherence,counts:copy(plan.counts),definition:plan.definition};
+  const recent=report?.overview?.recent||{};
+  return {mode:'logged',planned:0,resolved:0,adherence:null,counts:null,sessions:recent.sessions||0,sessionsPerWeek:recent.sessionsPerWeek||0,definition:'No scheduled sessions fall in the recent four-week window, so Loadnote reports logged training without inventing adherence.'};
+ }
+ function capacityMilestone(story){
+  const recentStart=story?.recent?.from;if(!recentStart)return null;
+  const prior=(story.days||[]).filter(x=>x.date<recentStart&&x.bestCapacity).map(x=>x.bestCapacity);
+  const recent=(story.days||[]).filter(x=>x.date>=recentStart&&x.bestCapacity).map(x=>x.bestCapacity);
+  if(prior.length<2||!recent.length)return null;
+  const before=prior.slice().sort((a,b)=>b.capacityKg-a.capacityKg)[0],now=recent.slice().sort((a,b)=>b.capacityKg-a.capacityKg)[0];
+  if(!(now.capacityKg>before.capacityKg))return null;
+  const deltaPct=Core.round((now.capacityKg-before.capacityKg)/before.capacityKg*100,1);
+  return {type:'capacity-high',key:story.key,label:story.label||story.name,date:now.date,weeks:story.weeks,valueKg:now.capacityKg,previousKg:before.capacityKg,deltaPct,
+   headline:'New '+story.weeks+'-week demonstrated-capacity high',detail:'This is an RPE-aware training estimate from logged work, not a tested 1RM.'};
+ }
+ function milestoneSummary(report){
+  const rows=(report.movements||[]).map(capacityMilestone).filter(Boolean).sort((a,b)=>b.date.localeCompare(a.date));
+  const plan=report?.overview?.schedule;
+  if(plan?.resolved>=4&&plan.counts?.completed===plan.resolved&&Number(plan.counts?.skipped||0)===0){
+   rows.push({type:'resolved-consistency',date:report.asOf,headline:'All recent resolved sessions completed',detail:plan.counts.completed+' of '+plan.resolved+' resolved scheduled sessions were completed. Unresolved and cancelled sessions are not counted as failures.',completed:plan.counts.completed,resolved:plan.resolved});
+  }
+  return rows.slice(0,3);
+ }
+ function changesSummary(report){
+  const changes=[];
+  for(const row of report?.decisions?.rows||[]){
+   for(const lift of row.lifts||[])if(lift.changed)changes.push({date:row.date,reviewId:row.reviewId,sourceLabel:row.sourceLabel,lift:lift.lift||null,name:lift.name,action:lift.action,why:lift.why,evidence:copy(lift.evidence||[])});
+   if(changes.length>=3)break;
+  }
+  if(changes.length)return {changed:true,rows:changes.slice(0,3),latestReview:null};
+  const latest=report?.decisions?.rows?.[0]||null;
+  return {changed:false,rows:[],latestReview:latest?{date:latest.date,reviewId:latest.reviewId,sourceLabel:latest.sourceLabel}:null};
+ }
+ function storySummary(report){
+  return {strength:strengthSummary(report?.movements||[]),consistency:consistencySummary(report),milestones:milestoneSummary(report),changes:changesSummary(report),
+   note:'These stories summarize logged evidence and accepted review history. They do not create a readiness score or claim that a programming change caused a later result.'};
+ }
  function analyze(state,{asOf,weeks=12,movementKey=null}={}){
   if(!Schedule.date(asOf))throw Error('Choose a valid progress story date.');
   const snapshot=Analytics.analyze(state,{asOf}),markers=snapshot.markers.map(m=>movementStory(state,m,{asOf,weeks})),options=movementOptions(state,{asOf,weeks});
   const selected=movementKey?options.find(x=>x.key===movementKey)||null:null;
   const existing=selected?markers.find(x=>x.key===selected.key)||null:null,customMovement=selected?(existing||movementStory(state,selected,{asOf,weeks})):null;
-  return {version:1,asOf,weeks,overview:snapshot,program:selectedProgram(state,asOf),movements:markers,movementOptions:options,customMovement,decisions:decisionTimeline(state,{asOf,weeks}),
+  const report={version:2,asOf,weeks,overview:snapshot,program:selectedProgram(state,asOf),movements:markers,movementOptions:options,customMovement,decisions:decisionTimeline(state,{asOf,weeks}),
    notes:['Progress is descriptive evidence, not a readiness score.','Unresolved scheduled sessions are not treated as failures.','Accepted programming changes are shown from stored review history; Loadnote does not infer that a change caused a later performance result.']};
+  report.summary=storySummary(report);return report;
  }
- return {analyze,movementStory,movementOptions,exerciseEvidence,windowSummary,direction,reviewMarkers,selectedProgram,decisionTimeline};
+ return {analyze,movementStory,movementOptions,exerciseEvidence,windowSummary,direction,reviewMarkers,selectedProgram,decisionTimeline,strengthSummary,consistencySummary,capacityMilestone,milestoneSummary,changesSummary,storySummary};
 });

@@ -60,13 +60,17 @@ test('New lifter dashboard avoids premature fatigue and plateau signals and agre
  await expect(page.locator('#training-intelligence-lifts')).toContainText('possible plateau');
 });
 
-test('Progress record book searches compact rows and hides destructive action',async({page})=>{
+test('Progress record book stays available inside Explore Progress',async({page})=>{
  await page.evaluate(()=>{
   data.prs=[
    {id:'bench-one',exercise:'Competition Bench Press',weight:120,reps:1,date:'2026-01-02',estimated1RM:120},
    {id:'squat-three',exercise:'Competition Back Squat',weight:150,reps:3,date:'2026-01-01',estimated1RM:165}
   ];showTab('prs');renderPRs();
  });
+ const explore=page.locator('#progress-explore');
+ await expect(explore).not.toHaveAttribute('open','');
+ await expect(page.locator('#pr-search')).not.toBeVisible();
+ await explore.locator(':scope > summary').click();
  await expect(page.locator('#progress-workouts-count')).toContainText('sessions');
  await expect(page.locator('#progress-pr-count')).toHaveText('2 records');
  await expect(page.locator('#pr-entry')).not.toHaveAttribute('open','');
@@ -90,7 +94,7 @@ test('Progress record book searches compact rows and hides destructive action',a
  expect(await page.evaluate(()=>data.prs.map(p=>p.id))).toEqual(['bench-one','squat-three']);
 });
 
-test('Progress tells a compact strength story without turning sparse data into a score',async({page})=>{
+test('v2.78 Progress leads with strength, consistency, milestones and changes before details',async({page})=>{
  await page.evaluate(()=>{
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
   const asOf=today(),dates=[move(asOf,-77),move(asOf,-63),move(asOf,-21),move(asOf,-7)];
@@ -99,27 +103,32 @@ test('Progress tells a compact strength story without turning sparse data into a
   data.workouts=dates.map((date,i)=>({id:'progress-'+i,date,createdAt:date+'T20:00:00.000Z',exercises:[{name:'Competition Squat',exerciseId:'s',type:'strength',trackBy:'reps',sets:[{weight:100+i*5,reps:5,rpe:8}]},...(i>=2?[{name:'Chest-Supported Row',exerciseId:'row',type:'strength',trackBy:'reps',sets:[{weight:60+(i-2)*2.5,reps:8,rpe:8}]}]:[])]}));
   data.scheduledSessions=[];data.phasePrograms=[];data.meetCycles=[];data.phaseReviews=[];data.prs=[];invalidateViews();showTab('prs');
  });
- const host=page.locator('#progress-analytics');
+ const host=page.locator('#progress-analytics'),explore=page.locator('#progress-explore');
  await expect(host).toContainText('What your training is doing.');
- await expect(host).toContainText('Strength direction');
- await expect(host).toContainText('Recent evidence is higher');
- await expect(host).toContainText('Plan adherence');
+ await expect(host.locator('[data-progress-summary="strength"]')).toContainText('What is changing?');
+ await expect(host.locator('[data-progress-summary="consistency"]')).toContainText('Are you completing the plan?');
+ await expect(host.locator('[data-progress-summary="milestones"]')).toContainText('New 12-week demonstrated-capacity high');
+ await expect(host.locator('[data-progress-summary="changes"]')).toContainText('No accepted programming changes');
+ await expect(explore).not.toHaveAttribute('open','');
+ await expect(page.locator('#training-review')).not.toBeVisible();
  await page.evaluate(()=>setUnit('lb'));
  await expect(host).toContainText('lb');
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
- await host.getByRole('tab',{name:'Strength'}).click();
- await expect(host).toContainText('Confirmed competition lift');
- await expect(host).toContainText('Best recent set');
- await expect(host).toContainText('Recent demonstrated capacity');
- await host.locator('[data-progress-exercise]').selectOption('id:row');
- await expect(host).toContainText('Chest-Supported Row');
- await expect(host).toContainText('2 sessions');
- await host.getByRole('button',{name:'Exercise details'}).click();
+ await explore.locator(':scope > summary').click();
+ await explore.getByRole('tab',{name:'Strength evidence'}).click();
+ await expect(explore).toContainText('Confirmed competition lift');
+ await expect(explore).toContainText('Best recent set');
+ await expect(explore).toContainText('Recent demonstrated capacity');
+ await explore.locator('[data-progress-exercise]').selectOption('id:row');
+ await expect(explore).toContainText('Chest-Supported Row');
+ await expect(explore).toContainText('2 sessions');
+ await explore.getByRole('button',{name:'Exercise details'}).click();
  await expect(page.locator('#exercise-detail')).toBeVisible();
  await expect(page.locator('#exercise-detail-title')).toContainText('Chest-Supported Row');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
-test('Progress separates adherence from unresolved sessions and shows accepted program decisions',async({page})=>{
+test('v2.78 Progress keeps unresolved sessions separate and explains accepted changes',async({page})=>{
  await page.evaluate(()=>{
   const asOf=today(),move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
   const plan=LoadnoteIntent.createPrescription([{exerciseId:'s',name:'Competition Squat',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,targetRpe:8}]}],{type:'program',label:'Squat'},move(asOf,-40)+'T08:00:00.000Z');
@@ -137,17 +146,26 @@ test('Progress separates adherence from unresolved sessions and shows accepted p
   data.phaseReviews=[{id:'progress-review',programId:'old-program',phase:'accumulation',createdAt:move(asOf,-14)+'T10:00:00.000Z',choices:{squat:'progress',bench:'keep',deadlift:'keep'},exerciseLifts:{s:'squat'},findings:{squat:{name:'Competition Squat',reason:'Matched exposures stayed within the reviewed effort margin.',completedSessions:3,expectedSessions:3,comparedSets:9,overCapSessions:0,underCapSessions:3,averageRpe:7.5},bench:{name:'Bench'},deadlift:{name:'Deadlift'}},changes:[{id:'phase:old-program:w2d1',before,after}]}];
   data.phasePrograms=[];data.meetCycles=[];invalidateViews();showTab('prs');
  });
- const host=page.locator('#progress-analytics');
- await host.getByRole('tab',{name:'Adherence'}).click();
- const recent=host.locator('[data-progress-adherence="recent"]');
+ const host=page.locator('#progress-analytics'),explore=page.locator('#progress-explore');
+ const consistency=host.locator('[data-progress-summary="consistency"]');
+ await expect(consistency).toContainText('1 of 2 resolved sessions completed');
+ await expect(consistency).toContainText('50%');
+ await expect(consistency).toContainText('Unresolved');
+ const changes=host.locator('[data-progress-summary="changes"]');
+ await expect(changes).toContainText('Competition Squat');
+ await expect(changes).toContainText('Load progressed');
+ await expect(changes).toContainText('Matched exposures stayed within the reviewed effort margin');
+ await explore.locator(':scope > summary').click();
+ await explore.getByRole('tab',{name:'Consistency details'}).click();
+ const recent=explore.locator('[data-progress-adherence="recent"]');
  await expect(recent.locator('[data-progress-count="completed"] b')).toHaveText('1');
  await expect(recent.locator('[data-progress-count="skipped"] b')).toHaveText('1');
  await expect(recent.locator('[data-progress-count="unconfirmed"] b')).toHaveText('1');
  await expect(recent).toContainText('50%');
  await expect(recent).toContainText('not counted as failures');
- await host.getByRole('tab',{name:'Program history'}).click();
- await expect(host).toContainText('accumulation phase review');
- await expect(host).toContainText('1 changed');
- await expect(host).toContainText('Competition Squat');
- await expect(host).toContainText('Load progressed');
+ await explore.getByRole('tab',{name:'Programming changes'}).click();
+ await expect(explore).toContainText('accumulation phase review');
+ await expect(explore).toContainText('1 changed');
+ await expect(explore).toContainText('Competition Squat');
+ await expect(explore).toContainText('Load progressed');
 });
