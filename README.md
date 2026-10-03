@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.75.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.84.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.84 — Store Readiness Foundation
+
+Home uses the Today card for the primary workout action; the secondary athlete card is a training summary, not a competing launcher. Recoverable drafts, including scheduled drafts from another date, take precedence over a new session. Companion live polling preserves unchanged quick-question controls and their keyboard focus. Train no longer duplicates its empty-workout action.
+
+Release versions and documented packaging commands are synchronized. This release preserves schema v25, internal kg storage and all programming calculations. It does not claim native/store readiness or configure production services. See `docs/store-readiness.md` for the remaining release gates.
 
 ## v2.75 — Execution-First Workout Screen
 

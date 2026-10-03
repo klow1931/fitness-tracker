@@ -143,11 +143,11 @@ test('mobile Profile keeps secondary destinations one level below primary naviga
 
 test('focused Home and backup are compact until requested',async({page})=>{
  await expect(page.locator('#device-status-details')).not.toHaveAttribute('open','');
- await expect(page.locator('#athlete-home-command')).toContainText('Ready to train?');
+ await expect(page.locator('#athlete-home-command')).toContainText('Training summary');
  await expect(page.locator('#athlete-home-command')).toContainText('workouts in 30 days');
  await expect(page.locator('#athlete-home-command .focused-home-insights')).not.toHaveAttribute('open','');
  await expect(page.locator('#home-week-plan')).not.toHaveAttribute('open','');
- await page.locator('#athlete-home-command').getByRole('button',{name:'Start / continue workout'}).click();
+ await page.locator('#today-training [data-today-resume]').click();
  await expect(page.locator('#panel-workouts')).toBeVisible();
  await page.evaluate(()=>showTab('dashboard'));
  await page.locator('#device-status-details > summary').click();

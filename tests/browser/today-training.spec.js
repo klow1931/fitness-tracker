@@ -12,6 +12,27 @@ async function addToday(page,id='today-session'){
  },id);
 }
 async function openOptions(page){const button=page.locator('#training-cockpit [data-cockpit-options]');await expect(button).toBeVisible();if((await button.textContent())==='Workout options')await button.click();}
+test('v2.84 Home resumes another-date scheduled draft without competing start actions',async({page})=>{
+ await addToday(page,'new-today');
+ await page.evaluate(()=>{
+  fillWorkoutForm([{name:'Yesterday squat',type:'strength',sets:[{weight:100,reps:5,rpe:7}]}],'',false);
+  const plan=LoadnoteIntent.createPrescription([{name:'Yesterday squat',type:'strength',sets:[{weight:100,reps:5,targetRpe:7}]}],{type:'manual',label:'Yesterday squat'});
+  restoreSessionIntentDraft({prescription:plan,schedule:{id:'yesterday-squat',revisionAt:new Date().toISOString()}});
+  saveLoggerDraft();
+ });
+ expect(await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.schedule?.id)).toBe('yesterday-squat');
+ await page.reload();
+ await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ await expect(page.locator('#today-training')).toContainText('Workout in progress');
+ await expect(page.locator('#home-empty')).toBeHidden();
+ await expect(page.locator('#athlete-home-command')).not.toContainText('Ready to train?');
+ await expect(page.locator('#athlete-home-command .btn-primary')).toHaveCount(0);
+ await expect(page.locator('#today-training [data-today-train]')).toHaveCount(0);
+ await page.locator('#today-training [data-today-resume]').click();
+ await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Yesterday squat');
+ await expect(page.locator('#exercise-rows .set-weight').first()).toHaveValue('100');
+ await expect(page.locator('#exercise-rows .set-rpe').first()).toHaveValue('7');
+});
 test('Home makes today scheduled training a one-tap start and resumes the draft after reload',async({page})=>{
  await addToday(page);
  await expect(page.locator('#today-training')).toContainText('Bench day');

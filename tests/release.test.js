@@ -8,3 +8,18 @@ const b = Release.assess({schemaVersion:8, workouts:[]});
 assert.strictEqual(b.ready, false);
 assert.ok(b.checks.some(c=>c.id==='migration' && !c.ok));
 console.log('release tests passed');
+
+const fs=require('node:fs'),path=require('node:path');
+const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
+const pkg=require('../package.json'),lock=require('../package-lock.json');
+assert.equal(lock.version,pkg.version);
+assert.equal(lock.packages[''].version,pkg.version);
+assert(read('README.md').includes('**v'+pkg.version+' · Development build.**'));
+assert(read('CHANGELOG.md').startsWith('# v'+pkg.version+' —'));
+assert(read('sw.js').includes("const CACHE = 'loadnote-v"+pkg.version+"';"));
+assert(read('src/product/navigation.js').includes('Loadnote web v'+pkg.version+' ·'));
+assert.equal(require('../src/core/loadnote-core').RELEASE_VERSION,pkg.version);
+assert.equal(pkg.scripts['build:assets'],'node scripts/build-assets.js');
+assert(read('docs/mobile-release.md').includes('npm run sync:www'));
+for(const stale of ['npm run sync:web','npm run add:ios','npm run add:android'])assert(!read('docs/mobile-release.md').includes(stale));
+console.log('release documentation, lockfile, footer and packaging-command consistency passed');

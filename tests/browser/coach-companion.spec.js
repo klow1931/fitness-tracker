@@ -1,5 +1,28 @@
 const {test,expect}=require('playwright/test');
 
+test('v2.84 Companion refresh preserves quick controls, focus and a single working click handler',async({page})=>{
+ await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:false,authConfigured:false,loginAvailable:false})}));
+ await page.goto('/');
+ await page.locator('#coach-companion-launcher').click();
+ const question=page.locator('#cc-quick button').first();
+ await question.focus();
+ expect(await page.evaluate(()=>{
+  const before=document.querySelector('#cc-quick button');
+  for(let i=0;i<5;i++)LoadnoteCoachCompanionUI.refresh();
+  return before===document.querySelector('#cc-quick button')&&document.activeElement===before;
+ })).toBe(true);
+ await question.click();
+ await expect(page.locator('#cc-messages .user')).toHaveCount(1);
+ await expect(page.locator('#cc-messages .assistant')).toHaveCount(2);
+ await page.evaluate(()=>{
+  showTab('workouts');showSubTab('workouts','wo-log');
+  fillWorkoutForm([{name:'Competition Squat',type:'strength',sets:[{weight:100,reps:5,rpe:7}]}],'',false);
+  LoadnoteCoachCompanionUI.refresh();
+ });
+ await expect(page.locator('#cc-quick')).toContainText('Why this set?');
+ await expect(page.locator('#cc-quick')).not.toContainText('How is my training going?');
+});
+
 test.beforeEach(async({page})=>{
  await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});

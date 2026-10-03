@@ -127,9 +127,16 @@
   const chips=[`<span class="cc-chip">${esc(context.surface)}</span>`];
   if(context.liveWorkout?.active)chips.push('<span class="cc-chip live">Workout active</span>');
   if(context.restTimer?.active)chips.push(`<span class="cc-chip">Rest ${esc(context.restTimer.remainingSeconds)}s${context.restTimer.paused?' paused':''}</span>`);
-  host.innerHTML=chips.join('');
-  quick.innerHTML=quickButtons(context).map(text=>`<button type="button" data-cc-q="${esc(text)}">${esc(text)}</button>`).join('');
-  quick.querySelectorAll('[data-cc-q]').forEach(button=>button.addEventListener('click',()=>void ask(button.dataset.ccQ)));
+  const chipHtml=chips.join('');
+  if(host.innerHTML!==chipHtml)host.innerHTML=chipHtml;
+  // Live rest/context polling must not detach a focused or pressed question.
+  // Replace controls only when the available questions actually change.
+  const questions=quickButtons(context),key=JSON.stringify(questions);
+  if(quick.dataset.questions!==key){
+   quick.dataset.questions=key;
+   quick.innerHTML=questions.map(text=>`<button type="button" data-cc-q="${esc(text)}">${esc(text)}</button>`).join('');
+   quick.querySelectorAll('[data-cc-q]').forEach(button=>button.addEventListener('click',()=>void ask(button.dataset.ccQ)));
+  }
  }
  function queueRefresh(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh();});}
  function execute(command){
