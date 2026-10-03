@@ -1,6 +1,12 @@
 # Loadnote
 
-**v2.84.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.85.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.85 — Native Beta Foundation
+
+Unsigned Android and iOS source projects now package the existing local training app using the development identifier `app.loadnote.mobile`. Native account, cloud, online AI and voice stay disabled. JSON and photo backups use an explicit system share sheet; returning from that sheet is not proof a backup was saved. CSV export remains web-only in this beta.
+
+Run `npm run check:native` to synchronize and validate the packaging boundary. This is not a native compilation or device test. Signing, production identifiers, store target-SDK review and physical-device acceptance remain open. Schema v25 and training calculations are unchanged. See `docs/native-beta.md`.
 
 ## v2.84 — Store Readiness Foundation
 

@@ -8,7 +8,9 @@ for (const dir of ['src','assets']) { fs.cpSync(path.join(root,dir),path.join(ou
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 const mobileIndex=path.join(out,'index.html');
 if(fs.existsSync(mobileIndex)){
- const html=fs.readFileSync(mobileIndex,'utf8').replace(/Loadnote web v\d+\.\d+\.\d+ ·/,'Loadnote web v'+pkg.version+' ·');
+ fs.copyFileSync(path.join(root,'node_modules/@capacitor/core/dist/capacitor.js'),path.join(out,'assets/capacitor.js'));
+ fs.copyFileSync(path.join(root,'node_modules/@capacitor/core/LICENSE'),path.join(out,'assets/capacitor-LICENSE.txt'));
+ const html=fs.readFileSync(mobileIndex,'utf8').replace(/Loadnote web v\d+\.\d+\.\d+ ·/,'Loadnote web v'+pkg.version+' ·').replace('<script src="src/product/platform-runtime.js"','<script src="assets/capacitor.js" defer></script>\n  <script src="src/product/platform-runtime.js"');
  fs.writeFileSync(mobileIndex,html);
 }
 console.log('Synced web assets to www/');

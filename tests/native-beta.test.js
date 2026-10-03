@@ -1,0 +1,45 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const Backup=require('../src/product/native-backup'),Account=require('../src/product/account-session');
+(async()=>{
+ assert.deepEqual(await Backup.share('unused','{}',{}),{native:false});
+ const calls=[],plugins={Filesystem:{writeFile:async options=>calls.push(['write',options]),getUri:async options=>{calls.push(['uri',options]);return {uri:'file:///cache/loadnote-exports/loadnote-2026-10-03.json'};}},Share:{share:async options=>calls.push(['share',options])}};
+ const capacitor={isNativePlatform:()=>true,registerPlugin:name=>plugins[name]};
+ const result=await Backup.share('loadnote-2026-10-03.json','{"workouts":[]}',capacitor);
+ assert.equal(result.verifiedDestination,false);assert.equal(calls.length,3);
+ assert.deepEqual(calls[0][1],{path:'loadnote-exports/loadnote-2026-10-03.json',directory:'CACHE',data:'{"workouts":[]}',encoding:'utf8',recursive:true});
+ assert.deepEqual(calls[2][1].files,['file:///cache/loadnote-exports/loadnote-2026-10-03.json']);
+ await assert.rejects(Backup.share('../secret.json','{}',capacitor),/Invalid backup filename/);
+ await assert.rejects(Backup.share('loadnote-valid.json','{}',{isNativePlatform:()=>true}),/bridge unavailable/);
+ plugins.Share.share=async()=>{throw Error('cancelled');};await assert.rejects(Backup.share('loadnote-valid.json','{}',capacitor),/cancelled/);
+ plugins.Filesystem.writeFile=async()=>{throw Error('disk full');};await assert.rejects(Backup.share('loadnote-valid.json','{}',capacitor),/disk full/);
+ globalThis.Capacitor=capacitor;
+ let fetched=0;const fakeFetch=async()=>{fetched++;throw Error('should not reach network');};
+ Account._applyForTest({authenticated:true,account:{id:'previous'},transport:'cookie',csrf:'secret',loginAvailable:true});
+ const state=await Account.refresh(fakeFetch);assert.equal(state.status,'unavailable');assert.equal(state.account,null);assert.equal(state.csrf,null);assert.equal(state.loginAvailable,false);
+ for(const url of ['/api/auth/login','/api/sync','/api/coach','/api/voice'])await assert.rejects(Account.request(url,{},fakeFetch),error=>error.code==='native_beta_local_only');
+ const Coach=require('../src/product/coach-client'),Voice=require('../src/product/coach-voice');
+ assert.equal((await Coach.availability({request:fakeFetch})).reason,'native_beta_local_only');
+ await assert.rejects(Coach.ask({question:'test'},{request:fakeFetch}),error=>error.code==='native_beta_local_only');
+ let microphone=0,sessionRequests=0;
+ const voice=Voice.createController({requestSession:async()=>{sessionRequests++;},mediaDevices:{getUserMedia:async()=>{microphone++;}}});
+ await assert.rejects(voice.start(),error=>error.code==='native_beta_local_only');assert.equal(microphone,0);assert.equal(sessionRequests,0);
+ assert.equal(fetched,0);delete globalThis.Capacitor;
+ // Lifecycle must not register a browser service worker in a packaged shell.
+ let registered=0;const connection={textContent:''},window={LoadnotePlatform:{detect:()=>({native:true}),apply:(_,platform)=>platform},LoadnoteAccountSession:{refresh:async()=>state},addEventListener:()=>{}};
+ const context={window,document:{getElementById:id=>id==='connection-status'?connection:null},navigator:{onLine:true,serviceWorker:{register:()=>{registered++;}}}};
+ vm.runInNewContext(fs.readFileSync(require.resolve('../src/product/app-lifecycle'),'utf8'),context);
+ await window.LoadnoteLifecycle.start();assert.equal(registered,0);assert(connection.textContent.includes('Native beta'));
+ // Exercise the real export functions without a browser download fallback.
+ const Integrity=require('../src/product/data-integrity'),messages=[],exports=[];
+ const stateData={schemaVersion:25,workouts:[{id:'native-test',date:'2026-10-03',exercises:[]}],progressPhotos:[{id:'photo',dataUrl:'image-binary'}],recoverySnapshots:[{id:'private-recovery'}],lastExportDate:'2026-01-01',backupBannerDismissed:null};
+ const transfer={data:stateData,document:{addEventListener:()=>{}},today:()=> '2026-10-03',LoadnoteIntegrity:Integrity,showToast:message=>messages.push(message),window:{Capacitor:{isNativePlatform:()=>true},LoadnoteCore:{RELEASE_VERSION:'2.85.0'},LoadnoteNativeBackup:{share:async(filename,text)=>exports.push({filename,text})}}};
+ vm.runInNewContext(fs.readFileSync(require.resolve('../src/product/data-transfer'),'utf8'),transfer);
+ await transfer.exportData();
+ const payload=JSON.parse(exports[0].text);assert.equal(Integrity.verifyBackupManifest(payload).verified,true);assert.equal(payload._loadnoteBackup.releaseVersion,'2.85.0');
+ assert.equal(payload.recoverySnapshots.length,0);assert.equal(payload.progressPhotos[0].dataUrl,undefined);
+ assert.equal(stateData.lastExportDate,'2026-01-01');assert.equal(stateData.backupBannerDismissed,null);assert.equal(stateData.progressPhotos[0].dataUrl,'image-binary');
+ await transfer.exportPhotosBackup();assert.equal(JSON.parse(exports[1].text)[0].dataUrl,'image-binary');
+ transfer.window.LoadnoteNativeBackup.share=async()=>{throw Error('cancelled');};await transfer.exportData();assert(messages.at(-1).includes('not confirmed'));
+ transfer.exportCSV();assert(messages.at(-1).includes('CSV export is not supported'));assert.equal(stateData.lastExportDate,'2026-01-01');
+ console.log('Native beta backup, cancellation/failure, local-only account and service-worker boundary tests passed');
+})().catch(error=>{console.error(error);process.exit(1);});

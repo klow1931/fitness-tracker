@@ -167,7 +167,7 @@
   if(!signedIn){
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text));}catch{}
-   reply=reply||'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.';
+   reply=reply||(window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
    append(reply,'assistant','Built-in companion');history.push({role:'user',content:text},{role:'assistant',content:reply});refresh();return reply;
   }
   try{

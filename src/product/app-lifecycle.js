@@ -1,13 +1,14 @@
 (function(){
  'use strict';
- function connection(){const el=document.getElementById('connection-status');if(el)el.textContent=navigator.onLine?'Online · food lookup and online coach available':'Offline · log workouts; online coach and food lookup need internet';}
+ function connection(){const el=document.getElementById('connection-status');if(el)el.textContent=window.LoadnoteRuntime?.native?'Native beta · local training · account, cloud and online AI unavailable':navigator.onLine?'Online · food lookup and online coach available':'Offline · log workouts; online coach and food lookup need internet';}
  async function start(){
   const platform=window.LoadnotePlatform?.detect(window)||{surface:'browser',native:false,nativePlatform:null,standalone:false};
   window.LoadnoteRuntime=window.LoadnotePlatform?.apply(document,platform)||platform;
   connection();window.addEventListener('online',connection);window.addEventListener('offline',connection);
   const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh().then(()=>window.renderAccountStatus?.());};
   refreshAccount();window.addEventListener('online',refreshAccount);
-  if(!('serviceWorker' in navigator))return;
+  // Installed native assets update through the signed app, not a web cache.
+  if(platform.native||!('serviceWorker' in navigator))return;
   const banner=document.getElementById('app-update'),status=document.getElementById('app-update-status'),button=document.getElementById('apply-app-update');
   try{
    const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});

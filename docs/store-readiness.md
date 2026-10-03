@@ -21,12 +21,12 @@ Companion polling preserves unchanged question controls and keyboard focus.
 ## Gate 2: native beta (requires platform setup)
 
 - Confirm identifiers, signing ownership, developer accounts and toolchains.
-- Generate Capacitor projects using `docs/mobile-release.md`.
-- Validate native authentication redirects and secure session persistence.
+- v2.85 generates unsigned local-only projects; synchronize using `docs/native-beta.md`.
+- Validate native authentication redirects and secure session persistence before enabling account services (disabled in this beta).
 - Test small/large iPhones and Android devices, VoiceOver/TalkBack, text scaling,
   keyboard obstruction, app termination, lock/background/foreground, offline
   recovery and upgrade persistence.
-- Test rest timing and denied microphone permission/audio interruptions.
+- Test rest timing; test denied microphone permission/audio interruptions before enabling voice (disabled in this beta).
 - Distribute signed TestFlight/Play closed-test builds, not just a web bundle.
 
 ## Gate 3: production operations and privacy

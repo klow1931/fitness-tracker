@@ -115,6 +115,7 @@
  }
  function render(){
   const host=document.getElementById('account-status');if(!host||!window.LoadnoteAccountSession)return;
+  if(window.Capacitor?.isNativePlatform?.()){host.innerHTML='<p class="more-hint">Native beta: local training only. Sign-in, cloud sync, online AI and voice are not enabled. Export a JSON backup to Files before reinstalling or changing devices.</p>';return;}
   const session=window.LoadnoteAccountSession.snapshot();
   remoteRenderToken++;
   if(session.status==='authenticated'&&session.account){
