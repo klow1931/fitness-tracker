@@ -12,3 +12,4 @@ test-results/
 *.p12
 *.mobileprovision
 *.provisionprofile
+build-ios/

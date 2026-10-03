@@ -33,6 +33,8 @@ npm run check:native
 
 All rows below are **not yet run** on native hardware. Record OS version, device, build number, result and any issue before approval.
 
+v2.86 adds unsigned cloud compilation under `ios-cloud-build.md`. A passing compile job is native compiler evidence, not a completed physical-device acceptance row.
+
 | Check | Required evidence |
 |---|---|
 | First launch / branding / navigation | Android and iPhone screenshots; no blank screen; back navigation and safe areas usable |

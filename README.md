@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.85.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.86.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.86 — Cloud iOS Compilation
+
+GitHub-hosted macOS now compiles the native app for simulator and device SDKs without Apple credentials or code signing. The shared Xcode scheme and compiled-bundle checks catch native errors, missing web/privacy resources and release-version drift. Build logs, toolchain versions and result bundles are retained for review. This compiles the app; it does not launch it, sign it or distribute it. See `docs/ios-cloud-build.md`.
 
 ## v2.85 — Native Beta Foundation
 
