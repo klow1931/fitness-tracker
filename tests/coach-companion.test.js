@@ -23,6 +23,7 @@ assert.equal(live.capabilities.programmingMutation,false);
 assert.match(Companion.currentSetSummary(live),/Competition Squat/);
 assert.match(Companion.currentSetSummary(live),/set 2 of 4/i);
 assert.match(Companion.offlineReply(live,"What's next?"),/405 lb × 4 @8/);
+assert.match(Companion.offlineReply(live,'What’s next?'),/405 lb × 4 @8/);
 assert.match(Companion.offlineReply(live,'How much rest is left?'),/125 seconds/);
 
 assert.deepEqual(Companion.classifyCommand('Start a 3 minute rest'),{kind:'rest_start',risk:'reversible',args:{seconds:180}});
