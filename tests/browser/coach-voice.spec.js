@@ -9,7 +9,7 @@ test.beforeEach(async({page})=>{
   window.RTCPeerConnection=class{
    constructor(){this.connectionState='new';}
    addTrack(){}
-   createDataChannel(){const channel={readyState:'open',send:value=>window.__voiceEvents.push(JSON.parse(value)),close(){this.readyState='closed';},addEventListener(type,fn){if(type==='message')this._message=fn;}};this.channel=channel;return channel;}
+   createDataChannel(){const channel={readyState:'open',send:value=>window.__voiceEvents.push(JSON.parse(value)),close(){this.readyState='closed';},addEventListener(type,fn){if(type==='message')this._message=fn;}};this.channel=channel;window.__voiceChannel=channel;return channel;}
    async createOffer(){return {type:'offer',sdp:'test-offer'};}
    async setLocalDescription(value){this.localDescription=value;}
    async setRemoteDescription(value){this.remoteDescription=value;setTimeout(()=>this.channel?.onopen?.(),0);}
@@ -18,7 +18,13 @@ test.beforeEach(async({page})=>{
  });
 });
 
-test('v2.81 voice remains explicit, shows mic controls, and releases the microphone',async({page})=>{
+async function mockSignedInVoice(page){
+ await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:true,account:{id:'acct_voice_test',displayName:'Athlete',providers:['test']},expiresAt:'2030-01-01T00:00:00.000Z',csrf:'voice-csrf',transport:'cookie',authConfigured:true,authRequired:true,loginAvailable:true})}));
+ await page.route('**/api/voice/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({clientSecret:{value:'TEST_EPHEMERAL_VALUE'},model:'gpt-realtime-2.1',voice:'marin'})}));
+ await page.route('https://api.openai.com/v1/realtime/calls',route=>route.fulfill({status:200,contentType:'application/sdp',body:'test-answer'}));
+}
+
+test('v2.82 voice remains explicit, shows mic controls, and releases the microphone',async({page})=>{
  let sessionCalls=0,realtimeCalls=0;
  await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:true,account:{id:'acct_voice_test',displayName:'Athlete',providers:['test']},expiresAt:'2030-01-01T00:00:00.000Z',csrf:'voice-csrf',transport:'cookie',authConfigured:true,authRequired:true,loginAvailable:true})}));
  await page.route('**/api/voice/session',route=>{sessionCalls++;expect(route.request().headers()['x-loadnote-csrf']).toBe('voice-csrf');return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({clientSecret:{value:'TEST_EPHEMERAL_VALUE'},model:'gpt-realtime-2.1',voice:'marin'})});});
@@ -65,4 +71,36 @@ test('v2.81 partial voice entry preserves missing RPE and duplicate completion i
  const completed=await page.evaluate(()=>window.LoadnoteCoachVoiceUI.tool('log_current_set',{weight:140,weightUnit:'kg',reps:3,rpe:8.5}));expect(completed.ok).toBe(true);await expect(page.locator('.set-done-check').first()).toBeChecked();
  const duplicate=await page.evaluate(()=>window.LoadnoteCoachVoiceUI.tool('log_current_set',{weight:140,weightUnit:'kg',reps:3,rpe:8.5}));expect(duplicate.ok).toBe(true);expect(duplicate.duplicate).toBe(true);
  await expect(page.locator('.set-weight').nth(1)).toHaveValue('');await expect(page.locator('.set-rpe').nth(1)).toHaveValue('');
+});
+
+test('v2.82 proactive cues persist mode, pause safely, and speak only during an active voice session',async({page})=>{
+ await mockSignedInVoice(page);await page.goto('/');await page.locator('#coach-companion-launcher').click();
+ await expect.poll(()=>page.evaluate(()=>!!window.LoadnoteProactiveCoachUI&&!!window.LoadnoteCoachVoiceUI)).toBe(true);
+ const mode=page.locator('#cc-proactive select');await expect(mode).toHaveValue('normal');
+ await mode.selectOption('proactive');expect(await page.evaluate(()=>localStorage.getItem('loadnote-proactive-coach-mode-v1'))).toBe('proactive');
+ let before=await page.evaluate(()=>window.__voiceEvents.length);
+ const inactive=await page.evaluate(()=>window.LoadnoteProactiveCoachUI.offer(window.LoadnoteProactiveCoach.restCompleteEvent({nextLabel:'Bench set 2'})));
+ expect(inactive).toBe(false);expect(await page.evaluate(()=>window.__voiceEvents.length)).toBe(before);
+ await page.locator('#cc-voice .cc-voice-start').click();await expect(page.locator('#cc-voice .cc-voice-state')).toContainText('Listening');
+ before=await page.evaluate(()=>window.__voiceEvents.length);
+ const offered=await page.evaluate(()=>window.LoadnoteProactiveCoachUI.offer(window.LoadnoteProactiveCoach.restCompleteEvent({nextLabel:'Bench set 2: 225 lb × 5'})));
+ expect(offered).toBe(true);
+ await expect.poll(()=>page.evaluate(()=>window.__voiceEvents.slice(-1)[0]?.type)).toBe('response.create');
+ expect(await page.evaluate(()=>window.__voiceEvents.slice(-1)[0].response.instructions)).toContain('Bench set 2: 225 lb × 5');
+ const paused=await page.evaluate(()=>window.LoadnoteCoachVoiceUI.tool('pause_proactive_coaching',{}));expect(paused.ok).toBe(true);expect(paused.proactive.paused).toBe(true);await expect(page.locator('.cc-voice-state')).toContainText('Listening');
+ before=await page.evaluate(()=>window.__voiceEvents.length);
+ const blocked=await page.evaluate(()=>window.LoadnoteProactiveCoachUI.offer(window.LoadnoteProactiveCoach.workoutCompleteEvent()));expect(blocked).toBe(false);expect(await page.evaluate(()=>window.__voiceEvents.length)).toBe(before);
+ const resumed=await page.evaluate(()=>window.LoadnoteCoachVoiceUI.tool('resume_proactive_coaching',{}));expect(resumed.proactive.paused).toBe(false);
+});
+
+test('v2.82 proactive Coach queues an important cue while the athlete is speaking and delivers it after speech stops',async({page})=>{
+ await mockSignedInVoice(page);await page.goto('/');await page.locator('#coach-companion-launcher').click();await page.locator('#cc-voice .cc-voice-start').click();await expect(page.locator('#cc-voice .cc-voice-state')).toContainText('Listening');
+ await page.evaluate(()=>window.__voiceChannel._message({data:JSON.stringify({type:'input_audio_buffer.speech_started'})}));
+ await expect.poll(()=>page.evaluate(()=>window.LoadnoteCoachVoiceUI.activity().userSpeaking)).toBe(true);
+ const before=await page.evaluate(()=>window.__voiceEvents.length);
+ const queued=await page.evaluate(()=>window.LoadnoteProactiveCoachUI.offer(window.LoadnoteProactiveCoach.rpeDeviationEvent({exercise:'Squat',setNumber:2,actualRpe:9,targetRpe:8})));
+ expect(queued).toBe(false);expect(await page.evaluate(()=>window.LoadnoteProactiveCoachUI.state().queued)).toBe(true);expect(await page.evaluate(()=>window.__voiceEvents.length)).toBe(before);
+ await page.evaluate(()=>window.__voiceChannel._message({data:JSON.stringify({type:'input_audio_buffer.speech_stopped'})}));
+ await expect.poll(()=>page.evaluate(()=>window.LoadnoteProactiveCoachUI.state().queued)).toBe(false);
+ await expect.poll(()=>page.evaluate(()=>window.__voiceEvents.some(event=>event.type==='response.create'&&String(event.response?.instructions||'').includes('Squat set 2 was RPE 9')))).toBe(true);
 });
