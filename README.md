@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.86.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.87.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.87 — Beta Onboarding & Data Safety
+
+Native-local welcome, reviewed browser-to-app restore guidance, a before-reinstall backup checklist and privacy-minimal save diagnostics. Browser account onboarding, schema v25 and training calculations unchanged. See [release notes](docs/releases-v2.87.md).
 
 ## v2.86 — Cloud iOS Compilation
 

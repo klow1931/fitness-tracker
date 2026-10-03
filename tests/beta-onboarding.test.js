@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),Beta=require('../src/product/beta-onboarding');
+assert.deepEqual(Beta.diagnostics({version:'2.87.0',platform:'ios',backend:'indexedDB',saveStatus:'saved',workouts:[{private:'secret'}]}),{version:'2.87.0',platform:'ios',backend:'indexedDB',saveStatus:'saved'});
+assert.deepEqual(Beta.diagnostics({platform:'private-device-name',backend:'secret',saveStatus:'healthy'}),{version:'Unknown',platform:'native',backend:'Unknown',saveStatus:'unknown'});
+console.log('Beta diagnostics allowlist and honest save-status tests passed');
+const fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync(require.resolve('../src/product/beta-onboarding'),'utf8');
+const welcome={hidden:true,scrollIntoView(){}},tools={hidden:true},nodes={'native-beta-welcome':welcome,'native-beta-safety':tools,'native-welcome-dismiss':{},'native-welcome-reopen':{},'native-import-guide':{},'native-diagnostics-refresh':{},'native-diagnostics':{textContent:''}};
+let touched=0;const context={LoadnoteRuntime:{native:false},document:{getElementById:id=>{touched++;return nodes[id]||null;}},localStorage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}};
+vm.runInNewContext(source,context);context.LoadnoteBetaOnboarding.start();assert.equal(touched,0);
+context.LoadnoteRuntime={native:true,nativePlatform:'ios'};context.LoadnoteSaveHealth='failed';context.LoadnoteBetaOnboarding.start();
+assert.equal(welcome.hidden,false);assert.equal(tools.hidden,false);assert(nodes['native-diagnostics'].textContent.includes('Save failed'));
+nodes['native-welcome-dismiss'].onclick();assert.equal(welcome.hidden,true);nodes['native-welcome-reopen'].onclick();assert.equal(welcome.hidden,false);
+console.log('Native welcome tolerates unavailable preference storage and leaves browser UI untouched');

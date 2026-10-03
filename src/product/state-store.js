@@ -161,14 +161,16 @@
 
     let persistenceWriter;
     function persistNow(state) {
+      window.LoadnoteSaveHealth='pending';window.LoadnoteBetaOnboarding?.refresh();
       const status=document.getElementById('device-save-status');
       if(status)status.textContent='Saving on this device…';
       if(typeof invalidateViews==='function')invalidateViews();
       if (!persistenceWriter) persistenceWriter = LoadnotePersistence.createWriter({backend:()=>storageBackend,setBackend:value=>{storageBackend=value;},idbSet,local:localStorage,key:STORAGE_KEY});
       return persistenceWriter(state || data).then(() => {
+        window.LoadnoteSaveHealth='saved';window.LoadnoteBetaOnboarding?.refresh();
         document.getElementById('storage-error-banner')?.remove();
         if(status)status.textContent='Saved on this device';
-      }).catch(error=>{if(status)status.textContent='Not saved — export a backup';throw error;});
+      }).catch(error=>{window.LoadnoteSaveHealth='failed';window.LoadnoteBetaOnboarding?.refresh();if(status)status.textContent='Not saved — export a backup';throw error;});
     }
     function reportStorageFailure(error) {
       console.warn('Loadnote could not persist changes', error);
