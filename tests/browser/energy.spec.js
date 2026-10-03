@@ -6,6 +6,11 @@ test.beforeEach(async({page})=>{
  await page.addStyleTag({content:'.hidden{display:none!important}'});
  await page.evaluate(()=>showTab('dashboard'));
 });
+async function openProgressExplore(page){
+ await page.evaluate(()=>showTab('prs'));
+ const explore=page.locator('#progress-explore');
+ if(!(await explore.evaluate(el=>el.open)))await explore.locator(':scope > summary').click();
+}
 test('Home logger shortcut preserves an unfinished session',async({page})=>{
  await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});
  await page.locator('#exercise-rows .ex-name').first().fill('Bench Press');
@@ -23,7 +28,7 @@ test('Weekly rhythm reflects saved sessions and opens their calendar day',async(
  await expect(page.locator('#calendar-grid [aria-pressed="true"]')).toHaveCount(1);
 });
 test('New PR feedback distinguishes improvement from correction',async({page})=>{
- await page.evaluate(()=>showTab('prs'));
+ await openProgressExplore(page);
  await page.locator('#pr-entry > summary').click();
  for(const [weight,expected] of [['100','New personal best'],['90','PR updated']]){
    await page.locator('#pr-exercise').fill('Bench Press');await page.locator('#pr-weight').fill(weight);
