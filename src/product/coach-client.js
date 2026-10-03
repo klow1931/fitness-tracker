@@ -1,4 +1,4 @@
-/* v2.82 — consumer Coach client + Companion bootstrap.
+/* v2.83 — consumer Coach client + Companion bootstrap.
  * Production-facing requests use only the Loadnote server boundary.
  * No provider key, base URL, model or raw system prompt is accepted here.
  */
@@ -55,6 +55,8 @@
    const script=document.createElement('script');script.src=src;script.defer=true;script.dataset.loadnoteCompanion=src;script.onload=resolve;script.onerror=()=>reject(new Error('Unable to load '+src));document.head.appendChild(script);
   });
   const start=()=>load('src/product/coach-companion.js')
+   .then(()=>load('src/product/companion-intelligence.js'))
+   .then(()=>load('src/product/companion-intelligence-ui.js'))
    .then(()=>load('src/product/coach-companion-ui.js'))
    .then(()=>load('src/product/coach-voice.js'))
    .then(()=>load('src/product/voice-workout-logging.js'))
