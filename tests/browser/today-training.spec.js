@@ -20,7 +20,12 @@ test('v2.84 Home resumes another-date scheduled draft without competing start ac
   restoreSessionIntentDraft({prescription:plan,schedule:{id:'yesterday-squat',revisionAt:new Date().toISOString()}});
   saveLoggerDraft();
  });
+ // Template loading deliberately clears actual RPE. Enter performed effort
+ // through the logger, as an athlete would, before asserting recovery.
+ await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});
+ await page.locator('#exercise-rows .set-rpe').first().fill('7');
  expect(await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.schedule?.id)).toBe('yesterday-squat');
+ expect(await page.evaluate(()=>readLoggerDraft()?.rows?.[0]?.sets?.[0]?.rpe)).toBe('7');
  await page.reload();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  await expect(page.locator('#today-training')).toContainText('Workout in progress');

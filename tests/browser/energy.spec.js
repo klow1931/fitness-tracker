@@ -15,7 +15,7 @@ test('Home logger shortcut preserves an unfinished session',async({page})=>{
  await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});
  await page.locator('#exercise-rows .ex-name').first().fill('Bench Press');
  await page.evaluate(()=>showTab('dashboard'));
- await page.getByRole('button',{name:'Start / continue workout',exact:true}).click();
+ await page.locator('#today-training').getByRole('button',{name:'Resume workout',exact:true}).click();
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Bench Press');
 });
 test('Weekly rhythm reflects saved sessions and opens their calendar day',async({page})=>{
