@@ -3,6 +3,7 @@
 - Make Today the primary Home workout action; retain training summaries and plan previews without a competing Start button.
 - Suppress empty-log onboarding when recoverable work or today's scheduled session exists.
 - Recover drafts linked to another date before starting new scheduled work.
+- Refresh cached Home when a draft is created, edited or cleared without a saved-data revision.
 - Preserve Companion quick-question DOM nodes when live context changes do not change available questions.
 - Remove duplicate Start empty workout controls from the Train launcher.
 - Synchronize release/lockfile metadata and repair documented asset/mobile commands.

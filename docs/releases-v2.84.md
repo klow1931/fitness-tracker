@@ -5,6 +5,7 @@
 - Today is the primary Home workout action; the athlete card becomes a summary.
 - Hide empty-log onboarding while unfinished or today's scheduled work exists.
 - Resume scheduled drafts from another date before starting a new session.
+- Refresh Home's cached view when the logger draft changes or is cleared.
 - Preserve unchanged Companion quick-question controls across refreshes.
 - Avoid duplicate empty-workout actions in Train.
 - Synchronize README, changelog, lockfile, footer, export and cache versions.

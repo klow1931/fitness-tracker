@@ -4,7 +4,10 @@ function invalidateViews() { LoadnoteNavigation.revision++; }
 function navigationKey(panel) {return panel+':'+(LoadnoteNavigation.sub[panel] || 'main');}
 function renderVisibleView(panel,sub) {
   const nav=LoadnoteNavigation,key=panel+':'+(sub || 'main');
-  const stamp=nav.revision+':'+today()+':'+(panel==='nutrition'?document.getElementById('nu-date').value:'');
+  // Draft persistence is separate from saved training data. Home must refresh
+  // after logger edits/clears even when the data revision did not change.
+  const draftStamp=panel==='dashboard'?(readLoggerDraft()?.updatedAt||'none'):'';
+  const stamp=nav.revision+':'+today()+':'+(panel==='nutrition'?document.getElementById('nu-date').value:'')+':'+draftStamp;
   if(nav.rendered[key]===stamp){nav.metrics.skips++;return;}
   const start=performance.now();
   if(panel==='dashboard')renderDashboard();
