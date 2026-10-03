@@ -58,6 +58,13 @@ test('v2.60 primary navigation is Home Train Progress Coach Profile',async({page
  await expect(page.locator('[data-panel="coach"][data-sub="co-insights"]')).toBeHidden();
  await expect(page.locator('#decision-readiness-card')).toBeVisible();
  await page.evaluate(()=>showTab('prs'));
+ await expect(page.locator('#progress-analytics')).toBeVisible();
+ await expect(page.locator('#progress-analytics')).toContainText('What your training is doing.');
+ await expect(page.locator('#progress-overview')).toBeHidden();
+ await expect(page.locator('#training-review')).toBeHidden();
+ const explore=page.locator('#progress-explore');
+ await expect(explore).not.toHaveAttribute('open','');
+ await explore.locator(':scope > summary').click();
  await expect(page.locator('#progress-overview')).toBeVisible();
  await expect(page.locator('#training-review')).toBeVisible();
  expect(await page.locator('#panel-dashboard #training-review').count()).toBe(0);
