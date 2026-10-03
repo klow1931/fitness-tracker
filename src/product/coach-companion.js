@@ -108,7 +108,7 @@
   return pieces.join(' · ');
  }
  function offlineReply(context,question){
-  const q=clean(question,500).toLowerCase();
+  const q=clean(question,500).toLowerCase().replace(/[’‘]/g,"'");
   const summary=currentSetSummary(context);
   if(/\b(what('?s| is)? next|next set|what am i (doing|on)|current set)\b/.test(q)){
    return summary?('You are on '+summary+'.'):'There is no active set I can read right now.';
