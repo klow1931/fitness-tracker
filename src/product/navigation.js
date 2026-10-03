@@ -158,7 +158,7 @@ function initCalmNavigation(){
     }
   }
 
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.78.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.79.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 
