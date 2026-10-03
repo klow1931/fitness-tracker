@@ -17,14 +17,9 @@
  function voiceActivity(){try{return window.LoadnoteCoachVoiceUI?.activity?.()||window.LoadnoteCoachVoiceUI?.state?.()||{active:false,connected:false};}catch{return {active:false,connected:false};}}
  function active(activity){return !!activity?.active&&activity?.connected!==false;}
  function busy(activity){return !!activity?.userSpeaking||!!activity?.assistantSpeaking;}
- function dispatchCue(event){
-  try{document.dispatchEvent(new CustomEvent('loadnote:proactive-cue',{detail:event}));return true;}catch{return false;}
- }
+ function dispatchCue(event){try{document.dispatchEvent(new CustomEvent('loadnote:proactive-cue',{detail:event}));return true;}catch{return false;}}
  function schedule(event,delay=700){queued={event,expiresAt:Date.now()+10000};clearTimeout(queueTimer);queueTimer=setTimeout(flush,Math.max(150,delay));emitState();}
- function flush(){
-  clearTimeout(queueTimer);queueTimer=null;if(!queued)return false;if(Date.now()>queued.expiresAt){queued=null;emitState();return false;}
-  const item=queued;queued=null;const result=offer(item.event,{fromQueue:true});emitState();return result;
- }
+ function flush(){clearTimeout(queueTimer);queueTimer=null;if(!queued)return false;if(Date.now()>queued.expiresAt){queued=null;emitState();return false;}const item=queued;queued=null;const result=offer(item.event,{fromQueue:true});emitState();return result;}
  function offer(event,{fromQueue=false}={}){
   const engine=ensureGate(),activity=voiceActivity(),verdict=engine?.eligible?.(event,{active:active(activity),busy:busy(activity)});if(!verdict?.ok){
    if(active(activity)&&verdict?.reason==='busy'&&event?.priority!=='normal'&&!fromQueue)schedule(event,700);
@@ -55,10 +50,7 @@
   if(!set?.isConnected||!set.querySelector('.set-done-check')?.checked)return;const row=set.closest('#exercise-rows > div');if(!row||row.dataset.type==='cardio')return;
   const index=setRows(row).indexOf(set),actual=Number(set.querySelector('.set-rpe')?.value),target=targetRpe(row,set);let deviation=null;
   if(Number.isFinite(actual)&&Number.isFinite(target))deviation=Core()?.rpeDeviationEvent?.({exercise:exerciseName(row),setNumber:index+1,actualRpe:actual,targetRpe:target})||null;
-  if(workoutComplete()){
-   if(deviation&&Math.abs(Number(deviation.data?.difference)||0)>=1)offer(deviation);
-   offer(Core()?.workoutCompleteEvent?.());return;
-  }
+  if(workoutComplete()){offer(Core()?.workoutCompleteEvent?.());return;}
   if(deviation&&offer(deviation))return;
   if(rowComplete(row)){const next=nextIncomplete(row);if(next)offer(Core()?.exerciseTransitionEvent?.({completedExercise:exerciseName(row),nextExercise:exerciseName(next)}));}
  }
