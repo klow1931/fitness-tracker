@@ -1,0 +1,41 @@
+name: Loadnote iOS compilation
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  unsigned-ios:
+    name: Unsigned iOS (${{ matrix.target }})
+    runs-on: macos-26
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [simulator, device]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check:native
+      - name: Compile without signing or Apple credentials
+        run: npm run build:ios:unsigned -- ${{ matrix.target }}
+      - name: Upload compilation evidence (not an installable iPhone build)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-${{ matrix.target }}-${{ github.run_number }}
+          path: |
+            build-ios/${{ matrix.target }}/build.log
+            build-ios/${{ matrix.target }}/toolchain.txt
+            build-ios/${{ matrix.target }}/build-report.json
+            build-ios/${{ matrix.target }}/Build.xcresult
+          if-no-files-found: warn
+          retention-days: 7
