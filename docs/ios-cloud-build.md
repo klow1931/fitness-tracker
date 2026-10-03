@@ -1,6 +1,8 @@
 # Cloud iOS compilation — v2.86
 
-The **Loadnote iOS compilation** workflow builds the existing Swift Package Manager project on GitHub-hosted `macos-15`. No personal Mac, developer team, signing certificate, provisioning profile or App Store Connect API key is needed for this compilation gate. It complements the Linux browser/domain workflow rather than replacing it.
+The **Loadnote iOS compilation** workflow builds the existing Swift Package Manager project on GitHub-hosted `macos-26`. No personal Mac, developer team, signing certificate, provisioning profile or App Store Connect API key is needed for this compilation gate. It complements the Linux browser/domain workflow rather than replacing it.
+
+The command requires Xcode 26+ and iOS SDK 26+, matching Apple's upload baseline effective April 28, 2026 ([Apple requirements](https://developer.apple.com/news/upcoming-requirements/)). Toolchain versions are recorded and older SDKs fail before compilation. Submission requirements must still be rechecked when signing/distribution is configured.
 
 ## What runs
 

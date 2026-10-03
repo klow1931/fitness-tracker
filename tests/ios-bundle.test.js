@@ -1,5 +1,8 @@
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),assert=require('node:assert/strict');
-const {verifyIosBundle}=require('../scripts/verify-ios-bundle');
+const {verifyIosBundle,verifyIosToolchain}=require('../scripts/verify-ios-bundle');
+verifyIosToolchain('Xcode 26.6\nBuild version 17F113','26.5');
+assert.throws(()=>verifyIosToolchain('Xcode 16.4','18.5'),/Xcode 26/);
+assert.throws(()=>verifyIosToolchain('Xcode 26.6','invalid'),/Xcode 26/);
 const app=fs.mkdtempSync(path.join(os.tmpdir(),'loadnote-ios-fixture-'));
 const options={version:'2.86.0',buildNumber:28600,appId:'app.loadnote.mobile'};
 const info={CFBundleIdentifier:options.appId,CFBundleShortVersionString:options.version,CFBundleVersion:'28600',CFBundleExecutable:'App',CFBundleSupportedPlatforms:['iPhoneSimulator']};
