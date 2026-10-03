@@ -5,6 +5,11 @@ test.beforeEach(async({page})=>{
  await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
  await page.addStyleTag({content:'.hidden{display:none!important}'});
 });
+async function openProgressExplore(page){
+ await page.evaluate(()=>showTab('prs'));
+ const explore=page.locator('#progress-explore');
+ if(!(await explore.evaluate(el=>el.open)))await explore.locator(':scope > summary').click();
+}
 test('Calendar month controls and keyboard day selection',async({page})=>{
  await page.evaluate(()=>showTab('calendar'));
  await expect(page.locator('#calendar-grid button')).toHaveCount(42);
@@ -15,7 +20,7 @@ test('Calendar month controls and keyboard day selection',async({page})=>{
  await page.getByRole('button',{name:'Log workout this day'}).click();await expect(page.locator('#exercise-rows')).toBeVisible();
 });
 test('PR entry and record cards remain usable',async({page})=>{
- await page.evaluate(()=>showTab('prs'));
+ await openProgressExplore(page);
  await page.locator('#pr-entry > summary').click();
  await page.locator('#pr-exercise').fill('Bench Press');await page.locator('#pr-weight').fill('100');await page.getByRole('button',{name:'Save PR',exact:true}).click();
  await expect(page.locator('#pr-list')).toContainText('Bench Press');
