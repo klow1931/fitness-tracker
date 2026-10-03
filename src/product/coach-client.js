@@ -1,4 +1,4 @@
-/* v2.79 — consumer Coach client + Companion bootstrap.
+/* v2.80 — consumer Coach client + Companion bootstrap.
  * Production-facing requests use only the Loadnote server boundary.
  * No provider key, base URL, model or raw system prompt is accepted here.
  */
@@ -28,8 +28,8 @@
    const response=await request(HEALTH);
    if(!response.ok)throw Error('health '+response.status);
    const body=await response.json();
-   healthCache={online:!!(body.coach?.configured??body.aiConfigured),authRequired:body.coach?.authRequired!==false,reason:null};
-  }catch{healthCache={online:false,authRequired:true,reason:'unavailable'};}
+   healthCache={online:!!(body.coach?.configured??body.aiConfigured),authRequired:body.coach?.authRequired!==false,voiceConfigured:!!body.voice?.configured,reason:null};
+  }catch{healthCache={online:false,authRequired:true,voiceConfigured:false,reason:'unavailable'};}
   healthAt=now;return healthCache;
  }
  async function ask({question,context,history=[]}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
@@ -54,7 +54,11 @@
    if(document.querySelector('script[data-loadnote-companion="'+src+'"]'))return resolve();
    const script=document.createElement('script');script.src=src;script.defer=true;script.dataset.loadnoteCompanion=src;script.onload=resolve;script.onerror=()=>reject(new Error('Unable to load '+src));document.head.appendChild(script);
   });
-  const start=()=>load('src/product/coach-companion.js').then(()=>load('src/product/coach-companion-ui.js')).catch(error=>console.warn('Coach Companion unavailable',error));
+  const start=()=>load('src/product/coach-companion.js')
+   .then(()=>load('src/product/coach-companion-ui.js'))
+   .then(()=>load('src/product/coach-voice.js'))
+   .then(()=>load('src/product/coach-voice-ui.js'))
+   .catch(error=>console.warn('Coach Companion unavailable',error));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
  }
  scrubLegacyCredential();

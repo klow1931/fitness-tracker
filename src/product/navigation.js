@@ -51,10 +51,7 @@ function navigateTab(name) {
     btn.classList.toggle('nav-active',selected);btn.setAttribute('aria-pressed',String(selected));
   });
   if(nav.sub[name])navigateSubTab(name,nav.sub[name],true);else renderVisibleView(name);
-  if(changed) {
-    section.classList.add('view-enter');
-    section.tabIndex=-1;section.focus({preventScroll:true});
-  }
+  if(changed) {section.classList.add('view-enter');section.tabIndex=-1;section.focus({preventScroll:true});}
   applyGymMode();updateBackupBanner();restoreViewPosition(name);
 }
 function navigateSubTab(panel,sub,fromTab=false) {
@@ -80,7 +77,6 @@ function updateFoodEntrySummary() {
 function initCalmNavigation(){
   if(document.body?.dataset.calmNavigation==='2.76')return;
   document.body.dataset.calmNavigation='2.76';
-
   const style=document.createElement('style');
   style.id='calm-navigation-style';
   style.textContent=`
@@ -99,68 +95,27 @@ function initCalmNavigation(){
     @media(min-width:800px){.calm-home-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}}
   `;
   document.head.appendChild(style);
-
   const hide=el=>{if(el){el.dataset.calmHidden='true';el.setAttribute('aria-hidden','true');}};
-  hide(document.getElementById('dark-toggle'));
-  hide(document.getElementById('gym-mode-btn'));
-  hide(document.getElementById('unit-kg')?.parentElement);
-
-  const dashboard=document.getElementById('panel-dashboard');
-  const today=document.getElementById('today-training');
-  const program=document.getElementById('program-lifecycle-home');
-  const command=document.getElementById('athlete-home-command');
-  if(dashboard&&today&&program&&command&&!document.getElementById('calm-home-secondary')){
-    const secondary=document.createElement('div');secondary.id='calm-home-secondary';secondary.className='calm-home-secondary';
-    today.after(secondary);secondary.append(program,command);
-  }
-
-  hide(document.getElementById('start-here-card'));
-  hide(document.getElementById('stat-protein')?.closest('.card'));
-  hide(document.getElementById('nutritionChart')?.closest('.card'));
-
+  hide(document.getElementById('dark-toggle'));hide(document.getElementById('gym-mode-btn'));hide(document.getElementById('unit-kg')?.parentElement);
+  const dashboard=document.getElementById('panel-dashboard'),today=document.getElementById('today-training'),program=document.getElementById('program-lifecycle-home'),command=document.getElementById('athlete-home-command');
+  if(dashboard&&today&&program&&command&&!document.getElementById('calm-home-secondary')){const secondary=document.createElement('div');secondary.id='calm-home-secondary';secondary.className='calm-home-secondary';today.after(secondary);secondary.append(program,command);}
+  hide(document.getElementById('start-here-card'));hide(document.getElementById('stat-protein')?.closest('.card'));hide(document.getElementById('nutritionChart')?.closest('.card'));
   const empty=document.getElementById('home-empty');
   if(empty){
     const direct=[...empty.querySelectorAll('button')];
-    for(const button of direct){
-      const action=button.getAttribute('onclick')||'';
-      if(action.includes("showTab('nutrition')")||action.includes("showTab('tools')"))hide(button);
-      if(action.includes("showTab('coach')")){
-        const detail=button.querySelector('.block.text-xs');if(detail)detail.textContent='Ask about programming, progression or deloads';
-      }
-    }
-    const paragraphs=[...empty.querySelectorAll(':scope > p')];
-    if(paragraphs[1])paragraphs[1].textContent='Start with your first training session. Progress, trends and adaptive guidance fill in as you log workouts.';
-    const tip=paragraphs.at(-1);if(tip)tip.innerHTML='Preferences such as units, appearance and Gym mode live in <b>Profile</b>.';
+    for(const button of direct){const action=button.getAttribute('onclick')||'';if(action.includes("showTab('nutrition')")||action.includes("showTab('tools')"))hide(button);if(action.includes("showTab('coach')")){const detail=button.querySelector('.block.text-xs');if(detail)detail.textContent='Ask about programming, progression or deloads';}}
+    const paragraphs=[...empty.querySelectorAll(':scope > p')];if(paragraphs[1])paragraphs[1].textContent='Start with your first training session. Progress, trends and adaptive guidance fill in as you log workouts.';const tip=paragraphs.at(-1);if(tip)tip.innerHTML='Preferences such as units, appearance and Gym mode live in <b>Profile</b>.';
   }
-
-  const more=document.getElementById('home-details');
-  if(more){
-    more.open=false;
-    const bold=more.querySelector(':scope > summary b'),small=more.querySelector(':scope > summary small');
-    if(bold)bold.textContent='Training insights & history';
-    if(small)small.textContent='Reports, trends, records and supporting evidence';
-  }
+  const more=document.getElementById('home-details');if(more){more.open=false;const bold=more.querySelector(':scope > summary b'),small=more.querySelector(':scope > summary small');if(bold)bold.textContent='Training insights & history';if(small)small.textContent='Reports, trends, records and supporting evidence';}
   const week=document.getElementById('home-week-plan');if(week)week.open=false;
-
-  document.getElementById('training-review')?.classList.add('calm-secondary-card');
-  document.getElementById('pr-entry')?.classList.add('calm-secondary-card');
-
+  document.getElementById('training-review')?.classList.add('calm-secondary-card');document.getElementById('pr-entry')?.classList.add('calm-secondary-card');
   const coach=document.getElementById('panel-coach');
   if(coach&&!coach.querySelector('.calm-advanced-programming')){
-    const legacy=[...coach.querySelectorAll('.card')].filter(card=>{
-      const title=card.querySelector('h2')?.textContent.trim()||'';
-      return title==='Legacy generator selection'||title==='Legacy program library';
-    });
-    if(legacy.length){
-      const details=document.createElement('details');details.className='card calm-advanced-programming';
-      details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';
-      legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);
-    }
+    const legacy=[...coach.querySelectorAll('.card')].filter(card=>{const title=card.querySelector('h2')?.textContent.trim()||'';return title==='Legacy generator selection'||title==='Legacy program library';});
+    if(legacy.length){const details=document.createElement('details');details.className='card calm-advanced-programming';details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);}
   }
-
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.79.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v2.80.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
-
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.getElementById('desktop-more');if(menu?.open){menu.open=false;menu.querySelector('summary')?.focus();}}});
