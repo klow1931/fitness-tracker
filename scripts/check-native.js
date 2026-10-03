@@ -20,6 +20,7 @@ const plist=read('ios/App/App/Info.plist');assert(!/NS(?:Microphone|Camera|Locat
 const privacy=read('ios/App/App/PrivacyInfo.xcprivacy');assert(privacy.includes('NSPrivacyAccessedAPICategoryFileTimestamp'));assert(privacy.includes('C617.1'));
 assert(project.includes('A28500000000000000000002 /* PrivacyInfo.xcprivacy */,')&&project.includes('A28500000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,'),'Privacy manifest must be part of the app resource phase');
 const spm=read('ios/App/CapApp-SPM/Package.swift');for(const plugin of ['CapacitorFilesystem','CapacitorShare'])assert(spm.includes(plugin),'Missing SPM plugin '+plugin);
+const scheme=read('ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme');assert(scheme.includes('BlueprintIdentifier="504EC3031FED79650016851F"'));assert(scheme.includes('BuildableName="App.app"'));
 const mobile=read('www/index.html');assert(mobile.includes('assets/capacitor.js'));assert(mobile.indexOf('assets/capacitor.js')<mobile.indexOf('src/product/platform-runtime.js'));
 for(const file of ['android/app/src/main/assets/capacitor.config.json','ios/App/App/capacitor.config.json']){
  const copied=JSON.parse(read(file));assert.equal(copied.appId,config.appId);assert(!copied.server);

@@ -1,3 +1,7 @@
+# v2.86.0 — Cloud iOS Compilation
+
+Add shared App scheme and GitHub macOS simulator/device-SDK unsigned compilation with compiled-bundle checks and diagnostic artifacts. No Apple credentials, signing, device launch or distribution. Normalize the generated Windows Gradle wrapper's Git line endings without changing its commands. Schema v25 and training behavior unchanged. See `docs/ios-cloud-build.md`.
+
 # v2.85.0 — Native Beta Foundation
 
 Unsigned Android/iOS source projects, existing Loadnote branding, explicit JSON/photo share-sheet backups, local-only native account boundary and source-configuration CI checks. Native builds, device acceptance, signing and store submission remain uncompleted. Schema v25 and training calculations unchanged. See `docs/native-beta.md`.
