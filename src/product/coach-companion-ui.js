@@ -1,6 +1,6 @@
-/* v2.79 — persistent Coach Companion surface.
- * Text-first foundation for future realtime voice. The companion reads live
- * workout state and may control only reversible rest-timer actions here.
+/* v2.82.1 — persistent Coach Companion surface.
+ * Text-first foundation for realtime voice. The companion reads live workout
+ * state and may control only reversible rest-timer actions here.
  */
 (function(){
  'use strict';
@@ -76,21 +76,28 @@
   const el=document.createElement('style');el.id='coach-companion-style';el.textContent=`
   #coach-companion-launcher{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(76px + env(safe-area-inset-bottom));z-index:58;border:0;border-radius:999px;padding:11px 15px;background:#312e81;color:#fff;font:700 14px/1 system-ui;box-shadow:0 10px 28px rgba(15,23,42,.22);cursor:pointer}
   #coach-companion-launcher[data-live="true"]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#34d399;margin-right:7px}
-  #coach-companion-panel{position:fixed;z-index:60;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));width:min(390px,calc(100vw - 24px));max-height:min(680px,calc(100vh - 100px));background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
+  #coach-companion-backdrop{position:fixed;inset:0;z-index:59;border:0;padding:0;background:rgba(15,23,42,.14);cursor:default}
+  #coach-companion-panel{position:fixed;z-index:60;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));width:min(390px,calc(100vw - 24px));max-height:min(680px,calc(100vh - 100px));max-height:min(680px,calc(100dvh - 100px));background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
+  #coach-companion-panel:not([hidden]){display:flex;flex-direction:column}
   body.dark #coach-companion-panel{background:#0f172a;color:#e2e8f0;border-color:#334155}
-  .cc-head{display:flex;justify-content:space-between;gap:12px;padding:14px 14px 10px;border-bottom:1px solid #e2e8f0}.cc-head b{display:block}.cc-head small{display:block;color:#64748b;margin-top:3px}.cc-close{border:0;background:transparent;font-size:20px;cursor:pointer;color:inherit}
-  .cc-context{display:flex;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid #e2e8f0}.cc-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.cc-chip.live{background:#ecfdf5;color:#047857}
-  .cc-messages{height:300px;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:9px}.cc-msg{max-width:88%;padding:9px 11px;border-radius:13px;background:#f1f5f9;font-size:13px;line-height:1.4}.cc-msg.user{align-self:flex-end;background:#312e81;color:#fff}.cc-msg small{display:block;margin-top:5px;color:#64748b}.cc-msg.user small{color:#c7d2fe}
-  .cc-quick{display:flex;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
-  .cc-form{display:flex;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
-  @media(max-width:640px){#coach-companion-launcher{bottom:calc(78px + env(safe-area-inset-bottom))}body.gym-floor-dock-visible #coach-companion-launcher{bottom:calc(166px + env(safe-area-inset-bottom))}#coach-companion-panel{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:auto;max-height:calc(100vh - 88px);border-radius:16px}body.gym-floor-dock-visible #coach-companion-panel{bottom:calc(152px + env(safe-area-inset-bottom));max-height:calc(100vh - 168px)}.cc-messages{height:min(42vh,330px)}}`;
+  .cc-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 10px 8px 14px;border-bottom:1px solid #e2e8f0;background:#fff}.cc-head b{display:block}.cc-head small{display:block;color:#64748b;margin-top:3px}.cc-close{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:999px;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:inherit}
+  .cc-context{display:flex;flex:0 0 auto;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid #e2e8f0}.cc-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.cc-chip.live{background:#ecfdf5;color:#047857}
+  .cc-messages{height:auto;min-height:120px;flex:1 1 300px;overflow:auto;overscroll-behavior:contain;padding:12px 14px;display:flex;flex-direction:column;gap:9px}.cc-msg{max-width:88%;padding:9px 11px;border-radius:13px;background:#f1f5f9;color:#0f172a;font-size:13px;line-height:1.4}.cc-msg.user{align-self:flex-end;background:#312e81;color:#fff}.cc-msg small{display:block;margin-top:5px;color:#64748b}.cc-msg.user small{color:#c7d2fe}
+  .cc-quick{display:flex;flex:0 0 auto;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
+  .cc-form{display:flex;flex:0 0 auto;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
+  body.dark .cc-head{background:#0f172a;border-color:#334155}body.dark .cc-head small{color:#94a3b8}body.dark .cc-close:hover{background:#1e293b}
+  body.dark .cc-context,body.dark .cc-form{border-color:#334155}body.dark .cc-chip{background:#312e81;color:#e0e7ff}body.dark .cc-chip.live{background:#064e3b;color:#d1fae5}
+  body.dark .cc-msg{background:#1e293b;color:#e2e8f0}body.dark .cc-msg small{color:#94a3b8}body.dark .cc-msg.user{background:#3730a3;color:#fff}body.dark .cc-msg.user small{color:#c7d2fe}
+  body.dark .cc-quick button{border-color:#475569}body.dark .cc-form input{border-color:#475569;background:#0b1220;color:#f8fafc}body.dark .cc-form input::placeholder{color:#94a3b8}body.dark .cc-foot{color:#94a3b8}body.dark .cc-foot button{color:#818cf8}
+  @media(max-width:640px){#coach-companion-launcher{bottom:calc(78px + env(safe-area-inset-bottom))}body.gym-floor-dock-visible #coach-companion-launcher{bottom:calc(166px + env(safe-area-inset-bottom))}#coach-companion-panel{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:auto;max-height:calc(100vh - 88px);max-height:calc(100dvh - 88px);border-radius:16px}.cc-messages{height:auto;min-height:96px;flex:1 1 auto}body.gym-floor-dock-visible #coach-companion-panel{bottom:calc(152px + env(safe-area-inset-bottom));max-height:calc(100vh - 168px);max-height:calc(100dvh - 168px)}}`;
   document.head.appendChild(el);
  }
  function ensure(){
   if(document.getElementById('coach-companion-launcher'))return;
   style();
   const launcher=document.createElement('button');launcher.id='coach-companion-launcher';launcher.type='button';launcher.textContent='Coach';launcher.setAttribute('aria-controls','coach-companion-panel');launcher.setAttribute('aria-expanded','false');launcher.addEventListener('click',toggle);document.body.appendChild(launcher);
-  const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><span>Training changes stay with Decisions.</span><button type="button" id="cc-full">Open Coach</button></div>`;
+  const backdrop=document.createElement('button');backdrop.id='coach-companion-backdrop';backdrop.type='button';backdrop.hidden=true;backdrop.tabIndex=-1;backdrop.setAttribute('aria-label','Close Coach Companion');backdrop.addEventListener('click',close);document.body.appendChild(backdrop);
+  const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.setAttribute('aria-modal','true');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><span>Training changes stay with Decisions.</span><button type="button" id="cc-full">Open Coach</button></div>`;
   panel.querySelector('.cc-close').addEventListener('click',close);
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text)return;input.value='';void ask(text);});
   panel.querySelector('#cc-full').addEventListener('click',()=>{try{showTab('coach');showSubTab('coach','co-chat');}catch{}close();});
@@ -98,6 +105,7 @@
   append('I’m here throughout Loadnote. During a workout I can read your current set, answer questions from your training context, and control the rest timer.','assistant');
   refresh();
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)close();});
  }
  function append(text,role='assistant',meta=''){
   const host=document.getElementById('cc-messages');if(!host)return;
@@ -163,8 +171,8 @@
    const reply=offline||'Online Coach is unavailable right now. Your workout logger and deterministic Decisions remain available.';append(reply,'assistant','Fallback');refresh();return reply;
   }
  }
- function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher');panel.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
- function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher');if(panel)panel.hidden=true;if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
+ function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
+ function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');if(panel)panel.hidden=true;if(backdrop)backdrop.hidden=true;if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
  function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
  function init(){ensure();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
