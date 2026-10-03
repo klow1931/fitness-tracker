@@ -37,16 +37,20 @@ const Voice=require('../src/product/coach-voice');
  assert.equal(fetchCall.options.body,'offer-sdp');
  assert.equal(pcRef.remoteDescription.sdp,'answer-sdp');
  assert.equal(fetchCall.options.Authorization,undefined);
+ assert.equal(typeof channelRef.messageHandler,'function');
+ assert.equal(channelRef.onmessage,undefined,'data channel must have one message subscription');
  channelRef.onopen?.();
  assert.equal(controller.snapshot().active,true);
 
  controller.setMuted(true);assert.equal(track.enabled,false);assert.equal(controller.snapshot().muted,true);
  controller.setMuted(false);assert.equal(track.enabled,true);
- controller.handleEvent({type:'conversation.item.input_audio_transcription.completed',item_id:'u1',transcript:'What is next?'});
+ const userFinal={type:'conversation.item.input_audio_transcription.completed',item_id:'u1',transcript:'What is next?'};
+ controller.handleEvent(userFinal);controller.handleEvent(userFinal);
  controller.handleEvent({type:'response.output_audio_transcript.delta',delta:'Competition '});
- controller.handleEvent({type:'response.output_audio_transcript.done',item_id:'a1',transcript:'Competition squat is next.'});
- assert.equal(transcripts.some(row=>row.role==='user'&&row.final&&row.text==='What is next?'),true);
- assert.equal(transcripts.some(row=>row.role==='assistant'&&row.final&&row.text==='Competition squat is next.'),true);
+ const assistantFinal={type:'response.output_audio_transcript.done',item_id:'a1',transcript:'Competition squat is next.'};
+ controller.handleEvent(assistantFinal);controller.handleEvent(assistantFinal);
+ assert.equal(transcripts.filter(row=>row.role==='user'&&row.final&&row.text==='What is next?').length,1,'final user transcript must not duplicate');
+ assert.equal(transcripts.filter(row=>row.role==='assistant'&&row.final&&row.text==='Competition squat is next.').length,1,'final assistant transcript must not duplicate');
 
  controller.handleEvent({type:'response.output_item.done',item:{type:'function_call',call_id:'call_1',name:'get_live_workout_context',arguments:'{}'}});
  await new Promise(resolve=>setImmediate(resolve));
@@ -60,5 +64,5 @@ const Voice=require('../src/product/coach-voice');
 
  controller.stop();assert.equal(track.stopped,true);assert.equal(pcRef.closed,true);assert.equal(controller.snapshot().state,'off');
  assert.equal(states.some(row=>row.state==='connecting'),true);
- console.log('v2.80 realtime voice explicit start, ephemeral WebRTC, transcripts, mute, stop and tool roundtrip passed');
+ console.log('v2.80 realtime voice explicit start, ephemeral WebRTC, transcript de-duplication, mute, stop and tool roundtrip passed');
 })().catch(error=>{console.error(error);process.exit(1);});
