@@ -1,6 +1,6 @@
-/* v2.80 — explicit, workout-scoped Voice Companion controls.
- * Voice is opt-in and read-only for training data. The existing logger and
- * Decisions remain authoritative; only rest-timer actions are executable.
+/* v2.81 — explicit Voice Companion controls + bounded hands-free logging.
+ * Voice writes only through the active workout form/draft. Saved history,
+ * programming and Decisions remain outside this mutation surface.
  */
 (function(){
  'use strict';
@@ -8,6 +8,7 @@
  const Voice=()=>window.LoadnoteCoachVoice;
  const Companion=()=>window.LoadnoteCoachCompanionUI;
  const Coach=()=>window.LoadnoteCoachClient;
+ const Logger=()=>window.LoadnoteVoiceWorkoutLogging;
  function append(text,role='assistant',meta='Voice Companion'){
   if(Companion()?.append)return Companion().append(text,role,meta);
   const host=document.getElementById('cc-messages');if(!host)return;
@@ -23,8 +24,20 @@
   if(action==='stop'){if(!snap().active)return {ok:true,restTimer:snap()};t.stop?.();return {ok:true,restTimer:snap()};}
   return {ok:false,error:'Unsupported rest action.'};
  }
+ function renderLastAction(){
+  const host=document.getElementById('cc-voice-last');if(!host)return;const action=Logger()?.lastAction?.();host.hidden=!action;
+  if(!action){host.querySelector('span').textContent='';return;}host.querySelector('span').textContent='✓ '+action.summary;host.querySelector('button').disabled=false;
+ }
+ function loggerResult(method,args){
+  const logger=Logger();if(!logger||typeof logger[method]!=='function')return {ok:false,error:'Hands-free workout logging is unavailable.'};
+  const result=logger[method](args);renderLastAction();Companion()?.refresh?.();return result;
+ }
  async function tool(name,args={}){
   if(name==='get_live_workout_context')return {ok:true,context:Companion()?.liveContext?.()||null};
+  if(name==='log_current_set')return loggerResult('logCurrentSet',args);
+  if(name==='update_current_set')return loggerResult('updateCurrentSet',args);
+  if(name==='correct_last_voice_entry')return loggerResult('correctLast',args);
+  if(name==='undo_last_voice_entry')return loggerResult('undoLast');
   if(name==='get_rest_timer')return timerResult('get');
   if(name==='start_rest_timer'){
    const seconds=Math.round(Number(args.seconds));if(!Number.isFinite(seconds)||seconds<15||seconds>900)return {ok:false,error:'Rest must be between 15 and 900 seconds.'};
@@ -44,37 +57,34 @@
  function controls(){
   let host=document.getElementById('cc-voice');if(host)return host;
   const foot=document.querySelector('#coach-companion-panel .cc-foot');if(!foot)return null;
-  host=document.createElement('div');host.id='cc-voice';host.className='cc-voice';host.innerHTML='<div class="cc-voice-main"><button type="button" class="cc-voice-start">Start voice</button><span class="cc-voice-state" aria-live="polite">Voice off</span></div><div class="cc-voice-live" hidden><button type="button" class="cc-voice-mute">Mute</button><button type="button" class="cc-voice-end">End</button><span class="cc-voice-privacy">Mic active only while this session is on.</span></div>';
+  host=document.createElement('div');host.id='cc-voice';host.className='cc-voice';host.innerHTML='<div class="cc-voice-main"><button type="button" class="cc-voice-start">Start voice</button><span class="cc-voice-state" aria-live="polite">Voice off</span></div><div class="cc-voice-live" hidden><button type="button" class="cc-voice-mute">Mute</button><button type="button" class="cc-voice-end">End</button><span class="cc-voice-privacy">Mic active only while this session is on.</span></div><div id="cc-voice-last" class="cc-voice-last" hidden><span></span><button type="button">Undo</button></div>';
   foot.before(host);
-  if(!document.getElementById('coach-voice-style')){const style=document.createElement('style');style.id='coach-voice-style';style.textContent='.cc-voice{border-top:1px solid #e2e8f0;padding:9px 14px;display:grid;gap:7px}.cc-voice-main,.cc-voice-live{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cc-voice button{border:1px solid #cbd5e1;border-radius:999px;background:transparent;color:inherit;padding:7px 10px;font-size:12px;font-weight:700}.cc-voice-start{background:#312e81!important;color:#fff!important;border-color:#312e81!important}.cc-voice-state{font-size:11px;color:#64748b}.cc-voice-state.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:5px}.cc-voice-privacy{font-size:10px;color:#64748b;flex:1 1 150px}body.dark .cc-voice{border-color:#334155}';document.head.appendChild(style);}
+  if(!document.getElementById('coach-voice-style')){const style=document.createElement('style');style.id='coach-voice-style';style.textContent='.cc-voice{border-top:1px solid #e2e8f0;padding:9px 14px;display:grid;gap:7px}.cc-voice-main,.cc-voice-live,.cc-voice-last{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cc-voice button{border:1px solid #cbd5e1;border-radius:999px;background:transparent;color:inherit;padding:7px 10px;font-size:12px;font-weight:700}.cc-voice-start{background:#312e81!important;color:#fff!important;border-color:#312e81!important}.cc-voice-state{font-size:11px;color:#64748b}.cc-voice-state.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:5px}.cc-voice-privacy{font-size:10px;color:#64748b;flex:1 1 150px}.cc-voice-last{font-size:11px;padding:7px 9px;border-radius:10px;background:#ecfdf5;color:#065f46}.cc-voice-last span{flex:1 1 200px}.cc-voice-last button{border-color:#a7f3d0;color:#047857;padding:4px 8px}.voice-logged-set{outline:2px solid #34d39955;outline-offset:2px}body.dark .cc-voice{border-color:#334155}body.dark .cc-voice-last{background:#064e3b;color:#d1fae5}';document.head.appendChild(style);}
   host.querySelector('.cc-voice-start').addEventListener('click',start);
   host.querySelector('.cc-voice-mute').addEventListener('click',toggleMute);
   host.querySelector('.cc-voice-end').addEventListener('click',stop);
+  host.querySelector('#cc-voice-last button').addEventListener('click',()=>{const result=Logger()?.undoLast?.();renderLastAction();Companion()?.refresh?.();if(result?.ok)append(result.summary,'assistant','Voice logging');});
   return host;
  }
  function render(snapshot={state:'off',muted:false}){
   const host=controls();if(!host)return;const active=snapshot.state!=='off'&&snapshot.state!=='error';
   host.querySelector('.cc-voice-start').hidden=active;host.querySelector('.cc-voice-live').hidden=!active;
   const label=host.querySelector('.cc-voice-state');const map={off:'Voice off',connecting:'Connecting microphone…',listening:'Listening',muted:'Muted',error:'Voice unavailable'};label.textContent=map[snapshot.state]||snapshot.state;label.classList.toggle('live',active&&!snapshot.muted);
-  host.querySelector('.cc-voice-mute').textContent=snapshot.muted?'Unmute':'Mute';
+  host.querySelector('.cc-voice-mute').textContent=snapshot.muted?'Unmute':'Mute';renderLastAction();
  }
  function makeController(){
   if(controller)return controller;const api=Voice();if(!api?.createController)return null;
-  controller=api.createController({
-   toolHandler:tool,
-   onState:s=>render(s),
-   onTranscript:item=>{if(!item.final||!String(item.text||'').trim())return;append(item.text,item.role==='user'?'user':'assistant',item.role==='user'?'Heard by Voice Companion':'Voice Companion');}
-  });return controller;
+  controller=api.createController({toolHandler:tool,onState:s=>render(s),onTranscript:item=>{if(!item.final||!String(item.text||'').trim())return;append(item.text,item.role==='user'?'user':'assistant',item.role==='user'?'Heard by Voice Companion':'Voice Companion');}});return controller;
  }
  async function start(){
   const c=makeController();if(!c){render({state:'error'});append('Voice Companion is not available on this device. Text Coach remains available.');return;}
   render({state:'connecting'});
-  try{await c.start({context:Companion()?.liveContext?.()||null});append('Voice Companion started. You can talk naturally and interrupt me.','assistant','Voice session');}
+  try{await c.start({context:Companion()?.liveContext?.()||null});append('Voice Companion started. You can talk naturally, log the current set, and say undo if an entry is wrong.','assistant','Voice session');}
   catch(error){render({state:'error'});const code=error?.code;if(code==='voice_sign_in_required'||code==='auth_required')append('Sign in from Profile to start realtime voice. Text and offline workout guidance still work.');else append('Realtime voice could not start. Text Companion remains available. '+String(error?.message||'').slice(0,180));}
  }
  function toggleMute(){const c=makeController();if(!c)return;render(c.toggleMuted());}
  function stop(){if(!controller)return;controller.stop();render({state:'off'});append('Voice Companion ended.','assistant','Voice session');}
- function init(){if(initialized)return;initialized=true;const wait=()=>{if(controls()){render(controller?.snapshot?.()||{state:'off'});return;}setTimeout(wait,100);};wait();document.addEventListener('visibilitychange',()=>{if(document.hidden&&controller?.snapshot?.().active)controller.setMuted(true);});}
+ function init(){if(initialized)return;initialized=true;const wait=()=>{if(controls()){render(controller?.snapshot?.()||{state:'off'});return;}setTimeout(wait,100);};wait();document.addEventListener('visibilitychange',()=>{if(document.hidden&&controller?.snapshot?.().active)controller.setMuted(true);});document.addEventListener('loadnote:voice-log',renderLastAction);}
  window.LoadnoteCoachVoiceUI={init,start,stop,toggleMute,tool,state:()=>controller?.snapshot?.()||{state:'off',active:false,muted:false}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
