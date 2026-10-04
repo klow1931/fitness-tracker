@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 27, olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 28, hypertrophyPrograms: [], olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -222,6 +222,7 @@
         if(window.LoadnoteSportContext)integrity.olympicPractice=window.LoadnoteSportContext.validatePractice(integrity.olympicPractice===undefined?[]:integrity.olympicPractice);
         if(window.LoadnoteProgrammingProfile)integrity.programmingProfiles=window.LoadnoteProgrammingProfile.validate(integrity.programmingProfiles===undefined?[]:integrity.programmingProfiles);
         if(window.LoadnoteMuscleReview)integrity.workloadProfiles=window.LoadnoteMuscleReview.validate(integrity.workloadProfiles===undefined?[]:integrity.workloadProfiles);
+        if(window.LoadnoteHypertrophyBuilder)integrity.hypertrophyPrograms=window.LoadnoteHypertrophyBuilder.validate(integrity.hypertrophyPrograms===undefined?[]:integrity.hypertrophyPrograms);
         if(window.LoadnotePhaseReview)integrity.phaseReviews=window.LoadnotePhaseReview.validate(integrity.phaseReviews===undefined?[]:integrity.phaseReviews);
         if(window.LoadnotePhaseBuilder)integrity.phasePrograms=window.LoadnotePhaseBuilder.validate(integrity.phasePrograms===undefined?[]:integrity.phasePrograms);
         if(window.LoadnoteMeetCycle)integrity.meetCycles=window.LoadnoteMeetCycle.validate(integrity.meetCycles===undefined?[]:integrity.meetCycles);

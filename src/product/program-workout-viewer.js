@@ -8,7 +8,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Lifecycle,Schedule){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
- const phaseLabel=x=>({accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
+ const phaseLabel=x=>({hypertrophy:'Hypertrophy',accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
  function requireDay(day){if(!Schedule.date(day))throw Error('Choose a valid program-view date');return day;}
  function allPrograms(state){return Lifecycle.programs(state||{});}
  function pickProgram(state,{asOf,programId=null}={}){
@@ -72,7 +72,7 @@
    if(Array.isArray(program.record.weekly)&&program.record.weekly.length){
      return program.record.weekly.map(w=>({
        week:Number(w.week),phase:w.phase||null,phaseLabel:phaseLabel(w.phase),phaseWeek:Number(w.phaseWeek)||null,
-       startDate:w.startDate||null,endDate:w.endDate||null,eventDate:w.meetDate||null
+       startDate:w.startDate||w.from||null,endDate:w.endDate||w.through||null,eventDate:w.meetDate||null
      }));
    }
    const byWeek=new Map();

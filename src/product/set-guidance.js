@@ -15,7 +15,8 @@
     const actual=latest.s,rpe=actual.rpe===''||actual.rpe==null?null:Number(actual.rpe);
     if(!Number.isFinite(rpe)||rpe<1||rpe>10){result.status='rpe-missing';result.message='Enter actual RPE for the checked set before comparing effort to the approved cap.';return result;}
     const load=Number(actual.weightKg);
-    if(!Number.isFinite(load)||Math.abs(load-target.weight)>.02||actual.reps!==target.reps){result.status='work-different';result.message='Logged load or reps differ from this approved set. Keep the recorded work; review the remaining targets manually.';return result;}
+    const repsMatch=Number.isInteger(target.minReps)&&Number.isInteger(target.maxReps)?Number.isInteger(actual.reps)&&actual.reps>=target.minReps&&actual.reps<=target.maxReps:actual.reps===target.reps;
+    if(!Number.isFinite(load)||Math.abs(load-target.weight)>.02||!repsMatch){result.status='work-different';result.message='Logged load or reps differ from this approved set. Keep the recorded work; review the remaining targets manually.';return result;}
     result.rpeDifference=Math.round((rpe-target.targetRpe)*10)/10;
     if(rpe>target.targetRpe){result.status='above-cap';result.message='Last checked set exceeded its approved RPE cap by '+result.rpeDifference+'. Review remaining work rather than automatically increasing load.';}
     else{result.status='within-cap';result.message='Last checked set met its approved RPE cap. Keep the next approved target unless you deliberately modify the workout.';}

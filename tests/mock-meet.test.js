@@ -59,7 +59,7 @@ for(const bad of [
 const tampered=structuredClone(partial);tampered.meetCycles[0].mockMeet.revisions[0].context.attempts.bench[0].weightKg=100;
 assert.throws(()=>Meet.validate(tampered),/Only made|Invalid/);
 const legacy=structuredClone(cycle);assert.deepEqual(Meet.validate(legacy),legacy.meetCycles,'Older cycles without results stay readable');
-const migrated=Core.normalizeState({...legacy,schemaVersion:22});assert.equal(migrated.schemaVersion,27);assert.deepEqual(migrated.meetCycles,legacy.meetCycles);
+const migrated=Core.normalizeState({...legacy,schemaVersion:22});assert.equal(migrated.schemaVersion,28);assert.deepEqual(migrated.meetCycles,legacy.meetCycles);
 
 const competitionDate=(()=>{const d=new Date(config.startDate+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(12-1)*7+2);return d.toISOString().slice(0,10);})();
 const competitionPlan=Cycle.prepare(reviewed,reviewed.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:competitionDate,eventType:'competition',eventName:'State Championships'},args);

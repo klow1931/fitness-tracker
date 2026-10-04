@@ -2471,6 +2471,7 @@
       window.renderProgrammingProfile?.();
       window.renderProgramAdoption?.();
       window.renderPowerliftingBuilder?.();
+      window.renderHypertrophyBuilder?.();
       window.renderPhaseBuilder?.();
       window.renderProgrammingWorkspace?.();
       window.renderPhaseReview?.();

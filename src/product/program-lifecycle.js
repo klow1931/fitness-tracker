@@ -6,19 +6,19 @@
  if(typeof module==='object'&&module.exports)module.exports=factory(
    require('./schedule'),require('./phase-builder'),require('./meet-cycle'),
    require('./cycle-review'),require('./phase-review'),require('./transition-baseline'),
-   require('./next-block-handoff')
+   require('./next-block-handoff'),require('./hypertrophy-builder')
  );
  else root.LoadnoteProgramLifecycle=factory(
    root.LoadnoteSchedule,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,
    root.LoadnoteCycleReview,root.LoadnotePhaseReview,root.LoadnoteTransitionBaseline,
-   root.LoadnoteNextBlockHandoff
+   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder
  );
-})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
  const daysBetween=(a,b)=>Math.floor((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000);
- const phaseLabel=x=>({accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
+ const phaseLabel=x=>({hypertrophy:'Hypertrophy',accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
  function phaseBounds(program){
    let cursor=program.config.startDate,week=0;
    return program.config.phases.map((p,index)=>{
@@ -37,15 +37,17 @@
  function programs(state){
    const phases=Phase.validate(state?.phasePrograms||[]).filter(x=>x.scheduledAt).map(phaseProgram);
    const cycles=CycleReview.validate(state||{}).filter(x=>x.scheduledAt).map(meetProgram);
-   return [...phases,...cycles].sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
+   const hypertrophy=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'hypertrophy-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'hypertrophy:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
+   return [...phases,...cycles,...hypertrophy].sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
  }
- function transitionFor(state,p){return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
+ function transitionFor(state,p){if(p.kind==='hypertrophy-program')return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
  function eventRecorded(p){
    if(p.kind!=='meet-cycle')return true;
    const record=p.eventType==='competition'?p.record.meetResult:p.record.mockMeet;
    return !!record?.revisions?.length;
  }
  function needsClosure(state,p){
+   if(p.kind==='hypertrophy-program')return false;
    if(p.kind==='meet-cycle'&&!eventRecorded(p))return true;
    return !transitionFor(state,p);
  }
@@ -100,6 +102,7 @@
    return null;
  }
  function missedReviewWindows(state,p,asOf){
+   if(p.kind==='hypertrophy-program')return [];
    if(p.kind==='meet-cycle'){
      const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week));
      return p.record.weekly.filter(x=>x.week<p.totalWeeks&&!reviewed.has(x.week)&&p.record.weekly.find(n=>n.week===x.week+1)?.startDate<=asOf).map(x=>({kind:'week',week:x.week,phase:x.phase,ended:x.endDate}));
@@ -114,7 +117,7 @@
    if(chosen.status==='ambiguous')return {version:1,asOf,status:'ambiguous',program:null,progress:null,schedule:null,nextAction:action('review-programs','Review overlapping programs','More than one scheduled program covers today. Loadnote will not guess which plan is active.'),candidates:chosen.candidates.map(x=>({kind:x.kind,id:x.id,name:x.name,startDate:x.startDate,endDate:x.endDate})),notes:['Resolve overlapping scheduled programs before relying on a single active-program next action.']};
    if(chosen.status==='none'){
      let handoff=null;try{handoff=Handoff.inspect(state,{asOf,draftOpen:!!draftOpen});}catch{}
-     return {version:1,asOf,status:'no-program',program:null,progress:null,schedule:null,nextAction:handoff?.ready?action('review-next-program','Review next program','A completed transition is ready to hand into the next reviewed block.',{handoff}):action('no-program','Choose your next training plan','No reviewed phase program or meet cycle is currently scheduled.'),handoff,notes:['Loadnote does not invent or activate a program automatically.']};
+     return {version:1,asOf,status:'no-program',program:null,progress:null,schedule:null,nextAction:handoff?.ready?action('review-next-program','Review next program','A completed transition is ready to hand into the next reviewed block.',{handoff}):action('no-program','Choose your next training plan','No reviewed hypertrophy plan, phase program or meet cycle is currently scheduled.'),handoff,notes:['Loadnote does not invent or activate a program automatically.']};
    }
    const p=chosen.program,rows=scopedRows(state,p,asOf),unconfirmed=rows.filter(x=>x.state==='unconfirmed').sort((a,b)=>a.date.localeCompare(b.date)),todayRows=rows.filter(x=>x.date===asOf&&x.state==='scheduled'),next=rows.filter(x=>x.state==='scheduled'&&x.date>=asOf).sort((a,b)=>a.date.localeCompare(b.date))[0]||null;
    const counts={planned:rows.length,completed:rows.filter(x=>x.state==='completed').length,skipped:rows.filter(x=>x.state==='skipped').length,cancelled:rows.filter(x=>x.state==='cancelled').length,unconfirmed:unconfirmed.length,upcoming:rows.filter(x=>x.state==='scheduled').length};
@@ -128,6 +131,7 @@
    else if(phaseDue)nextAction=action('review-phase','Review '+phaseLabel(phaseDue.type)+' phase',phaseLabel(phaseDue.type)+' is complete. Review its evidence before starting the next phase.',{programId:p.id,phase:phaseDue.type});
    else if(todayRows.length)nextAction=action('start-workout',todayRows[0].name,todayRows.length===1?'Today’s reviewed session is ready.':todayRows.length+' reviewed sessions are scheduled today.',{scheduleId:todayRows[0].id});
    else if(p.kind==='meet-cycle'&&asOf>=p.eventDate&&!eventRecorded(p))nextAction=action('record-event','Record '+(p.eventType==='competition'?(p.eventName||'competition meet'):'mock meet')+' results','The program endpoint has arrived. Record actual attempts before closing the cycle.',{cycleId:p.id,eventType:p.eventType,eventDate:p.eventDate});
+   else if(p.kind==='hypertrophy-program'&&asOf>=p.endDate)nextAction=action('review-hypertrophy','Review hypertrophy evidence','Review complete logs and tolerance before choosing the next plan; no strength transition is inferred.',{programId:p.id});
    else if(asOf>=p.endDate&&!transition)nextAction=action('save-transition','Review program handoff','Freeze the completed program’s training evidence as the transition baseline for the next block.',{programId:p.id});
    else if(transition){
      let handoff=null;try{handoff=Handoff.inspect(state,{asOf,draftOpen:false});}catch(e){handoff={ready:false,status:'blocked',summary:e.message,blockers:[e.message]};}

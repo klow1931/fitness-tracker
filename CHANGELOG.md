@@ -1,3 +1,7 @@
+# v2.96.0 — Reviewed Hypertrophy Programming
+
+Dedicated athlete-reviewed hypertrophy proposals now include confirmed exercises/mappings, explicit load conventions, rep ranges, rest allowances, separate weekly muscle workload and read-only progression evidence shared by Coach and Decisions. Preview/save and scheduling remain separate; stale context, restrictions, events, open drafts and Calendar/workout conflicts block scheduling. Schema 28; unsigned build 29600. See `docs/releases-v2.96.md`.
+
 # v2.95.0 — Training Goals & Sport-Aware Coaching
 
 Structured primary/secondary priorities and sport schedules extend athlete goals. Shared read-only reviews ask for missing context, distinguish goal-linked evidence and flag scheduling conflicts without changing programs. Separate revisioned Olympic-practice attempts preserve made/missed/unknown outcomes and athlete-reported quality without entering strength PR calculations. Schema 27; unsigned build 29500. See `docs/releases-v2.95.md`.
