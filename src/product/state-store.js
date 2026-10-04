@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 25, transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 26, workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -220,6 +220,7 @@
         const integrity=window.LoadnoteIntegrity?.normalizeState?window.LoadnoteIntegrity.normalizeState(normalized):normalized;
         if(window.LoadnoteGoals)integrity.athleteGoals=window.LoadnoteGoals.validate(integrity.athleteGoals===undefined?[]:integrity.athleteGoals);
         if(window.LoadnoteProgrammingProfile)integrity.programmingProfiles=window.LoadnoteProgrammingProfile.validate(integrity.programmingProfiles===undefined?[]:integrity.programmingProfiles);
+        if(window.LoadnoteMuscleReview)integrity.workloadProfiles=window.LoadnoteMuscleReview.validate(integrity.workloadProfiles===undefined?[]:integrity.workloadProfiles);
         if(window.LoadnotePhaseReview)integrity.phaseReviews=window.LoadnotePhaseReview.validate(integrity.phaseReviews===undefined?[]:integrity.phaseReviews);
         if(window.LoadnotePhaseBuilder)integrity.phasePrograms=window.LoadnotePhaseBuilder.validate(integrity.phasePrograms===undefined?[]:integrity.phasePrograms);
         if(window.LoadnoteMeetCycle)integrity.meetCycles=window.LoadnoteMeetCycle.validate(integrity.meetCycles===undefined?[]:integrity.meetCycles);
