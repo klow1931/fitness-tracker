@@ -22,7 +22,7 @@
  function normalizedEntry(raw){
   if(!raw||typeof raw!=='object'||!name(raw.name))return null;
   const aliases=[...new Set((Array.isArray(raw.aliases)?raw.aliases:[]).map(name).filter(Boolean).filter(alias=>nameKey(alias)!==nameKey(raw.name)))];
-  return {id:String(raw.id||stableExerciseId(raw.name)),name:name(raw.name),aliases};
+  return {id:String(raw.id||stableExerciseId(raw.name)),name:name(raw.name),aliases,...(raw.muscles?{muscles:clone(raw.muscles)}:{})};
  }
  function normalizeState(input){
   const state=clone(input)||{};state.exerciseCatalog=(Array.isArray(state.exerciseCatalog)?state.exerciseCatalog:[]).map(normalizedEntry).filter(Boolean);
@@ -54,6 +54,9 @@
   const state=normalizeState(input),source=state.exerciseCatalog.find(e=>e.id===String(sourceId)),target=state.exerciseCatalog.find(e=>e.id===String(targetId));
   if(!source||!target)throw Error('Exercise identity no longer exists.');
   target.aliases.push(source.name,...source.aliases);
+  // Conflicting identity mappings become unknown until the athlete confirms again.
+  if(source.muscles && target.muscles && !same(source.muscles,target.muscles))delete target.muscles;
+  else if(source.muscles && !target.muscles)target.muscles=clone(source.muscles);
   for(const ref of references(state)){const holder=ref.owner||ref;if(holder.exerciseId===source.id)holder.exerciseId=target.id;}
   const roles=Array.isArray(state.exerciseRoles)?state.exerciseRoles:[],targetRole=roles.find(record=>record.revisions?.at(-1)?.context?.exerciseId===target.id);
   for(const record of roles.filter(row=>row.revisions?.at(-1)?.context?.exerciseId===source.id)){
