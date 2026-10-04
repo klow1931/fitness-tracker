@@ -21,7 +21,7 @@
    dialog.querySelector('#muscle-mode').value=m?.mode||'resistance';
    dialog.querySelector('#muscle-choices').innerHTML=Object.entries(K().MUSCLES).map(([k,label])=>`<label>${esc(label)}<select class="input" data-muscle="${k}"><option value="none">No assigned role</option><option value="primary" ${m?.primary?.includes(k)?'selected':''}>Primary / direct</option><option value="secondary" ${m?.secondary?.includes(k)?'selected':''}>Secondary / indirect</option></select></label>`).join('');
   }
-  function load(){fill(entry()?.muscles);dialog.querySelector('#muscle-map-status').textContent=entry()?.muscles?'Saved confirmed mapping':'Unknown until confirmed';}
+  function load(){let m=null;try{m=K().mapping(entry()?.muscles);}catch{}fill(m);dialog.querySelector('#muscle-map-status').textContent=m?'Saved confirmed mapping':'Unknown until confirmed';}
   dialog.querySelector('#muscle-exercise').onchange=load;load();
   dialog.querySelector('#muscle-suggest').onclick=()=>{const m=K().suggestion(entry()?.name);if(m)fill(m);dialog.querySelector('#muscle-map-status').textContent=m?'Suggestion only — review each assignment before saving':'No reliable suggestion; choose assignments manually';};
   dialog.querySelector('#muscle-close').onclick=()=>dialog.close();

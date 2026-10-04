@@ -26,3 +26,13 @@ test('Coach and Companion share workload evidence and sport limits without modif
  await page.locator('#coach-companion-launcher').click();await page.locator('#cc-input').fill('Are my quads getting enough work?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('2 direct sets');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
+
+test('malformed imported mappings remain unknown and can be repaired',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.evaluate(()=>{data.exerciseCatalog[0].muscles={confirmed:true,mode:'resistance',primary:{},secondary:[]};renderDecisionReadiness();});
+ await page.locator('summary').filter({hasText:'Muscle workload & training knowledge'}).click();
+ await expect(page.locator('#muscle-workload')).toContainText('2 unmapped sets');
+ await page.locator('#muscle-map-open').click();await expect(page.locator('#muscle-map-status')).toContainText('Unknown until confirmed');
+ await page.locator('#muscle-suggest').click();await page.locator('#muscle-map-dialog').getByRole('button',{name:'Save confirmed mapping',exact:true}).click();
+ await expect(page.locator('#muscle-map-status')).toContainText('Saved confirmed mapping');expect(errors).toEqual([]);
+});
