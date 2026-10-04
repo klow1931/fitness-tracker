@@ -1,3 +1,7 @@
+# v2.89.0 — Mobile UX & Accessibility
+
+Contextual logger names and unit state, inline invalid-field alerts, keyboard tabs/skip link and mobile target sizing. Regression coverage for small viewport, larger text and reduced motion. No training, schema or signing changes. See `docs/releases-v2.89.md`.
+
 # v2.88.0 — Native Release Validation
 
 Cloud Android unsigned release compilation with compiled APK checks, native backup/restore and failure regressions, and an explicit physical-device acceptance procedure. Schema v25 and training behavior unchanged. See `docs/releases-v2.88.md`.

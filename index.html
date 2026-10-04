@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="energy.css" />
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
+<a class="skip-link" href="#panel-dashboard" onclick="window.LoadnoteAccessibility?.skip(event)">Skip to current content</a>
 <details id="device-status-details" class="device-status" aria-label="Device and connection status">
   <summary>Device &amp; backup <span aria-hidden="true">⌄</span></summary>
   <div class="device-status-content">
@@ -61,7 +62,7 @@
         <p class="text-slate-500 text-sm">An adaptive training log that learns how you train.</p>
       </div>
       <div class="flex gap-2 flex-wrap items-center">
-        <button onclick="toggleDark()" id="dark-toggle" class="btn-secondary text-sm px-3 py-1.5" title="Toggle dark mode">🌙</button>
+        <button onclick="toggleDark()" id="dark-toggle" class="btn-secondary text-sm px-3 py-1.5" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
         <div class="flex rounded-lg border border-slate-300 overflow-hidden text-sm font-medium">
           <button id="unit-kg" onclick="setUnit('kg')" class="px-3 py-1.5 bg-indigo-600 text-white">kg</button>
           <button id="unit-lb" onclick="setUnit('lb')" class="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50">lb</button>
@@ -326,6 +327,7 @@
           </div>
         </div>
         <section id="training-cockpit" class="training-cockpit" aria-label="Current workout" hidden></section>
+        <p id="logger-validation-error" class="logger-validation-error" role="alert" hidden></p>
         <div id="workout-edit-banner" class="session-edit-banner" hidden>
           <span>Editing a saved workout. Changes are saved only after review.</span>
           <button type="button" class="btn-secondary" data-workout-action="cancel-edit">Cancel edit</button>
@@ -1956,6 +1958,7 @@
   <script src="src/product/rest-timer.js" defer></script>
   <script src="src/product/native-backup.js" defer></script>
   <script src="src/product/beta-onboarding.js" defer></script>
+  <script src="src/product/mobile-accessibility.js" defer></script>
   <script src="src/product/platform-runtime.js" defer></script>
   <script src="src/product/app-lifecycle.js" defer></script>
   <script src="src/product/training-flow.js" defer></script>

@@ -44,27 +44,29 @@ function updateLoggerSummary() {
   document.getElementById('logger-summary').textContent = `${document.querySelectorAll('#exercise-rows > div').length} exercises · ${done}/${total} sets checked`;
   if(typeof updateTrainingFlow==='function')updateTrainingFlow();
 }
+function loggerValidationFailure(input,message){showToast(message,'error');if(window.LoadnoteAccessibility)return window.LoadnoteAccessibility.reportError(input,message);input?.focus();return false;}
 function validateWorkoutForm() {
+  window.LoadnoteAccessibility?.clearErrors();
   for (const row of document.querySelectorAll('#exercise-rows > div')) {
     row.classList.remove('training-collapsed');
     const name = row.querySelector('.ex-name');
     const entered = [...row.querySelectorAll('input[type=number]')].some(i => i.value !== '' || i.validity.badInput);
-    if (entered && !name.value.trim()) { name.focus(); showToast('Name every exercise with entered values.', 'error'); return false; }
+    if (entered && !name.value.trim()) return loggerValidationFailure(name,'Name every exercise with entered values.');
     for (const input of row.querySelectorAll('input[type=number]')) {
       const isReps = input.classList.contains('set-reps');
       const isRpe = input.classList.contains('set-rpe');
       if (input.validity.badInput || (input.value !== '' && !validLoggerNumber(input.value, Number(input.min || 0), isRpe ? 10 : Infinity, isReps))) {
-        input.focus(); showToast(isRpe ? 'RPE must be between 1 and 10.' : 'Use valid, nonnegative values and whole-number reps.', 'error'); return false;
+        return loggerValidationFailure(input,isRpe ? 'RPE must be between 1 and 10.' : 'Use valid, nonnegative values and whole-number reps.');
       }
     }
     for (const set of row.querySelectorAll('.sets-container > div')) {
       const measure = set.querySelector('.set-reps, .set-duration');
       if ([...set.querySelectorAll('input[type=number]')].some(i => i.value !== '') && !measure.value) {
-        measure.focus(); showToast('Enter reps or hold seconds for each filled set.', 'error'); return false;
+        return loggerValidationFailure(measure,'Enter reps or hold seconds for each filled set.');
       }
     }
     if (name.value.trim() && row.dataset.type === 'cardio' && !(Number(row.querySelector('.cardio-duration').value) > 0 || Number(row.querySelector('.cardio-distance').value) > 0)) {
-      showToast('Enter a duration or distance for cardio.', 'error'); return false;
+      return loggerValidationFailure(row.querySelector('.cardio-duration'),'Enter a duration or distance for cardio.');
     }
   }
   return true;

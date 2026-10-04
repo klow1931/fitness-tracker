@@ -118,7 +118,7 @@ test('saving a shortened scheduled workout closes the loop to the next session',
  });
  await page.getByRole('button',{name:'Start workout',exact:true}).click();
  await openOptions(page);
- page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:/Remove set$/}).last().click();
  await page.locator('.set-rpe').fill('8');
  await openOptions(page);
  await page.locator('#session-intent > summary').click();
