@@ -11,7 +11,12 @@ test('logger names include exercise, set, measure and current units without chan
  await page.evaluate(()=>setUnit('lb'));await expect(page.locator('.set-weight').first()).toHaveAccessibleName('Competition Bench · Set 1 · Load in pounds');
  await expect(page.locator('#unit-lb')).toHaveAttribute('aria-pressed','true');
  expect(await page.evaluate(()=>toStorage(Number(document.querySelector('.set-weight').value)))).toBeCloseTo(100,1);
- await page.evaluate(()=>addExerciseRow({name:'Cycling',type:'cardio'}));await expect(page.locator('.cardio-duration')).toHaveAccessibleName('Exercise 2 · Cardio duration in minutes');await expect(page.locator('.cardio-hr')).toHaveAttribute('inputmode','numeric');
+ await page.evaluate(()=>addExerciseRow({name:'Cycling',type:'cardio'}));
+ const cardio=page.locator('#exercise-rows > div').last();
+ await expect(cardio).toHaveClass(/training-collapsed/);
+ await cardio.getByRole('button',{name:'Show sets',exact:true}).click();
+ await expect(cardio.locator('.cardio-duration')).toBeVisible();
+ await expect(cardio.locator('.cardio-duration')).toHaveAccessibleName('Exercise 2 · Cardio duration in minutes');await expect(cardio.locator('.cardio-hr')).toHaveAttribute('inputmode','numeric');
 });
 test('validation explains and associates an invalid field until correction',async({page})=>{
  await page.locator('.ex-name').fill('Bench');await page.locator('.set-reps').fill('5');await page.locator('.set-weight').fill('100');await page.locator('.set-rpe').fill('11');
