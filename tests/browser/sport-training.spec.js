@@ -16,7 +16,7 @@ async function attemptForm(page){
 test('structured goals persist and shared review exposes declared scheduling constraints',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.programs,programmingProfiles:data.programmingProfiles}));await createGoal(page);await decisions(page);await expect(page.locator('#sport-review-explanation')).toContainText('Gym and declared sport days overlap');await expect(page.locator('#sport-review-explanation')).toContainText('not completed workload');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.programs,programmingProfiles:data.programmingProfiles}))).toBe(before);await page.screenshot({path:test.info().outputPath('sport-review.png')});
- await page.reload();await expect(page.locator('#coach-companion-launcher')).toBeVisible();expect(await page.evaluate(()=>LoadnoteGoals.list(data.athleteGoals)[0].trainingContext.practiceDays)).toEqual([0]);expect(await page.evaluate(()=>data.schemaVersion)).toBe(27);
+ await page.reload();await expect(page.locator('#coach-companion-launcher')).toBeVisible();expect(await page.evaluate(()=>LoadnoteGoals.list(data.athleteGoals)[0].trainingContext.practiceDays)).toEqual([0]);expect(await page.evaluate(()=>data.schemaVersion)).toBe(28);
 });
 test('Olympic practice handles failure, units, correction and void without touching strength PRs',async({page})=>{
  await createGoal(page,'weightlifting');await page.evaluate(()=>{data.unit='lb';});await decisions(page);await attemptForm(page);const before=await page.evaluate(()=>JSON.stringify(data));await page.screenshot({path:test.info().outputPath('practice-dialog.png')});

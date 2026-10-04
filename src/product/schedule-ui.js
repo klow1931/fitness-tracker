@@ -24,7 +24,7 @@
  function start(id){try{const s=LoadnoteSchedule.list(data.scheduledSessions||[]).find(s=>s.id===id);if(!s||s.status!=='scheduled')throw Error('Session is not scheduled');if(data.workouts.some(w=>w.sessionIntent?.schedule?.id===id))throw Error('This session already has a saved workout');
   if(s.date!==today())throw Error('Reschedule this session to today before starting it. This keeps planned-versus-performed evidence on the correct training date.');
   let life=null;try{const d=typeof readLoggerDraft==='function'?readLoggerDraft():null;life=window.LoadnoteProgramLifecycle?.inspect(data,{asOf:today(),draft:d,draftOpen:!!d});}catch{}
-  const belongs=life?.program&&(id.startsWith('phase:'+life.program.id+':')||id.startsWith('meet:'+life.program.id+':')),gate=['resolve-overdue','review-week','review-phase','review-programs'];
+  const belongs=life?.program&&(id.startsWith('phase:'+life.program.id+':')||id.startsWith('meet:'+life.program.id+':')||id.startsWith('hypertrophy:'+life.program.id+':')),gate=['resolve-overdue','review-week','review-phase','review-programs'];
   if(belongs&&gate.includes(life.nextAction?.kind)){showToast(life.nextAction.label+' before starting this program session.','info');window.LoadnoteProgramLifecycleUI?.route?.(life);return;}
   const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null;if(draft&&draft.sessionIntent?.schedule?.id===id){showTab('workouts');showSubTab('workouts','wo-log');showToast('Resumed scheduled workout draft.','info');return;}
   const intent={role:s.role,goal:s.goal,prescription:s.prescription,schedule:{id:s.id,revisionAt:s.revisionAt}};

@@ -1,8 +1,8 @@
 /* Loadnote v2.68 — deterministic programming workspace routing and date helpers. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./phase-builder'),require('./meet-cycle'));
-  else root.LoadnoteProgrammingWorkspace=factory(root.LoadnoteProgrammingProfile,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Phase,Meet){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./phase-builder'),require('./meet-cycle'),require('./hypertrophy-builder'),require('./athlete-goals'));
+  else root.LoadnoteProgrammingWorkspace=factory(root.LoadnoteProgrammingProfile,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,root.LoadnoteHypertrophyBuilder,root.LoadnoteGoals);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Phase,Meet,Hyp,Goals){
   'use strict';
   const POLICY='programming-workspace-v1';
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -30,13 +30,16 @@
     const upcomingCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate>asOf)||null;
     const scheduledPhase=allPhases.find(p=>p.scheduledAt&&(p.sessions||[]).some(s=>s.date>=asOf))||null;
     const reviewedCycle=cycles.find(c=>!c.scheduledAt&&c.config.meetDate>=asOf)||null;
-    if(activeCycle||upcomingCycle||scheduledPhase){
+    const hyp=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.createdAt<=cutoff),scheduledHyp=hyp.find(r=>r.scheduledAt&&r.config.startDate<=asOf&&r.weekly.at(-1).through>=asOf)||hyp.find(r=>r.scheduledAt&&r.config.startDate>asOf),reviewedHyp=hyp.slice().reverse().find(r=>!r.scheduledAt&&r.config.startDate>=asOf);
+    if(activeCycle||upcomingCycle||scheduledPhase||scheduledHyp){
       const cycle=activeCycle||upcomingCycle;
-      return {version:1,policy:POLICY,status:'scheduled',profile:summary,primaryAction:'view-current',title:activeCycle?'Current cycle is already scheduled':upcomingCycle||scheduledPhase?'Your next/current program is already scheduled':'Program scheduled',reason:'Use the current-program controls above for training and reviews. New program tools stay tucked away unless you intentionally want another plan.',cycleId:cycle?.id||null,sourceId:cycle?.sourceProgram?.id||scheduledPhase?.id||null};
+      return {version:1,policy:POLICY,status:'scheduled',profile:summary,primaryAction:'view-current',title:activeCycle?'Current cycle is already scheduled':upcomingCycle||scheduledPhase?'Your next/current program is already scheduled':'Program scheduled',reason:'Use the current-program controls above for training and reviews. New program tools stay tucked away unless you intentionally want another plan.',cycleId:cycle?.id||null,sourceId:cycle?.sourceProgram?.id||scheduledPhase?.id||scheduledHyp?.id||null};
     }
+    if(reviewedHyp)return {version:1,policy:POLICY,status:'reviewed-hypertrophy',profile:summary,primaryAction:'review-hypertrophy',sourceId:reviewedHyp.id,title:'Review your saved hypertrophy plan',reason:'Saving and scheduling are separate; inspect its frozen targets before adding sessions.'};
+    const hypertrophyGoal=Goals.list(state?.athleteGoals||[]).some(g=>g.status==='active'&&g.trainingContext?.primary==='hypertrophy');
+    if(profile?.context.goal==='hypertrophy'||!profile&&hypertrophyGoal)return {version:1,policy:POLICY,status:'hypertrophy',profile:summary,primaryAction:'hypertrophy',title:'Build a reviewed hypertrophy plan',reason:'Choose confirmed exercises, explicit loads, rep ranges and rest. Review direct sets, indirect exposure and context before saving; schedule separately.'};
     if(!profile)return {version:1,policy:POLICY,status:'needs-profile',profile:null,primaryAction:'profile',title:'Set up your training once',reason:'Tell Loadnote your goal, available days, session time and equipment. The program planner will reuse those settings instead of asking you to reconcile multiple builders.'};
     const p=profile.context;
-    if(p.goal==='hypertrophy')return {version:1,policy:POLICY,status:'unsupported-generated-goal',profile:summary,primaryAction:'adopt',title:'Use an existing hypertrophy program',reason:'Loadnote does not yet generate a dedicated hypertrophy plan. You can adopt an existing program without relabeling a strength template.'};
     if(p.goal==='return'||p.consistency==='returning')return {version:1,policy:POLICY,status:'quick-return',profile:summary,primaryAction:'quick',title:'Build a simple 4-week return block',reason:'The short builder is reserved for return/re-entry. It no longer competes with the main program designer.'};
     if(reviewedCycle)return {version:1,policy:POLICY,status:'reviewed-cycle',profile:summary,primaryAction:'view-reviewed-cycle',title:'Your cycle is reviewed and ready to schedule',reason:'The full cycle already exists. Review or schedule it instead of starting another generator.',cycleId:reviewedCycle.id,sourceId:reviewedCycle.sourceProgram?.id||null};
     const meetIntent=p.goal==='meet'||!!p.eventDate;

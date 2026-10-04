@@ -1,8 +1,8 @@
 /* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'));
- else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'),require('./hypertrophy-builder'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp){
  'use strict';
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
@@ -27,12 +27,15 @@
   const muscles=Object.entries(Knowledge?.MUSCLES||{}).filter(([k,v])=>new RegExp('\\b'+(k==='quadriceps'?'quad\\w*':v.toLowerCase())+'\\b','i').test(q)).map(([k])=>k);
   const muscleProgression=!explicitLift&&prior?.topic==='hypertrophy'&&/^(should i |do i |can i )?(add|increase) (sets|weight|load)\??$/i.test(q);
   const sportProgression=!explicitLift&&['athlete','weightlifting','training-context'].includes(prior?.topic)&&/^(should i |do i |can i )?(add|increase) (sets|weight|load)\??$/i.test(q);
-  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
+  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
   if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
+  if(intent.topic==='hypertrophy'&&Hyp&&/\b(program|plan|progression)\b/i.test(intent.referenceQuestion)){
+   try{const programs=Hyp.validate(state.hypertrophyPrograms||[]).filter(r=>r.scheduledAt&&r.config.startDate<=asOf&&r.weekly.at(-1).through>=asOf);if(programs.length===1){const report=Hyp.progression(state,programs[0].id,{asOf});return result(Hyp.explain(report),'Shared hypertrophy progression review',[report]);}return result(programs.length>1?'More than one hypertrophy plan covers today. Resolve overlapping programs before progression review.':'Build or schedule a reviewed hypertrophy plan in Decisions first; no exercise loads are inferred.','Hypertrophy programming policy');}catch{return result('Hypertrophy evidence could not be validated. Open Decisions to resolve it; no change is proposed.','Hypertrophy evidence unavailable');}
+  }
   if(intent.topic==='hypertrophy'&&Workload){
    const source=Knowledge.SOURCES.hypertrophy;
    if(/\b(rest|rep range|failure)\b/i.test(q)&&!/\b(my|logged|recent)\b/i.test(q))return result(Knowledge.GUIDANCE.hypertrophy+' Source: '+source.title+' — '+source.url,source.title);

@@ -44,7 +44,7 @@ for(const bad of [invalid({weeks:6}),invalid({weeks:53}),invalid({peakWeeks:5}),
 const tomorrow={...reviewed,programmingProfiles:[...reviewed.programmingProfiles,{...reviewed.programmingProfiles[0],id:'later',recordedAt:'2026-09-25T12:00:00.000Z',context:{...reviewed.programmingProfiles[0].context,notes:'Later'}}]};
 assert.deepEqual(Meet.prepare(tomorrow,source,{planningInput:p.planningDecision.input},args),p,'As-known profile cutoff');
 const old=Core.normalizeState({schemaVersion:22,workouts:reviewed.workouts,phasePrograms:reviewed.phasePrograms});
-assert.equal(old.schemaVersion,27);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
+assert.equal(old.schemaVersion,28);assert.deepEqual(old.meetCycles,[]);assert.deepEqual(old.workouts,reviewed.workouts);
 assert.deepEqual(Core.normalizeState({...scheduled}).meetCycles,scheduled.meetCycles);
 const legacyCycles=structuredClone(saved.meetCycles);delete legacyCycles[0].qualityGate;delete legacyCycles[0].planningDecision;delete legacyCycles[0].decisionEnvironment.policies.programQualityGate;delete legacyCycles[0].decisionEnvironment.policies.programPlanning;assert.deepEqual(Meet.validate(legacyCycles),legacyCycles,'older meet cycles without planning/quality snapshots remain valid');
 

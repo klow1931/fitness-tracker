@@ -49,7 +49,10 @@
       if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);if(Number.isFinite(Number(raw.targetAvgHr??raw.avgHr))&&Number(raw.targetAvgHr??raw.avgHr)>0)row.targetAvgHr=Number(raw.targetAvgHr??raw.avgHr);return row;
     }
     const trackBy=raw.trackBy==='duration'?'duration':'reps',sets=(raw.sets||[]).map(set=>plannedSet(set,trackBy)).filter(Boolean);
-    if(!sets.length)return null;const row={name,type:'strength',trackBy,sets};if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);return row;
+    if(!sets.length)return null;const row={name,type:'strength',trackBy,sets};if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);
+    if(raw.restSeconds!=null){if(!Number.isInteger(raw.restSeconds)||raw.restSeconds<60||raw.restSeconds>600)throw Error('Invalid planned rest allowance');row.restSeconds=raw.restSeconds;}
+    if(raw.loadConvention!=null){if(!['total','per-hand','stack','added'].includes(raw.loadConvention))throw Error('Invalid planned load convention');row.loadConvention=raw.loadConvention;}
+    return row;
   }
   function source(raw){
     const type=SOURCE_TYPES.includes(raw?.type)?raw.type:'manual',result={type};
