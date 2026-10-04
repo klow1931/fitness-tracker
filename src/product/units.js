@@ -29,6 +29,7 @@
       document.querySelectorAll('#exercise-rows .set-weight').forEach(input => { if (input.value !== '') input.value = Math.round(Number(input.value) * (oldUnit === u ? 1 : u === 'lb' ? KG_TO_LB : 1 / KG_TO_LB) * 100) / 100; });
       data.unit = u;
       document.querySelectorAll('#exercise-rows .set-weight').forEach(input => { input.placeholder = u; input.setAttribute('aria-label', u); });
+      window.LoadnoteAccessibility?.decorateLogger();
       saveLoggerDraft();
       saveData(data);
       updateUnitToggle();
@@ -44,8 +45,8 @@
       const kgBtn = document.getElementById('unit-kg');
       const lbBtn = document.getElementById('unit-lb');
       if (kgBtn && lbBtn) {
+        kgBtn.setAttribute('aria-pressed',String(isKg));lbBtn.setAttribute('aria-pressed',String(!isKg));
         kgBtn.className = isKg ? 'px-3 py-1.5 bg-indigo-600 text-white' : 'px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50';
         lbBtn.className = !isKg ? 'px-3 py-1.5 bg-indigo-600 text-white' : 'px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50';
       }
     }
-

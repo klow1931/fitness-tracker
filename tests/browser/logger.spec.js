@@ -17,7 +17,7 @@ async function review(page){const cockpit=page.locator('#training-cockpit [data-
 test('delegated dynamic controls and templates bind once',async({page})=>{
  await page.evaluate(()=>{initWorkoutEvents();initWorkoutEvents();});
  await enter(page);await openOptions(page);await page.getByRole('button',{name:'+ Same Set',exact:true}).click();await expect(page.locator('.set-reps')).toHaveCount(2);
- page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Remove set',exact:true}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);expect((await page.evaluate(()=>readLoggerDraft())).rows[0].sets).toHaveLength(1);
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:/Remove set$/}).last().click();await expect(page.locator('.set-reps')).toHaveCount(1);expect((await page.evaluate(()=>readLoggerDraft())).rows[0].sets).toHaveLength(1);
  const dialogs=[];page.on('dialog',d=>{dialogs.push(d.type());return d.accept(d.type()==='prompt'?'Upper body':undefined);});
  await page.getByRole('button',{name:'Save as Template',exact:true}).click();expect(await page.evaluate(()=>data.templates.length)).toBe(1);expect(dialogs.filter(d=>d==='prompt')).toHaveLength(1);
  await page.getByRole('button',{name:'Clear',exact:true}).click();await page.locator('#template-select').selectOption({label:'Upper body'});await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');await openOptions(page);

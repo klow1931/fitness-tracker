@@ -153,7 +153,7 @@
   const open=H()?.keyboardLikelyOpen(layout,vv.height,140)||false;
   document.body.classList.toggle('mobile-keyboard-open',open);
  }
- function refresh(){decorateRows();updateDock();viewportState();}
+ function refresh(){decorateRows();window.LoadnoteAccessibility?.decorateLogger();updateDock();viewportState();}
  function keydown(event){
   const input=event.target.closest?.('#exercise-rows [data-gym-field]');if(!input||event.key!=='Enter')return;
   const set=input.closest('.sets-container > div'),kind=input.dataset.gymField;if(!set)return;

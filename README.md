@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.88.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.89.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.89 — Mobile UX & Accessibility
+
+Contextual workout field names, inline validation feedback, keyboard-accessible section tabs, skip navigation and improved small-screen touch targets. See [release notes](docs/releases-v2.89.md). Training logic and schema v25 unchanged; native accessibility and device acceptance remain unverified.
 
 ## v2.88 — Native Release Validation
 

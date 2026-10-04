@@ -1804,3 +1804,13 @@ body.dark .training-cockpit-transition span{color:#6ee7b7}
 #native-beta-safety ul { list-style: disc; }
 #native-beta-safety li { margin: .4rem 0; }
 #native-diagnostics { overflow-wrap: anywhere; }
+.skip-link { position:fixed; top:.5rem; left:.5rem; z-index:10000; padding:.8rem 1rem; background:#fff; color:#312e81; border:2px solid #4f46e5; border-radius:.5rem; transform:translateY(-200%); }
+.skip-link:focus { transform:none; }
+.logger-validation-error { border:2px solid #b91c1c; border-radius:.5rem; padding:.75rem; color:#991b1b; background:#fef2f2; overflow-wrap:anywhere; }
+[aria-invalid="true"] { outline:2px solid #b91c1c; outline-offset:2px; }
+body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
+@media(max-width:768px) {
+ #exercise-rows [data-workout-action="remove-set"], #exercise-rows [data-workout-action="add-set"], #exercise-rows .track-by-btn, #unit-kg, #unit-lb { min-height:44px; min-width:44px; }
+ #exercise-rows input, #exercise-rows select { max-width:100%; }
+ #exercise-rows .input { font-size: max(1rem,16px); }
+}
