@@ -1,4 +1,4 @@
-(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./schedule'),require('./decision-readiness'),require('./session-intent'));else root.LoadnoteGoals=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteSchedule,root.LoadnoteReadiness,root.LoadnoteIntent);})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Schedule,Readiness,Intent){
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./schedule'),require('./decision-readiness'),require('./session-intent'),require('./sport-context'));else root.LoadnoteGoals=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteSchedule,root.LoadnoteReadiness,root.LoadnoteIntent,root.LoadnoteSportContext);})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Schedule,Readiness,Intent,Sport){
  'use strict';
  const clone=x=>JSON.parse(JSON.stringify(x));
  const stamp=s=>typeof s==='string'&&Number.isFinite(Date.parse(s))&&new Date(s).toISOString()===s;
@@ -7,6 +7,7 @@
  function context(v){
   if(!v||typeof v!=='object')throw Error('Invalid athlete goal');
   const c={name:text(v.name,120),sport:text(v.sport||'powerlifting',80),status:v.status||'active',eventName:text(v.eventName||'',160),eventDate:v.eventDate||null,weightClass:text(v.weightClass||'',80),experience:text(v.experience||'',300),equipment:text(v.equipment||'',500),notes:text(v.notes||'',1000),availableDays:v.availableDays||[],sessionMinutes:v.sessionMinutes??null,targets:v.targets||[],blockIds:ids(v.blockIds||[]),sessionIds:ids(v.sessionIds||[])};
+  c.trainingContext=Sport.goalContext(v.trainingContext);
   if(!c.name||!c.sport||!['active','completed','archived'].includes(c.status)||(c.eventDate&&!Blocks.date(c.eventDate)))throw Error('Enter a goal name and valid event date');
   if(!Array.isArray(c.availableDays)||c.availableDays.some(d=>!Number.isInteger(d)||d<0||d>6)||new Set(c.availableDays).size!==c.availableDays.length)throw Error('Invalid available days');
   c.availableDays=[...c.availableDays];

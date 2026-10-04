@@ -1,3 +1,7 @@
+# v2.95.0 — Training Goals & Sport-Aware Coaching
+
+Structured primary/secondary priorities and sport schedules extend athlete goals. Shared read-only reviews ask for missing context, distinguish goal-linked evidence and flag scheduling conflicts without changing programs. Separate revisioned Olympic-practice attempts preserve made/missed/unknown outcomes and athlete-reported quality without entering strength PR calculations. Schema 27; unsigned build 29500. See `docs/releases-v2.95.md`.
+
 # v2.94.0 — Individualized Workload Reviews
 
 Four-week muscle-workload comparisons, planned versus completed evidence, reviewed direct-set ranges and restrictions, conservative gather/hold/review findings, and shared muscle-specific Coach follow-ups. Schema 26 adds revisioned workload profiles; unsigned build 29400. No automatic program edits. See `docs/releases-v2.94.md`.

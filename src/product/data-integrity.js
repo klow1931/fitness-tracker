@@ -17,6 +17,8 @@
   (state.prs||[]).forEach(p=>{if(p&&name(p.exercise))refs.push({owner:p,name:p.exercise,exerciseId:p.exerciseId});if(p?.baselinePR&&name(p.baselinePR.exercise))refs.push({owner:p.baselinePR,name:p.baselinePR.exercise,exerciseId:p.baselinePR.exerciseId||p.exerciseId});});
   (state.trainingBlocks||[]).forEach(block=>(block.revisions||[]).forEach(revision=>{const context=revision?.context;if(!context)return;for(const field of ['trainingMaxes','known1RMs'])(context[field]||[]).forEach(row=>{if(row&&name(row.exercise))refs.push({owner:row,name:row.exercise,exerciseId:row.exerciseId});});}));
   (state.workoutRevisions||[]).forEach(revision=>{exercises(revision.before?[revision.before]:[]);plans(revision.before?[revision.before]:[]);exercises(revision.after?[revision.after]:[]);plans(revision.after?[revision.after]:[]);});
+  // Explicit identity merges update technical-practice links, including revisions.
+  (state.olympicPractice||[]).forEach(record=>(record.revisions||[]).forEach(v=>{if(v.context?.exerciseId){const e=(state.exerciseCatalog||[]).find(e=>e.id===v.context.exerciseId);if(e)refs.push({owner:v.context,name:e.name,exerciseId:e.id});}}));
   return refs;
  }
  function normalizedEntry(raw){
@@ -108,7 +110,7 @@
   return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+canonicalStringify(value[key])).join(',')+'}';
  }
  function fingerprint(value){return hash(canonicalStringify(value));}
- const BACKUP_COLLECTIONS=['workouts','scheduledSessions','workoutRevisions','trainingBlocks','templates','exerciseCatalog','exerciseRoles','athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews','meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents'];
+ const BACKUP_COLLECTIONS=['workouts','scheduledSessions','workoutRevisions','trainingBlocks','templates','exerciseCatalog','exerciseRoles','athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews','meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles','olympicPractice'];
  function addBackupManifest(input,{exportedAt=new Date().toISOString(),releaseVersion=''}={}){
   if(!iso(exportedAt))throw Error('Invalid backup export time.');
   const payload=clone(input)||{};delete payload._loadnoteBackup;
@@ -182,6 +184,7 @@
  function previewImport(current,incoming){
   const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
   return {
+   olympicPractice:diff(current?.olympicPractice,incoming?.olympicPractice),workloadProfiles:diff(current?.workloadProfiles,incoming?.workloadProfiles),
    transitionSnapshots:diff(current?.transitionSnapshots,incoming?.transitionSnapshots),adoptedPrograms:diff(current?.adoptedPrograms,incoming?.adoptedPrograms),meetCycles:diff(current?.meetCycles,incoming?.meetCycles),scheduledSessions:diff(current?.scheduledSessions,incoming?.scheduledSessions),
    phaseReviews:diff(current?.phaseReviews,incoming?.phaseReviews),phasePrograms:diff(current?.phasePrograms,incoming?.phasePrograms),programmingProfiles:diff(current?.programmingProfiles,incoming?.programmingProfiles),programReviews:diff(current?.programReviews,incoming?.programReviews),reviewedPrograms:diff(current?.reviewedPrograms,incoming?.reviewedPrograms),
    athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),workoutRevisions:diff(current?.workoutRevisions,incoming?.workoutRevisions),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseCatalog:diff(current?.exerciseCatalog,incoming?.exerciseCatalog),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents),

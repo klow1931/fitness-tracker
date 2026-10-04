@@ -7,7 +7,7 @@
  const LIFTS=['squat','bench','deadlift'];
  const copy=x=>JSON.parse(JSON.stringify(x));
  const round=x=>Math.round(Number(x)*10)/10;
- function powerlifting(goal){return String(goal?.sport||'').trim().toLowerCase()==='powerlifting';}
+ function powerlifting(goal){const c=goal?.trainingContext;return String(goal?.sport||'').trim().toLowerCase()==='powerlifting'&&(!c||c.primary==='powerlifting'||c.secondary.includes('powerlifting'));}
  function reference(row){
    const e=row?.evidence||{};
    if(Number(e.estimatedCapacity?.kg)>0)return {kg:Number(e.estimatedCapacity.kg),kind:'estimated-capacity',date:e.estimatedCapacity.date||null,label:'Latest RPE-aware estimated capacity',estimated:true};
@@ -43,5 +43,5 @@
     summary:(goal.eventDate?'Goal has a saved target date. ':'No target date is required. ')+(withReference.length===targeted.length?'All targeted lifts have a current comparison reference.':'Some targeted lifts still need stronger baseline evidence.')+' Block objectives: '+objectiveCodes.join(', ')+'.',
     notes:['Targets are long-term aspirations, not training maxes, tested maxes or automatic prescriptions.','Estimated capacity can describe distance to a target but does not prove the target has been achieved.','Goal distance changes block context only; weekly load/set decisions still require the separate evidence and approval rules.']};
  }
- return {LIFTS,inspect,reference,objective};
+ return {LIFTS,inspect,reference,objective,powerlifting};
 });
