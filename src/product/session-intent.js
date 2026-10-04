@@ -42,6 +42,13 @@
   }
   function plannedExercise(raw){
     const name=text(raw?.name,160);if(!name)return null;
+    if(raw.type==='practice'){
+      if(!['weightlifting','speed','jump','agility'].includes(raw.kind)||typeof raw.exerciseId!=='string'||!raw.exerciseId||!Number.isInteger(raw.rounds)||raw.rounds<1||raw.rounds>12||!Number.isInteger(raw.reps)||raw.reps<1||raw.reps>10||!Number.isInteger(raw.restSeconds)||raw.restSeconds<60||raw.restSeconds>600||typeof raw.protocol!=='string'||!raw.protocol.trim()||raw.protocol.length>500)throw Error('Invalid reviewed practice target');
+      const row={name,type:'practice',exerciseId:raw.exerciseId,kind:raw.kind,rounds:raw.rounds,reps:raw.reps,restSeconds:raw.restSeconds,protocol:raw.protocol};
+      if(raw.kind==='weightlifting'){if(!Number.isFinite(raw.weight)||raw.weight<0||raw.weight>1000||!['snatch','clean','jerk','clean-jerk','snatch-pull','clean-pull','other'].includes(raw.family)||typeof raw.variation!=='string'||raw.variation.length>160||raw.reps>3)throw Error('Invalid technical practice target');Object.assign(row,{weight:raw.weight,family:raw.family,variation:raw.variation,loadConvention:'total'});}
+      else{if(!Number.isFinite(raw.distanceMeters)||raw.distanceMeters<0||raw.distanceMeters>200||raw.kind!=='jump'&&raw.distanceMeters<=0)throw Error('Invalid drill distance');row.distanceMeters=raw.distanceMeters;}
+      return row;
+    }
     if(raw.type==='cardio'){
       const duration=Math.max(0,Number(raw.duration)||0),distance=Math.max(0,Number(raw.distance)||0);
       if(!(duration>0||distance>0))return null;
@@ -64,7 +71,7 @@
     if(!iso(capturedAt))throw Error('Invalid planned-work capture time.');
     const plannedExercises=(exercises||[]).map(plannedExercise).filter(Boolean);
     if(!plannedExercises.length)return null;
-    if(plannedExercises.length>100||plannedExercises.reduce((n,e)=>n+(e.type==='cardio'?1:e.sets.length),0)>500)throw Error('Planned work is too large.');
+    if(plannedExercises.length>100||plannedExercises.reduce((n,e)=>n+(e.type==='cardio'?1:e.type==='practice'?e.rounds*e.reps:e.sets.length),0)>500)throw Error('Planned work is too large.');
     return {version:1,capturedAt,source:source(sourceInput),plannedExercises};
   }
   function prescription(raw){
@@ -135,6 +142,7 @@
     }
     const identity=e=>e.exerciseId?String(e.exerciseId):identityByName.get(name(e))?.size===1?[...identityByName.get(name(e))][0]:null;
     const group=exercises=>{const out=new Map();for(const e of exercises){
+      if(e.type==='practice')continue; // Skill/performance outcomes live in separate journals, never strength adherence.
       const id=identity(e);if(ids&&(!id||!ids.has(id)))continue;
       const k=(id?'id:'+id:'name:'+text(e.name,160).toLowerCase())+'|'+mode(e);
       if(!out.has(k))out.set(k,{mode:mode(e),sets:[]});

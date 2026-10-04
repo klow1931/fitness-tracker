@@ -9,7 +9,7 @@
   const COLLECTIONS=[
     'workouts','scheduledSessions','workoutRevisions','trainingBlocks','exerciseCatalog','exerciseRoles',
     'athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews',
-    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles','olympicPractice','hypertrophyPrograms',
+    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice',
     'templates','prs','goals','programs','restDays','nutrition','foodLibrary','bodyweight','measurements','formReviews'
   ];
   const DOCUMENTS=['athleteProfile','exerciseNotes','programStates','activeProgramId'];
@@ -83,7 +83,7 @@
     const collectionKeys=Object.keys(data.collections).sort(),documentKeys=Object.keys(data.documents).sort();
     // Older projects omitted workload profiles / technical practice. Preserve
     // their original checksum basis while defaulting absent collections on import.
-    const expectedCollections=COLLECTIONS.filter(name=>!['workloadProfiles','olympicPractice','hypertrophyPrograms'].includes(name)||Object.hasOwn(data.collections,name)).sort(),expectedDocuments=[...DOCUMENTS].sort();
+    const expectedCollections=COLLECTIONS.filter(name=>!['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice'].includes(name)||Object.hasOwn(data.collections,name)).sort(),expectedDocuments=[...DOCUMENTS].sort();
     if(collectionKeys.length!==expectedCollections.length||collectionKeys.some((key,index)=>key!==expectedCollections[index]))throw Error('Sync project collection set does not match the protocol.');
     if(documentKeys.length!==expectedDocuments.length||documentKeys.some((key,index)=>key!==expectedDocuments[index]))throw Error('Sync project document set does not match the protocol.');
     const state={};
@@ -95,7 +95,7 @@
     projectState(data);
     const collections={},documents={};let records=0;
     for(const name of COLLECTIONS){
-      if(['workloadProfiles','olympicPractice','hypertrophyPrograms'].includes(name)&&!Object.hasOwn(data.collections,name))continue;
+      if(['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice'].includes(name)&&!Object.hasOwn(data.collections,name))continue;
       const map=recordMap(data.collections[name],name),entries=[...map].sort(([a],[b])=>a.localeCompare(b)).map(([id,value])=>({id,fingerprint:fingerprint(value)}));
       collections[name]={count:entries.length,entries,fingerprint:fingerprint(entries)};records+=entries.length;
     }
@@ -117,6 +117,7 @@
     if(typeof (pkg.releaseVersion??'')!=='string'||String(pkg.releaseVersion||'').length>80)return {status:'invalid',verified:false,reason:'Sync package release metadata is malformed.'};
     try{
       if(Number(pkg.schemaVersion)>=26&&!Object.hasOwn(pkg.data?.collections||{},'workloadProfiles'))throw Error('Schema-26 sync project is missing workload profiles.');
+      if(Number(pkg.schemaVersion)>=29&&['sportPrograms','athleticPractice'].some(k=>!Object.hasOwn(pkg.data?.collections||{},k)))throw Error('Schema-29 sync project is missing sport planning/journal data.');
       if(Number(pkg.schemaVersion)>=28&&!Object.hasOwn(pkg.data?.collections||{},'hypertrophyPrograms'))throw Error('Schema-28 sync project is missing hypertrophy programs.');
       if(Number(pkg.schemaVersion)>=27&&!Object.hasOwn(pkg.data?.collections||{},'olympicPractice'))throw Error('Schema-27 sync project is missing technical practice.');
       const actual=manifestFromProject(pkg.data);

@@ -6,19 +6,19 @@
  if(typeof module==='object'&&module.exports)module.exports=factory(
    require('./schedule'),require('./phase-builder'),require('./meet-cycle'),
    require('./cycle-review'),require('./phase-review'),require('./transition-baseline'),
-   require('./next-block-handoff'),require('./hypertrophy-builder')
+   require('./next-block-handoff'),require('./hypertrophy-builder'),require('./sport-planner')
  );
  else root.LoadnoteProgramLifecycle=factory(
    root.LoadnoteSchedule,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,
    root.LoadnoteCycleReview,root.LoadnotePhaseReview,root.LoadnoteTransitionBaseline,
-   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder
+   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner
  );
-})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp,Sport){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
  const daysBetween=(a,b)=>Math.floor((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000);
- const phaseLabel=x=>({hypertrophy:'Hypertrophy',accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
+ const phaseLabel=x=>({weightlifting:'Technical lifting',athlete:'Athlete development',hypertrophy:'Hypertrophy',accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
  function phaseBounds(program){
    let cursor=program.config.startDate,week=0;
    return program.config.phases.map((p,index)=>{
@@ -38,16 +38,17 @@
    const phases=Phase.validate(state?.phasePrograms||[]).filter(x=>x.scheduledAt).map(phaseProgram);
    const cycles=CycleReview.validate(state||{}).filter(x=>x.scheduledAt).map(meetProgram);
    const hypertrophy=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'hypertrophy-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'hypertrophy:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
-   return [...phases,...cycles,...hypertrophy].sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
+   const sports=Sport.validate(state?.sportPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'sport-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'sport:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
+   return [...phases,...cycles,...hypertrophy,...sports].sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
  }
- function transitionFor(state,p){if(p.kind==='hypertrophy-program')return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
+ function transitionFor(state,p){if(['hypertrophy-program','sport-program'].includes(p.kind))return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
  function eventRecorded(p){
    if(p.kind!=='meet-cycle')return true;
    const record=p.eventType==='competition'?p.record.meetResult:p.record.mockMeet;
    return !!record?.revisions?.length;
  }
  function needsClosure(state,p){
-   if(p.kind==='hypertrophy-program')return false;
+   if(['hypertrophy-program','sport-program'].includes(p.kind))return false;
    if(p.kind==='meet-cycle'&&!eventRecorded(p))return true;
    return !transitionFor(state,p);
  }
@@ -102,7 +103,7 @@
    return null;
  }
  function missedReviewWindows(state,p,asOf){
-   if(p.kind==='hypertrophy-program')return [];
+   if(['hypertrophy-program','sport-program'].includes(p.kind))return [];
    if(p.kind==='meet-cycle'){
      const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week));
      return p.record.weekly.filter(x=>x.week<p.totalWeeks&&!reviewed.has(x.week)&&p.record.weekly.find(n=>n.week===x.week+1)?.startDate<=asOf).map(x=>({kind:'week',week:x.week,phase:x.phase,ended:x.endDate}));
@@ -131,6 +132,7 @@
    else if(phaseDue)nextAction=action('review-phase','Review '+phaseLabel(phaseDue.type)+' phase',phaseLabel(phaseDue.type)+' is complete. Review its evidence before starting the next phase.',{programId:p.id,phase:phaseDue.type});
    else if(todayRows.length)nextAction=action('start-workout',todayRows[0].name,todayRows.length===1?'Today’s reviewed session is ready.':todayRows.length+' reviewed sessions are scheduled today.',{scheduleId:todayRows[0].id});
    else if(p.kind==='meet-cycle'&&asOf>=p.eventDate&&!eventRecorded(p))nextAction=action('record-event','Record '+(p.eventType==='competition'?(p.eventName||'competition meet'):'mock meet')+' results','The program endpoint has arrived. Record actual attempts before closing the cycle.',{cycleId:p.id,eventType:p.eventType,eventDate:p.eventDate});
+   else if(p.kind==='sport-program'&&asOf>=p.endDate)nextAction=action('review-sport','Review sport-plan evidence','Review separately logged skill/performance outcomes with your coach; no SBD transition or sport peak is inferred.',{programId:p.id});
    else if(p.kind==='hypertrophy-program'&&asOf>=p.endDate)nextAction=action('review-hypertrophy','Review hypertrophy evidence','Review complete logs and tolerance before choosing the next plan; no strength transition is inferred.',{programId:p.id});
    else if(asOf>=p.endDate&&!transition)nextAction=action('save-transition','Review program handoff','Freeze the completed program’s training evidence as the transition baseline for the next block.',{programId:p.id});
    else if(transition){

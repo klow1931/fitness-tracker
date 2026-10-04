@@ -36,7 +36,7 @@
   for(const w of state.workouts||[]){
    if(!validDate(w.date)||w.date<from||w.date>asOf)continue;
    for(const e of w.exercises||[]){
-    if(e.type==='cardio')continue;
+    if(e.type==='cardio'||e.type==='practice')continue;
     let m=null;try{m=mapping(catalog.get(e.exerciseId)?.muscles);}catch{}
     for(const s of e.sets||[]){
      if(s.done===false||s.completed===false||s.skipped===true||s.warmup===true||s.type==='warmup'){out.excludedSets++;continue;}

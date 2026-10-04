@@ -1,5 +1,6 @@
     // ========== Templates & Repeat Last ==========
     function fillWorkoutForm(exercises, notes, preserveRpe = false, intentOptions = {}) {
+      if((exercises||[]).some(e=>e.type==='practice')){showToast('Use the dedicated sport session recorder from Calendar; practice is not strength work.','info');return false;}
       if (loggerHasContent() && !confirm('Replace the current workout draft?')) return false;
       pendingProgramSession = null;
       resetSessionEdit();

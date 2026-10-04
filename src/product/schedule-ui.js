@@ -24,9 +24,11 @@
  function start(id){try{const s=LoadnoteSchedule.list(data.scheduledSessions||[]).find(s=>s.id===id);if(!s||s.status!=='scheduled')throw Error('Session is not scheduled');if(data.workouts.some(w=>w.sessionIntent?.schedule?.id===id))throw Error('This session already has a saved workout');
   if(s.date!==today())throw Error('Reschedule this session to today before starting it. This keeps planned-versus-performed evidence on the correct training date.');
   let life=null;try{const d=typeof readLoggerDraft==='function'?readLoggerDraft():null;life=window.LoadnoteProgramLifecycle?.inspect(data,{asOf:today(),draft:d,draftOpen:!!d});}catch{}
-  const belongs=life?.program&&(id.startsWith('phase:'+life.program.id+':')||id.startsWith('meet:'+life.program.id+':')||id.startsWith('hypertrophy:'+life.program.id+':')),gate=['resolve-overdue','review-week','review-phase','review-programs'];
+  const belongs=life?.program&&(id.startsWith('phase:'+life.program.id+':')||id.startsWith('meet:'+life.program.id+':')||id.startsWith('hypertrophy:'+life.program.id+':')||id.startsWith('sport:'+life.program.id+':')),gate=['resolve-overdue','review-week','review-phase','review-programs'];
   if(belongs&&gate.includes(life.nextAction?.kind)){showToast(life.nextAction.label+' before starting this program session.','info');window.LoadnoteProgramLifecycleUI?.route?.(life);return;}
   const draft=typeof readLoggerDraft==='function'?readLoggerDraft():null;if(draft&&draft.sessionIntent?.schedule?.id===id){showTab('workouts');showSubTab('workouts','wo-log');showToast('Resumed scheduled workout draft.','info');return;}
+  if(id.startsWith('sport:')){window.LoadnoteSportPlannerUI.record(id);return;}
+  if(s.prescription.plannedExercises.some(e=>e.type==='practice'))throw Error('Practice targets require a dedicated sport session; do not load them as strength work');
   const intent={role:s.role,goal:s.goal,prescription:s.prescription,schedule:{id:s.id,revisionAt:s.revisionAt}};
   if(fillWorkoutForm(s.prescription.plannedExercises,'Scheduled: '+s.name,false,{restore:intent})===false)return;
   document.getElementById('wo-date').value=s.date;showTab('workouts');showSubTab('workouts','wo-log');saveLoggerDraft();window.renderTodayTraining?.();showToast('Scheduled plan loaded. Record actual work, then review and save.','success');

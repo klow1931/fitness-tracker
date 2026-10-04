@@ -138,6 +138,7 @@
    const all=validate(state.meetCycles||[]),record=all.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Reviewed meet cycle unavailable or already scheduled');
    const fresh=prepare(state,record.sourceProgram,{planningInput:record.planningDecision?.input||legacyPlanningInput(record.config)},{asOf,now});
    if(JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot))throw Error('Competition exercise roles changed; review a fresh cycle');
+   if((state.sportPrograms||[]).some(p=>p.scheduledAt&&p.config.startDate<=record.config.meetDate&&p.weekly.at(-1).through>=record.config.startDate))throw Error('A sport cycle overlaps this program');
    const scheduled=Schedule.list(state.scheduledSessions||[]);
    if(scheduled.some(s=>s.status==='scheduled'&&s.date>=record.config.startDate&&s.date<=record.config.meetDate))throw Error('Calendar conflict: resolve existing sessions before scheduling the meet cycle');
    if((state.meetCycles||[]).some(r=>r.id!==id&&r.scheduledAt&&r.config.startDate<=record.config.meetDate&&r.config.meetDate>=record.config.startDate))throw Error('An existing scheduled meet cycle overlaps this cycle');

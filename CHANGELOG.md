@@ -1,3 +1,7 @@
+# v2.97.0 — Dedicated Olympic & Athlete Planners
+
+Adult reviewed Olympic weightlifting and athlete plans now separate technical lifting, strength, conditioning, speed, jumps and agility. Calendar records actual technical/performance outcomes separately from strength PRs; Coach and Decisions share read-only sport evidence. Explicit context/quality protocols, named reported technical coach reviews, separate scheduling and competition/conflict guards. Schema 29; unsigned build 29700. See `docs/releases-v2.97.md`.
+
 # v2.96.0 — Reviewed Hypertrophy Programming
 
 Dedicated athlete-reviewed hypertrophy proposals now include confirmed exercises/mappings, explicit load conventions, rep ranges, rest allowances, separate weekly muscle workload and read-only progression evidence shared by Coach and Decisions. Preview/save and scheduling remain separate; stale context, restrictions, events, open drafts and Calendar/workout conflicts block scheduling. Schema 28; unsigned build 29600. See `docs/releases-v2.96.md`.

@@ -33,6 +33,7 @@
    return '<p class="program-workout-actual"><b>Logged:</b> '+total+' completed set'+(total===1?'':'s')+(workout.notes?' · '+esc(workout.notes):'')+'</p>';
  }
  function exerciseHtml(exercise){
+   if(exercise.type==='practice')return '<section class="program-workout-exercise"><h4>'+esc(exercise.name)+'</h4><p>'+esc(exercise.kind+' · '+exercise.rounds+' × '+exercise.reps+(exercise.kind==='weightlifting'?' attempts · '+displayWeight(exercise.weight)+' total-bar load · '+exercise.family+' · '+exercise.variation:exercise.kind==='jump'?' contacts per round':' reps · '+exercise.distanceMeters+'m per rep')+' · rest '+exercise.restSeconds+'s')+'</p><p>'+esc(exercise.protocol)+'</p><p>Actual outcomes are recorded separately, never strength PRs or inferred readiness.</p></section>';
    const sets=(exercise.sets||[]).map((s,i)=>'<li><span>Set '+(i+1)+'</span><b>'+esc(setText(s,exercise))+'</b></li>').join('');
    const context=why(exercise);
    return '<section class="program-workout-exercise"><div class="program-workout-exercise-head"><h4>'+esc(exercise.name)+'</h4>'+(exercise.trainingMaxKg?'<span>TM '+esc(displayWeight(exercise.trainingMaxKg))+'</span>':'')+'</div>'+

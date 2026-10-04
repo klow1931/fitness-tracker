@@ -1,6 +1,6 @@
 # Loadnote
 
-**v2.96.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.97.0 · Development build.** An adaptive strength-training log that learns how you train.
 
 ## v2.89 — Mobile UX & Accessibility
 
