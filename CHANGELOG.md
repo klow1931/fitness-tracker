@@ -1,3 +1,7 @@
+# v2.92.0 — Conversational Local Coach
+
+Shared local explanations with bounded follow-up context, fresh mapped-lift evidence, distinct benchmarks, accessory/RPE/program context and clear capability limits. Offline conversation history and clear-session controls; read-only training state. Schema 25 unchanged; unsigned build 29200. See `docs/releases-v2.92.md`.
+
 # v2.91.0 — Complete Session Programming
 
 Reviewed accessory selection, reported-priority suggestions, purposes, explicit equipment/loads, rep ranges, timed holds and conditioning in both program builders. Combined time limits and separate workload reports; deload reductions and meet peak/taper exclusions. Immutable Calendar/backup integration and independent lift-review guards. Schema 25 unchanged; unsigned build 29100. See `docs/releases-v2.91.md`.

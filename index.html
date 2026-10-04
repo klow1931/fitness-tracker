@@ -942,6 +942,7 @@
           <input type="text" id="chat-input" class="input flex-1" placeholder="e.g. How do I progress on squat? / Is 150g protein enough?" onkeydown="if(event.key==='Enter') sendChat()" />
           <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
         </div>
+        <p class="text-xs text-slate-500 mt-2">Built-in explanations work offline. Conversation context lasts for this session. <button class="btn-secondary" onclick="clearCoachConversation()">Clear conversation</button></p>
         <div id="coach-quick-links" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Coach suggested questions">
           <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
           <button onclick="askSuggestion('How much protein do I need?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Protein</button>
@@ -2085,6 +2086,7 @@
   <script src="src/product/progress-analytics-ui.js" defer></script>
   <script src="src/product/session-ui.js" defer></script>
   <script src="src/product/workout-logger.js" defer></script>
+  <script src="src/product/coach-conversation.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

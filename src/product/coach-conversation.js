@@ -1,0 +1,61 @@
+/* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
+(function(root,factory){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence){
+ 'use strict';
+ const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
+ const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
+ function topic(q){
+  if(/\b(pain|hurt|injur|torn|tear|diagnos|rehab|achilles)\w*\b/i.test(q))return 'health';
+  if(/\b(accessor|biceps|triceps|upper back|quad|core)\w*\b/i.test(q))return 'accessories';
+  if(/\b(training max|1rm|one.rep max|estimated capacity|benchmark)\b/i.test(q))return 'benchmarks';
+  if(/\b(progress|increase|add weight|plateau|stronger|trend|ready|readiness)\w*\b/i.test(q))return 'evidence';
+  if(/\b(rpe|effort|failure)\b/i.test(q))return 'effort';
+  if(/\b(program|phase|week|deload|taper|peak|meet)\w*\b/i.test(q))return 'program';
+  if(/\b(why.*set|why.*load|why.*weight|last time|previous)\b/i.test(q))return 'session';
+  return null;
+ }
+ function resolve(question,history=[]){
+  const q=clean(question),explicitLift=liftOf(q),explicitTopic=topic(q);
+  const follow=/^(why\??|how so\??|tell me more\.?|explain (that|more)\.?|what about (it|that|(my )?(bench|squat|deadlift))\??|and (my )?(bench|squat|deadlift)\??)$/i.test(q);
+  let prior=null;
+  // Never search across a clear topic change or reuse assistant assertions as evidence.
+  const bounded=history.slice(-8);for(let i=bounded.length-1;i>=0;i--){const row=bounded[i];if(row.role!=='user')continue;prior=resolve(row.content,bounded.slice(0,i));break;}
+  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:explicitTopic||(follow?prior?.topic:null)||null,follow};
+ }
+ function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
+  const intent=resolve(question,history),q=intent.question;
+  const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
+  if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
+  if(intent.topic==='accessories')return result('Accessories support the session beyond the primary and secondary lifts. In either builder, open Accessories, choose movements or use Suggest from my priorities, then confirm equipment and enter starting loads. You can include rep ranges, holds and conditioning. Suggestions reflect your stated priorities, not diagnosed weaknesses. Loads stay fixed until you review them. For rep work, review progression only after all prescribed sets reach the top of the range within the effort cap with complete effort evidence. Deload reduces accessory work; peak, taper and event sessions omit it. Assigned-group totals do not measure all indirect work or recovery. Which movement or session would you like to review?','Accessory programming policy');
+  if(intent.topic==='effort')return result('RPE records how hard the completed work felt; a target RPE is the planned effort cap. Record actual effort rather than copying the target. Missing RPE is unknown, not zero. Low-RPE work can be intentional; Loadnote keeps logged load, training max and estimated capacity separate. Review deviations through Decisions rather than treating every completed set as permission to add weight. Are you asking about a specific set or your recent lift evidence?','Logged versus prescribed effort');
+  if(intent.topic==='benchmarks'||intent.topic==='evidence'&&intent.lift){
+   if(!intent.lift)return result('Which lift should we inspect: squat, bench or deadlift? Training max is a programming input, known 1RM is a reported/tested result, estimated capacity is performance-derived, and logged load is work performed. They are not interchangeable.');
+   let snap;try{snap=Readiness.snapshot(state,{asOf,retrospective:true});}catch{return result('I could not validate the current evidence snapshot. Open Decisions and resolve the data issue before interpreting this lift.','Evidence unavailable');}
+   const row=snap.lifts[intent.lift],m=row.metrics;
+   const weight=x=>x==null?'not recorded':(Math.round(x*(unit==='lb'?2.2046226218:1)*10)/10)+' '+(unit==='lb'?'lb':'kg');
+   let text=row.label+' — '+(row.competitionExercise||'competition exercise not mapped')+'. Current corrected evidence as of '+asOf+': '+m.sessions+' matching training days since '+snap.windowStart+'. ';
+   const benchmark=x=>weight(x?.kg)+(x?.observedOn?' · observed '+x.observedOn:'');
+   if(intent.topic==='benchmarks')text+='Training max: '+benchmark(row.evidence.trainingMax)+'. Known 1RM: '+benchmark(row.evidence.known1RM)+'. Legacy profile benchmark: '+weight(row.evidence.profileBenchmark?.kg)+' (legacy athlete profile; not a newly verified max). ';
+   text+='Latest logged load: '+weight(row.evidence.loggedLoad?.kg)+(row.evidence.loggedLoad?.date?' on '+row.evidence.loggedLoad.date:'')+'. Latest estimated capacity: '+weight(row.evidence.estimatedCapacity?.kg)+(row.evidence.estimatedCapacity?.date?' on '+row.evidence.estimatedCapacity.date:'')+'. ';
+   text+='Decision evidence: '+row.status+'. '+row.reasons.slice(0,3).join(' ');
+   if(row.interpretation)text+=' '+row.interpretation;
+   text+=' This describes evidence, not a tested max, historical as-recorded replay or an instruction to increase load. Review any adjustment in Decisions.';
+   return result(text,'Current corrected lift evidence',row.reasons);
+  }
+  if(intent.topic==='evidence'&&/\b(increase|add weight|plateau|stronger|ready|readiness)\b/i.test(q))return result('Which lift should we inspect: squat, bench or deadlift? I will check its mapped evidence and limitations before discussing progression. Completing a session alone does not justify an automatic load increase.','Clarification');
+  if(intent.topic==='session'&&/last time|previous/i.test(q))return result(live?.liveWorkout?.currentExercise?.set?.previous?'Previous comparison shown in the logger: '+live.liveWorkout.currentExercise.set.previous+'. This is recorded comparison context, not a new target.':'There is no previous-set comparison available in the current logger context. Name the movement and open its history to compare equivalent work.','Logger comparison');
+  if(intent.topic==='program'){
+   const life=intelligence?.lifecycle;
+   if(life?.program){const p=life.progress||{};return result(life.program.name+': '+(p.phaseLabel||'reviewed program')+(p.week?' · week '+p.week+' of '+p.totalWeeks:'')+'. '+(p.purpose||'')+' Next workflow step: '+(life.nextAction?.label||'review the program')+'. '+(life.nextAction?.detail||'')+' This explains the stored program; it does not rewrite its targets.','Reviewed program lifecycle');}
+   return result('There is no single active reviewed program in the current context. Open Programs to review and schedule one. Accumulation, strength, deload and meet phases have different purposes; the app keeps their reviewed targets fixed until an approved review changes future work. Which phase are you asking about?','Program context unavailable');
+  }
+  const existing=(Intelligence||globalThis.LoadnoteCompanionIntelligence)?.answer?.(intelligence,q);if(existing)return result(existing,'Descriptive training evidence');
+  if(intent.topic==='evidence')return result('Which lift should we inspect: squat, bench or deadlift? I can describe recorded evidence and its gaps, but cannot infer a load increase from an unspecified movement.','Clarification');
+  if(intent.follow)return result('What would you like me to explain: a lift’s evidence, an accessory, or the purpose of a program phase? I do not have a clear prior topic to resolve that follow-up.','Clarification');
+  if(/\b(hello|hi|hey|thanks|thank you)\b/i.test(q))return result('I can help explain your lift evidence, accessory choices, effort targets and program phases. What would you like to look at?');
+  return null;
+ }
+ return {resolve,answer};
+});
