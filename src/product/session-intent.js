@@ -32,6 +32,10 @@
     const measure=trackBy==='duration'?'duration':'reps',amount=Number(raw?.[measure]);
     if(!(amount>0)||measure==='reps'&&!Number.isInteger(amount))return null;
     const set={[measure]:amount};const hasWeight=raw?.weight!==''&&raw?.weight!=null&&Number.isFinite(Number(raw.weight));if(hasWeight)set.weight=Math.round(Math.max(0,Number(raw.weight))*100)/100;
+    if(raw?.minReps!==undefined||raw?.maxReps!==undefined){
+      if(measure!=='reps'||!Number.isInteger(raw.minReps)||!Number.isInteger(raw.maxReps)||raw.minReps<6||raw.maxReps>20||raw.minReps>raw.maxReps||amount<raw.minReps||amount>raw.maxReps)throw Error('Invalid planned accessory rep range');
+      set.minReps=raw.minReps;set.maxReps=raw.maxReps;
+    }
     const target=Number(raw?.targetRpe??raw?.rpe);
     if(target>=1&&target<=10)set.targetRpe=target;
     return set;
@@ -113,7 +117,8 @@
   }
   function sameSet(planned,actual,trackBy){
     const measure=trackBy==='duration'?'duration':'reps';
-    const repsMatch=Number(planned?.[measure])===Number(actual?.[measure]);const loadMatch=!Object.hasOwn(planned||{},'weight')||Math.abs(Number(planned.weight)-Number(actual?.weight))<=0.01;return repsMatch&&loadMatch;
+    const amount=Number(actual?.[measure]);
+    const repsMatch=measure==='reps'&&planned?.minReps!==undefined?Number.isInteger(amount)&&amount>=planned.minReps&&amount<=planned.maxReps:Number(planned?.[measure])===amount;const loadMatch=!Object.hasOwn(planned||{},'weight')||Math.abs(Number(planned.weight)-Number(actual?.weight))<=0.01;return repsMatch&&loadMatch;
   }
   function compare(workout,exerciseIds){
     const plan=workout?.sessionIntent?.prescription;if(!plan)return null;

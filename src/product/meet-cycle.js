@@ -1,8 +1,8 @@
 /* v2.30 — flexible, reviewed meet-cycle proposals built on the existing phase-plan engine. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'),require('./program-planning-decision'));
- else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate,root.LoadnoteProgramPlanningDecision);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate,Planning){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'),require('./program-planning-decision'),require('./accessory-programming'));
+ else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate,root.LoadnoteProgramPlanningDecision,root.LoadnoteAccessories);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate,Planning,Accessories){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x));
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -33,6 +33,7 @@
    const endpoint=c.eventType==='competition'?'meet':'mock-meet';
    const eventLabel=c.eventType==='competition'?'Competition meet':'Mock meet';
    const warnings=['Original reviewed lift identities, variations, working-set counts, days and explicit training maxes are retained in the base weeks.','Weeks beyond the six-week phase engine window hold its last supported prescription; there is no indefinite automatic intensity increase.','Peak and taper examples use competition exercises only. They do not infer readiness for heavy singles, meet attempts or recovery.',eventLabel+' day is a dated event marker, not an automatically selected attempt prescription or scheduled training workout.','Each Calendar session requires separate approval through the cycle scheduling action. Future revisions remain separate from this saved original.'];
+   if((base.accessories||[]).length)warnings.push(...Accessories.warnings(base.accessories));
    const parts=[['accumulation',c.accumulationWeeks],['strength',c.strengthWeeks],['peaking',c.peakWeeks],['taper',c.taperWeeks],[endpoint,1]];
    const sessions=[],weekly=[];let week=0;
    const floor=(tm,pct)=>{const w=Math.round(Math.floor((tm*pct/100+1e-9)/base.incrementKg)*base.incrementKg*100)/100;if(w<=0)throw Error('Load increment is too large for a selected max');return w;};
@@ -57,7 +58,7 @@
        }
      }
      sessions.push(...rows);
-     weekly.push({week,phase,phaseWeek:pw,startDate,endDate,meetDate:(phase==='mock-meet'||phase==='meet')?c.meetDate:null,sessionCount:rows.length,lifts:Object.fromEntries(Phase.LIFTS.map(lift=>{const entries=rows.flatMap(s=>s.exercises.filter(e=>e.lift===lift));return [lift,{exposures:entries.length,sets:entries.reduce((n,e)=>n+e.sets.length,0),volumeKg:Math.round(entries.reduce((n,e)=>n+e.sets.reduce((sum,set)=>sum+set.weight*set.reps,0),0)*100)/100}];}))});
+     weekly.push({...((base.accessories||[]).length?{accessoryWorkload:Accessories.workload(rows.flatMap(s=>s.exercises))}:{}),week,phase,phaseWeek:pw,startDate,endDate,meetDate:(phase==='mock-meet'||phase==='meet')?c.meetDate:null,sessionCount:rows.length,lifts:Object.fromEntries(Phase.LIFTS.map(lift=>{const entries=rows.flatMap(s=>s.exercises.filter(e=>e.lift===lift));return [lift,{exposures:entries.length,sets:entries.reduce((n,e)=>n+e.sets.length,0),volumeKg:Math.round(entries.reduce((n,e)=>n+e.sets.reduce((sum,set)=>sum+set.weight*set.reps,0),0)*100)/100}];}))});
    }
    if(c.accumulationWeeks>6||c.strengthWeeks>6)warnings.push('An extended phase exceeds six progressive weeks; its final supported training-max target repeats until a reviewed adjustment.');
    if(sourceRecord.scheduledAt)warnings.push('The source phase program is already scheduled; its Calendar sessions must not overlap this new cycle.');
@@ -86,7 +87,7 @@
    if(result.sourceProgram.createdAt>cutoff)throw Error('Reviewed lift setup was not known on this date');
    if(c.startDate<asOf)throw Error('Start the cycle today or later');
    const profile=Profile.current(state.programmingProfiles||[],cutoff);if(!profile)throw Error('Create a programming profile first');
-   const p=profile.context;
+   const p=profile.context;Accessories.context(state,base.accessories||[],profile);
    if(!['strength','general','meet'].includes(p.goal)||p.consistency==='returning')throw Error('Choose a suitable strength, general powerlifting or meet preparation profile');
    if(base.days.some(day=>!p.availableDays.includes(day))||base.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Cycle exceeds available days, equipment or time budget');
    if(p.eventDate&&p.eventDate!==c.meetDate)result.warnings.push('Cycle event date '+c.meetDate+' differs from the programming-profile event date '+p.eventDate+'. The reviewed cycle date is allowed to override the profile default; update the profile later only if you want future plans to use the new date.');
