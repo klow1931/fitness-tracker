@@ -6,7 +6,9 @@
   function createWriter(io) {
     let queue = Promise.resolve();
     return function write(state) {
-      const snapshot = JSON.parse(JSON.stringify(state));
+      let snapshot;
+      try { snapshot = JSON.parse(JSON.stringify(state)); }
+      catch (error) { return Promise.reject(error); }
       const operation = queue.then(async () => {
         if (io.backend() === 'indexedDB') {
           try {

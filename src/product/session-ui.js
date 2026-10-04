@@ -32,6 +32,7 @@ function duplicateWorkout(id){
 }
 function reviewWorkout(){
   if(window.loggerSaving || !validateWorkoutForm())return;
+  document.getElementById('workout-save-status').textContent='Not yet saved. Confirm the reviewed workout to save it.';
   const draft=captureLoggerDraft();
   if(!draft.date)return showToast('Please select a date','error');
   const workout=LoadnoteSession.fromDraft(draft,workoutEdit?.id || window.LoadnoteCore.createId());
@@ -86,8 +87,10 @@ async function commitReviewedWorkout(){
     for(const row of JSON.parse(reviewedSession.draft).rows)if(row.type!=='cardio' && row.name.trim() && row.note.trim())next.exerciseNotes[row.name.trim()]=row.note.trim();
   }catch(error){showToast(error.message,'error');return;}
   lockSessionSaving(true);
+  const saveStatus=document.getElementById('workout-save-status');
+  saveStatus.textContent='Saving workout on this device…';
   try{clearTimeout(saveTimer);await persistNow(next);}
-  catch(error){lockSessionSaving(false);showToast('Could not save. Your draft and saved workout are unchanged.','error');return;}
+  catch(error){lockSessionSaving(false);saveStatus.textContent='Workout not saved. Your entered sets remain here. Retry Save workout (or Save changes) before closing.';showToast('Could not save. Your draft and saved workout are unchanged.','error');return;}
   const editing=!!reviewedSession.edit;
   const savedWorkout=reviewedSession.workout,previousWorkouts=data.workouts;
   const recapPRs=editing?[]:next.prs.filter(p=>p.sourceWorkoutId===savedWorkout.id&&!data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase()&&estimated1RM(old.weight,old.reps)>=p.estimated1RM));

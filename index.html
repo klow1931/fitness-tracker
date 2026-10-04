@@ -392,6 +392,7 @@
           <p class="text-xs text-slate-500 mt-2">When capturing a manual plan, entered RPE values become target RPE and then clear so you can record actual RPE after each set.</p>
         </details>
 
+        <div id="logger-draft-failure" role="alert" class="logger-validation-error" hidden><p>Unfinished workout not saved. Keep this page open; a JSON training backup excludes unfinished sets. Retry before closing or updating.</p><button id="retry-logger-draft" type="button" class="btn-secondary">Retry draft save</button></div>
         <p id="logger-draft-status" role="status" class="text-sm text-slate-500 mb-2">Draft saves on this device as you train.</p><p id="logger-summary" class="text-sm mb-3"></p><p class="text-xs text-slate-500 mb-3">Check sets off as you go. Saving includes all entered sets, including unchecked sets. Blank rows are ignored.</p>
         <div class="training-session-bar">
           <div><label><input type="checkbox" id="training-focus" data-workout-change="training-focus" /> Focus mode</label><p id="training-progress-label"></p><progress id="training-progress" max="1" value="0" aria-label="Entered strength sets completed"></progress></div>
@@ -1308,7 +1309,7 @@
           <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
           <details class="more-demo"><summary>Demo data</summary><p class="more-hint">Use the sample dataset to explore the app. Review the confirmation before replacing existing records.</p><button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button></details>
         </div>
-        <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import.</p>
+        <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import. Unfinished workout drafts are device-only and are not included. Save a reviewed workout first; export photos separately. Opening a download or share sheet does not prove the file was saved.</p>
         <p class="more-hint">Your records stay on this device. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
         <details class="more-details"><summary>Training data &amp; record health</summary><div id="training-data-health" class="more-details-body"></div></details>
         <details class="more-details"><summary>Automatic recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
@@ -1976,6 +1977,7 @@
   <dialog id="workout-review" aria-labelledby="workout-review-title" class="session-review">
     <h2 id="workout-review-title">Review your workout</h2>
     <div id="workout-review-content"></div>
+    <p id="workout-save-status" role="status"></p>
     <div class="session-review-actions">
       <button id="back-to-workout" type="button" class="btn-secondary" data-workout-action="review-back">Back to workout</button>
       <button id="confirm-workout-save" type="button" class="btn-primary" data-workout-action="review-save">Save workout</button>
