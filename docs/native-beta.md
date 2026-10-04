@@ -35,6 +35,8 @@ All rows below are **not yet run** on native hardware. Record OS version, device
 
 v2.86 adds unsigned cloud compilation under `ios-cloud-build.md`. A passing compile job is native compiler evidence, not a completed physical-device acceptance row.
 
+v2.88 adds Android compilation under `android-cloud-build.md` and a repeatable evidence procedure in `native-device-acceptance.md`. Browser restore regressions mock the native bridge; all hardware rows remain unrun until separately recorded.
+
 | Check | Required evidence |
 |---|---|
 | First launch / branding / navigation | Android and iPhone screenshots; no blank screen; back navigation and safe areas usable |

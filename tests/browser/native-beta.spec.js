@@ -44,7 +44,7 @@ test('native welcome guides reviewed restore and leaves backup reminders untouch
  await expect(page.locator('#onboarding-account')).toContainText('Protect your local data');
  await page.locator('#native-import-guide').click();
  await expect(page.locator('#native-restore-guide')).toBeVisible();
- await expect(page.locator('#native-diagnostics')).toContainText('2.87.0');
+ await expect(page.locator('#native-diagnostics')).toContainText(require('../../package.json').version);
  await expect(page.locator('#native-diagnostics')).toContainText('not a backup');
  const before=await page.evaluate(()=>({workouts:JSON.stringify(data.workouts),date:data.lastExportDate,dismissed:data.backupBannerDismissed}));
  const backup=await page.evaluate(()=>JSON.stringify(LoadnoteIntegrity.addBackupManifest({...data,recoverySnapshots:[]},{releaseVersion:'2.87.0'})));

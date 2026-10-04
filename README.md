@@ -1,6 +1,10 @@
 # Loadnote
 
-**v2.87.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.88.0 · Development build.** An adaptive strength-training log that learns how you train.
+
+## v2.88 — Native Release Validation
+
+Cloud Android unsigned release compilation and APK verification, backup/restore and failure regressions, and a physical-device acceptance checklist. See [release notes](docs/releases-v2.88.md), [Android builds](docs/android-cloud-build.md) and [device acceptance](docs/native-device-acceptance.md). Compilation and mocked native bridges do not certify hardware behavior or store readiness.
 
 ## v2.87 — Beta Onboarding & Data Safety
 

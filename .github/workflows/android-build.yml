@@ -1,0 +1,47 @@
+name: Loadnote Android compilation
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  unsigned-android:
+    name: Unsigned Android release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Install development SDK baseline
+        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check:native
+      - name: Compile and verify unsigned release APK
+        run: npm run build:android:unsigned
+      - name: Upload diagnostic evidence (no APK or signing material)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-unsigned-${{ github.run_number }}
+          path: |
+            build-android/build.log
+            build-android/toolchain.txt
+            build-android/build-report.json
+            build-android/manifest.xml
+          if-no-files-found: warn
+          retention-days: 7

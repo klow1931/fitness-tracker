@@ -13,3 +13,4 @@ test-results/
 *.mobileprovision
 *.provisionprofile
 build-ios/
+build-android/

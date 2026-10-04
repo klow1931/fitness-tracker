@@ -1,3 +1,7 @@
+# v2.88.0 — Native Release Validation
+
+Cloud Android unsigned release compilation with compiled APK checks, native backup/restore and failure regressions, and an explicit physical-device acceptance procedure. Schema v25 and training behavior unchanged. See `docs/releases-v2.88.md`.
+
 # v2.87.0 — Beta Onboarding & Data Safety
 
 Native-local welcome, reviewed browser-to-app restore guidance, honest backup checklist and privacy-minimal save diagnostics. Browser onboarding, schema v25 and training logic unchanged. See `docs/releases-v2.87.md`.
