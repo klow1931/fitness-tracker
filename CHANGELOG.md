@@ -1,3 +1,7 @@
+# v2.93.0 — Shared Training Knowledge
+
+Confirmed muscle mappings, seven-day direct/indirect workload with effort gaps, and shared read-only hypertrophy, athletic-training and weightlifting explanations in Decisions, Coach and Companion. Optional catalog metadata; existing schema 25 retained. Unsigned build 29300. See `docs/releases-v2.93.md`.
+
 # v2.92.0 — Conversational Local Coach
 
 Shared local explanations with bounded follow-up context, fresh mapped-lift evidence, distinct benchmarks, accessory/RPE/program context and clear capability limits. Offline conversation history and clear-session controls; read-only training state. Schema 25 unchanged; unsigned build 29200. See `docs/releases-v2.92.md`.

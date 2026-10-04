@@ -1814,3 +1814,9 @@ body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
  #exercise-rows input, #exercise-rows select { max-width:100%; }
  #exercise-rows .input { font-size: max(1rem,16px); }
 }
+
+/* Optional training-evidence setup stays out of the workout logger. */
+#muscle-workload table { width:100%; border-collapse:collapse; font-size:.875rem; }
+#muscle-workload th, #muscle-workload td { padding:.65rem .5rem; border-bottom:1px solid #cbd5e1; text-align:left; }
+#muscle-map-dialog label { display:block; margin-bottom:.65rem; }
+#muscle-map-dialog { max-width:36rem; width:calc(100% - 2rem); }

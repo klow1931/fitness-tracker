@@ -1,13 +1,14 @@
 /* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'));
- else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge){
  'use strict';
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
   if(/\b(pain|hurt|injur|torn|tear|diagnos|rehab|achilles)\w*\b/i.test(q))return 'health';
+  const domain=Knowledge?.classify(q);if(domain)return domain;
   if(/\b(accessor|biceps|triceps|upper back|quad|core)\w*\b/i.test(q))return 'accessories';
   if(/\b(training max|1rm|one.rep max|estimated capacity|benchmark)\b/i.test(q))return 'benchmarks';
   if(/\b(progress|increase|add weight|plateau|stronger|trend|ready|readiness)\w*\b/i.test(q))return 'evidence';
@@ -28,6 +29,7 @@
   const intent=resolve(question,history),q=intent.question;
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
   if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
+  if(['hypertrophy','athlete','weightlifting'].includes(intent.topic)){const a=Knowledge.explain(state,q,{asOf,domain:intent.topic});return result(a.text+' Source: '+a.source.title+' — '+a.source.url,a.source.title,a.evidence?[a.evidence]:[]);}
   if(intent.topic==='accessories')return result('Accessories support the session beyond the primary and secondary lifts. In either builder, open Accessories, choose movements or use Suggest from my priorities, then confirm equipment and enter starting loads. You can include rep ranges, holds and conditioning. Suggestions reflect your stated priorities, not diagnosed weaknesses. Loads stay fixed until you review them. For rep work, review progression only after all prescribed sets reach the top of the range within the effort cap with complete effort evidence. Deload reduces accessory work; peak, taper and event sessions omit it. Assigned-group totals do not measure all indirect work or recovery. Which movement or session would you like to review?','Accessory programming policy');
   if(intent.topic==='effort')return result('RPE records how hard the completed work felt; a target RPE is the planned effort cap. Record actual effort rather than copying the target. Missing RPE is unknown, not zero. Low-RPE work can be intentional; Loadnote keeps logged load, training max and estimated capacity separate. Review deviations through Decisions rather than treating every completed set as permission to add weight. Are you asking about a specific set or your recent lift evidence?','Logged versus prescribed effort');
   if(intent.topic==='benchmarks'||intent.topic==='evidence'&&intent.lift){
