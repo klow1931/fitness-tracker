@@ -30,7 +30,7 @@ test('offline interruption checkpoints cardio, units, notes and completion witho
  await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.set-weight')).toHaveValue('220.46');
- const after=await page.evaluate(()=>{const d=captureLoggerDraft();delete d.updatedAt;return d;});
+ const after=await page.evaluate(()=>{const d=LoadnoteDraft.normalize(captureLoggerDraft());delete d.updatedAt;return d;});
  expect(after).toEqual(before);expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
  await context.setOffline(false);
 });
@@ -47,7 +47,8 @@ test('failed reviewed commit retries exactly once and survives restart',async({p
  expect(await page.evaluate(()=>readLoggerDraft())).toBeNull();
 });
 test('legacy draft survives current release without rewriting its training values',async({page})=>{
- await page.evaluate(()=>localStorage.setItem('loadnote-workout-draft-v1',JSON.stringify({version:1,date:'2026-09-25',notes:'Legacy draft',unit:'kg',program:null,rows:[{type:'strength',trackBy:'reps',setCount:1,fields:[{value:'Competition Squat'},{value:'Keep cue'},{value:'5'},{value:'140'},{value:'7'}]}]})));
+ // Seed on the new document, after the outgoing page's pagehide checkpoint.
+ await page.addInitScript(()=>localStorage.setItem('loadnote-workout-draft-v1',JSON.stringify({version:1,date:'2026-09-25',notes:'Legacy draft',unit:'kg',program:null,rows:[{type:'strength',trackBy:'reps',setCount:1,fields:[{value:'Competition Squat'},{value:'Keep cue'},{value:'5'},{value:'140'},{value:'7'}]}]})));
  await page.reload();await expect(page.locator('.ex-name')).toHaveValue('Competition Squat');
  await expect(page.locator('.set-weight')).toHaveValue('140');await expect(page.locator('.set-rpe')).toHaveValue('7');
  expect(await page.evaluate(()=>captureLoggerDraft().notes)).toBe('Legacy draft');
