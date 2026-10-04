@@ -19,6 +19,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Accessibility interaction smoke checks
         run: npx playwright test tests/browser/mobile-accessibility.spec.js
+      - name: Recovery interaction smoke checks
+        run: npx playwright test tests/browser/mobile-reliability.spec.js
       - run: npm run test:browser
       - uses: actions/upload-artifact@v4
         if: failure()

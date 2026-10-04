@@ -160,17 +160,20 @@
     }
 
     let persistenceWriter;
+    let persistenceRevision=0;
     function persistNow(state) {
+      const revision=++persistenceRevision;
       window.LoadnoteSaveHealth='pending';window.LoadnoteBetaOnboarding?.refresh();
       const status=document.getElementById('device-save-status');
       if(status)status.textContent='Saving on this device…';
       if(typeof invalidateViews==='function')invalidateViews();
       if (!persistenceWriter) persistenceWriter = LoadnotePersistence.createWriter({backend:()=>storageBackend,setBackend:value=>{storageBackend=value;},idbSet,local:localStorage,key:STORAGE_KEY});
       return persistenceWriter(state || data).then(() => {
+        if(revision!==persistenceRevision)return;
         window.LoadnoteSaveHealth='saved';window.LoadnoteBetaOnboarding?.refresh();
         document.getElementById('storage-error-banner')?.remove();
         if(status)status.textContent='Saved on this device';
-      }).catch(error=>{window.LoadnoteSaveHealth='failed';window.LoadnoteBetaOnboarding?.refresh();if(status)status.textContent='Not saved — export a backup';throw error;});
+      }).catch(error=>{if(revision===persistenceRevision){window.LoadnoteSaveHealth='failed';window.LoadnoteBetaOnboarding?.refresh();if(status)status.textContent='Not saved — keep open and retry';}throw error;});
     }
     function reportStorageFailure(error) {
       console.warn('Loadnote could not persist changes', error);
@@ -179,6 +182,9 @@
         banner.id='storage-error-banner'; banner.setAttribute('role','alert');
         banner.className='card';
         banner.textContent='Changes could not be saved on this device. Keep this page open and export a JSON backup from Tools before closing.';
+        const retry=document.createElement('button');retry.type='button';retry.className='btn-secondary';retry.textContent='Retry saving training data';
+        retry.addEventListener('click',async()=>{retry.disabled=true;clearTimeout(saveTimer);try{await persistNow(data);}catch(error){reportStorageFailure(error);}finally{retry.disabled=false;}});
+        banner.appendChild(retry);
         document.body.prepend(banner);
       }
     }

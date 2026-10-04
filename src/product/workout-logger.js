@@ -22,14 +22,20 @@ function captureLoggerDraft() {
 function saveLoggerDraft() {
   const status = document.getElementById('logger-draft-status');
   if (!status) return;
+  let saved=false;
   try {
     if (loggerHasContent()) { localStorage.setItem(LOGGER_DRAFT_KEY, JSON.stringify(captureLoggerDraft())); status.textContent = 'Draft saved on this device'; }
     else { localStorage.removeItem(LOGGER_DRAFT_KEY); status.textContent = 'Draft saves on this device as you train.'; }
-  } catch (_) { status.textContent = 'Draft could not be saved. Keep this page open and export your data.'; }
+    saved=true;
+  } catch (_) { status.textContent = 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.'; }
+  const failure=document.getElementById('logger-draft-failure');
+  if(failure)failure.hidden=saved;
+  window.LoadnoteDraftSaveHealth=saved?'saved':'failed';
   updateLoggerSummary();
   renderPrescriptionSummary();
   updateSessionComparisons();
   window.LoadnoteSetGuidanceUI?.render();
+  return saved;
 }
 function updateLoggerSummary() {
   let total = 0, done = 0;
@@ -102,6 +108,7 @@ function initWorkoutLogger() {
   const panel = document.getElementById('workout-log-card');
   panel.addEventListener('input', saveLoggerDraft);
   panel.addEventListener('change', saveLoggerDraft);
+  document.getElementById('retry-logger-draft')?.addEventListener('click',saveLoggerDraft);
   new MutationObserver(saveLoggerDraft).observe(container, { childList: true, subtree: true });
   window.addEventListener('pagehide', saveLoggerDraft);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveLoggerDraft(); });

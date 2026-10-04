@@ -34,9 +34,7 @@
    button.addEventListener('click',async()=>{
     button.disabled=true;
     try{
-     // Persist directly: saveLoggerDraft reports errors but intentionally swallows them.
-     if(loggerHasContent())localStorage.setItem(LOGGER_DRAFT_KEY,JSON.stringify(captureLoggerDraft()));
-     else localStorage.removeItem(LOGGER_DRAFT_KEY);
+     if(!saveLoggerDraft())throw Error('Unfinished workout could not be saved');
      clearTimeout(saveTimer);await persistNow(data);
      if(!registration.waiting){status.textContent='Update no longer waiting. Reopen the app when ready.';button.disabled=false;return;}
      requested=true;registration.waiting.postMessage({type:'APPLY_UPDATE'});

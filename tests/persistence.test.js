@@ -9,5 +9,7 @@ const {createWriter}=require('../src/product/persistence');
  io.local.setItem=()=>{throw Error('quota');};await assert.rejects(write({workouts:[4]}),/quota/);
  io.local.setItem=(k,v)=>{stored=JSON.parse(v);};await write({workouts:[5]});assert.deepEqual(stored.workouts,[5]);
  await Promise.all([write({workouts:[6]}),write({workouts:[7]})]);assert.deepEqual(stored.workouts,[7]);
+ const circular={};circular.self=circular;await assert.rejects(write(circular),/circular/i);
+ await write({workouts:[8]});assert.deepEqual(stored.workouts,[8]);
  console.log('Persistence snapshot, fallback, failure, and queue tests passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

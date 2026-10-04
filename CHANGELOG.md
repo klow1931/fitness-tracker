@@ -1,3 +1,7 @@
+# v2.90.0 — Mobile Reliability & Recovery
+
+Persistent draft failure/retry, reviewed workout save status, latest-write save health, background training-data retry, acknowledged update checkpoints and clearer backup boundaries. Offline interruption, legacy draft and failed commit/retry regressions. Schema 25 unchanged; unsigned build 29000. See `docs/releases-v2.90.md`.
+
 # v2.89.0 — Mobile UX & Accessibility
 
 Contextual logger names and unit state, inline invalid-field alerts, keyboard tabs/skip link and mobile target sizing. Regression coverage for small viewport, larger text and reduced motion. No training, schema or signing changes. See `docs/releases-v2.89.md`.
