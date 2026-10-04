@@ -40,6 +40,8 @@
    const tm=Number(source?.trainingMaxKg);
    return {...copy(planned),
      lift:source?.lift||null,
+     ...(source?.progression?{progression:source.progression}:{}),
+     ...(source?.repRange?{repRange:copy(source.repRange)}:{}),
      role:source?.role||null,
      format:source?.format||null,
      trainingMaxKg:Number.isFinite(tm)&&tm>0?tm:null,

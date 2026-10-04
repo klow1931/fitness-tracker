@@ -10,7 +10,7 @@
  const statusLabel=s=>({scheduled:'Planned',completed:'Completed',unconfirmed:'Needs outcome',skipped:'Skipped',cancelled:'Cancelled'}[s]||s||'Planned');
  const dateLabel=d=>{try{return new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});}catch{return d;}};
  function setText(set,exercise){
-   const amount=exercise.trackBy==='duration'?(Number(set.duration)||0)+' sec':(Number(set.reps)||0)+' reps';
+   const amount=exercise.trackBy==='duration'?(Number(set.duration)||0)+' sec':set.minReps!==undefined?set.minReps+'–'+set.maxReps+' reps':(Number(set.reps)||0)+' reps';
    const parts=[amount];
    if(Object.hasOwn(set||{},'weight'))parts.unshift(displayWeight(set.weight));
    const percent=pct(set?.weight,exercise.trainingMaxKg);if(percent!=null)parts.push(percent+'% TM');
@@ -20,6 +20,7 @@
  function why(exercise){
    const parts=[];
    if(exercise.purpose)parts.push(exercise.purpose);
+   if(exercise.progression)parts.push(exercise.progression);
    if(exercise.role)parts.push(exercise.role.replaceAll('-',' ')+' role');
    if(exercise.format)parts.push(exercise.format.replaceAll('-',' ')+' format');
    return parts.join(' · ');
@@ -33,7 +34,7 @@
    const sets=(exercise.sets||[]).map((s,i)=>'<li><span>Set '+(i+1)+'</span><b>'+esc(setText(s,exercise))+'</b></li>').join('');
    const context=why(exercise);
    return '<section class="program-workout-exercise"><div class="program-workout-exercise-head"><h4>'+esc(exercise.name)+'</h4>'+(exercise.trainingMaxKg?'<span>TM '+esc(displayWeight(exercise.trainingMaxKg))+'</span>':'')+'</div>'+
-     (sets?'<ol class="program-workout-sets">'+sets+'</ol>':'<p>No set targets captured.</p>')+
+     (exercise.type==='cardio'?'<p>'+esc(exercise.duration+' conditioning minutes')+'</p>':sets?'<ol class="program-workout-sets">'+sets+'</ol>':'<p>No set targets captured.</p>')+
      (context?'<p class="program-workout-why"><b>Why:</b> '+esc(context)+'</p>':'')+'</section>';
  }
  function sessionHtml(session,{open=false,calendar=false}={}){

@@ -1,3 +1,7 @@
+# v2.91.0 — Complete Session Programming
+
+Reviewed accessory selection, reported-priority suggestions, purposes, explicit equipment/loads, rep ranges, timed holds and conditioning in both program builders. Combined time limits and separate workload reports; deload reductions and meet peak/taper exclusions. Immutable Calendar/backup integration and independent lift-review guards. Schema 25 unchanged; unsigned build 29100. See `docs/releases-v2.91.md`.
+
 # v2.90.0 — Mobile Reliability & Recovery
 
 Persistent draft failure/retry, reviewed workout save status, latest-write save health, background training-data retry, acknowledged update checkpoints and clearer backup boundaries. Offline interruption, legacy draft and failed commit/retry regressions. Schema 25 unchanged; unsigned build 29000. See `docs/releases-v2.90.md`.

@@ -1,8 +1,8 @@
 /* Loadnote v2.67 — deterministic whole-cycle structural quality gate. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-observability'));
-  else root.LoadnoteProgramQualityGate=factory(root.LoadnoteCycleObservability);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Observability){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./cycle-observability'),require('./accessory-programming'));
+  else root.LoadnoteProgramQualityGate=factory(root.LoadnoteCycleObservability,root.LoadnoteAccessories);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Observability,Accessories){
   'use strict';
   const VERSION=1,POLICY='program-quality-gate-v1',LIFTS=['squat','bench','deadlift'],SEVERITIES=['review','blocking'];
   const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
@@ -56,11 +56,19 @@
       if(session.date>=c.meetDate)add('session-after-event','blocking','A generated training session lands on or after the event date.',{week:session.week,date:session.date});
       if(finite(session.estimatedMinutes)>finite(source.sessionMinutes))add('session-time-block','blocking','A generated session exceeds the athlete-reviewed session time budget.',{week:session.week,date:session.date,estimatedMinutes:session.estimatedMinutes,budgetMinutes:source.sessionMinutes});
       else if(finite(session.estimatedMinutes)>=finite(source.sessionMinutes)*.9)add('session-time-review','review','A generated session uses at least 90% of the athlete-reviewed session time budget.',{week:session.week,date:session.date,estimatedMinutes:session.estimatedMinutes,budgetMinutes:source.sessionMinutes});
-      for(const exercise of session.exercises||[])for(const set of exercise.sets||[]){
+      for(const exercise of session.exercises||[]){
+        if(exercise.role==='accessory'){
+          const day=(new Date(session.date+'T12:00:00Z').getUTCDay()+6)%7;
+          const expected=Accessories.exercises(source.accessories||[],day,session.phase).find(e=>e.exerciseId===exercise.exerciseId);
+          if(exercise.lift||!expected||Observability.fingerprint(exercise)!==Observability.fingerprint(expected))add('accessory-drift','blocking','An accessory differs from its reviewed configuration or leaks into peak/taper.',{week:session.week,date:session.date});
+          continue;
+        }
+        for(const set of exercise.sets||[]){
         const pct=setPct(exercise,set),rpe=finite(set.targetRpe);
         if(pct==null||pct<=0)add('invalid-set-load','blocking','A generated set has no valid positive percentage of its explicit training max.',{week:session.week,date:session.date,lift:exercise.lift});
         else if(pct>85.01)add('intensity-ceiling','blocking','A generated set exceeds the supported 85% training-max ceiling.',{week:session.week,date:session.date,lift:exercise.lift,percent:round(pct)});
         if(rpe==null||rpe<1||rpe>10)add('rpe-cap','blocking','A generated set has an invalid RPE cap.',{week:session.week,date:session.date,lift:exercise.lift});
+      }
       }
     }
     for(const w of weeks.filter(w=>w.phase!=='mock-meet'&&w.phase!=='meet'))for(const lift of LIFTS){

@@ -161,8 +161,8 @@
     if(edits.some(e=>(state.workouts||[]).some(w=>w.sessionIntent?.schedule?.id===e.id)))throw Error('A target already has a completed workout');
     const sessions=Schedule.validate(state.scheduledSessions||[]),changes=[];
     for(const e of edits){const record=sessions.find(s=>s.id===e.id),before=copy(record.revisions.at(-1));if(before.recordedAt!==e.before.revisionAt)throw Error('Schedule changed after the review cutoff');const after={recordedAt:now,context:{...before.context,prescription:{...e.after,capturedAt:now},reason:`Approved ${report.phase} phase review (${POLICY})`}};record.revisions.push(after);changes.push({id:e.id,before,after});}
-    const exerciseLifts=Object.fromEntries(report.basis.program.sessions.flatMap(s=>s.exercises.map(e=>[e.exerciseId,e.lift])));
-    const trainingMaxKg=Object.fromEntries(report.basis.program.sessions.flatMap(s=>s.exercises.map(e=>[e.exerciseId,e.trainingMaxKg])));
+    const exerciseLifts=Object.fromEntries(report.basis.program.sessions.flatMap(s=>s.exercises.filter(e=>LIFTS.includes(e.lift)).map(e=>[e.exerciseId,e.lift])));
+    const trainingMaxKg=Object.fromEntries(report.basis.program.sessions.flatMap(s=>s.exercises.filter(e=>LIFTS.includes(e.lift)).map(e=>[e.exerciseId,e.trainingMaxKg])));
     const event={version:1,policy:POLICY,id:Core.createId(),programId:report.programId,phase:report.phase,asOf,through:report.through,createdAt:now,recovery:report.recovery,findings:report.findings,evidence:report.evidence,choices:copy(choices),incrementKg:report.basis.program.config.incrementKg,exerciseLifts,trainingMaxKg,changes};
     return {...state,scheduledSessions:Schedule.validate(sessions),phaseReviews:validate([...records,event])};
   }

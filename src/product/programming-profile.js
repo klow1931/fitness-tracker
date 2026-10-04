@@ -36,8 +36,9 @@
     if(p.consistency==='returning'&&config.structure!=='return')throw Error('Returning consistency requires the return/base structure in this builder');
     const end=new Date(config.startDate+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+34);
     if(p.eventDate&&p.eventDate<=end.toISOString().slice(0,10))throw Error('The meet date is too close for this base/strength builder. Use a reviewed meet-preparation plan.');
-    const unused=p.preferredExerciseIds.filter(id=>!Object.values(config.lifts).some(e=>e.exerciseId===id));
-    if(unused.length)warnings.push('Preferred variations/accessories are recorded but not included by this competition-lift-only builder.');
+    if((config.accessories||[]).some(e=>p.avoidedExerciseIds.includes(e.exerciseId)))throw Error('A selected accessory is marked avoided in your profile');
+    const unused=p.preferredExerciseIds.filter(id=>!Object.values(config.lifts).some(e=>e.exerciseId===id)&&!(config.accessories||[]).some(e=>e.exerciseId===id));
+    if(unused.length)warnings.push('Preferred variations/accessories include exercises not selected in this proposal; add reviewed accessory slots or revise lift selection.');
     warnings.push('Experience, consistency and reported priorities are context, not diagnosed weaknesses or a validated individual training dose.');
     return warnings;
   }
