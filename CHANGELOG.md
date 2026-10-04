@@ -1,3 +1,7 @@
+# v2.94.0 — Individualized Workload Reviews
+
+Four-week muscle-workload comparisons, planned versus completed evidence, reviewed direct-set ranges and restrictions, conservative gather/hold/review findings, and shared muscle-specific Coach follow-ups. Schema 26 adds revisioned workload profiles; unsigned build 29400. No automatic program edits. See `docs/releases-v2.94.md`.
+
 # v2.93.0 — Shared Training Knowledge
 
 Confirmed muscle mappings, seven-day direct/indirect workload with effort gaps, and shared read-only hypertrophy, athletic-training and weightlifting explanations in Decisions, Coach and Companion. Optional catalog metadata; existing schema 25 retained. Unsigned build 29300. See `docs/releases-v2.93.md`.

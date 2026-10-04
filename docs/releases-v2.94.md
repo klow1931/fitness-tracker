@@ -1,0 +1,11 @@
+# Loadnote v2.94.0 — Individualized Workload Reviews
+
+Four rolling seven-day windows compare current corrected muscle workload, separate indirect exposure, reviewed target ranges and actual-effort coverage. Valid pre-training scheduled prescriptions provide planned workload. Linked sessions, unconfirmed/skipped work, late plans, duplicate links, mismatched sets and independent records stay distinct. Zero usable plans means unknown planned work, not zero intended training.
+
+Athlete-reviewed context records exact history-completeness dates, reported tolerance and optional direct-set targets/restrictions. These are declarations, not verified growth, recovery or clearance measurements. No default set target is invented. The 0–50 target bounds are software validation limits. Context revisions survive backups, restores and conflict-first synchronization; schema 26 migrates older exports to an empty profile history without changing workouts or programs.
+
+Deterministic outcomes: gather evidence, hold or review an adjustment. A reviewed target, two covered windows, complete recorded effort and usable plans where present, comparable same-load/set-count performance, tolerated training and no relevant restriction are needed before reviewing an adjustment. Declining rep performance, discomfort, avoided exercises, protected deload/recovery/testing/event intent and incomplete records block adjustment review. Two windows outside a reviewed range invite revisiting the target and program, not an automatic increase/reduction or exact dose prescription.
+
+Decisions, Coach and Companion use the same findings. Muscle-specific follow-ups retain their topic; explicit lift questions still use powerlifting evidence. Comparisons describe total reps at matching loads and similar recorded effort, not estimated maxes. Current mappings interpret historical records; historical as-recorded muscle-map replay is not implemented. Existing program-review workflows remain responsible for athlete-approved future prescription edits. Dedicated sport and Olympic-weightlifting generators are not added.
+
+Unsigned development build 29400. Complete unit, syntax, mobile/native source and desktop/mobile browser checks are required; CI compilation, signing/distribution and physical-device acceptance remain separate gates.

@@ -9,7 +9,7 @@
   const COLLECTIONS=[
     'workouts','scheduledSessions','workoutRevisions','trainingBlocks','exerciseCatalog','exerciseRoles',
     'athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews',
-    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents',
+    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles',
     'templates','prs','goals','programs','restDays','nutrition','foodLibrary','bodyweight','measurements','formReviews'
   ];
   const DOCUMENTS=['athleteProfile','exerciseNotes','programStates','activeProgramId'];
@@ -81,11 +81,13 @@
   function projectState(data){
     if(!data||data.version!==1||!data.collections||typeof data.collections!=='object'||!data.documents||typeof data.documents!=='object')throw Error('Invalid sync project');
     const collectionKeys=Object.keys(data.collections).sort(),documentKeys=Object.keys(data.documents).sort();
-    const expectedCollections=[...COLLECTIONS].sort(),expectedDocuments=[...DOCUMENTS].sort();
+    // Schema-25 projects did not contain workload profile revisions. Preserve their
+    // original checksum basis while defaulting that optional collection on import.
+    const expectedCollections=COLLECTIONS.filter(name=>name!=='workloadProfiles'||Object.hasOwn(data.collections,name)).sort(),expectedDocuments=[...DOCUMENTS].sort();
     if(collectionKeys.length!==expectedCollections.length||collectionKeys.some((key,index)=>key!==expectedCollections[index]))throw Error('Sync project collection set does not match the protocol.');
     if(documentKeys.length!==expectedDocuments.length||documentKeys.some((key,index)=>key!==expectedDocuments[index]))throw Error('Sync project document set does not match the protocol.');
     const state={};
-    for(const name of COLLECTIONS)state[name]=data.collections[name];
+    for(const name of COLLECTIONS)state[name]=data.collections[name]??[];
     for(const name of DOCUMENTS)state[name]=data.documents[name]??null;
     return state;
   }
@@ -93,6 +95,7 @@
     projectState(data);
     const collections={},documents={};let records=0;
     for(const name of COLLECTIONS){
+      if(name==='workloadProfiles'&&!Object.hasOwn(data.collections,name))continue;
       const map=recordMap(data.collections[name],name),entries=[...map].sort(([a],[b])=>a.localeCompare(b)).map(([id,value])=>({id,fingerprint:fingerprint(value)}));
       collections[name]={count:entries.length,entries,fingerprint:fingerprint(entries)};records+=entries.length;
     }
@@ -113,6 +116,7 @@
     if(pkg.schemaVersion!=null&&(!Number.isInteger(pkg.schemaVersion)||pkg.schemaVersion<1))return {status:'invalid',verified:false,reason:'Sync package schema metadata is malformed.'};
     if(typeof (pkg.releaseVersion??'')!=='string'||String(pkg.releaseVersion||'').length>80)return {status:'invalid',verified:false,reason:'Sync package release metadata is malformed.'};
     try{
+      if(Number(pkg.schemaVersion)>=26&&!Object.hasOwn(pkg.data?.collections||{},'workloadProfiles'))throw Error('Schema-26 sync project is missing workload profiles.');
       const actual=manifestFromProject(pkg.data);
       if(!pkg.manifest||pkg.manifest.fingerprint!==actual.fingerprint)return {status:'invalid',verified:false,reason:'Sync package contents do not match the recorded manifest fingerprint.'};
       if(Number(pkg.manifest.records)!==actual.records)return {status:'invalid',verified:false,reason:'Sync package record count does not match its manifest.'};

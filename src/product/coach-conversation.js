@@ -1,8 +1,8 @@
 /* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'));
- else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload){
  'use strict';
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
@@ -23,13 +23,21 @@
   let prior=null;
   // Never search across a clear topic change or reuse assistant assertions as evidence.
   const bounded=history.slice(-8);for(let i=bounded.length-1;i>=0;i--){const row=bounded[i];if(row.role!=='user')continue;prior=resolve(row.content,bounded.slice(0,i));break;}
-  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:explicitTopic||(follow?prior?.topic:null)||null,follow};
+  const muscles=Object.entries(Knowledge?.MUSCLES||{}).filter(([k,v])=>new RegExp('\\b'+(k==='quadriceps'?'quad\\w*':v.toLowerCase())+'\\b','i').test(q)).map(([k])=>k);
+  const muscleProgression=!explicitLift&&prior?.topic==='hypertrophy'&&/^(should i |do i |can i )?(add|increase) (sets|weight|load)\??$/i.test(q);
+  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),follow};
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
   if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
-  if(['hypertrophy','athlete','weightlifting'].includes(intent.topic)){const a=Knowledge.explain(state,q,{asOf,domain:intent.topic});return result(a.text+' Source: '+a.source.title+' — '+a.source.url,a.source.title,a.evidence?[a.evidence]:[]);}
+  if(intent.topic==='hypertrophy'&&Workload){
+   const source=Knowledge.SOURCES.hypertrophy;
+   if(/\b(rest|rep range|failure)\b/i.test(q)&&!/\b(my|logged|recent)\b/i.test(q))return result(Knowledge.GUIDANCE.hypertrophy+' Source: '+source.title+' — '+source.url,source.title);
+   let review;try{review=Workload.analyze(state,{asOf});}catch{return result('I could not validate the workload review. Open Decisions to resolve the data issue; no adjustment is proposed.','Workload evidence unavailable');}
+   return result(Workload.explain(review,intent.muscles)+' '+review.notice+' Indirect exposure is not equivalent to direct sets. Open Decisions → Muscle workload → Individualized workload review to inspect or update the reviewed context. Source: '+source.title+' — '+source.url,'Shared workload review',[review]);
+  }
+  if(['athlete','weightlifting'].includes(intent.topic)){const a=Knowledge.explain(state,q,{asOf,domain:intent.topic});return result(a.text+' Source: '+a.source.title+' — '+a.source.url,a.source.title,a.evidence?[a.evidence]:[]);}
   if(intent.topic==='accessories')return result('Accessories support the session beyond the primary and secondary lifts. In either builder, open Accessories, choose movements or use Suggest from my priorities, then confirm equipment and enter starting loads. You can include rep ranges, holds and conditioning. Suggestions reflect your stated priorities, not diagnosed weaknesses. Loads stay fixed until you review them. For rep work, review progression only after all prescribed sets reach the top of the range within the effort cap with complete effort evidence. Deload reduces accessory work; peak, taper and event sessions omit it. Assigned-group totals do not measure all indirect work or recovery. Which movement or session would you like to review?','Accessory programming policy');
   if(intent.topic==='effort')return result('RPE records how hard the completed work felt; a target RPE is the planned effort cap. Record actual effort rather than copying the target. Missing RPE is unknown, not zero. Low-RPE work can be intentional; Loadnote keeps logged load, training max and estimated capacity separate. Review deviations through Decisions rather than treating every completed set as permission to add weight. Are you asking about a specific set or your recent lift evidence?','Logged versus prescribed effort');
   if(intent.topic==='benchmarks'||intent.topic==='evidence'&&intent.lift){
