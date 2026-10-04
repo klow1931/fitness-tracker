@@ -1,7 +1,7 @@
 {
   "stage": "unsigned-development",
   "appId": "app.loadnote.mobile",
-  "buildNumber": 29100,
+  "buildNumber": 29200,
   "services": "local-only",
   "storeReady": false
 }

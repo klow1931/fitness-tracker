@@ -2190,7 +2190,13 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    function getChatResponse(msg) {
+    function getChatResponse(msg, history = chatHistory) {
+      const local = window.LoadnoteCoachConversation?.answer(data, msg, {
+        asOf: today(), unit: currentUnit(), history,
+        live: window.LoadnoteCoachCompanionUI?.liveContext?.(),
+        intelligence: window.LoadnoteCompanionIntelligenceUI?.snapshot?.()
+      });
+      if (local) return escapeChat(local.text) + '<br><small>' + escapeChat(local.source) + ' · Read-only</small>';
       const q = msg.toLowerCase().trim();
 
       // --- Progression ---
@@ -2312,7 +2318,7 @@
       }
 
       // --- Default ---
-      return 'I can help with a wide range of topics:<br><br>• Progression & loading schemes (linear, step, flat, DUP, block, concurrent, conjugate)<br>• Protein and nutrition (bulk/cut)<br>• Soreness, recovery, sleep<br>• Deloads and plateaus<br>• Form cues for squat, bench, deadlift<br>• Warm-ups, RPE, training to failure<br>• Frequency, splits, and goal setting<br><br>Try one of the quick buttons, ask about a periodization model, or generate a program with a specific loading scheme.';
+      return 'I do not have a reliable built-in answer to that question yet. Are you asking about a specific lift, a program phase, accessory work, or effort targets? Name the movement or session and I can check the recorded context. Built-in Coach is a local explanation tool, not an unrestricted AI conversation.';
     }
 
     function buildCoachContext() {
@@ -2375,6 +2381,7 @@
     }
 
     async function sendChat() {
+      if (document.getElementById('chat-send-btn')?.disabled) return;
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
@@ -2401,15 +2408,28 @@
           await new Promise(r => setTimeout(r, 250));
           const reply = getChatResponse(text);
           appendChatMessage(reply, false);
+          rememberLocalChat(text, reply);
         }
       } catch (e) {
         appendChatMessage('Online Coach unavailable: ' + escapeChat(e.message) + '<br><span class="text-xs">Using built-in coaching instead.</span>', false);
         const reply = getChatResponse(text);
         appendChatMessage(reply, false);
+        rememberLocalChat(text, reply);
         showToast('Online Coach unavailable — used built-in guidance', 'error');
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
       }
+    }
+
+    function rememberLocalChat(question, reply) {
+      const plain = document.createElement('div'); plain.innerHTML = reply;
+      chatHistory.push({role:'user',content:question.slice(0,500)},{role:'assistant',content:plain.textContent.slice(0,2000)});
+      chatHistory = chatHistory.slice(-24);
+    }
+    function clearCoachConversation() {
+      chatHistory = [];
+      document.getElementById('chat-messages').replaceChildren();
+      window.LoadnoteCoachCompanionUI?.clearConversation?.();
     }
 
     function renderProactiveCoachPreview() {
