@@ -1825,3 +1825,8 @@ body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
 #workload-context-dialog fieldset { border:1px solid #cbd5e1; border-radius:.5rem; padding:.75rem; margin:.75rem 0; }
 #workload-review-panel { margin-top:1rem; }
 #workload-review-panel summary { cursor:pointer; min-height:44px; padding:.5rem 0; }
+#sport-training-review label, .sport-goal-fields label, #olympic-practice-dialog label { display: block; margin: .65rem 0; }
+.sport-goal-fields input[type=checkbox] { width: auto; min-height: 24px; }
+.sport-goal-fields, .practice-attempt { min-width: 0; padding: .75rem; margin: .75rem 0; border: 1px solid var(--border, #cbd5e1); border-radius: .75rem; }
+#sport-training-review > summary { min-height: 44px; }
+#olympic-practice-dialog label[hidden] { display: none; }
