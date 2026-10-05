@@ -1,3 +1,7 @@
+# v2.98.0 — Unified Coaching & Reviewed Future Changes
+
+Decisions, Coach and Companion share confirmed goals, current Calendar targets and weekly evidence. Explicit athlete check-ins preserve unknowns; supported future proposals require approval and append revisions. Live sport explanations work inside the recorder, athletic corrections preserve history, and linked follow-ups remain descriptive. Schema 30; unsigned build 29800. See `docs/releases-v2.98.md`.
+
 # v2.97.0 — Dedicated Olympic & Athlete Planners
 
 Adult reviewed Olympic weightlifting and athlete plans now separate technical lifting, strength, conditioning, speed, jumps and agility. Calendar records actual technical/performance outcomes separately from strength PRs; Coach and Decisions share read-only sport evidence. Explicit context/quality protocols, named reported technical coach reviews, separate scheduling and competition/conflict guards. Schema 29; unsigned build 29700. See `docs/releases-v2.97.md`.

@@ -18,6 +18,8 @@
  const finite=x=>Number.isFinite(Number(x))?Number(x):null;
  const validDay=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+'T12:00:00Z'));
  const phasePurpose={
+  weightlifting:'Develop the reviewed technical lifting with separately reported attempts and quality; follow the coach-reviewed stop protocol.',
+  athlete:'Develop the reviewed strength, speed/jump/agility and conditioning tasks while coordinating sport practice and games.',
   accumulation:'Build repeatable training volume and technical practice while staying inside the reviewed prescription.',
   strength:'Emphasize heavier strength work while preserving enough volume and practice to support the main lifts.',
   deload:'Reduce planned workload while retaining practice so the next training phase starts from a reviewed baseline.',

@@ -2328,7 +2328,7 @@
       let lifecycle = null;
       try { lifecycle = window.LoadnoteProgramLifecycleUI?.currentReport?.() || null; } catch {}
       if (!engine) return null;
-      return engine.buildContext({
+      const context = engine.buildContext({
         data,
         analytics,
         priorCoachRecommendation: lastCoachSnapshot?.recommendation || null,
@@ -2336,6 +2336,7 @@
         activeProgram: active,
         lifecycle
       });
+      return { ...context, companion: window.LoadnoteCoachCompanionUI?.liveContext?.() || null };
     }
 
     async function updateCoachConnectionUI() {
@@ -2387,12 +2388,18 @@
       if (!text) return;
       appendChatMessage(escapeChat(text), true);
       input.value = '';
-      const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
+      let shared = null;
+      try { const answer = window.LoadnoteCoachConversation?.answer(data, text, {asOf:today(),unit:currentUnit(),history:chatHistory,live:window.LoadnoteCoachCompanionUI?.liveContext?.()}); if(answer?.source?.startsWith('Shared coaching'))shared=answer; } catch {}
+      const useApi = !shared && !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
       const btn = document.getElementById('chat-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = useApi ? '…' : 'Send'; }
 
       try {
-        if (useApi) {
+        if (shared) {
+          const reply = escapeChat(shared.text) + '<br><small>' + escapeChat(shared.source) + ' · Read-only</small>';
+          appendChatMessage(reply, false);
+          rememberLocalChat(text, reply);
+        } else if (useApi) {
           const structured = await requestStructuredCoach(text);
           const reply = structured?.summary || 'Coach recommendation ready.';
           chatHistory.push({ role: 'user', content: text });

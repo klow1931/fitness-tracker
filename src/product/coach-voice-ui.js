@@ -26,7 +26,7 @@
   return {ok:false,error:'Unsupported rest action.'};
  }
  function renderLastAction(){
-  const host=document.getElementById('cc-voice-last');if(!host)return;const action=Logger()?.lastAction?.();host.hidden=!action;
+  const host=document.getElementById('cc-voice-last');if(!host)return;const action=Companion()?.liveContext?.()?.sportWorkout?null:Logger()?.lastAction?.();host.hidden=!action;
   if(!action){host.querySelector('span').textContent='';return;}host.querySelector('span').textContent='✓ '+action.summary;host.querySelector('button').disabled=false;
  }
  function renderProactive(){
@@ -36,6 +36,7 @@
   const status=host.querySelector('.cc-cues-state');if(status)status.textContent=value.paused?'Unsolicited cues paused':value.mode.charAt(0).toUpperCase()+value.mode.slice(1)+' cues';
  }
  function loggerResult(method,args){
+  if(Companion()?.liveContext?.()?.sportWorkout)return {ok:false,error:'Record sport observations in the sport-session form; strength voice logging is unavailable in this recorder.'};
   const logger=Logger();if(!logger||typeof logger[method]!=='function')return {ok:false,error:'Hands-free workout logging is unavailable.'};
   const result=logger[method](args);renderLastAction();Companion()?.refresh?.();return result;
  }
@@ -65,6 +66,8 @@
   if(name==='resume_proactive_coaching')return proactiveResult('resume');
   if(name==='ask_loadnote_coach'){
    const question=String(args.question||'').trim().slice(0,600);if(!question)return {ok:false,error:'Question is required.'};
+   const live=Companion()?.liveContext?.();let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,question,{asOf:today(),unit:currentUnit(),live});}catch{}
+   if(local?.source?.startsWith('Shared coaching'))return {ok:true,coach:{summary:local.text,recommendation:{action:'none'},source:local.source,readOnly:true}};
    const client=Coach();if(!client)return {ok:false,error:'Secure Coach is unavailable.'};
    try{const answer=await client.ask({question,context:Companion()?.context?.()||{},history:[]});return {ok:true,coach:answer};}catch(error){return {ok:false,error:String(error?.message||'Secure Coach unavailable.').slice(0,240)};}
   }
@@ -79,7 +82,7 @@
   host.querySelector('.cc-voice-start').addEventListener('click',start);
   host.querySelector('.cc-voice-mute').addEventListener('click',toggleMute);
   host.querySelector('.cc-voice-end').addEventListener('click',stop);
-  host.querySelector('#cc-voice-last button').addEventListener('click',()=>{const result=Logger()?.undoLast?.();renderLastAction();Companion()?.refresh?.();if(result?.ok)append(result.summary,'assistant','Voice logging');});
+  host.querySelector('#cc-voice-last button').addEventListener('click',()=>{const result=loggerResult('undoLast');if(result?.ok)append(result.summary,'assistant','Voice logging');});
   host.querySelector('#cc-proactive select').addEventListener('change',event=>{Proactive()?.setMode?.(event.target.value);renderProactive();});
   host.querySelector('.cc-cues-pause').addEventListener('click',()=>{const state=Proactive()?.state?.();if(state?.paused)Proactive()?.resume?.();else Proactive()?.pause?.();renderProactive();});
   renderProactive();return host;

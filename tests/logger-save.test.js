@@ -7,15 +7,15 @@ function fixture(fail=false){
  captureLoggerDraft:()=>JSON.parse(JSON.stringify(draft)),estimated1RM:(w,r)=>w*(1+r/30),
  document:{getElementById:id=>{if(!nodes.has(id))nodes.set(id,{close(){}});return nodes.get(id);}},
  clearTimeout:()=>{},persistNow:async()=>{if(fail)throw Error('quota');await new Promise(resolve=>{finish=resolve;});},
- clearWorkoutForm:()=>{context.cleared=true;},saveLoggerDraft:()=>{},renderWorkoutHistory:()=>{},updateBackupBanner:()=>{},showToast:()=>{},showSubTab:()=>{}};
+ clearWorkoutForm:()=>{context.cleared=true;},saveLoggerDraft:()=>{},invalidateViews:()=>{},renderDashboard:()=>{assert(context.cleared,'Clear the draft before refreshing Home');assert.equal(context.data.workouts.length,1);context.homeRefreshed=true;},renderWorkoutHistory:()=>{},updateBackupBanner:()=>{},showToast:()=>{},showSubTab:()=>{}};
  vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/product/session-ui.js'),'utf8'),context);
  context.testDraft=draft;vm.runInContext("reviewedSession={draft:JSON.stringify(testDraft),workout:LoadnoteSession.fromDraft(testDraft,'new-id'),program:testDraft.program,edit:null}",context);
  return {context,finish:()=>finish()};
 }
 (async()=>{
  const {context:c,finish}=fixture();const first=c.commitReviewedWorkout();await c.commitReviewedWorkout();
- assert.equal(c.data.workouts.length,0,'Do not expose unsaved state');finish();await first;
- assert.equal(c.data.workouts.length,1);assert.equal(c.data.workouts[0].programId,7);assert(c.cleared);assert.equal(c.data.prs.length,1);
- const {context:bad}=fixture(true);await bad.commitReviewedWorkout();assert.equal(bad.data.workouts.length,0);assert(!bad.cleared);assert.equal(bad.window.loggerSaving,false);
+ assert.equal(c.data.workouts.length,0,'Do not expose unsaved state');assert(!c.homeRefreshed);finish();await first;
+ assert.equal(c.data.workouts.length,1);assert.equal(c.data.workouts[0].programId,7);assert(c.cleared);assert(c.homeRefreshed);assert.equal(c.data.prs.length,1);
+ const {context:bad}=fixture(true);await bad.commitReviewedWorkout();assert.equal(bad.data.workouts.length,0);assert(!bad.cleared);assert(!bad.homeRefreshed);assert.equal(bad.window.loggerSaving,false);
  console.log('Review commit durability and duplicate-save tests passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});
