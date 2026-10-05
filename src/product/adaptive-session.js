@@ -93,6 +93,7 @@
   if(preview.kind==='time'&&!preview.omittedExerciseIds.length)throw Error('No dose change to approve; keep the current targets');
   if(preview.kind==='replacement'&&!optionalIds(state,session).includes(preview.source.exerciseId))throw Error('Primary and technical work is protected; choose a reviewed accessory');
   if(preview.kind==='replacement'&&[preview.source,preview.target].some(m=>!(state.exerciseCatalog||[]).some(e=>e.id===m.exerciseId&&e.name===m.name)))throw Error('Movement identity changed; review the current catalog mapping');
+  if(preview.kind==='replacement'){const profile=typeof module==='object'&&module.exports?require('./programming-profile'):globalThis.LoadnoteProgrammingProfile;profile?.assessIntake(profile.current(state.programmingProfiles||[])?.context,[preview.target.exerciseId]);}
   const prescription=approve(session.prescription,preview,{confirmed,now});
   record.revisions.push({recordedAt:now,context:{...clone(latest.context),prescription,reason:('Adaptive '+preview.kind+' review: '+(preview.kind==='time'?'omitted '+preview.omittedExerciseIds.join(', '):preview.source.name+' → '+preview.target.name)+'. '+preview.notice).slice(0,500)}});
   return {...state,scheduledSessions:Schedule.validate(sessions)};

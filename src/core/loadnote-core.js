@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 31;
-  const RELEASE_VERSION = '3.1.0';
+  const SCHEMA_VERSION = 32;
+  const RELEASE_VERSION = '3.2.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -178,6 +178,9 @@
     if(Number(state.schemaVersion||1)<30)state.schemaVersion=30;
     if(state.programCancellations===undefined)state.programCancellations=[];
     if(Number(state.schemaVersion||1)<31)state.schemaVersion=31;
+    // Schema 32 adds optional, explicit intake inside programming-profile revisions.
+    // Legacy contexts remain intact: missing intake stays unknown.
+    if(Number(state.schemaVersion||1)<32)state.schemaVersion=32;
     return state;
   }
 

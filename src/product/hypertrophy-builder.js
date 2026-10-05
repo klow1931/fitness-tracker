@@ -45,6 +45,7 @@
   if(!goal.availableDays.length||!goal.sessionMinutes||!goal.equipment.trim())throw Error('Confirm goal availability, time and actual equipment before building');
   if(c.days.some(d=>!goal.availableDays.includes(d))||c.sessionMinutes>goal.sessionMinutes)throw Error('Days or time exceed the selected athlete goal');
   const profile=Profile.current(state.programmingProfiles||[]),p=profile?.context,w=W.current(state.workloadProfiles||[]),wc=w?.context;
+  Profile.assessIntake(p,c.slots.map(s=>s.exerciseId),true);
   if(p&&(c.days.some(d=>!p.availableDays.includes(d))||c.sessionMinutes>p.sessionMinutes))throw Error('Days or time exceed the programming profile');
   if(p&&(p.goal==='return'||p.consistency==='returning'))throw Error('Use a reviewed return/re-entry plan before this hypertrophy builder');
   if(['discomfort','needs-review'].includes(wc?.tolerance))throw Error('Reported tolerance requires review first; no hypertrophy prescription is proposed');

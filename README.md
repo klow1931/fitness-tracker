@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.1.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v3.2.0 · Development build.**
+
+Athlete intake records training history, reported concerns and activity limits. Reviewed Calendar edits support custom strength/cardio movements, and stable-dose cardio plans use explicit approval. Repeated preference edits can inform future exclusions after confirmation. Intake supports programming constraints and general education; it does not diagnose injuries or prescribe rehabilitation. An adaptive strength-training log that learns how you train.
 
 v3.1 adds reviewed accessory alternatives, explicit time-budget estimates and direct movement guidance. Equipment and exclusion preferences are saved explicitly on this device; approval revises only an unperformed Calendar session. Primary/technical protocols and original programs remain protected. See [v3.1 release notes](docs/releases-v3.1.md). Schema 31; unsigned build 30100.
 

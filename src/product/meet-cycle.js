@@ -87,7 +87,7 @@
    if(result.sourceProgram.createdAt>cutoff)throw Error('Reviewed lift setup was not known on this date');
    if(c.startDate<asOf)throw Error('Start the cycle today or later');
    const profile=Profile.current(state.programmingProfiles||[],cutoff);if(!profile)throw Error('Create a programming profile first');
-   const p=profile.context;Accessories.context(state,base.accessories||[],profile);
+   const p=profile.context;Profile.assessIntake(p,result.sessions.flatMap(s=>s.exercises.map(e=>e.exerciseId)),true);Accessories.context(state,base.accessories||[],profile);
    if(!['strength','general','meet'].includes(p.goal)||p.consistency==='returning')throw Error('Choose a suitable strength, general powerlifting or meet preparation profile');
    if(base.days.some(day=>!p.availableDays.includes(day))||base.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Cycle exceeds available days, equipment or time budget');
    if(p.eventDate&&p.eventDate!==c.meetDate)result.warnings.push('Cycle event date '+c.meetDate+' differs from the programming-profile event date '+p.eventDate+'. The reviewed cycle date is allowed to override the profile default; update the profile later only if you want future plans to use the new date.');

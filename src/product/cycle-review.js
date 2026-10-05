@@ -6,6 +6,7 @@
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x)),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
+ const Profile=typeof module==='object'&&module.exports?require('./programming-profile'):globalThis.LoadnoteProgrammingProfile;
  const LIFTS=['squat','bench','deadlift'],LEGACY_POLICY='cycle-week-set-v1',PREVIOUS_POLICY='cycle-week-adjust-v2',UPWARD_POLICY='cycle-week-adjust-v3',POLICY='cycle-week-adjust-v4';
  const dayAfter=s=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);};
  function validate(state){
@@ -76,6 +77,7 @@
        }
      }
    }
+   if(Profile.intakeHold(Profile.current(state.programmingProfiles||[],cutoff)?.context))increaseIssues.push('Current reported intake symptoms hold automated increases; review an individual plan.');
    if(!competitionNextExposures)increaseIssues.push('No matching competition-lift exposure exists next week.');
    const shared=[...new Set(futureIssues)],setReasons=[...new Set([...shared,...setIssues])],reduceLoadReasons=[...new Set([...shared,...reduceLoadIssues])],increaseReasons=[...new Set([...shared,...increaseIssues])];
    const canReduceOne=setReasons.length===0,canReduceLoad=reduceLoadReasons.length===0,canIncreaseLoad=increaseReasons.length===0;

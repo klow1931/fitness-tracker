@@ -257,8 +257,7 @@
           <canvas id="progressChart" height="220"></canvas>
           <div class="progress-controls"><label>Range <select id="progress-range" class="input" onchange="renderProgressChart()"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="0" selected>All time</option></select></label><label>Metric <select id="progress-metric" class="input" onchange="renderProgressChart()"><option value="estimate">Estimated 1RM</option><option value="load">Heaviest actual set</option></select></label></div>
           <p id="progress-description" class="more-hint"></p><button type="button" class="btn-secondary" onclick="if(document.getElementById('progress-exercise').value)openExerciseDetail(document.getElementById('progress-exercise').value)">Exercise details</button>
-        </div>
-        <div class="card">
+        </di       <div class="card">
           <h2 class="font-semibold mb-4">Nutrition (Last 14 days)</h2>
           <canvas id="nutritionChart" height="220"></canvas>
         </div>
@@ -1028,6 +1027,7 @@
       <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Evidence, recovery and approved next-week changes</small></summary><div id="program-week-review"></div></details>
       <div class="decision-group-label"><b>Build or change a program</b><small>One recommended path first; alternate tools stay out of the way</small></div>
       <div id="programming-workspace" class="card programming-workspace" aria-label="Program planner"></div>
+      <details class="card" id="athlete-planning-tools"><summary><b>Intake, cardio &amp; exercise edits</b><small>Review your context and exact planned targets</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.open()">Edit planned exercises</button><button type="button" class="btn-secondary" onclick="LoadnoteCardioPlannerUI.open()">Plan cardio</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.learning()">What edits show</button></div></details>
       <details class="card programming-tools-panel" id="programming-tools-panel"><summary><span><b>Program setup &amp; alternate tools</b><small>Edit setup, use the quick 4-week return block, open the manual designer, or adopt an existing program</small></span></summary>
       <div class="decision-build-tools programming-tools-content">
       <details class="card" id="programming-profile-panel"><summary><b>Training setup</b><small>Goal, availability, equipment and event-date default</small></summary><div id="programming-profile"></div></details>
@@ -1961,6 +1961,10 @@
   <script src="src/product/sync-coordinator.js" defer></script>
   <script src="src/product/account-ui.js" defer></script>
   <script src="src/product/profile-ui.js" defer></script>
+  <script src="src/product/reviewed-planning-ui.js" defer></script>
+  <script src="src/product/athlete-intake-ui.js" defer></script>
+  <script src="src/product/program-edit-ui.js" defer></script>
+  <script src="src/product/cardio-planner-ui.js" defer></script>
   <script src="src/product/units.js" defer></script>
   <script src="src/product/workout-form.js" defer></script>
   <script src="src/product/session-intent-ui.js" defer></script>
@@ -2014,7 +2018,10 @@
   <script src="src/product/sport-context.js" defer></script>
   <script src="src/product/athlete-goals.js" defer></script>
   <script src="src/product/athlete-goals-ui.js" defer></script>
+  <script src="src/product/athlete-intake.js" defer></script>
   <script src="src/product/programming-profile.js" defer></script>
+  <script src="src/product/program-edit.js" defer></script>
+  <script src="src/product/cardio-planner.js" defer></script>
   <script src="src/product/training-knowledge.js" defer></script>
   <script src="src/product/muscle-workload-review.js" defer></script>
   <script src="src/product/hypertrophy-builder.js" defer></script>

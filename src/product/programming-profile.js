@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./schedule'));
-  else root.LoadnoteProgrammingProfile=factory(root.LoadnoteCore,root.LoadnoteSchedule);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Schedule){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./schedule'),require('./athlete-intake'));
+  else root.LoadnoteProgrammingProfile=factory(root.LoadnoteCore,root.LoadnoteSchedule,root.LoadnoteAthleteIntake);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Schedule,Intake){
   'use strict';
   const clone=x=>JSON.parse(JSON.stringify(x));
   const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -17,6 +17,7 @@
     for(const k of ['preferredExerciseIds','avoidedExerciseIds']){const ids=raw[k]??[];if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||!id||id.length>160)||new Set(ids).size!==ids.length)throw Error('Invalid exercise preferences');result[k]=[...ids].sort();}
     if(result.preferredExerciseIds.some(id=>result.avoidedExerciseIds.includes(id)))throw Error('An exercise cannot be both preferred and avoided');
     for(const k of ['priorities','notes']){if(typeof(raw[k]??'')!=='string'||(raw[k]||'').length>1000)throw Error('Keep programming notes within 1000 characters');result[k]=(raw[k]||'').trim();}
+    if(raw.intake!==undefined)result.intake=Intake.context(raw.intake);
     return result;
   }
   function validate(records){
@@ -27,6 +28,7 @@
   function save(records,raw,{now=new Date().toISOString(),id=Core.createId()}={}){return validate([...(records||[]),{version:1,id,recordedAt:now,context:raw===null?null:context(raw)}]);}
   function assess(record,config){
     if(!record)return [];const p=context(record.context),warnings=[];
+    assessIntake(p,Object.values(config.lifts).map(e=>e.exerciseId).concat((config.accessories||[]).map(e=>e.exerciseId)),true);
     if(config.days.some(d=>!p.availableDays.includes(d)))throw Error('Program days exceed your programming-profile availability');
     if(config.sessionMinutes>p.sessionMinutes)throw Error('Program time budget exceeds your programming profile');
     if(Object.keys(EQUIPMENT).some(e=>!p.equipment.includes(e)))throw Error('This builder requires a barbell, suitable plates, rack and bench. Update actual access or use a different program.');
@@ -42,5 +44,7 @@
     warnings.push('Experience, consistency and reported priorities are context, not diagnosed weaknesses or a validated individual training dose.');
     return warnings;
   }
-  return {GOALS,EQUIPMENT,context,validate,current,save,assess};
+  function assessIntake(p,exerciseIds=[],generation=false){return Intake.guard(p?.intake,exerciseIds,{generation});}
+  function intakeHold(p){return Intake.active(p?.intake);}
+  return {assessIntake,intakeHold,GOALS,EQUIPMENT,context,validate,current,save,assess};
 });
