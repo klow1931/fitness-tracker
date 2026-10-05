@@ -46,5 +46,5 @@ assert.equal(incompleteReport.schedule.expected,21);assert.equal(incompleteRepor
 assert.match(incompleteReport.notes.join(' '),/Missing, skipped, cancelled, pending or unconfirmed/);
 
 const migrated=Core.normalizeState({schemaVersion:24,workouts:base.workouts,phasePrograms:[]});
-assert.equal(migrated.schemaVersion,29);assert.deepEqual(migrated.transitionSnapshots,[]);assert.deepEqual(migrated.workouts,base.workouts);
+assert.equal(migrated.schemaVersion,30);assert.deepEqual(migrated.transitionSnapshots,[]);assert.deepEqual(migrated.workouts,base.workouts);
 console.log('v2.42 immutable transition baseline, coverage evidence and schema migration passed');

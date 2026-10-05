@@ -1,8 +1,8 @@
 /* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'),require('./hypertrophy-builder'),require('./sport-planner'));
- else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp,Planner){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'),require('./hypertrophy-builder'),require('./sport-planner'),require('./coaching-context'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner,root.LoadnoteCoachingContext);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp,Planner,Unified){
  'use strict';
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
@@ -31,6 +31,7 @@
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
+  if(Unified){try{const unified=Unified.answer(state,q,{asOf,unit,history,live,sportLive:live?.sportWorkout||null});if(unified)return unified;}catch{/* Existing domain-specific evidence handlers remain available. */}}
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
   if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
   if(intent.topic==='hypertrophy'&&Hyp&&/\b(program|plan|progression)\b/i.test(intent.referenceQuestion)){

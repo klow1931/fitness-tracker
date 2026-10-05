@@ -79,6 +79,7 @@
   #coach-companion-backdrop{position:fixed;inset:0;z-index:59;border:0;padding:0;background:rgba(15,23,42,.14);cursor:default}
   #coach-companion-panel{position:fixed;z-index:60;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));width:min(390px,calc(100vw - 24px));max-height:min(680px,calc(100vh - 100px));max-height:min(680px,calc(100dvh - 100px));background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
   #coach-companion-panel:not([hidden]){display:flex;flex-direction:column}
+  #coach-companion-panel[hidden],#coach-companion-panel [hidden]{display:none!important}
   body.dark #coach-companion-panel{background:#0f172a;color:#e2e8f0;border-color:#334155}
   .cc-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 10px 8px 14px;border-bottom:1px solid #e2e8f0;background:#fff}.cc-head b{display:block}.cc-head small{display:block;color:#64748b;margin-top:3px}.cc-close{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:999px;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:inherit}
   .cc-context{display:flex;flex:0 0 auto;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid #e2e8f0}.cc-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.cc-chip.live{background:#ecfdf5;color:#047857}
@@ -100,12 +101,12 @@
   const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.setAttribute('aria-modal','true');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><span>Training changes stay with Decisions.</span><button type="button" id="cc-full">Open Coach</button></div>`;
   panel.querySelector('.cc-close').addEventListener('click',close);
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text||asking)return;input.value='';void serialAsk(text);});
-  panel.querySelector('#cc-full').addEventListener('click',()=>{try{showTab('coach');showSubTab('coach','co-chat');}catch{}close();});
+  panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   document.body.appendChild(panel);
   append('I’m here throughout Loadnote. During a workout I can read your current set, answer questions from your training context, and control the rest timer.','assistant');
   refresh();
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden)close();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();close();}});
  }
  function append(text,role='assistant',meta=''){
   const host=document.getElementById('cc-messages');if(!host)return;
@@ -114,17 +115,18 @@
   host.appendChild(row);host.scrollTop=host.scrollHeight;
  }
  function quickButtons(context){
-  const items=context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
+  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }
  function refresh(){
   const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
   if(!launcher||!host)return;
-  launcher.dataset.live=context.liveWorkout?.active?'true':'false';
+  launcher.dataset.live=context.liveWorkout?.active||context.sportWorkout?'true':'false';
   const current=Core()?.currentSetSummary(context);
-  status.textContent=current||('Viewing '+context.surface);
+  status.textContent=context.coaching?.currentTask?.name||current||('Viewing '+context.surface);
   const chips=[`<span class="cc-chip">${esc(context.surface)}</span>`];
+  if(context.sportWorkout)chips.push('<span class="cc-chip live">Sport session active</span>');
   if(context.liveWorkout?.active)chips.push('<span class="cc-chip live">Workout active</span>');
   if(context.restTimer?.active)chips.push(`<span class="cc-chip">Rest ${esc(context.restTimer.remainingSeconds)}s${context.restTimer.paused?' paused':''}</span>`);
   const chipHtml=chips.join('');
@@ -163,7 +165,8 @@
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
   const offline=local?.text||Core()?.offlineReply(live,text);
-  const client=Client();
+  const authoritative=local?.source?.startsWith('Shared coaching');
+  const client=authoritative?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
    let reply=offline;
@@ -180,8 +183,8 @@
    reply=reply||'Online Coach is unavailable right now. Your workout logger and deterministic Decisions remain available.';append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
  }
- function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
- function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');if(panel)panel.hidden=true;if(backdrop)backdrop.hidden=true;if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
+ function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
+ function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');if(panel){panel.hidden=true;document.body.append(panel);}if(backdrop){backdrop.hidden=true;document.body.append(backdrop);}if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
  function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
  function init(){ensure();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
