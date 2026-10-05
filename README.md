@@ -1,10 +1,10 @@
 # Loadnote
 
-**v2.98.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v2.99.0 · Development build.** An adaptive strength-training log that learns how you train.
 
 ## v2.98 — Unified Coaching & Reviewed Future Changes
 
-Decisions, Coach and Companion share weekly evidence, confirmed goals and current reviewed targets. Athlete check-ins preserve unknowns; supported future proposals require explicit review and append Calendar revisions. Companion reads the live sport recorder, and athletic corrections preserve observation history. See [release notes](docs/releases-v2.98.md) and the [synthetic walkthrough](docs/demo-v2.98/README.md). Schema 30; unsigned build 29800. Native source checks do not establish device acceptance.
+Guided starting structures reuse confirmed goals, availability and exact movement choices across muscle growth, Olympic lifting and athlete support. Continuous reviewed progression requires two new comparable sessions at each approved Calendar target. Decisions and Coach explain that same target and evidence gate. See [release notes](docs/releases-v2.99.md) and the [synthetic walkthrough](docs/demo-v2.99/README.md). Schema 30; unsigned build 29900. Native source checks do not establish device acceptance.
 
 ## v2.89 — Mobile UX & Accessibility
 

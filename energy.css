@@ -3,6 +3,10 @@
 .schedule-dialog { width:min(620px,calc(100% - 24px)); max-height:85dvh; overflow:auto; color:var(--ink); background:var(--surface); }
 .schedule-dialog::backdrop { background:#0008; }
 .schedule-dialog label { display:flex; flex-direction:column; gap:.4rem; margin:.7rem 0; }
+.schedule-dialog label:has(> input[type="checkbox"]) { flex-direction:row; align-items:flex-start; gap:.55rem; }
+.schedule-dialog label > input[type="checkbox"] { flex:0 0 auto; width:1.1rem; height:1.1rem; margin-top:.2rem; }
+#guided-days { display:flex; flex-wrap:wrap; gap:.4rem 1rem; }
+#guided-days legend { width:100%; }
 .schedule-dialog .input { width:100%; min-width:0; }
 .schedule-dialog button,.schedule-row button { min-height:44px; }
 #goal-dialog fieldset { border:1px solid var(--border); border-radius:12px; padding:12px; margin:12px 0; }

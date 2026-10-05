@@ -5,7 +5,7 @@
   function panel(id){const el=document.getElementById(id);if(!el)return;el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'});}
   function phaseSource(id){try{return LoadnotePhaseBuilder.validate(data.phasePrograms||[]).find(p=>p.id===id)||null;}catch{return null;}}
   function primaryLabel(action){
-    return {sport:'Build dedicated sport plan','review-sport':'Review saved sport plan',hypertrophy:'Build hypertrophy plan','review-hypertrophy':'Review saved hypertrophy plan',profile:'Set up training preferences',quick:'Build 4-week return block',phase:'Open program designer','phase-meet':'Start meet-prep setup',meet:'Continue to meet timeline','view-reviewed-cycle':'Review saved cycle','view-current':'View current program',adopt:'Adopt an existing program'}[action]||'Continue';
+    return {sport:'Start guided sport plan','review-sport':'Review saved sport plan',hypertrophy:'Start guided muscle-growth plan','review-hypertrophy':'Review saved hypertrophy plan',profile:'Set up training preferences',quick:'Build 4-week return block',phase:'Open program designer','phase-meet':'Start meet-prep setup',meet:'Continue to meet timeline','view-reviewed-cycle':'Review saved cycle','view-current':'View current program',adopt:'Adopt an existing program'}[action]||'Continue';
   }
   function render(){
     const host=document.getElementById('programming-workspace');if(!host)return;
@@ -21,9 +21,9 @@
     host.querySelector('#programming-workspace-tools').addEventListener('click',()=>panel('programming-tools-panel'));
     host.querySelector('#programming-workspace-primary').addEventListener('click',()=>{
       switch(route.primaryAction){
-        case 'sport': window.LoadnoteSportPlannerUI?.open?.(route.mode);break;
+        case 'sport': window.LoadnoteGuidedPlanUI?.open?.(route.mode);break;
         case 'review-sport': window.LoadnoteSportPlannerUI?.show?.(route.sourceId);break;
-        case 'hypertrophy': window.LoadnoteHypertrophyBuilderUI?.open?.();break;
+        case 'hypertrophy': window.LoadnoteGuidedPlanUI?.open?.('hypertrophy');break;
         case 'review-hypertrophy': window.LoadnoteHypertrophyBuilderUI?.show?.(route.sourceId);break;
         case 'profile': window.openProgrammingProfile?.();break;
         case 'quick': window.LoadnoteProgramBuilderUI?.open?.();break;
