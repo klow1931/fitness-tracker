@@ -1855,3 +1855,8 @@ body.dark #chat-messages {background:#0b1220;border-color:#475569;}
 body.dark #chat-messages .cc-msg.assistant {background:#1e293b;color:#f1f5f9;}
 body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 #coach-companion-launcher[hidden] {display:none!important;}
+
+/* Intake concern fields stack within the narrow mobile dialog. */
+#athlete-intake-dialog [data-intake-issue] { min-width:0; }
+#athlete-intake-dialog [data-intake-issue] label { display:block; margin:.65rem 0; }
+#athlete-intake-dialog textarea { max-width:100%; }
