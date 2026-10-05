@@ -47,7 +47,8 @@ test('v2.83 secure Coach request carries bounded deterministic Companion intelli
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
  await seedProgressEvidence(page);
  await page.locator('#coach-companion-launcher').click();
- await page.locator('#cc-input').fill('How is my training going?');
+ // Daily training briefs are authoritative locally in v3.0. A broader question still exercises authenticated transport.
+ await page.locator('#cc-input').fill('How can I build a consistent training habit?');
  await page.locator('#cc-form button[type="submit"]').click();
  await expect(page.locator('#cc-messages')).toContainText('recent squat evidence is higher');
  await expect.poll(()=>requestBody!==null).toBe(true);

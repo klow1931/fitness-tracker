@@ -1,10 +1,10 @@
 # Loadnote
 
-**v2.99.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v3.0.0 · Development build.** An adaptive strength-training log that learns how you train.
 
 ## v2.98 — Unified Coaching & Reviewed Future Changes
 
-Guided starting structures reuse confirmed goals, availability and exact movement choices across muscle growth, Olympic lifting and athlete support. Continuous reviewed progression requires two new comparable sessions at each approved Calendar target. Decisions and Coach explain that same target and evidence gate. See [release notes](docs/releases-v2.99.md) and the [synthetic walkthrough](docs/demo-v2.99/README.md). Schema 30; unsigned build 29900. Native source checks do not establish device acceptance.
+The daily coaching brief connects actual records, athlete reports, program status and reviewed future options across Decisions, Coach and Companion. Wave loading creates real three-week prescriptions; program cancellation preserves completed training and supports guarded restoration. Optional shorter sessions retain primary work and show exact accessory omissions before approval. See [release notes](docs/releases-v3.0.md), the [synthetic walkthrough](docs/demo-v3.0/README.md), and [competitor gap review](docs/competitor-review-v3.0.md). Schema 31; unsigned build 30000. Native source checks do not establish device acceptance.
 
 ## v2.89 — Mobile UX & Accessibility
 

@@ -10,7 +10,7 @@
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const phaseLabel=x=>({weightlifting:'Technical lifting',athlete:'Athlete development',hypertrophy:'Hypertrophy',accumulation:'Accumulation',strength:'Strength',deload:'Deload',peaking:'Peaking',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'}[x]||x||'Program');
  function requireDay(day){if(!Schedule.date(day))throw Error('Choose a valid program-view date');return day;}
- function allPrograms(state){return Lifecycle.programs(state||{});}
+ function allPrograms(state){return Lifecycle.programs(state||{},{includeCancelled:true});}
  function pickProgram(state,{asOf,programId=null}={}){
    requireDay(asOf);
    const all=allPrograms(state);

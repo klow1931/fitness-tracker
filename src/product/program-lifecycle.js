@@ -6,14 +6,14 @@
  if(typeof module==='object'&&module.exports)module.exports=factory(
    require('./schedule'),require('./phase-builder'),require('./meet-cycle'),
    require('./cycle-review'),require('./phase-review'),require('./transition-baseline'),
-   require('./next-block-handoff'),require('./hypertrophy-builder'),require('./sport-planner')
+   require('./next-block-handoff'),require('./hypertrophy-builder'),require('./sport-planner'),require('./program-cancellation')
  );
  else root.LoadnoteProgramLifecycle=factory(
    root.LoadnoteSchedule,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,
    root.LoadnoteCycleReview,root.LoadnotePhaseReview,root.LoadnoteTransitionBaseline,
-   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner
+   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner,root.LoadnoteProgramCancellation
  );
-})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp,Sport){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp,Sport,Cancellation){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -34,12 +34,12 @@
  function meetProgram(row){
    return {kind:'meet-cycle',id:row.id,name:row.sourceProgram.config.name,startDate:row.config.startDate,endDate:row.config.meetDate,totalWeeks:row.config.weeks,record:row,prefix:'meet:'+row.id+':',eventType:Meet.eventType(row.config),eventName:row.config.eventName||null,eventDate:row.config.meetDate};
  }
- function programs(state){
+ function programs(state,{includeCancelled=false}={}){
    const phases=Phase.validate(state?.phasePrograms||[]).filter(x=>x.scheduledAt).map(phaseProgram);
    const cycles=CycleReview.validate(state||{}).filter(x=>x.scheduledAt).map(meetProgram);
    const hypertrophy=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'hypertrophy-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'hypertrophy:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
    const sports=Sport.validate(state?.sportPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'sport-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'sport:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
-   return [...phases,...cycles,...hypertrophy,...sports].sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
+   return [...phases,...cycles,...hypertrophy,...sports].filter(p=>includeCancelled||!Cancellation.isCancelled(state,p.id,p.kind)).sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
  }
  function transitionFor(state,p){if(['hypertrophy-program','sport-program'].includes(p.kind))return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
  function eventRecorded(p){

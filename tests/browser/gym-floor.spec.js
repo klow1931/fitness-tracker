@@ -76,6 +76,7 @@ test('v2.70 same-set quick fill and dock progress reduce between-set taps',async
 });
 
 test('v2.74 cockpit pairs today target with last performance and adjusts display-unit load quickly',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.evaluate(()=>{
   data.unit='lb';updateUnitToggle();
   data.workouts=[{id:'cockpit-previous',date:'2026-09-20',createdAt:'2026-09-20T18:00:00.000Z',exercises:[{name:'Cockpit Bench',type:'strength',trackBy:'reps',sets:[{weight:90,reps:5,rpe:8}]}]}];
@@ -98,6 +99,7 @@ test('v2.74 cockpit pairs today target with last performance and adjusts display
  await expect(set.locator('.set-rpe')).toHaveValue('');
  await cockpit.locator('[data-cockpit-adjust="5"]').click();
  await expect(set.locator('.set-weight')).toHaveValue('225.5');
+ await expect(set.locator('.set-weight')).toBeFocused();expect(errors).toEqual([]);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 

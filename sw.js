@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.99.0';
+const CACHE = 'loadnote-v3.0.0';
 const ASSETS = [
   './src/product/guided-plan.js',
   './src/product/guided-plan-ui.js',
@@ -107,6 +107,11 @@ const ASSETS = [
   './src/product/profile-ui.js',
   './src/product/session-intent.js',
   './src/product/schedule.js',
+  './src/product/program-cancellation.js',
+  './src/product/program-cancellation-ui.js',
+  './src/product/smart-coach.js',
+  './src/product/smart-coach-ui.js',
+
   './src/product/schedule-ui.js',
   './src/product/data-integrity-ui.js',
   './src/product/history-reliability.js',

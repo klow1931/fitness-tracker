@@ -49,14 +49,14 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
  await expect(page.locator('#coach-online-status')).toContainText('Secure online Coach available');
  await expect(page.locator('#coach-account-link')).toBeHidden();
 
- await page.locator('#chat-input').fill('What should I focus on today?');
+ await page.locator('#chat-input').fill('How can I build a consistent training habit?');
  await page.locator('#chat-send-btn').click();
  await expect(page.locator('#chat-messages')).toContainText('Keep the reviewed plan.');
  await expect(page.locator('#coach-proactive')).toContainText('220.5 lb');
  await expect.poll(()=>requestBody!==null).toBe(true);
 
  expect(Object.keys(requestBody).sort()).toEqual(['context','history','question']);
- expect(requestBody.question).toBe('What should I focus on today?');
+ expect(requestBody.question).toBe('How can I build a consistent training habit?');
  expect(requestBody.messages).toBeUndefined();
  expect(requestBody.apiKey).toBeUndefined();
  expect(requestBody.provider).toBeUndefined();

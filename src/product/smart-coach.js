@@ -1,0 +1,62 @@
+/* A shared daily coaching brief: explicit evidence, prioritized choices, fresh follow-ups. */
+(function(root,factory){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./coaching-context'),require('./coaching-review'),require('./schedule'),require('./decision-readiness'));
+ else root.LoadnoteSmartCoach=factory(root.LoadnoteCoachingContext,root.LoadnoteCoachingReview,root.LoadnoteSchedule,root.LoadnoteReadiness);
+})(typeof globalThis!=='undefined'?globalThis:this,function(C,R,S,Readiness){
+ 'use strict';
+ const action=(kind,label,extra={})=>({kind,label,...extra});
+ function brief(state,{asOf,live=null,sportLive=null}={}){
+  const review=R.proposals(state,{asOf}),c=live||sportLive?C.build(state,{asOf,live,sportLive}):review.context,proposals=review.proposals,rows=C.currentRows(state,asOf),check=c.weekly.checkIn;
+  const concerns=[],evidence=[],choices=[],liftInsights=[];
+  if((state.exerciseRoles||[]).length){const lifts=Readiness.snapshot(state,{asOf,retrospective:true}).lifts;for(const [lift,r] of Object.entries(lifts))if(r.competitionExercise)liftInsights.push({lift,name:r.competitionExercise,status:r.status,sessions:r.metrics.sessions,reasons:r.reasons.slice(0,3),interpretation:r.interpretation||null});}
+  if(c.workload&&['discomfort','needs-review'].includes(c.workload.tolerance))concerns.push('Your workload review reports a limitation. Resolve it before choosing a new dose.');
+  if(check&&(check.sleep==='poor'||check.fatigue==='elevated'||check.soreness==='elevated'))concerns.push('Your latest check-in reports '+[check.sleep==='poor'?'poor sleep':null,check.fatigue==='elevated'?'elevated fatigue':null,check.soreness==='elevated'?'elevated soreness':null].filter(Boolean).join(', ')+'. Load increases are held for review. This report does not measure recovery.');
+  for(const report of c.weekly.sports.filter(r=>r.status==='review-with-coach'))concerns.push(report.name?report.name+': sport evidence needs coach review.':'Sport evidence needs coach review: inspect quality, outcomes and current practice context.');
+  if(c.weekly.calendar.unconfirmed)concerns.push(c.weekly.calendar.unconfirmed+' earlier session(s) have no explicit outcome. Resolve the Calendar before interpreting completion.');
+  const violations=(state.workouts||[]).filter(w=>w.date>=c.from&&w.date<=asOf).flatMap(w=>(w.exercises||[]).filter(e=>e.type!=='practice'&&e.type!=='cardio').flatMap(e=>(e.sets||[]).filter(s=>s.done!==false&&s.completed!==false&&!s.skipped&&!s.warmup&&s.type!=='warmup'&&Number.isFinite(s.rpe)&&Number.isFinite(s.targetRpe)&&s.rpe>s.targetRpe)));
+  if(violations.length)concerns.push(violations.length+' logged set(s) exceeded their recorded effort cap. Review equivalent work before an increase; averages can conceal these sets.');
+  const next=rows.find(s=>s.state==='scheduled'&&s.date>=asOf),day=next?(new Date(next.date+'T12:00:00Z').getUTCDay()+6)%7:null;
+  const conflicts=next?c.goals.filter(g=>g.context.scheduleKnown&&(g.context.practiceDays.includes(day)||g.context.competitionDays.includes(day))):[];
+  if(conflicts.length)concerns.push(next.date+' overlaps a reported practice or competition day for '+conflicts.map(g=>g.name).join(', ')+'. Coordinate the total day with your coach; this is not a measured fatigue forecast.');
+  evidence.push(c.weekly.sessions+' session log(s) in '+c.from+'–'+asOf,c.weekly.strength.knownEffort+'/'+c.weekly.strength.sets+' strength sets with known effort');
+  if(c.weekly.technical.records)evidence.push(c.weekly.technical.made+' made / '+c.weekly.technical.missed+' missed Olympic attempts; '+c.weekly.technical.unknown+' unknown outcome/quality observations');
+  if(c.weekly.drills.length)evidence.push(c.weekly.drills.length+' separate athletic practice record(s)');
+  const task=c.currentTask,life=c.lifecycle||null;
+  const title=task?'Focus on '+task.name:concerns.length?'Review before progressing':['resolve-overdue','resume-draft','resume-workout','review-week','review-phase','review-programs'].includes(life?.nextAction?.kind)?life.nextAction.label:c.session?.date===asOf?'Today: '+c.session.name:c.program?'Keep your reviewed training moving':'Build your next training plan';
+  const reason=task?task.kind==='strength'?'Follow the current set’s recorded target and record actual effort.':('Follow the reviewed '+task.kind+' protocol. Unknown quality and outcomes stay unknown.'):concerns[0]||life?.nextAction?.detail||c.priorities[0]?.text||'Review the next scheduled session and its targets.';
+  if(life?.nextAction&&life.nextAction.kind!=='no-program')choices.push(action('lifecycle',({'start-workout':'Start today’s session','resume-workout':'Resume session','resume-draft':'Resume draft','resolve-overdue':'Resolve earlier sessions','next-session':'Next session','program-upcoming':'View calendar'}[life.nextAction.kind]||life.nextAction.label)));
+  if(concerns.length)choices.push(action('review','Review evidence'));
+  if(c.weekly.calendar.unconfirmed)choices.push(action('calendar','Resolve earlier sessions'));
+  if(!c.program)choices.push(action('programming','Choose a training plan'));
+  if(next)choices.push(action('calendar','View '+(next.date===asOf?'today’s':'next')+' session'));
+  if(proposals.length)choices.push(action('proposals','Review '+proposals.length+' future-session option(s)'));
+  if(!check)choices.push(action('check-in','Add an athlete check-in'));
+  return {version:1,asOf,from:c.from,readOnly:true,title,reason,concerns,evidence,gaps:c.gaps,actions:choices.slice(0,4),proposals,context:c,liftInsights,signature:c.signature,followUps:['What should I focus on today?','What is holding back progression?','What evidence is missing?'],notice:'Training records and athlete reports guide this brief. It does not diagnose technique, measure recovery, or approve changes.'};
+ }
+ function intent(q){
+  if(/\b(pain|hurt|injur|diagnos|rehab)\w*\b/i.test(q))return null;
+  if(/\b(wave loading|loading wave|wave periodization)\b/i.test(q))return 'wave';
+  if(/\b(cancel|stop|end|restore)\b.*\b(program|plan|cycle)\b/i.test(q))return 'cancel';
+  if(/\b(short(er)? (session|workout|training)|less time|time limit|only \d+ minutes|\d+.minute|busy|equipment unavailable|no equipment|substitut|replace.*exercise)\b/i.test(q))return 'options';
+  if(/\b(what.*(focus\b|prioriti\w*|train\b|do (today|next))|daily brief|coach brief|plan (my )?day|how.*training going)\w*/i.test(q))return 'focus';
+  if(/\b(holding.*back|why.*not.*(progress|increase)|ready to progress|should i (progress|increase)|risks|concerns|watch out|warning)\b/i.test(q))return 'constraints';
+  if(/\b(missing evidence|evidence.*missing|what.*(need to log|need to record|don.t know)|how.*improve.*(evidence|logging))\b/i.test(q))return 'gaps';
+  if(/\b(what.*(changed|learned)|did.*advice.*work|outcomes|follow.up results)\b/i.test(q))return 'outcomes';
+  return null;
+ }
+ function answer(state,question,{asOf,history=[],live=null,sportLive=null}={}){
+  const q=String(question||'').trim().slice(0,500);if(/\b(pain|hurt|injur|diagnos|rehab)\w*\b/i.test(q))return null;
+  let type=intent(q);const follow=/^(why\??|how so\??|tell me more\.?|explain that\.?|what should i do\??|how do i fix (it|that)\??)$/i.test(q);
+  if(!type&&follow){const prior=history.slice(-8).filter(r=>r.role==='user'&&r.content!==q).at(-1);type=prior?intent(String(prior.content)):null;}
+  if(!type||type==='constraints'&&/\b(squat|bench|deadlift|press)\b/i.test(q))return null;const b=brief(state,{asOf,live,sportLive}),c=b.context;let text,actions=b.actions,followUps=b.followUps;
+  if(type==='focus'){text=b.title+'. '+b.reason+' '+(c.program?c.program.name+' · '+(c.program.phase||'reviewed program')+' · week '+c.program.week+'. ':'')+'Recorded evidence: '+b.evidence.join('; ')+'. '+(b.concerns.length?'Review: '+b.concerns.join(' '):'Keep reviewed targets until a supported, explicitly approved change.')+' '+b.notice;}
+  if(type==='constraints'){text=(b.concerns.length?b.concerns.join(' '):'No specific concern is recorded in this review window; that is not proof that you are ready to increase.')+' '+(b.gaps.length?'Evidence still missing: '+b.gaps.join('; ')+'. ':'')+b.proposals.filter(p=>p.kind==='hypertrophy-load').map(p=>p.name+': '+p.reason).join(' ')+' '+b.liftInsights.map(r=>r.name+': evidence '+r.status+' ('+r.sessions+' matching training days). '+r.reasons.join(' ')).join(' ')+' Use the corresponding review for hypertrophy, strength or sport. Completing training alone does not earn an increase.';followUps=['What evidence is missing?','What should I focus on today?'];}
+  if(type==='gaps'){text=(b.gaps.length?b.gaps.join('; ')+'. ':'No listed evidence gap is present, but records still describe only what was logged. ')+'Record actual sets, loads, effort, session outcomes and sport quality; explicitly confirm history coverage and tolerance in workload review. Planned targets do not become actual results. Athlete check-ins stay separate from measured performance.';actions=[action('review','Inspect workload and evidence'),action('check-in','Record a check-in')];}
+  if(type==='options'){const shorter=b.proposals.filter(p=>p.kind==='session-trim');text=shorter.length?shorter.map(p=>p.name+' on '+p.changes[0].before.date+': optional shorter session omits '+p.evidence[0].replace('Athlete-selected optional accessories: ','')+' while preserving every primary lift target.').join(' ')+' This reduces accessory dose; it is not equivalent work and does not justify shorter rest. Preview the exact before/after prescription in Decisions.':c.currentTask?'Your session is already open. Keep the captured plan and record actual completed or skipped work honestly. Future options require closing this draft and a separate review.':'No supported shorter-session option is available for the next seven days. Primary work and technical/drill protocols are retained; discuss a revised dose with your coach or explicitly reschedule/skip in Calendar.';if(/equipment|substitut|replace/i.test(q))text+=' No equivalent exercise, load or Olympic technique is inferred from equipment constraints. Review a replacement’s exact identity, equipment and starting dose in the program designer.';actions=[action('proposals','Review shorter-session options'),action('calendar','Review or reschedule session')];followUps=['What should I focus on today?','What evidence is missing?'];}
+  if(type==='wave'){text='Wave loading is available in Programming → Program designer → Periodization. Each loading phase uses three-week waves: accumulation reps 5/4/3 or strength reps 4/3/2, with base training-max percentages +0/+2.5/+5 points. The next wave resets reps and adds your selected base step. Straight/top sets follow the wave reps; strength back-off sets retain five reps at their lower load. A phase can end with a partial wave; the final deload stays fixed. Review loads, effort caps, time and every week before saving. Wave loading is an option, not a guarantee of better results. Meet-cycle event planning uses its own reviewed phase policy.';actions=[action('wave','Open wave-loading designer')];}
+  if(type==='cancel'){text='Open Decisions → Manage programs. Preview the remaining dates, enter your reason and explicitly confirm. Only unperformed sessions from today onward are cancelled; completed workouts, reviewed plans and earlier unconfirmed sessions stay in history. Close open drafts first. Restore only while cancelled dates remain current and Calendar/replacement programs do not conflict.';actions=[action('manage','Manage programs')];}
+  if(type==='outcomes'){const out=R.outcomes(state,{asOf});text=out.length?out.slice(-5).map(r=>r.name+': '+r.response+' · '+r.status+' · '+r.workoutIds.length+' attributed follow-up session(s), '+r.knownEffort+'/'+r.completedSets+' sets with known effort.').join(' '):'No reviewed proposal response is stored yet.';text+=' Only sessions linked to the exact approved revision count as follow-up. This describes observed records and does not prove the advice caused improvement or train a new policy.';actions=[action('review','Inspect responses and outcomes')];}
+  return {text,source:'Shared coaching · daily intelligence',readOnly:true,evidence:b.evidence,actions,followUps,intent:{topic:type,follow},signature:b.signature};
+ }
+ return {brief,intent,answer};
+});

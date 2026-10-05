@@ -64,7 +64,7 @@
  }
  function coach(r=currentReport()){
    const host=document.getElementById('decision-action-center');if(!host)return;
-   host.innerHTML='<div class="card program-lifecycle-coach">'+card(r)+'</div>';bind(host,r);
+   host.innerHTML='<div class="card program-lifecycle-coach">'+card(r)+'<button type="button" class="btn-secondary program-manage" data-manage-program>Manage programs</button></div>';bind(host,r);window.LoadnoteSmartCoachUI?.render?.(host);host.querySelector('[data-manage-program]').onclick=()=>window.LoadnoteProgramCancellationUI.open(r?.program?.id,r?.program?.kind);
  }
  function recap(host,state,asOf){
    if(!host||!window.LoadnoteProgramLifecycle)return;

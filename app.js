@@ -1658,6 +1658,7 @@
           label: 'Daily undulating (DUP)',
           tip: 'Vary intensity/reps within the week on the same lifts. Example: Mon 5×3 heavy, Wed 4×6 moderate, Fri 3×10 lighter. Great for intermediate+ strength and hypertrophy together. Track each day type separately.'
         },
+        wave: {label:'Wave loading',tip:'Three-week waves vary reps and training-max percentages, then reset into a new wave. Use the reviewed Program designer to inspect every week, its effort caps, partial waves and fixed deload before scheduling.'},
         wup: {
           label: 'Weekly undulating',
           tip: 'Change the main set/rep target each week in a repeating wave (e.g. Week 1: 5s, Week 2: 3s, Week 3: 8s, then repeat with slightly more weight). Good middle ground between linear and DUP.'
@@ -1759,6 +1760,7 @@
       const focus = document.getElementById('prog-focus').value;
       const scheme = document.getElementById('prog-scheme')?.value || 'linear';
       const schemeInfo = getSchemeInfo(scheme);
+      if(scheme==='wave'){window.LoadnotePhaseBuilderUI?.open?.(null,{periodization:'wave'});return;}
 
       const programs = {
         3: {
@@ -2188,6 +2190,7 @@
       `;
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
+      return div.firstElementChild;
     }
 
     function getChatResponse(msg, history = chatHistory) {
@@ -2397,7 +2400,8 @@
       try {
         if (shared) {
           const reply = escapeChat(shared.text) + '<br><small>' + escapeChat(shared.source) + ' · Read-only</small>';
-          appendChatMessage(reply, false);
+          const message=appendChatMessage(reply, false);
+          window.LoadnoteSmartCoachUI?.attach?.(message,shared,askSuggestion);
           rememberLocalChat(text, reply);
         } else if (useApi) {
           const structured = await requestStructuredCoach(text);
@@ -2414,7 +2418,8 @@
         } else {
           await new Promise(r => setTimeout(r, 250));
           const reply = getChatResponse(text);
-          appendChatMessage(reply, false);
+          const message=appendChatMessage(reply, false);
+          window.LoadnoteSmartCoachUI?.attach?.(message,shared,askSuggestion);
           rememberLocalChat(text, reply);
         }
       } catch (e) {

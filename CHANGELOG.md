@@ -1,3 +1,11 @@
+# v3.0.0 — Shared coaching intelligence, waves and plan control
+
+- One daily evidence model across Decisions, Coach and Companion, with fresh follow-ups and direct review actions.
+- Real three-week wave loading in the reviewed strength designer; existing linear and event-specific policies remain compatible.
+- Explicit program cancellation and guarded restoration with an append-only journal, history preservation, backup/import and sync support.
+- Optional shorter future sessions preserve primary work and preview exact accessory omissions before athlete approval.
+- Compact evidence, touch-friendly actions and reduced-motion support. Schema 31; native build 30000.
+
 # v2.99.0 — Guided plans and continuous reviewed progression
 
 - Reuse confirmed goals, availability and exact mapped movement choices in three editable starting structures.

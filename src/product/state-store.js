@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 30, coachingReviews: [], sportPrograms: [], athleticPractice: [], hypertrophyPrograms: [], olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 31, programCancellations: [], coachingReviews: [], sportPrograms: [], athleticPractice: [], hypertrophyPrograms: [], olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -223,6 +223,7 @@
         if(window.LoadnoteProgrammingProfile)integrity.programmingProfiles=window.LoadnoteProgrammingProfile.validate(integrity.programmingProfiles===undefined?[]:integrity.programmingProfiles);
         if(window.LoadnoteMuscleReview)integrity.workloadProfiles=window.LoadnoteMuscleReview.validate(integrity.workloadProfiles===undefined?[]:integrity.workloadProfiles);
         if(window.LoadnoteHypertrophyBuilder)integrity.hypertrophyPrograms=window.LoadnoteHypertrophyBuilder.validate(integrity.hypertrophyPrograms===undefined?[]:integrity.hypertrophyPrograms);
+        if(window.LoadnoteProgramCancellation)integrity.programCancellations=window.LoadnoteProgramCancellation.validateState(integrity);
         if(window.LoadnoteCoachingReview)integrity.coachingReviews=window.LoadnoteCoachingReview.validate(integrity.coachingReviews===undefined?[]:integrity.coachingReviews);
         if(window.LoadnoteSportPlanner){integrity.sportPrograms=window.LoadnoteSportPlanner.validate(integrity.sportPrograms===undefined?[]:integrity.sportPrograms);integrity.athleticPractice=window.LoadnoteSportPlanner.validateAthletic(integrity.athleticPractice===undefined?[]:integrity.athleticPractice);}
         if(window.LoadnotePhaseReview)integrity.phaseReviews=window.LoadnotePhaseReview.validate(integrity.phaseReviews===undefined?[]:integrity.phaseReviews);
