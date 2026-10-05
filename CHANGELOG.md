@@ -1,5 +1,8 @@
 # v3.1.0 — Reviewed adaptive sessions and movement guidance
 
+- One session-only conversation across full Coach and Companion; consistent follow-ups, shared clearing, safe concurrent sends and preserved structured analysis.
+- Supportive offline encouragement for solo training, setbacks, motivation and gym confidence, with honest praise and pain/crisis safeguards. New primary-source educational explanations; warmer bounded online coaching policy.
+- Readable dark-mode chat bubbles and no duplicate floating launcher on the full conversation screen.
 - Time-budget previews retain prescribed rest and primary work; missing-rest estimates require explicit assumptions. Only reviewed phase/meet accessories may be omitted.
 - Equipment alternatives use athlete-confirmed movement purpose, muscles and equipment, explicit exclusions and a fresh starting dose. Calendar approval protects frozen programs, logged work and open drafts.
 - Equipment, time preferences, exclusions and movement mappings save explicitly on this device, separate from account training sync/backups.

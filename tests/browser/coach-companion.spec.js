@@ -112,7 +112,7 @@ test('v2.82.1 mobile dark-mode Companion stays readable, inside the viewport, an
  const result=await page.evaluate(()=>{
   const panel=document.getElementById('coach-companion-panel').getBoundingClientRect();
   const head=document.querySelector('.cc-head').getBoundingClientRect();
-  const message=getComputedStyle(document.querySelector('.cc-msg.assistant'));
+  const message=getComputedStyle(document.querySelector('#coach-companion-panel .cc-msg.assistant'));
   return {panelTop:panel.top,panelBottom:panel.bottom,headTop:head.top,headBottom:head.bottom,viewport:window.innerHeight,messageBackground:message.backgroundColor,messageColor:message.color,closeHeight:document.querySelector('.cc-close').getBoundingClientRect().height};
  });
  expect(result.panelTop).toBeGreaterThanOrEqual(0);

@@ -96,6 +96,7 @@ const ASSETS = [
   './src/product/coaching-context.js',
   './src/product/coaching-review.js',
   './src/product/coaching-review-ui.js',
+  './src/product/coach-support.js',
   './src/product/coach-conversation.js',
   './src/product/companion-intelligence.js',
   './src/product/companion-intelligence-ui.js',

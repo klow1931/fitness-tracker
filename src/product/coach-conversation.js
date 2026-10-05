@@ -4,10 +4,11 @@
  else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner,root.LoadnoteCoachingContext,root.LoadnoteSmartCoach,root.LoadnoteProgramCancellation);
 })(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp,Planner,Unified,Smart,Cancellation){
  'use strict';
+ const Support=typeof module==='object'&&module.exports?require('./coach-support'):globalThis.LoadnoteCoachSupport;
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
-  if(/\b(pain|hurt|injur|torn|tear|diagnos|rehab|achilles)\w*\b/i.test(q))return 'health';
+  if(Support?.health(q))return 'health';
   if(/\b(training goal|training priorit|primary goal|secondary goal|practice schedule|sport schedule|conditioning|game days)\w*\b/i.test(q))return 'training-context';
   const domain=Knowledge?.classify(q);if(domain)return domain;
   if(/\b(accessor|biceps|triceps|upper back|quad|core)\w*\b/i.test(q))return 'accessories';
@@ -31,6 +32,7 @@
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
+  const support=Support?.answer(q,{history,live});if(support)return support;
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}
   if(intent.topic!=='health'&&Unified){try{const unified=Unified.answer(state,q,{asOf,unit,history,live,sportLive:live?.sportWorkout||null});if(unified)return unified;}catch{/* Existing domain-specific evidence handlers remain available. */}}
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});

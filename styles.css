@@ -1804,8 +1804,8 @@ body.dark .training-cockpit-transition span{color:#6ee7b7}
 #native-beta-safety ul { list-style: disc; }
 #native-beta-safety li { margin: .4rem 0; }
 #native-diagnostics { overflow-wrap: anywhere; }
-.skip-link { position:fixed; top:.5rem; left:.5rem; z-index:10000; padding:.8rem 1rem; background:#fff; color:#312e81; border:2px solid #4f46e5; border-radius:.5rem; transform:translateY(-200%); }
-.skip-link:focus { transform:none; }
+.skip-link { position:fixed; top:.5rem; left:.5rem; z-index:10000; padding:.8rem 1rem; background:#fff; color:#312e81; border:2px solid #4f46e5; border-radius:.5rem; transform:translateY(-200%); opacity:0; pointer-events:none; }
+.skip-link:focus { transform:none; opacity:1; pointer-events:auto; }
 .logger-validation-error { border:2px solid #b91c1c; border-radius:.5rem; padding:.75rem; color:#991b1b; background:#fef2f2; overflow-wrap:anywhere; }
 [aria-invalid="true"] { outline:2px solid #b91c1c; outline-offset:2px; }
 body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
@@ -1846,3 +1846,12 @@ body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
 .adaptive-error { color:var(--danger,#b91c1c); }
 #adaptive-preview { margin-top:1rem; overflow-wrap:anywhere; }
 #movement-guidance-dialog { width:calc(100% - 2rem); max-width:34rem; max-height:85dvh; overflow-y:auto; }
+/* Shared Coach transcript: explicit colors avoid utility dark-mode overrides. */
+#chat-messages {display:flex;flex-direction:column;gap:.75rem;height:clamp(320px,55dvh,560px);min-height:320px;background:#f8fafc;color:#0f172a;}
+#chat-messages .cc-msg {max-width:90%;padding:12px 14px;border-radius:14px;line-height:1.55;background:#e2e8f0;color:#0f172a;overflow-wrap:anywhere;}
+#chat-messages .cc-msg.user {align-self:flex-end;background:#3730a3;color:#fff;}
+#chat-messages .cc-msg small {display:block;margin-top:8px;color:#475569;}
+body.dark #chat-messages {background:#0b1220;border-color:#475569;}
+body.dark #chat-messages .cc-msg.assistant {background:#1e293b;color:#f1f5f9;}
+body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
+#coach-companion-launcher[hidden] {display:none!important;}

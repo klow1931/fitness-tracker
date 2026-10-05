@@ -24,9 +24,17 @@ Exercise guidance is one control beside the current workout. The exact-movement 
 
 ## Verification
 
-- 141 Node test files, including timing assumptions, fresh doses, invalid numeric input, tampering, stale revisions, protected primary work, Calendar history and sync.
+- 142 Node test files, including supportive conversation, safety precedence, timing assumptions, fresh doses, invalid numeric input, tampering, stale revisions, protected primary work, Calendar history and sync.
 - Eleven new browser scenarios on both viewports: 22 cases cover real controls, preference/mapping persistence, explicit reset, exclusions, missing rest, Olympic protocol protection, open drafts, failed writes, reloads and guidance non-mutation.
-- Existing v3.0 coaching and gym-floor regression scenarios passed locally. Required CI runs the full 574-case browser suite and unsigned Android/iOS compilation.
+- Seven additional desktop/mobile unified-Coach scenarios (14 cases) cover cross-view history, shared clearing, safety, research answers, dark contrast, concurrent requests and voice transcript context. Coach/voice and existing program-review regressions also passed locally. Required CI runs the full 588-case browser suite and unsigned Android/iOS compilation.
 - Screenshots are inspected for readability and mobile fit. Synthetic/browser checks do not replace physical-device acceptance or qualified technique review.
 
 This release deliberately limits adaptation to reviewed phase/meet accessories and begins the curated guidance library with three movements; it does not claim full competitor parity, automatic recovery estimation or policy learning.
+
+## One Coach, with encouragement
+
+Ask in Companion, then open the full Coach and continue with a follow-up. Both views use one session-only history and show the same messages. Encouragement and Training alone are explicit quick questions; no mood is inferred from logs. Athlete-reported achievements are acknowledged without inventing verified progress. Pain and crisis language take precedence over pep talks. Online Coach still requires a configured authenticated server; bounded local support works offline.
+
+![Unified Coach, mobile dark mode](unified-coach-dark-mobile.png)
+
+![Unified Coach, desktop dark mode](unified-coach-dark-desktop.png)

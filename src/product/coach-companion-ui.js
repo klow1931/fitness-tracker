@@ -6,7 +6,8 @@
  'use strict';
  const Core=()=>window.LoadnoteCoachCompanion;
  const Client=()=>window.LoadnoteCoachClient;
- const history=[];
+  // One session-only conversation, presented in the full Coach and quick panel.
+  const history=[];
  let refreshTimer=null,queued=false,asking=false;
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function displayUnit(){try{return typeof unitLabel==='function'?unitLabel():'kg';}catch{return 'kg';}}
@@ -108,12 +109,15 @@
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();close();}});
  }
- function append(text,role='assistant',meta=''){
+  function append(text,role='assistant',meta=''){
   const host=document.getElementById('cc-messages');if(!host)return;
   const row=document.createElement('div');row.className='cc-msg '+(role==='user'?'user':'assistant');row.textContent=String(text||'');
   if(meta){const small=document.createElement('small');small.textContent=meta;row.appendChild(small);}
-  host.appendChild(row);host.scrollTop=host.scrollHeight;return row;
+  host.appendChild(row);host.scrollTop=host.scrollHeight;
+  const full=document.getElementById('chat-messages');if(full){row.fullView=row.cloneNode(true);full.append(row.fullView);full.scrollTop=full.scrollHeight;}
+  return row;
  }
+ function attachReply(message,reply){for(const host of [message,message?.fullView])window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));}
  function quickButtons(context){
   const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
@@ -122,6 +126,7 @@
  function refresh(){
   const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
   if(!launcher||!host)return;
+  launcher.hidden=context.surface==='coach'&&!document.querySelector('[data-panel="coach"][data-sub="co-chat"]')?.classList.contains('hidden');
   launcher.dataset.live=context.liveWorkout?.active||context.sportWorkout?'true':'false';
   const current=Core()?.currentSetSummary(context);
   status.textContent=context.coaching?.currentTask?.name||current||('Viewing '+context.surface);
@@ -133,7 +138,7 @@
   if(host.innerHTML!==chipHtml)host.innerHTML=chipHtml;
   // Live rest/context polling must not detach a focused or pressed question.
   // Replace controls only when the available questions actually change.
-  const questions=quickButtons(context),key=JSON.stringify(questions);
+  const questions=[...quickButtons(context),'Give me encouragement'],key=JSON.stringify(questions);
   if(quick.dataset.questions!==key){
    quick.dataset.questions=key;
    quick.innerHTML=questions.map(text=>`<button type="button" data-cc-q="${esc(text)}">${esc(text)}</button>`).join('');
@@ -172,15 +177,16 @@
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply=reply||(window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   const message=append(reply,'assistant',local?.source||'Built-in companion');window.LoadnoteSmartCoachUI?.attach?.(message,local,q=>void serialAsk(q));history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   const message=append(reply,'assistant',local?.source||'Built-in companion');attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
    const reply=formatOnline(snapshot);append(reply,'assistant',live.liveWorkout?.active?'Live workout context':'Loadnote training context');
+   if(typeof renderCoachSnapshot==='function')renderCoachSnapshot(snapshot);
    history.push({role:'user',content:text},{role:'assistant',content:reply});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }catch(error){
    let reply=offline;try{if(!reply&&typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
-   reply=reply||'Online Coach is unavailable right now. Your workout logger and deterministic Decisions remain available.';append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
  }
  function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
@@ -188,7 +194,8 @@
  function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
  function init(){ensure();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
- async function serialAsk(text){if(asking)return null;asking=true;const button=document.querySelector('#cc-form button');if(button)button.disabled=true;try{return await ask(text);}finally{asking=false;if(button)button.disabled=false;}}
- function clearConversation(){history.length=0;document.getElementById('cc-messages')?.replaceChildren();append('Conversation cleared. Ask about your current training evidence.');}
- window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,ask:serialAsk,clearConversation,context:coachContext,liveContext:companionContext};
+ async function serialAsk(text){if(asking||!String(text??'').trim())return null;asking=true;const buttons=[document.querySelector('#cc-form button'),document.getElementById('chat-send-btn')];for(const b of buttons)if(b)b.disabled=true;try{return await ask(String(text).trim().slice(0,500));}finally{asking=false;for(const b of buttons)if(b)b.disabled=false;}}
+ function clearConversation(){if(asking)return;history.length=0;document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about your current training evidence.');}
+ function appendTranscript(text,role='assistant',meta='Voice Companion'){if(['user','assistant'].includes(role)){history.push({role,content:String(text??'').slice(0,role==='user'?500:2000)});if(history.length>24)history.splice(0,history.length-24);}return append(text,role,meta);}
+ window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,ask:serialAsk,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
 })();
