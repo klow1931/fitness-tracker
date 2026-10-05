@@ -1804,8 +1804,8 @@ body.dark .training-cockpit-transition span{color:#6ee7b7}
 #native-beta-safety ul { list-style: disc; }
 #native-beta-safety li { margin: .4rem 0; }
 #native-diagnostics { overflow-wrap: anywhere; }
-.skip-link { position:fixed; top:.5rem; left:.5rem; z-index:10000; padding:.8rem 1rem; background:#fff; color:#312e81; border:2px solid #4f46e5; border-radius:.5rem; transform:translateY(-200%); }
-.skip-link:focus { transform:none; }
+.skip-link { position:fixed; top:.5rem; left:.5rem; z-index:10000; padding:.8rem 1rem; background:#fff; color:#312e81; border:2px solid #4f46e5; border-radius:.5rem; transform:translateY(-200%); opacity:0; pointer-events:none; }
+.skip-link:focus { transform:none; opacity:1; pointer-events:auto; }
 .logger-validation-error { border:2px solid #b91c1c; border-radius:.5rem; padding:.75rem; color:#991b1b; background:#fef2f2; overflow-wrap:anywhere; }
 [aria-invalid="true"] { outline:2px solid #b91c1c; outline-offset:2px; }
 body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
@@ -1830,3 +1830,28 @@ body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
 .sport-goal-fields, .practice-attempt { min-width: 0; padding: .75rem; margin: .75rem 0; border: 1px solid var(--border, #cbd5e1); border-radius: .75rem; }
 #sport-training-review > summary { min-height: 44px; }
 #olympic-practice-dialog label[hidden] { display: none; }
+
+/* Reviewed adaptations: compact entry points and scroll-safe mobile forms. */
+.adaptive-entry-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem; }
+.adaptive-dialog-header { flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem 0; }
+.adaptive-session-dialog { max-width:38rem; width:calc(100% - 2rem); max-height:85dvh; overflow:hidden; }
+.adaptive-session-dialog[open] { display:flex; flex-direction:column; }
+.adaptive-dialog-body { min-height:0; overflow-y:auto; }
+.adaptive-session-dialog label, #movement-guidance-dialog label { display:block; margin:.65rem 0; }
+.adaptive-session-dialog fieldset { padding:.75rem; margin:.75rem 0; border:1px solid var(--border,#cbd5e1); border-radius:.5rem; }
+.adaptive-session-dialog fieldset label { display:inline-flex; align-items:center; gap:.4rem; margin:.25rem .6rem .25rem 0; }
+.adaptive-session-dialog input[type=checkbox] { min-height:24px; min-width:24px; }
+.adaptive-session-dialog input, .adaptive-session-dialog select { max-width:100%; }
+.adaptive-session-dialog button { margin:.3rem 0; }
+.adaptive-error { color:var(--danger,#b91c1c); }
+#adaptive-preview { margin-top:1rem; overflow-wrap:anywhere; }
+#movement-guidance-dialog { width:calc(100% - 2rem); max-width:34rem; max-height:85dvh; overflow-y:auto; }
+/* Shared Coach transcript: explicit colors avoid utility dark-mode overrides. */
+#chat-messages {display:flex;flex-direction:column;gap:.75rem;height:clamp(320px,55dvh,560px);min-height:320px;background:#f8fafc;color:#0f172a;}
+#chat-messages .cc-msg {max-width:90%;padding:12px 14px;border-radius:14px;line-height:1.55;background:#e2e8f0;color:#0f172a;overflow-wrap:anywhere;}
+#chat-messages .cc-msg.user {align-self:flex-end;background:#3730a3;color:#fff;}
+#chat-messages .cc-msg small {display:block;margin-top:8px;color:#475569;}
+body.dark #chat-messages {background:#0b1220;border-color:#475569;}
+body.dark #chat-messages .cc-msg.assistant {background:#1e293b;color:#f1f5f9;}
+body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
+#coach-companion-launcher[hidden] {display:none!important;}

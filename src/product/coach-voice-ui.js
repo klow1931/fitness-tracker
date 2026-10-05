@@ -66,10 +66,10 @@
   if(name==='resume_proactive_coaching')return proactiveResult('resume');
   if(name==='ask_loadnote_coach'){
    const question=String(args.question||'').trim().slice(0,600);if(!question)return {ok:false,error:'Question is required.'};
-   const live=Companion()?.liveContext?.();let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,question,{asOf:today(),unit:currentUnit(),live});}catch{}
+   const live=Companion()?.liveContext?.(),history=Companion()?.history?.()||[];let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,question,{asOf:today(),unit:currentUnit(),live,history});}catch{}
    if(local?.source?.startsWith('Shared coaching'))return {ok:true,coach:{summary:local.text,recommendation:{action:'none'},source:local.source,readOnly:true}};
    const client=Coach();if(!client)return {ok:false,error:'Secure Coach is unavailable.'};
-   try{const answer=await client.ask({question,context:Companion()?.context?.()||{},history:[]});return {ok:true,coach:answer};}catch(error){return {ok:false,error:String(error?.message||'Secure Coach unavailable.').slice(0,240)};}
+   try{const answer=await client.ask({question,context:Companion()?.context?.()||{},history:history.slice(-8)});return {ok:true,coach:answer};}catch(error){return {ok:false,error:String(error?.message||'Secure Coach unavailable.').slice(0,240)};}
   }
   return {ok:false,error:'Unsupported Voice Companion tool.'};
  }

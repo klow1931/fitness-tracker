@@ -13,7 +13,6 @@
     ];
     let measuresChart = null;
 
-    let chatHistory = []; // {role, content} for API multi-turn
     let lastCoachSnapshot = null;
     let pendingProgramSession = null;
 
@@ -2179,21 +2178,7 @@
       sendChat();
     }
 
-    function appendChatMessage(text, isUser) {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = 'flex gap-2 ' + (isUser ? 'justify-end' : '');
-      div.innerHTML = `
-        <div class="${isUser ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-900'} rounded-lg px-3 py-2 max-w-[85%]">
-          ${text}
-        </div>
-      `;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-      return div.firstElementChild;
-    }
-
-    function getChatResponse(msg, history = chatHistory) {
+    function getChatResponse(msg, history = window.LoadnoteCoachCompanionUI?.history?.()||[]) {
       const local = window.LoadnoteCoachConversation?.answer(data, msg, {
         asOf: today(), unit: currentUnit(), history,
         live: window.LoadnoteCoachCompanionUI?.liveContext?.(),
@@ -2370,7 +2355,7 @@
       const structured = await window.LoadnoteCoachClient.ask({
         question: userMessage,
         context: buildCoachContext(),
-        history: chatHistory.slice(-8)
+        history: (window.LoadnoteCoachCompanionUI?.history?.()||[]).slice(-8)
       });
       lastCoachSnapshot = structured;
       return structured;
@@ -2385,62 +2370,16 @@
     }
 
     async function sendChat() {
-      if (document.getElementById('chat-send-btn')?.disabled) return;
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-      appendChatMessage(escapeChat(text), true);
-      input.value = '';
-      let shared = null;
-      try { const answer = window.LoadnoteCoachConversation?.answer(data, text, {asOf:today(),unit:currentUnit(),history:chatHistory,live:window.LoadnoteCoachCompanionUI?.liveContext?.()}); if(answer?.source?.startsWith('Shared coaching'))shared=answer; } catch {}
-      const useApi = !shared && !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
-      const btn = document.getElementById('chat-send-btn');
-      if (btn) { btn.disabled = true; btn.textContent = useApi ? '…' : 'Send'; }
-
-      try {
-        if (shared) {
-          const reply = escapeChat(shared.text) + '<br><small>' + escapeChat(shared.source) + ' · Read-only</small>';
-          const message=appendChatMessage(reply, false);
-          window.LoadnoteSmartCoachUI?.attach?.(message,shared,askSuggestion);
-          rememberLocalChat(text, reply);
-        } else if (useApi) {
-          const structured = await requestStructuredCoach(text);
-          const reply = structured?.summary || 'Coach recommendation ready.';
-          chatHistory.push({ role: 'user', content: text });
-          chatHistory.push({ role: 'assistant', content: reply });
-          if (chatHistory.length > 24) chatHistory = chatHistory.slice(-24);
-          if (structured) {
-            appendChatMessage(escapeChat(structured.summary || 'Coach recommendation ready.'), false);
-            renderCoachSnapshot(structured);
-          } else {
-            appendChatMessage(escapeChat(reply), false);
-          }
-        } else {
-          await new Promise(r => setTimeout(r, 250));
-          const reply = getChatResponse(text);
-          const message=appendChatMessage(reply, false);
-          window.LoadnoteSmartCoachUI?.attach?.(message,shared,askSuggestion);
-          rememberLocalChat(text, reply);
-        }
-      } catch (e) {
-        appendChatMessage('Online Coach unavailable: ' + escapeChat(e.message) + '<br><span class="text-xs">Using built-in coaching instead.</span>', false);
-        const reply = getChatResponse(text);
-        appendChatMessage(reply, false);
-        rememberLocalChat(text, reply);
-        showToast('Online Coach unavailable — used built-in guidance', 'error');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+      // The full screen is a view of Companion, not a second conversation.
+      const companion=window.LoadnoteCoachCompanionUI;
+      if(companion){
+        const input=document.getElementById('chat-input'),text=input?.value.trim();
+        if(!text||document.getElementById('chat-send-btn')?.disabled)return;
+        input.value='';return companion.ask(text);
       }
-    }
-
-    function rememberLocalChat(question, reply) {
-      const plain = document.createElement('div'); plain.innerHTML = reply;
-      chatHistory.push({role:'user',content:question.slice(0,500)},{role:'assistant',content:plain.textContent.slice(0,2000)});
-      chatHistory = chatHistory.slice(-24);
+      showToast('Coach is still loading. Please try again.','info');return;
     }
     function clearCoachConversation() {
-      chatHistory = [];
-      document.getElementById('chat-messages').replaceChildren();
       window.LoadnoteCoachCompanionUI?.clearConversation?.();
     }
 

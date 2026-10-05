@@ -1,9 +1,12 @@
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle']);
+ const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance']);
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
+  if(a.kind==='adapt'){window.LoadnoteAdaptiveSessionUI?.open?.();return;}
+  if(a.kind==='preferences'){window.LoadnoteAdaptiveSessionUI?.preferences?.();return;}
+  if(a.kind==='guidance'){window.LoadnoteMovementGuidanceUI?.open?.();return;}
   if(a.kind==='calendar'){showTab('calendar');return;}
   showTab('coach');showSubTab('coach','co-programs');
   if(a.kind==='manage'){window.LoadnoteProgramCancellationUI?.open?.();return;}

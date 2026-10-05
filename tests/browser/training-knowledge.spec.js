@@ -23,7 +23,13 @@ test('Coach and Companion share workload evidence and sport limits without modif
  async function ask(q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();}
  await ask('Are my quads getting enough work?');await expect(page.locator('#chat-messages')).toContainText('2 direct sets');await expect(page.locator('#chat-messages')).toContainText('History completeness is unknown');
  await ask('Olympic weightlifting');await expect(page.locator('#chat-messages')).toContainText('does not generate weightlifting cycles');
- await page.locator('#coach-companion-launcher').click();await page.locator('#cc-input').fill('Are my quads getting enough work?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('2 direct sets');
+ await expect(page.locator('#coach-companion-launcher')).toBeHidden();
+ const conversation=await page.locator('#chat-messages .user').allTextContents();
+ await page.locator('#tab-dashboard:visible, .mobile-nav-btn[data-tab="dashboard"]:visible').first().click();
+ await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+ await page.locator('#coach-companion-launcher').click();
+ expect(await page.locator('#cc-messages .user').allTextContents()).toEqual(conversation);
+ await page.locator('#cc-input').fill('Are my quads getting enough work?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('2 direct sets');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
 
