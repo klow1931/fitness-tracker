@@ -64,7 +64,7 @@
  }
  function coach(r=currentReport()){
    const host=document.getElementById('decision-action-center');if(!host)return;
-   host.innerHTML='<div class="card program-lifecycle-coach">'+card(r)+'<button type="button" class="btn-secondary program-manage" data-manage-program>Manage programs</button></div>';bind(host,r);window.LoadnoteSmartCoachUI?.render?.(host);host.querySelector('[data-manage-program]').onclick=()=>window.LoadnoteProgramCancellationUI.open(r?.program?.id,r?.program?.kind);
+   host.innerHTML='<div class="card program-lifecycle-coach">'+card(r)+'<div class="adaptive-entry-actions"><button type="button" class="btn-secondary program-manage" data-manage-program>Manage programs</button><button type="button" class="btn-secondary" data-adapt-session>Adapt planned session</button><button type="button" class="btn-secondary" data-training-preferences>Training preferences</button></div></div>';bind(host,r);window.LoadnoteSmartCoachUI?.render?.(host);host.querySelector('[data-manage-program]').onclick=()=>window.LoadnoteProgramCancellationUI.open(r?.program?.id,r?.program?.kind);host.querySelector('[data-adapt-session]').onclick=()=>window.LoadnoteAdaptiveSessionUI.open();host.querySelector('[data-training-preferences]').onclick=()=>window.LoadnoteAdaptiveSessionUI.preferences();
  }
  function recap(host,state,asOf){
    if(!host||!window.LoadnoteProgramLifecycle)return;

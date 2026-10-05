@@ -1,3 +1,11 @@
+# v3.1.0 — Reviewed adaptive sessions and movement guidance
+
+- Time-budget previews retain prescribed rest and primary work; missing-rest estimates require explicit assumptions. Only reviewed phase/meet accessories may be omitted.
+- Equipment alternatives use athlete-confirmed movement purpose, muscles and equipment, explicit exclusions and a fresh starting dose. Calendar approval protects frozen programs, logged work and open drafts.
+- Equipment, time preferences, exclusions and movement mappings save explicitly on this device, separate from account training sync/backups.
+- Source-linked exact-movement educational cards and saved notes are available directly in the workout cockpit and Coach. No technique assessment or copied media.
+- Schema 31 unchanged; native build 30100. See `docs/releases-v3.1.md`.
+
 # v3.0.0 — Shared coaching intelligence, waves and plan control
 
 - One daily evidence model across Decisions, Coach and Companion, with fresh follow-ups and direct review actions.

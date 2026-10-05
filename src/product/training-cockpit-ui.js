@@ -202,9 +202,10 @@
   const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options>'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
-    quick+transitionHtml()+restHtml();
+    quick+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+transitionHtml()+restHtml();
   host.hidden=false;
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
+  host.querySelector('[data-cockpit-guidance]')?.addEventListener('click',()=>window.LoadnoteMovementGuidanceUI?.open?.(exerciseName));
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.addEventListener('click',()=>adjust(Number(button.dataset.cockpitAdjust))));
   host.querySelector('[data-cockpit-start]')?.addEventListener('click',()=>{startWorkoutNow();queueRefresh();});
   host.querySelector('[data-cockpit-options]')?.addEventListener('click',()=>window.LoadnoteTrainingExecutionUI?.toggleOptions?.());

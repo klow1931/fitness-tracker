@@ -1,8 +1,10 @@
 # Loadnote
 
-**v3.0.0 · Development build.** An adaptive strength-training log that learns how you train.
+**v3.1.0 · Development build.** An adaptive strength-training log that learns how you train.
 
-## v2.98 — Unified Coaching & Reviewed Future Changes
+v3.1 adds reviewed accessory alternatives, explicit time-budget estimates and direct movement guidance. Equipment and exclusion preferences are saved explicitly on this device; approval revises only an unperformed Calendar session. Primary/technical protocols and original programs remain protected. See [v3.1 release notes](docs/releases-v3.1.md). Schema 31; unsigned build 30100.
+
+## v3.0 — Unified Coaching & Reviewed Future Changes
 
 The daily coaching brief connects actual records, athlete reports, program status and reviewed future options across Decisions, Coach and Companion. Wave loading creates real three-week prescriptions; program cancellation preserves completed training and supports guarded restoration. Optional shorter sessions retain primary work and show exact accessory omissions before approval. See [release notes](docs/releases-v3.0.md), the [synthetic walkthrough](docs/demo-v3.0/README.md), and [competitor gap review](docs/competitor-review-v3.0.md). Schema 31; unsigned build 30000. Native source checks do not establish device acceptance.
 
