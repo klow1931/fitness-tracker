@@ -1,6 +1,8 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v2.98.0';
+const CACHE = 'loadnote-v2.99.0';
 const ASSETS = [
+  './src/product/guided-plan.js',
+  './src/product/guided-plan-ui.js',
   './src/product/mobile-accessibility.js',
   './src/product/beta-onboarding.js',
   './src/product/native-backup.js',

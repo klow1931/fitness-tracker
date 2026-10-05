@@ -103,24 +103,40 @@
   const wc=W.current(state.workloadProfiles||[])?.context,unresolved=rows.some(s=>s.date<=asOf&&s.state==='unconfirmed'),protectedWork=rows.some(s=>s.date>=asOf&&s.date<=move(asOf,7)&&s.role==='deload');let contextGap=false;
   try{const current=context(state,r.config,r.goalSnapshot.id,{asOf}),g=x=>{const y=clone(x);delete y.updatedAt;delete y.context.sessionIds;delete y.context.blockIds;return y;};contextGap=!same(g(current.goalSnapshot),g(r.goalSnapshot))||!same(current.profileSnapshot,r.profileSnapshot);}catch{contextGap=true;}
   const findings=r.config.slots.map(slot=>{
-   const candidates=rows.filter(s=>s.date<=asOf&&s.role!=='deload'&&s.prescription?.plannedExercises.some(e=>e.exerciseId===slot.exerciseId)&&s.id.endsWith('d'+slot.day)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2),reasons=[];
-   let complete=candidates.length===2,top=true;for(const s of candidates){const linked=(state.workouts||[]).filter(w=>w.sessionIntent?.schedule?.id===s.id&&w.date===s.date);if(linked.length!==1){complete=false;continue;}const w=linked[0],plan=w.sessionIntent?.prescription;
-    if(!plan||Intent.planTiming(plan,w.date,w.sessionIntent?.timing)!=='before-training'||!iso(w.createdAt)||plan.capturedAt>w.createdAt||w.sessionIntent?.deviationReason&&w.sessionIntent.deviationReason!=='none'){complete=false;continue;}
-    const planned=plan.plannedExercises.filter(e=>e.exerciseId===slot.exerciseId),actual=(w.exercises||[]).filter(e=>e.exerciseId===slot.exerciseId&&e.type!=='cardio'&&e.trackBy!=='duration');
-    if(planned.length!==1||actual.length!==1||actual[0].sets?.length!==slot.sets||planned[0].sets.length!==slot.sets||planned[0].loadConvention!==slot.loadConvention||planned[0].restSeconds!==slot.restSeconds){complete=false;continue;}
-    for(let i=0;i<slot.sets;i++){const a=actual[0].sets[i],p=planned[0].sets[i];if(a.done===false||a.completed===false||a.skipped||a.warmup||a.type==='warmup'||!Number.isFinite(a.weight)||Math.abs(a.weight-slot.weightKg)>.02||Math.abs(p.weight-slot.weightKg)>.02||p.minReps!==slot.minReps||p.maxReps!==slot.maxReps||p.targetRpe!==slot.targetRpe||!Number.isInteger(a.reps)||a.reps<slot.minReps||a.reps>slot.maxReps||!Number.isFinite(a.rpe)||a.rpe<1||a.rpe>slot.targetRpe){complete=false;continue;}if(a.reps!==slot.maxReps)top=false;}
+   const reasons=[],accepted=(state.coachingReviews||[]).filter(e=>e.kind==='proposal'&&e.response==='accepted'&&e.asOf<=asOf&&e.proposal.kind==='hypertrophy-load'&&e.proposal.programId===id&&e.proposal.exerciseId===slot.exerciseId&&e.proposal.changes.some(c=>c.sessionId.endsWith('d'+slot.day))).sort((a,b)=>a.createdAt.localeCompare(b.createdAt));
+   let currentKg=slot.weightKg,revisionAt=r.scheduledAt,chainValid=true;
+   for(const e of accepted){if(e.proposal.fromKg!==currentKg||e.proposal.toKg!==Math.round((currentKg+slot.incrementKg)*100)/100||e.proposal.loadConvention!==slot.loadConvention){chainValid=false;break;}currentKg=e.proposal.toKg;revisionAt=e.createdAt;}
+   const expected=exercise=>{if(!exercise)return false;const original=r.sessions.find(s=>s.phase!=='deload'&&s.key.endsWith('d'+slot.day))?.exercises.find(e=>e.exerciseId===slot.exerciseId),a=Intent.createPrescription([original]).plannedExercises[0],b=clone(exercise);a.sets.forEach(s=>s.weight=currentKg);return same(a,b);};
+   const relevant=rows.filter(s=>s.role!=='deload'&&s.id.endsWith('d'+slot.day)),future=relevant.filter(s=>s.date>asOf&&s.state==='scheduled');
+   const approvedRow=s=>{
+    if(s.revisionAt<revisionAt||s.prescription?.capturedAt!==s.revisionAt||s.prescription.source?.referenceId!==id||!expected(s.prescription.plannedExercises.find(e=>e.exerciseId===slot.exerciseId)))return false;
+    const history=(state.scheduledSessions||[]).find(row=>row.id===s.id)?.revisions||[];
+    // An approval for another slot also revises the shared session prescription.
+    // Accept only a fully attributable revision chain; manual revisions need review.
+    return history[0]?.recordedAt===r.scheduledAt&&history.slice(1).every(v=>(state.coachingReviews||[]).some(e=>e.kind==='proposal'&&e.response==='accepted'&&e.createdAt===v.recordedAt&&e.proposal.kind==='hypertrophy-load'&&e.proposal.changes.some(c=>{if(c.sessionId!==s.id)return false;const after=clone(c.after);after.prescription.capturedAt=e.createdAt;return same(after,v.context);} )));
+   };
+   const targetValid=chainValid&&future.every(approvedRow);
+   const candidates=relevant.filter(s=>s.date<=asOf).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2);
+   let complete=candidates.length===2&&targetValid,top=true;
+   for(const s of candidates){const linked=(state.workouts||[]).filter(w=>w.sessionIntent?.schedule?.id===s.id&&w.date===s.date);if(linked.length!==1||!approvedRow(s)){complete=false;continue;}const w=linked[0],plan=w.sessionIntent?.prescription;
+    if(!plan||w.sessionIntent.schedule.revisionAt!==s.revisionAt||!same(plan,s.prescription)||Intent.planTiming(plan,w.date,w.sessionIntent?.timing)!=='before-training'||!iso(w.createdAt)||plan.capturedAt>w.createdAt||w.createdAt<revisionAt||w.sessionIntent?.deviationReason&&w.sessionIntent.deviationReason!=='none'){complete=false;continue;}
+    const actual=(w.exercises||[]).filter(e=>e.exerciseId===slot.exerciseId&&e.type!=='cardio'&&e.trackBy!=='duration');
+    if(actual.length!==1||actual[0].sets?.length!==slot.sets){complete=false;continue;}
+    for(const a of actual[0].sets){if(a.done===false||a.completed===false||a.skipped||a.warmup||a.type==='warmup'||!Number.isFinite(a.weight)||Math.abs(a.weight-currentKg)>.02||!Number.isInteger(a.reps)||a.reps<slot.minReps||a.reps>slot.maxReps||!Number.isFinite(a.rpe)||a.rpe<1||a.rpe>slot.targetRpe){complete=false;continue;}if(a.reps!==slot.maxReps)top=false;}
    }
+   const targetSessions=candidates.filter(s=>approvedRow(s)).length;
    const coverage=candidates.length===2&&wc?.coverage==='complete'&&wc.from<=candidates.at(-1).date&&wc.through>=asOf;
-   if(!complete)reasons.push('Two comparable fully logged sessions at the reviewed load/range/effort cap are required; missing work is unknown.');
+   if(!complete)reasons.push('Two new comparable fully logged sessions at the current approved load/range/effort cap are required; earlier doses do not count.');
+   if(!targetValid)reasons.push('Future Calendar targets differ from the approved progression chain; review the changed plan first.');
    if(!coverage||wc?.tolerance!=='tolerated')reasons.push('History coverage or reported tolerance is insufficient for an increase review.');
    if(unresolved||protectedWork||contextGap)reasons.push('Unresolved sessions, protected lower-volume intent or changed/restricted context blocks progression review.');
    if(complete&&!top)reasons.push('Stay within the reviewed rep range; both sessions have not reached its top on every set.');
-   if(slot.weightKg+slot.incrementKg>1000){complete=false;reasons.push('Chosen increment exceeds the load software bound.');}
+   if(currentKg+slot.incrementKg>1000){complete=false;reasons.push('Chosen increment exceeds the load software bound.');}
    const status=complete&&coverage&&wc?.tolerance==='tolerated'&&!unresolved&&!protectedWork&&!contextGap?(top?'review-load':'hold'):'gather';
-   return {day:slot.day,exerciseId:slot.exerciseId,name:slot.name,status,loadConvention:slot.loadConvention,currentKg:slot.weightKg,candidateKg:status==='review-load'?Math.round((slot.weightKg+slot.incrementKg)*100)/100:null,reasons,dates:candidates.map(s=>s.date)};
+   return {day:slot.day,exerciseId:slot.exerciseId,name:slot.name,status,loadConvention:slot.loadConvention,currentKg,candidateKg:status==='review-load'?Math.round((currentKg+slot.incrementKg)*100)/100:null,revisionAt,approvedIncreases:accepted.length,targetSessions,reasons,dates:candidates.map(s=>s.date)};
   });
-  return {version:1,programId:id,name:r.config.name,asOf,findings,readOnly:true,notice:'Descriptive progression review, not an applied change or a growth/recovery measurement. Future prescriptions stay fixed; any change requires deliberate plan review and a newly reviewed prescription.'};
+  return {version:1,programId:id,name:r.config.name,asOf,findings,readOnly:true,notice:'Descriptive progression review, not an applied change or a growth/recovery measurement. Only new evidence at the effective approved Calendar target counts. Future changes require explicit proposal review; completed workouts and frozen plans stay unchanged.'};
  }
- function explain(report){return report.name+': '+report.findings.map(f=>f.name+' · '+f.status+(f.candidateKg!=null?' · review the chosen increment from '+f.currentKg+' to '+f.candidateKg+' kg ('+CONVENTIONS[f.loadConvention]+'), not permission to apply it':'')+'. '+f.reasons.join(' ')).join(' ')+' '+report.notice;}
+ function explain(report){return report.name+': '+report.findings.map(f=>f.name+' · current approved load '+f.currentKg+' kg ('+CONVENTIONS[f.loadConvention]+') · '+f.approvedIncreases+' accepted increase(s) · '+f.status+(f.candidateKg!=null?' · review the chosen increment from '+f.currentKg+' to '+f.candidateKg+' kg ('+CONVENTIONS[f.loadConvention]+'), not permission to apply it':'')+'. '+f.reasons.join(' ')).join(' ')+' '+report.notice;}
  return {EQUIPMENT,CONVENTIONS,eligibleGoal,config,build,prepare,validate,save,schedule,progression,explain};
 });

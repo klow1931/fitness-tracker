@@ -1031,6 +1031,7 @@
       <details class="card programming-tools-panel" id="programming-tools-panel"><summary><span><b>Program setup &amp; alternate tools</b><small>Edit setup, use the quick 4-week return block, open the manual designer, or adopt an existing program</small></span></summary>
       <div class="decision-build-tools programming-tools-content">
       <details class="card" id="programming-profile-panel"><summary><b>Training setup</b><small>Goal, availability, equipment and event-date default</small></summary><div id="programming-profile"></div></details>
+      <details class="card"><summary><b>Guided starting plans</b><small>Reuse your goals and availability, choose movements, then review every dose</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('hypertrophy')">Start muscle-growth setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('weightlifting')">Start Olympic setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('athlete')">Start athlete setup</button></div></details>
       <details class="card" id="hypertrophy-builder-panel"><summary><b>Reviewed hypertrophy plan</b><small>Explicit exercises, muscle workload, rep ranges and progression review</small></summary><div id="hypertrophy-builder"></div></details>
       <details class="card" id="sport-planner-panel"><summary><b>Olympic weightlifting & athlete planners</b><small>Technical lifting, strength, speed, jumps, agility and conditioning · separate outcomes</small></summary><div id="sport-planner"></div></details>
       <details class="card" id="reviewed-builder-panel"><summary><b>Quick 4-week return block</b><small>Short return/re-entry path · not the main meet-prep generator</small></summary><div id="reviewed-builder"></div></details>
@@ -1392,7 +1393,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.75.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v2.99.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2101,6 +2102,8 @@
   <script src="src/product/sport-training.js" defer></script>
   <script src="src/product/sport-training-ui.js" defer></script>
   <script src="src/product/training-knowledge-ui.js" defer></script>
+  <script src="src/product/guided-plan.js" defer></script>
+  <script src="src/product/guided-plan-ui.js" defer></script>
   <script src="src/product/coaching-context.js" defer></script>
   <script src="src/product/coaching-review.js" defer></script>
   <script src="src/product/coaching-review-ui.js" defer></script>

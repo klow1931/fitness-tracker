@@ -1,3 +1,10 @@
+# v2.99.0 — Guided plans and continuous reviewed progression
+
+- Reuse confirmed goals, availability and exact mapped movement choices in three editable starting structures.
+- Review repeated hypertrophy increments from the current approved Calendar load, requiring two fresh comparable sessions at each dose and exact revision.
+- Keep Coach and Decisions current-target explanations aligned; preserve completed records, frozen plans and approval-specific follow-ups.
+- Carry forward the v2.98 asynchronous save/Home refresh regression.
+
 # v2.98.0 — Unified Coaching & Reviewed Future Changes
 
 Decisions, Coach and Companion share confirmed goals, current Calendar targets and weekly evidence. Explicit athlete check-ins preserve unknowns; supported future proposals require approval and append revisions. Live sport explanations work inside the recorder, athletic corrections preserve history, and linked follow-ups remain descriptive. Schema 30; unsigned build 29800. See `docs/releases-v2.98.md`.
