@@ -59,7 +59,7 @@
     return {config:c,sessions,weekly,warnings};
   }
   function constraints(profile,c){
-    if(!profile?.context)throw Error('Create a programming profile before using the phase builder');const p=profile.context;
+    if(!profile?.context)throw Error('Create a programming profile before using the phase builder');const p=profile.context;Profile.assessIntake(p,[...Object.values(c.lifts).flatMap(e=>[e.exerciseId,e.variation?.exerciseId].filter(Boolean)),...(c.accessories||[]).map(e=>e.exerciseId)],true);
     if((c.accessories||[]).some(a=>p.avoidedExerciseIds.includes(a.exerciseId)))throw Error('A selected accessory is marked avoided in your profile');
     if(p.goal==='meet'){
       if(c.days.some(day=>!p.availableDays.includes(day))||c.sessionMinutes>p.sessionMinutes||!['barbell','plates','rack','bench'].every(e=>p.equipment.includes(e)))throw Error('Lift setup exceeds meet-profile availability, equipment or time budget');

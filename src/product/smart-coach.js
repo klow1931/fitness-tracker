@@ -8,6 +8,7 @@
  function brief(state,{asOf,live=null,sportLive=null}={}){
   const review=R.proposals(state,{asOf}),c=live||sportLive?C.build(state,{asOf,live,sportLive}):review.context,proposals=review.proposals,rows=C.currentRows(state,asOf),check=c.weekly.checkIn;
   const concerns=[],evidence=[],choices=[],liftInsights=[];
+  if(c.profile?.intake&&((typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake).active(c.profile.intake)))concerns.push('Your intake reports current symptoms. Automated increases are held; review your individual plan and exact movement exclusions.');
   if((state.exerciseRoles||[]).length){const lifts=Readiness.snapshot(state,{asOf,retrospective:true}).lifts;for(const [lift,r] of Object.entries(lifts))if(r.competitionExercise)liftInsights.push({lift,name:r.competitionExercise,status:r.status,sessions:r.metrics.sessions,reasons:r.reasons.slice(0,3),interpretation:r.interpretation||null});}
   if(c.workload&&['discomfort','needs-review'].includes(c.workload.tolerance))concerns.push('Your workload review reports a limitation. Resolve it before choosing a new dose.');
   if(check&&(check.sleep==='poor'||check.fatigue==='elevated'||check.soreness==='elevated'))concerns.push('Your latest check-in reports '+[check.sleep==='poor'?'poor sleep':null,check.fatigue==='elevated'?'elevated fatigue':null,check.soreness==='elevated'?'elevated soreness':null].filter(Boolean).join(', ')+'. Load increases are held for review. This report does not measure recovery.');
@@ -48,7 +49,9 @@
   return null;
  }
  function answer(state,question,{asOf,history=[],live=null,sportLive=null}={}){
-  const q=String(question||'').trim().slice(0,500);if(/\b(pain|hurt|injur|diagnos|rehab)\w*\b/i.test(q))return null;
+  const q=String(question||'').trim().slice(0,500);
+  const route=/\b(cardio plan|plan cardio|program cardio|aerobic plan)\b/i.test(q)?['cardio','Plan cardio','Review an explicit starting duration and available dates in the cardio planner. Current symptoms, conflicts and movement exclusions block generation. No automatic progression or heart-rate zone is inferred.']:/\b(edit.*(program|exercise|session)|remove.*exercise|add.*exercise|switch.*exercise)\b/i.test(q)?['edit-plan','Edit planned exercises','Review exact current/future Calendar targets before opening a workout. Add, remove or replace a movement with fresh targets; original programs and completed training stay intact.']:/\b(learn.*(edit|swap)|my exercise choices|edit history|what.*edits)\b/i.test(q)?['edit-learning','Review edit evidence','Review stated reasons, repeated choices and exact-revision linked logs. Only explicitly confirmed preferences influence future generated plans; edits are not proof of benefit.']:null;
+  if(route)return {text:route[2],source:'Shared coaching · reviewed planning',readOnly:true,evidence:[],actions:[{kind:route[0],label:route[1]}]};if(/\b(pain|hurt|injur|diagnos|rehab)\w*\b/i.test(q))return null;
   let type=intent(q);const follow=/^(why\??|how so\??|tell me more\.?|explain that\.?|what should i do\??|how do i fix (it|that)\??)$/i.test(q);
   if(!type&&follow){const prior=history.slice(-8).filter(r=>r.role==='user'&&r.content!==q).at(-1);type=prior?intent(String(prior.content)):null;}
   if(!type||type==='constraints'&&/\b(squat|bench|deadlift|press)\b/i.test(q))return null;const b=brief(state,{asOf,live,sportLive}),c=b.context;let text,actions=b.actions,followUps=b.followUps;

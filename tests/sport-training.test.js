@@ -10,7 +10,7 @@ const second=G.upsert(goals,{...goalInput,name:'Second sport'},{now:'2026-10-04T
 assert.match(S.explain(S.review({...state,athleteGoals:G.upsert([],{...goalInput,trainingContext:{...context,season:'unknown'}},{now})},opts)),/Which season/);
 assert.match(S.explain(S.review({...state,athleteGoals:G.upsert([],{...goalInput,trainingContext:{...context,scheduleKnown:false,practiceDays:[],competitionDays:[]}},{now})},opts)),/Which days/);
 const raw={date:'2026-10-03',goalId,exerciseId:'clean',family:'clean',variation:'Hang power clean',attempts:[{kg:60,outcome:'made',quality:'consistent'},{kg:60,outcome:'missed',quality:'inconsistent'},{kg:70,outcome:'unknown',quality:'unknown'}],notes:'Athlete report'};
-state=C.savePractice(state,raw,{now});assert.equal(state.workouts.length,0);assert.equal(state.prs.length,0);assert.equal(K.workload(state,opts).loggedSets,0);assert.equal(Core.normalizeState(state).schemaVersion,31);
+state=C.savePractice(state,raw,{now});assert.equal(state.workouts.length,0);assert.equal(state.prs.length,0);assert.equal(K.workload(state,opts).loggedSets,0);assert.equal(Core.normalizeState(state).schemaVersion,32);
 report=S.review(state,opts);assert.equal(report.technical.sessions,1);assert.equal(report.technical.groups[0].made,1);assert.equal(report.technical.groups[0].missed,1);assert.equal(report.technical.groups[0].unknown,1);assert.equal(report.technical.groups[0].qualityKnown,2);
 assert.equal(report.technical.groups[0].loads[60].made,1);assert.equal(report.technical.groups[0].loads[70].made,0);
 const a=Coach.answer(state,'How is my basketball training?',opts);assert.equal(a.source,'Shared sport-context review');assert.deepEqual(a.evidence[0],S.review(state,{...opts,domain:'athlete'}));

@@ -1,3 +1,12 @@
+# v3.2.0 — Athlete intake and reviewed programming edits
+
+- Add revisioned training history, past/current concerns, laterality, reported activity limits and serratus/soleus priorities to Athlete intake.
+- Use current symptom reports and exact aggravating movements in generated-plan constraints and Coach guidance. Injury reports do not diagnose conditions or prescribe rehabilitation.
+- Review, remove, replace or add movements in unperformed Calendar sessions, with fresh targets, explicit approval, stale-preview guards and durable saves.
+- Review stable-dose cardio plans against availability, existing sessions and reported sport schedules.
+- Record edit reasons and exact linked logs; repeated preference/equipment removals can become explicitly confirmed future exclusions.
+- Preserve intake in existing profile backup/sync revisions; schema 32 leaves legacy history unknown. Automatic online Coach context omits intake details.
+
 # v3.1.0 — Reviewed adaptive sessions and movement guidance
 
 - One session-only conversation across full Coach and Companion; consistent follow-ups, shared clearing, safe concurrent sends and preserved structured analysis.

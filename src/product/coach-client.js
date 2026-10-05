@@ -37,7 +37,7 @@
   if(globalThis.Capacitor?.isNativePlatform?.()){const error=new Error('Online Coach is unavailable in the native beta. Local workout guidance remains available.');error.code='native_beta_local_only';throw error;}
   if(!await ensureSignedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
   if(typeof request!=='function'){const error=new Error('Secure Coach connection is unavailable.');error.code='coach_unavailable';throw error;}
-  const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context,history})});
+  const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:withoutIntake(context),history})});
   let body={};try{body=await response.json();}catch{}
   if(!response.ok){
    const error=new Error(body.error||('Online Coach request failed ('+response.status+').'));
@@ -46,6 +46,7 @@
   if(!body.coach||typeof body.coach!=='object')throw Error('Online Coach returned an invalid response.');
   return body.coach;
  }
+ function withoutIntake(value){if(Array.isArray(value))return value.map(withoutIntake);if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).filter(([k])=>k!=='intake').map(([k,v])=>[k,withoutIntake(v)]));return value;}
  function resetHealth(){healthCache=null;healthAt=0;}
  function scrubLegacyCredential(storage=globalThis.localStorage){
   try{storage?.removeItem?.(LEGACY_KEY);return true;}catch{return false;}
@@ -70,5 +71,5 @@
  }
  scrubLegacyCredential();
  bootstrapCompanion();
- return {ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,ensureSignedIn,availability,ask,resetHealth,scrubLegacyCredential,bootstrapCompanion};
+ return {withoutIntake,ENDPOINT,HEALTH,LEGACY_KEY,session,signedIn,ensureSignedIn,availability,ask,resetHealth,scrubLegacyCredential,bootstrapCompanion};
 });

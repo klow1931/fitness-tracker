@@ -33,6 +33,7 @@
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
   const support=Support?.answer(q,{history,live});if(support)return support;
+  const intake=(typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake)?.answer(state,q);if(intake)return intake;
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}
   if(intent.topic!=='health'&&Unified){try{const unified=Unified.answer(state,q,{asOf,unit,history,live,sportLive:live?.sportWorkout||null});if(unified)return unified;}catch{/* Existing domain-specific evidence handlers remain available. */}}
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});

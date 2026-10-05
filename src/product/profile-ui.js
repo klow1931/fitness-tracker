@@ -27,6 +27,7 @@
      '<div class="profile-actions">'+
       '<button type="button" class="btn-primary" id="profile-edit-training">'+(setup.ready?'Edit training setup':'Set up training')+'</button>'+
       '<button type="button" class="btn-secondary" id="profile-go-train">Go to Train</button>'+
+      '<button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button>'+
      '</div>'+
      '<div class="profile-setup-extra"><div><b>Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Only needed for squat/bench/deadlift-specific Decisions.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></div>'+
     '</section>'+

@@ -1,9 +1,13 @@
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance']);
+ const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning']);
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
+  if(a.kind==='intake'){window.LoadnoteAthleteIntakeUI?.open?.();return;}
+  if(a.kind==='edit-plan'){window.LoadnoteProgramEditUI?.open?.();return;}
+  if(a.kind==='cardio'){window.LoadnoteCardioPlannerUI?.open?.();return;}
+  if(a.kind==='edit-learning'){window.LoadnoteProgramEditUI?.learning?.();return;}
   if(a.kind==='adapt'){window.LoadnoteAdaptiveSessionUI?.open?.();return;}
   if(a.kind==='preferences'){window.LoadnoteAdaptiveSessionUI?.preferences?.();return;}
   if(a.kind==='guidance'){window.LoadnoteMovementGuidanceUI?.open?.();return;}

@@ -1,6 +1,14 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.1.0';
+const CACHE = 'loadnote-v3.2.0';
 const ASSETS = [
+  './src/product/reviewed-planning-ui.js',
+  './src/product/athlete-intake.js',
+  './src/product/athlete-intake-ui.js',
+  './src/product/program-edit.js',
+  './src/product/program-edit-ui.js',
+  './src/product/cardio-planner.js',
+  './src/product/cardio-planner-ui.js',
+
   './src/product/adaptive-session.js',
   './src/product/adaptive-session-ui.js',
   './src/product/movement-guidance.js',
