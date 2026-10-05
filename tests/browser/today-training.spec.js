@@ -71,10 +71,19 @@ test('Home reports scheduled training as logged after the linked workout is save
  await addToday(page,'complete-me');await page.getByRole('button',{name:'Start workout',exact:true}).click();
  await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7');
  await page.locator('#training-cockpit [data-cockpit-review]').click();
+ // Hold the actual write so the previously timing-dependent CI failure is
+ // exercised deterministically, without sleeps or a larger assertion timeout.
+ await page.evaluate(()=>{const original=persistNow;const gate=new Promise(resolve=>window.releaseTodaySave=resolve);persistNow=async next=>{await gate;return original(next);};});
  await page.getByRole('button',{name:'Save workout',exact:true}).click();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ await expect(page.locator('#today-training')).toContainText('Workout in progress');
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
+ await page.evaluate(()=>window.releaseTodaySave());
  await expect(page.locator('#today-training')).toContainText('Training logged');
  await expect(page.getByRole('button',{name:'View workout history',exact:true})).toBeVisible();
+ await expect(page.locator('#workout-review')).not.toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>data.workouts.filter(w=>w.sessionIntent?.schedule?.id==='complete-me').length)).toBe(1);
+ expect(await page.evaluate(()=>readLoggerDraft())).toBeNull();
 });
 
 test('Home explains an athlete-approved scheduled adaptation from exact review evidence',async({page})=>{

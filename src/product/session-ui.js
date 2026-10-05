@@ -97,6 +97,9 @@ async function commitReviewedWorkout(){
   const newBest=!editing && next.prs.some(p=>p.sourceWorkoutId===reviewedSession.workout.id && !data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase() && estimated1RM(old.weight,old.reps)>=p.estimated1RM));
   data=next;
   lockSessionSaving(false);closeWorkoutReview();clearWorkoutForm(true);saveLoggerDraft();
+  // Persistence may finish after another surface has rendered the open draft.
+  // Refresh only after committed data and cleared draft describe the same state.
+  invalidateViews();renderDashboard();
   renderWorkoutHistory();updateBackupBanner();
   if(editing)showSubTab('workouts','wo-history');
   showToast(editing?'Workout updated':newBest?'Workout saved · New personal best!':'Workout saved · Session complete',newBest?'milestone':'success');
