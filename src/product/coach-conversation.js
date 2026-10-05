@@ -1,8 +1,8 @@
 /* Read-only local conversation: fresh evidence on every turn, session-only topic memory. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'),require('./hypertrophy-builder'));
- else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./decision-readiness'),require('./companion-intelligence'),require('./training-knowledge'),require('./muscle-workload-review'),require('./sport-training'),require('./hypertrophy-builder'),require('./sport-planner'));
+ else root.LoadnoteCoachConversation=factory(root.LoadnoteReadiness,root.LoadnoteCompanionIntelligence,root.LoadnoteTrainingKnowledge,root.LoadnoteMuscleReview,root.LoadnoteSportTraining,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp,Planner){
  'use strict';
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
@@ -41,6 +41,9 @@
    if(/\b(rest|rep range|failure)\b/i.test(q)&&!/\b(my|logged|recent)\b/i.test(q))return result(Knowledge.GUIDANCE.hypertrophy+' Source: '+source.title+' — '+source.url,source.title);
    let review;try{review=Workload.analyze(state,{asOf});}catch{return result('I could not validate the workload review. Open Decisions to resolve the data issue; no adjustment is proposed.','Workload evidence unavailable');}
    return result(Workload.explain(review,intent.muscles)+' '+review.notice+' Indirect exposure is not equivalent to direct sets. Open Decisions → Muscle workload → Individualized workload review to inspect or update the reviewed context. Source: '+source.title+' — '+source.url,'Shared workload review',[review]);
+  }
+  if(['athlete','weightlifting'].includes(intent.topic)&&Planner&&/\b(program|plan|progression)\b/i.test(intent.referenceQuestion)){
+   try{const plans=Planner.validate(state.sportPrograms||[]).filter(p=>p.scheduledAt&&p.config.mode===intent.topic&&p.config.startDate<=asOf&&p.weekly.at(-1).through>=asOf);if(plans.length===1){const report=Planner.review(state,plans[0].id,{asOf});return result(Planner.explain(report),'Shared sport-plan evidence',[report]);}return result(plans.length>1?'Multiple matching sport plans cover today; select and review one in Decisions.':'Build or schedule a dedicated reviewed sport plan in Decisions first. No loading or performance is inferred.','Sport planning policy');}catch{return result('Sport-plan evidence could not be validated. Open Decisions; no change is proposed.','Sport planning evidence unavailable');}
   }
   if(['athlete','weightlifting','training-context'].includes(intent.topic)&&Sport){
    let review;try{const candidates=Sport.select(state).candidates,named=candidates.filter(g=>g.name.length>=3&&intent.referenceQuestion.toLowerCase().includes(g.name.toLowerCase()));review=Sport.review(state,{asOf,goalId:named.length===1?named[0].id:undefined,domain:intent.topic==='training-context'?undefined:intent.topic});}catch{return result('I could not validate sport context. Open Decisions and resolve the data issue; no training change is proposed.','Sport context unavailable');}

@@ -41,7 +41,7 @@
    plans.push({date:s.date,exercises:p.plannedExercises||[]});plannedIds.add(s.id);
    if(w){
     completedSessions++;let mismatch=false;
-    for(const e of p.plannedExercises||[]){if(e.type==='cardio'||e.trackBy==='duration')continue;const matches=(w.exercises||[]).filter(a=>a.exerciseId===e.exerciseId&&a.type!=='cardio'&&a.trackBy!=='duration');const actualSets=matches.flatMap(a=>(a.sets||[]).filter(t=>t.done!==false&&t.completed!==false&&!t.skipped&&!t.warmup&&t.type!=='warmup'));
+    for(const e of p.plannedExercises||[]){if(e.type==='cardio'||e.type==='practice'||e.trackBy==='duration')continue;const matches=(w.exercises||[]).filter(a=>a.exerciseId===e.exerciseId&&a.type!=='cardio'&&a.trackBy!=='duration');const actualSets=matches.flatMap(a=>(a.sets||[]).filter(t=>t.done!==false&&t.completed!==false&&!t.skipped&&!t.warmup&&t.type!=='warmup'));
      if(matches.length!==1||actualSets.length!==e.sets.length)mismatch=true;
      for(let i=0;i<e.sets.length;i++){const t=e.sets[i],a=actualSets[i];if(!a||!Number.isFinite(a.weight)||!Number.isFinite(t.weight)||Math.abs(a.weight-t.weight)>.02||!Number.isInteger(a.reps)||a.reps<(t.minReps??t.reps)||a.reps>(t.maxReps??t.reps))mismatch=true;}
     }

@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 28;
-  const RELEASE_VERSION = '2.96.0';
+  const SCHEMA_VERSION = 29;
+  const RELEASE_VERSION = '2.97.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -171,6 +171,9 @@
     if(Number(state.schemaVersion||1)<27)state.schemaVersion=27;
     if(state.hypertrophyPrograms===undefined)state.hypertrophyPrograms=[];
     if(Number(state.schemaVersion||1)<28)state.schemaVersion=28;
+    if(state.sportPrograms===undefined)state.sportPrograms=[];
+    if(state.athleticPractice===undefined)state.athleticPractice=[];
+    if(Number(state.schemaVersion||1)<29)state.schemaVersion=29;
     return state;
   }
 

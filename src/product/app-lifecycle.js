@@ -13,6 +13,7 @@
   const banner=document.getElementById('app-update'),status=document.getElementById('app-update-status'),button=document.getElementById('apply-app-update');
   try{
    const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+   if(!registration){connection();return;} // Some managed/test browsers decline registration without rejecting.
    const show=()=>{if(registration.waiting&&navigator.serviceWorker.controller){banner.hidden=false;status.textContent='A newer Loadnote version is ready. Save your workout and update when you are ready.';}};
    // Installed pages may stay open for days: check when the athlete returns, not only at first load.
    // Only ask the browser to fetch the service worker; never activate a new app during a workout.
