@@ -11,6 +11,7 @@
   if(p.context.avoidedExerciseIds.includes(t.exercise.exerciseId)||raw.minutes>p.context.sessionMinutes)throw Error('The movement is avoided or exceeds your session availability');
   const sessions=[],existing=S.rows(state.scheduledSessions||[],state.workouts||[],{asOf});
   for(let n=0;n<raw.weeks*7;n++){const day=move(raw.startDate,n),weekday=(new Date(day+'T12:00:00Z').getUTCDay()+6)%7;if(!raw.days.includes(weekday))continue;
+   if(p.context.eventDate===day)throw Error('Cardio overlaps your programming-profile event date; review total workload and choose another day');
    if(existing.some(s=>s.date===day&&s.state!=='cancelled'&&s.state!=='skipped')||(state.workouts||[]).some(w=>w.date===day))throw Error(day+' already has planned or logged training; add cardio through the session editor or choose another day');
    for(const g of G.list(state.athleteGoals||[])){if(g.status!=='active')continue;const c=g.trainingContext;if(g.eventDate===day||c?.scheduleKnown&&(c.practiceDays.includes(weekday)||c.competitionDays.includes(weekday)))throw Error('Cardio overlaps a reported event/practice day; review total workload and choose another day');}
    const goal=raw.intensity==='moderate'?'Reviewed moderate cardio: use the talk test (able to talk, not sing); no heart-rate zone inferred. Stop if symptoms develop.':'Reviewed easy cardio: comfortable conversation; no heart-rate zone inferred. Stop if symptoms develop.';
