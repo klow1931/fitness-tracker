@@ -14,7 +14,8 @@
   if(raw.cardioMinutes!=null&&!integer(raw.cardioMinutes,0,1000))throw Error('Current weekly cardio minutes must be 0–1000 or unknown');
   const issues=raw.issues.map(r=>{if(!r||!Object.hasOwn(AREAS,r.area)||!Object.hasOwn(SIDES,r.side)||!['past','active','resolved'].includes(r.status)||!['self-reported','clinician-reported'].includes(r.basis)||!['unknown','none','stable','worsening'].includes(r.symptoms))throw Error('Review concern, side, status, source and current symptoms');
    if(r.pain!=null&&(!Number.isFinite(r.pain)||r.pain<0||r.pain>10))throw Error('Pain report must be 0–10 or unknown');
-   if(r.status==='active'&&r.symptoms==='none'&&r.pain>0)throw Error('Current pain and no-symptom reports disagree');
+   if(r.symptoms==='none'&&r.pain>0)throw Error('Current pain and no-symptom reports disagree');
+   if(r.status!=='active'&&(['stable','worsening'].includes(r.symptoms)||r.pain>0))throw Error('Current symptoms need a current concern status');
    return {area:r.area,side:r.side,status:r.status,basis:r.basis,symptoms:r.symptoms,pain:r.pain??null,aggravatingExerciseIds:ids(r.aggravatingExerciseIds||[]),notes:clean(r.notes||'',500)};});
   if(raw.issueStatus==='none'&&issues.length||raw.issueStatus==='past'&&issues.some(r=>r.status==='active')||raw.issueStatus==='active'&&!issues.some(r=>r.status==='active'))throw Error('Reported injury history and concern status disagree');
   if(!Array.isArray(raw.priorities)||raw.priorities.length>8||new Set(raw.priorities).size!==raw.priorities.length||raw.priorities.some(p=>!Object.hasOwn(AREAS,p)))throw Error('Choose distinct reported priorities');
