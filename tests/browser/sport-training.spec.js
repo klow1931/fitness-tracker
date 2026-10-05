@@ -31,7 +31,13 @@ test('Coach and Companion share fresh sport evidence and bounded follow-up conte
  await createGoal(page,'weightlifting');await decisions(page);await attemptForm(page);await page.locator('#olympic-practice-dialog button[type=submit]').click();await expect(page.locator('#olympic-practice-dialog')).not.toBeVisible();const before=await page.evaluate(()=>JSON.stringify(data));await page.evaluate(()=>showSubTab('coach','co-chat'));
  async function ask(q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();}
  await ask('How is my Olympic practice?');await expect(page.locator('#chat-messages')).toContainText('0 made, 1 missed');await ask('Should I add weight?');await expect(page.locator('#chat-messages')).toContainText('no estimated 1RM or load increase');
- await page.locator('#coach-companion-launcher').click();await page.locator('#cc-input').fill('How is my Olympic practice?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('0 made, 1 missed');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ await expect(page.locator('#coach-companion-launcher')).toBeHidden();
+ const conversation=await page.locator('#chat-messages .user').allTextContents();
+ await page.locator('#tab-dashboard:visible, .mobile-nav-btn[data-tab="dashboard"]:visible').first().click();
+ await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+ await page.locator('#coach-companion-launcher').click();
+ expect(await page.locator('#cc-messages .user').allTextContents()).toEqual(conversation);
+ await page.locator('#cc-input').fill('How is my Olympic practice?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('0 made, 1 missed');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
 test('malformed practice imports are rejected and ambiguous priorities are not guessed',async({page})=>{
  expect(await page.evaluate(()=>{try{normalizeDataShape({olympicPractice:[{id:'broken'}]});return false;}catch{return true;}})).toBe(true);

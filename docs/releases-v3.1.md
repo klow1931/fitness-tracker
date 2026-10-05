@@ -20,3 +20,7 @@ Reviewed October 5, 2026: [ACE Goblet Squat](https://www.acefitness.org/resource
 Additional educational sources: [ACSM resistance training position stand (2026)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/), [IUSCA hypertrophy position stand (2021)](https://doi.org/10.47206/ijsc.v1i1.81), [NSCA weightlifting for sports performance (2023)](https://pubmed.ncbi.nlm.nih.gov/36952649/). Crisis resources verified against [US 988 Lifeline](https://988lifeline.org/contact-us/) and [Canada 9-8-8](https://988.ca/). No copied media or full-text redistribution.
 
 Schema 31 remains compatible. Release 3.1.0 and unsigned native build 30100. Browser tests and unsigned compilation do not establish physical-device acceptance.
+
+## CI regression correction
+
+The full browser run exposed three older cross-view scenarios on both desktop and mobile that clicked the intentionally hidden Companion launcher inside full Coach. They now use the visible Home navigation before opening Companion and verify the shared transcript is preserved, retaining their evidence and training-data immutability assertions. No runtime training behavior or schema changed.

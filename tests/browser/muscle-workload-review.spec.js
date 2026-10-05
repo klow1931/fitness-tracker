@@ -25,5 +25,11 @@ test('both coaching surfaces share muscle-specific evidence and follow-up contex
  await page.evaluate(()=>{data=LoadnoteMuscleReview.save(data,{coverage:'complete',from:'2026-09-07',through:'2026-10-04',tolerance:'tolerated',targets:{quadriceps:{min:3,max:5,restricted:false}}});showSubTab('coach','co-chat');});const before=await page.evaluate(()=>JSON.stringify(data));
  async function ask(q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();}
  await ask('Are my quads getting enough work?');await expect(page.locator('#chat-messages')).toContainText('review-adjustment');await ask('Should I add weight?');await expect(page.locator('#chat-messages')).toContainText('No program targets are changed');
- await page.locator('#coach-companion-launcher').click();await page.locator('#cc-input').fill('Are my quads getting enough work?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('review-adjustment');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ await expect(page.locator('#coach-companion-launcher')).toBeHidden();
+ const conversation=await page.locator('#chat-messages .user').allTextContents();
+ await page.locator('#tab-dashboard:visible, .mobile-nav-btn[data-tab="dashboard"]:visible').first().click();
+ await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+ await page.locator('#coach-companion-launcher').click();
+ expect(await page.locator('#cc-messages .user').allTextContents()).toEqual(conversation);
+ await page.locator('#cc-input').fill('Are my quads getting enough work?');await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();await expect(page.locator('#cc-messages')).toContainText('review-adjustment');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
