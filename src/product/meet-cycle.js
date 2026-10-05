@@ -1,8 +1,8 @@
 /* v2.30 — flexible, reviewed meet-cycle proposals built on the existing phase-plan engine. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'),require('./program-planning-decision'),require('./accessory-programming'));
- else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate,root.LoadnoteProgramPlanningDecision,root.LoadnoteAccessories);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate,Planning,Accessories){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./phase-builder'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./cycle-observability'),require('./program-quality-gate'),require('./program-planning-decision'),require('./accessory-programming'),require('./program-cancellation'));
+ else root.LoadnoteMeetCycle=factory(root.LoadnoteCore,root.LoadnotePhaseBuilder,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteCycleObservability,root.LoadnoteProgramQualityGate,root.LoadnoteProgramPlanningDecision,root.LoadnoteAccessories,root.LoadnoteProgramCancellation);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Phase,Profile,Readiness,Schedule,Intent,Observability,QualityGate,Planning,Accessories,Cancellation){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x));
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -138,10 +138,10 @@
    const all=validate(state.meetCycles||[]),record=all.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Reviewed meet cycle unavailable or already scheduled');
    const fresh=prepare(state,record.sourceProgram,{planningInput:record.planningDecision?.input||legacyPlanningInput(record.config)},{asOf,now});
    if(JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot))throw Error('Competition exercise roles changed; review a fresh cycle');
-   if((state.sportPrograms||[]).some(p=>p.scheduledAt&&p.config.startDate<=record.config.meetDate&&p.weekly.at(-1).through>=record.config.startDate))throw Error('A sport cycle overlaps this program');
+   if((state.sportPrograms||[]).some(p=>!Cancellation.isCancelled(state,p.id,'sport-program')&&p.scheduledAt&&p.config.startDate<=record.config.meetDate&&p.weekly.at(-1).through>=record.config.startDate))throw Error('A sport cycle overlaps this program');
    const scheduled=Schedule.list(state.scheduledSessions||[]);
    if(scheduled.some(s=>s.status==='scheduled'&&s.date>=record.config.startDate&&s.date<=record.config.meetDate))throw Error('Calendar conflict: resolve existing sessions before scheduling the meet cycle');
-   if((state.meetCycles||[]).some(r=>r.id!==id&&r.scheduledAt&&r.config.startDate<=record.config.meetDate&&r.config.meetDate>=record.config.startDate))throw Error('An existing scheduled meet cycle overlaps this cycle');
+   if((state.meetCycles||[]).some(r=>r.id!==id&&!Cancellation.isCancelled(state,r.id,'meet-cycle')&&r.scheduledAt&&r.config.startDate<=record.config.meetDate&&r.config.meetDate>=record.config.startDate))throw Error('An existing scheduled meet cycle overlaps this cycle');
    let sessions=state.scheduledSessions||[];
    for(const s of record.sessions){
      const plan=Intent.createPrescription(s.exercises,{type:'program',referenceId:id,label:record.sourceProgram.config.name+' · '+s.name},now);

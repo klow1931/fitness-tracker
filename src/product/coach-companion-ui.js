@@ -112,7 +112,7 @@
   const host=document.getElementById('cc-messages');if(!host)return;
   const row=document.createElement('div');row.className='cc-msg '+(role==='user'?'user':'assistant');row.textContent=String(text||'');
   if(meta){const small=document.createElement('small');small.textContent=meta;row.appendChild(small);}
-  host.appendChild(row);host.scrollTop=host.scrollHeight;
+  host.appendChild(row);host.scrollTop=host.scrollHeight;return row;
  }
  function quickButtons(context){
   const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
@@ -172,7 +172,7 @@
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply=reply||(window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   append(reply,'assistant','Built-in companion');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   const message=append(reply,'assistant',local?.source||'Built-in companion');window.LoadnoteSmartCoachUI?.attach?.(message,local,q=>void serialAsk(q));history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});

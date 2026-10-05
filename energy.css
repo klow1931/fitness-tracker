@@ -791,3 +791,24 @@ body.dark .training-cockpit-rest-actions button{background:#111827;border-color:
  .training-cockpit-rest-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
  .training-cockpit-rest-actions button{min-width:0}
 }
+
+/* v3.0: action-first coaching with compact evidence and touch-friendly review flows. */
+.smart-coach-brief{border-left:4px solid var(--accent,#4f46e5);margin-bottom:14px}
+.smart-coach-brief h3{font-size:1.15rem;line-height:1.35;margin:6px 0}
+.smart-coach-brief>p{line-height:1.55}
+.smart-coach-metrics{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.smart-coach-metrics span{background:rgba(99,102,241,.08);border-radius:8px;padding:7px 10px;font-size:.8rem}
+.smart-coach-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.smart-coach-actions button{min-height:40px;white-space:normal;text-align:left;max-width:100%}
+.coach-follow-up{border:1px solid #cbd5e1;border-radius:14px;background:transparent;color:inherit;padding:8px 10px;font-size:.8rem;cursor:pointer}
+.program-manage{margin-top:12px}
+#program-cancellation-dialog{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto}
+#program-cancellation-dialog label{display:block;margin:12px 0;line-height:1.5}
+#program-cancellation-dialog input[type=checkbox]{width:auto;display:inline-block;margin-right:8px}
+#phase-designer-dialog label:has(input[type=checkbox]),#coaching-review label:has(input[type=checkbox]){display:flex;align-items:flex-start;gap:8px}
+body.dark .smart-coach-metrics span{background:rgba(129,140,248,.16)}
+body.dark .coach-follow-up{border-color:#475569}
+@media(max-width:640px){.smart-coach-actions .btn-secondary{flex:1 1 140px}.smart-coach-metrics{display:grid}.smart-coach-brief details summary{min-height:44px;display:flex;align-items:center}.cc-msg .smart-coach-actions{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.smart-coach-actions button{font-size:14px;line-height:1.35;padding:9px 12px;min-height:44px}
+.cc-msg .smart-coach-actions button{font-size:12px;line-height:1.4;padding:7px 9px;min-height:36px}

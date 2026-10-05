@@ -126,13 +126,13 @@
   if(inputs.weight&&value.weight!=null){inputs.weight.value=String(Math.round(toDisplay(value.weight)*100)/100);changed(inputs.weight);}
   const amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
   if(inputs.measure&&amount!=null){inputs.measure.value=String(amount);changed(inputs.measure);}
-  saveLoggerDraft();window.updateTrainingFlow?.();refresh();
+  saveLoggerDraft();window.updateTrainingFlow?.();render();
   inputs.rpe?.focus({preventScroll:true});
  }
  function adjust(delta){
   const ctx=current(),input=activeInputs(ctx).weight;if(!input)return;
   const next=H()?.adjustDisplayWeight(input.value,delta);if(next==null)return;
-  input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();refresh();input.focus({preventScroll:true});try{input.select();}catch{}
+  input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();input.focus({preventScroll:true});try{input.select();}catch{}
  }
  function focusSet(set){
   if(!set)return;

@@ -1,8 +1,8 @@
 /* Loadnote v2.68 — deterministic programming workspace routing and date helpers. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./phase-builder'),require('./meet-cycle'),require('./hypertrophy-builder'),require('./athlete-goals'),require('./sport-planner'));
-  else root.LoadnoteProgrammingWorkspace=factory(root.LoadnoteProgrammingProfile,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,root.LoadnoteHypertrophyBuilder,root.LoadnoteGoals,root.LoadnoteSportPlanner);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Phase,Meet,Hyp,Goals,Sport){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./phase-builder'),require('./meet-cycle'),require('./hypertrophy-builder'),require('./athlete-goals'),require('./sport-planner'),require('./program-cancellation'));
+  else root.LoadnoteProgrammingWorkspace=factory(root.LoadnoteProgrammingProfile,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,root.LoadnoteHypertrophyBuilder,root.LoadnoteGoals,root.LoadnoteSportPlanner,root.LoadnoteProgramCancellation);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Phase,Meet,Hyp,Goals,Sport,Cancellation){
   'use strict';
   const POLICY='programming-workspace-v1';
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -24,14 +24,14 @@
   function route(state,{asOf}={}){
     if(!validDate(asOf))throw Error('Choose a valid programming workspace date');
     const cutoff=asOf+'T23:59:59.999Z',profile=Profile.current(state?.programmingProfiles||[],cutoff),summary=profileSummary(profile);
-    const allPhases=Phase.validate(state?.phasePrograms||[]).filter(p=>p.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),phases=allPhases.filter(p=>!p.scheduledAt&&p.config.startDate>=asOf);
-    const cycles=Meet.validate(state?.meetCycles||[]).filter(c=>c.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    const allPhases=Phase.validate(state?.phasePrograms||[]).filter(p=>!Cancellation.isCancelled(state,p.id,'phase-program')&&p.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),phases=allPhases.filter(p=>!p.scheduledAt&&p.config.startDate>=asOf);
+    const cycles=Meet.validate(state?.meetCycles||[]).filter(c=>!Cancellation.isCancelled(state,c.id,'meet-cycle')&&c.createdAt<=cutoff).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     const activeCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate<=asOf&&c.config.meetDate>=asOf)||null;
     const upcomingCycle=cycles.find(c=>c.scheduledAt&&c.config.startDate>asOf)||null;
     const scheduledPhase=allPhases.find(p=>p.scheduledAt&&(p.sessions||[]).some(s=>s.date>=asOf))||null;
     const reviewedCycle=cycles.find(c=>!c.scheduledAt&&c.config.meetDate>=asOf)||null;
-    const hyp=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.createdAt<=cutoff),scheduledHyp=hyp.find(r=>r.scheduledAt&&r.config.startDate<=asOf&&r.weekly.at(-1).through>=asOf)||hyp.find(r=>r.scheduledAt&&r.config.startDate>asOf),reviewedHyp=hyp.slice().reverse().find(r=>!r.scheduledAt&&r.config.startDate>=asOf);
-    const sports=Sport.validate(state?.sportPrograms||[]).filter(r=>r.createdAt<=cutoff),scheduledSport=sports.find(r=>r.scheduledAt&&r.weekly.at(-1).through>=asOf),reviewedSport=sports.slice().reverse().find(r=>!r.scheduledAt&&r.config.startDate>=asOf);
+    const hyp=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>!Cancellation.isCancelled(state,r.id,'hypertrophy-program')&&r.createdAt<=cutoff),scheduledHyp=hyp.find(r=>r.scheduledAt&&r.config.startDate<=asOf&&r.weekly.at(-1).through>=asOf)||hyp.find(r=>r.scheduledAt&&r.config.startDate>asOf),reviewedHyp=hyp.slice().reverse().find(r=>!r.scheduledAt&&r.config.startDate>=asOf);
+    const sports=Sport.validate(state?.sportPrograms||[]).filter(r=>!Cancellation.isCancelled(state,r.id,'sport-program')&&r.createdAt<=cutoff),scheduledSport=sports.find(r=>r.scheduledAt&&r.weekly.at(-1).through>=asOf),reviewedSport=sports.slice().reverse().find(r=>!r.scheduledAt&&r.config.startDate>=asOf);
     if(activeCycle||upcomingCycle||scheduledPhase||scheduledHyp||scheduledSport){
       const cycle=activeCycle||upcomingCycle;
       return {version:1,policy:POLICY,status:'scheduled',profile:summary,primaryAction:'view-current',title:activeCycle?'Current cycle is already scheduled':upcomingCycle||scheduledPhase?'Your next/current program is already scheduled':'Program scheduled',reason:'Use the current-program controls above for training and reviews. New program tools stay tucked away unless you intentionally want another plan.',cycleId:cycle?.id||null,sourceId:cycle?.sourceProgram?.id||scheduledPhase?.id||scheduledHyp?.id||scheduledSport?.id||null};

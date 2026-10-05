@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 30;
-  const RELEASE_VERSION = '2.99.0';
+  const SCHEMA_VERSION = 31;
+  const RELEASE_VERSION = '3.0.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -176,6 +176,8 @@
     if(Number(state.schemaVersion||1)<29)state.schemaVersion=29;
     if(state.coachingReviews===undefined)state.coachingReviews=[];
     if(Number(state.schemaVersion||1)<30)state.schemaVersion=30;
+    if(state.programCancellations===undefined)state.programCancellations=[];
+    if(Number(state.schemaVersion||1)<31)state.schemaVersion=31;
     return state;
   }
 

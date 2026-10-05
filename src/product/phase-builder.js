@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'),require('./cycle-observability'),require('./accessory-programming'));
-  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability,root.LoadnoteAccessories);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability,Accessories){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'),require('./cycle-observability'),require('./accessory-programming'),require('./program-cancellation'));
+  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability,root.LoadnoteAccessories,root.LoadnoteProgramCancellation);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability,Accessories,Cancellation){
   'use strict';
   const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'],POLICY='phase-builder-v1';
   const clone=x=>JSON.parse(JSON.stringify(x));
@@ -13,6 +13,7 @@
     const days=raw.days;if(!Array.isArray(days)||days.length<2||days.length>5||days.some(d=>!Number.isInteger(d)||d<0||d>6)||new Set(days).size!==days.length)throw Error('Choose 2–5 distinct training days');
     if(!Number.isInteger(raw.sessionMinutes)||raw.sessionMinutes<30||raw.sessionMinutes>240||!Number.isFinite(raw.incrementKg)||raw.incrementKg<.1||raw.incrementKg>10)throw Error('Choose 30–240 minutes and a 0.1–10 kg load increment');
     if(!Array.isArray(raw.phases)||raw.phases.length!==3||raw.phases.some((p,i)=>p.type!==TYPES[i]||!Number.isInteger(p.weeks)||p.weeks<(i===2?1:2)||p.weeks>(i===2?1:6)))throw Error('Use accumulation (2–6 weeks), strength (2–6 weeks), then one deload week');
+    if(raw.periodization!=null&&!['linear','wave'].includes(raw.periodization))throw Error('Choose linear or wave loading');
     const lifts={},used=new Set(),exerciseIds=new Set();
     for(const lift of LIFTS){
       const v=raw.lifts?.[lift],main=exercise(v);if(exerciseIds.has(main.exerciseId))throw Error('Competition lifts need distinct identities');exerciseIds.add(main.exerciseId);
@@ -24,10 +25,11 @@
     const all=[...exerciseIds,...LIFTS.map(l=>lifts[l].variation?.exerciseId).filter(Boolean)];if(new Set(all).size!==all.length)throw Error('Do not reuse an exercise identity across lift roles');
     if(days.some(d=>!used.has(d)))throw Error('Each selected training day needs at least one lift exposure');
     const accessories=Accessories.normalize(raw.accessories,days,all);
-    return {...(accessories.length?{accessories}:{}),version:1,name:raw.name.trim(),startDate:raw.startDate,days:[...days].sort((a,b)=>a-b),sessionMinutes:raw.sessionMinutes,incrementKg:raw.incrementKg,phases:raw.phases.map(p=>({type:p.type,weeks:p.weeks})),lifts};
+    return {...(raw.periodization==='wave'?{periodization:'wave'}:{}),...(accessories.length?{accessories}:{}),version:1,name:raw.name.trim(),startDate:raw.startDate,days:[...days].sort((a,b)=>a-b),sessionMinutes:raw.sessionMinutes,incrementKg:raw.incrementKg,phases:raw.phases.map(p=>({type:p.type,weeks:p.weeks})),lifts};
   }
   function build(raw){
     const c=config(raw),sessions=[],weekly=[],warnings=['Rule-based phase proposal, not an individually validated coaching prescription.','Percentages refer to separately chosen training maxes, not measured 1RMs or estimated capacity.','RPE values are caps, not predictions. Review actual effort before progressing; no increase is automatically earned.','No meet taper, max test or attempt selection is included. Accessories require athlete selection and review.','Existing four-week review/adjustment rules do not apply to phase programs. Review these manually in Calendar and training history.'];let week=0;
+    if(c.periodization==='wave')warnings.push('Wave loading uses three-week loading waves: 5/4/3 accumulation reps or 4/3/2 strength reps, at base + 0/2.5/5 percentage points. The next wave resets reps and increases its base by your chosen step. A partial wave stops at the phase boundary; deload stays fixed. Straight/top sets use the wave reps; strength back-off sets retain five reps at the lower-load target. Waves are a programming option, not evidence that this athlete should progress.');
     const rounded=(tm,pct)=>{const weight=Math.round(Math.floor((tm*pct/100+1e-9)/c.incrementKg)*c.incrementKg*100)/100;if(!(weight>0))throw Error('Load increment is too large for a selected training max');return weight;};
     for(const phase of c.phases)for(let pw=0;pw<phase.weeks;pw++){
       week++;const metrics=Object.fromEntries(LIFTS.map(l=>[l,{sets:0,volumeKg:0}]));
@@ -35,9 +37,9 @@
         const exercises=[];
         for(const lift of LIFTS){const l=c.lifts[lift],exposure=l.exposures.find(e=>e.day===day);if(!exposure)continue;
           const selected=exposure.role==='variation'?l.variation:l,deload=phase.type==='deload';
-          const pct=(deload?60:phase.type==='accumulation'?65+pw*l.stepPct:75+pw*l.stepPct)-(exposure.role==='light'?7.5:0);
+          const pct=(deload?60:phase.type==='accumulation'?65+(c.periodization==='wave'?Math.floor(pw/3)*l.stepPct+(pw%3)*2.5:pw*l.stepPct):75+(c.periodization==='wave'?Math.floor(pw/3)*l.stepPct+(pw%3)*2.5:pw*l.stepPct))-(exposure.role==='light'?7.5:0);
           if(pct>85)throw Error('Progression exceeds the supported 85% training-max ceiling. Reduce the step or phase duration.');
-          const count=deload?Math.max(1,Math.ceil(l.sets/2)):l.sets,reps=phase.type==='accumulation'?5:3,cap=(deload?6:phase.type==='accumulation'?7:8)-(exposure.role==='light'&&!deload?1:0);
+          const count=deload?Math.max(1,Math.ceil(l.sets/2)):l.sets,reps=c.periodization==='wave'&&!deload?(phase.type==='accumulation'?5:4)-pw%3:phase.type==='accumulation'?5:3,cap=(deload?6:phase.type==='accumulation'?7:8)-(exposure.role==='light'&&!deload?1:0);
           const sets=Array.from({length:count},(_,i)=>{const backoff=!deload&&exposure.format==='top-backoff'&&i>0;return {weight:rounded(selected.trainingMaxKg,pct-(backoff?7.5:0)),reps:backoff&&phase.type==='strength'?5:reps,targetRpe:cap-(backoff?1:0)};});
           exercises.push({lift,exerciseId:selected.exerciseId,name:selected.name,type:'strength',trackBy:'reps',role:exposure.role,format:deload?'straight':exposure.format,trainingMaxKg:selected.trainingMaxKg,percentOfTrainingMax:pct,purpose:exposure.role==='primary'?'Competition-lift practice':exposure.role==='light'?'Lower-load competition practice':'Athlete-selected variation; no weakness diagnosis',sets});
           metrics[lift].sets+=sets.length;metrics[lift].volumeKg+=sets.reduce((n,s)=>n+s.weight*s.reps,0);
@@ -46,7 +48,7 @@
         const estimatedMinutes=15+exercises.reduce((n,e)=>n+6*e.sets.length,0)+Math.max(0,exercises.length-1)*5+Accessories.minutes(extra);
         exercises.push(...extra);
         if(estimatedMinutes>c.sessionMinutes)throw Error(`Week ${week}, day ${day+1} needs about ${estimatedMinutes} minutes. Reduce sets, redistribute exposures or review your time budget.`);
-        sessions.push({...((c.accessories||[]).length?{accessoryWorkload:Accessories.workload(extra)}:{}),key:`w${week}d${day}`,date:move(c.startDate,(week-1)*7+day),week,phase:phase.type,phaseWeek:pw+1,name:`Week ${week} · ${phase.type} · Day ${day+1}`,estimatedMinutes,exercises});
+        sessions.push({...((c.accessories||[]).length?{accessoryWorkload:Accessories.workload(extra)}:{}),...(c.periodization==='wave'&&phase.type!=='deload'?{wave:Math.floor(pw/3)+1,waveWeek:pw%3+1}:{}),key:`w${week}d${day}`,date:move(c.startDate,(week-1)*7+day),week,phase:phase.type,phaseWeek:pw+1,name:`Week ${week} · ${phase.type} · Day ${day+1}`,estimatedMinutes,exercises});
       }
       for(const lift of LIFTS){metrics[lift].volumeKg=Math.round(metrics[lift].volumeKg*100)/100;const previous=weekly.at(-1)?.lifts[lift];if(previous&&metrics[lift].volumeKg>previous.volumeKg*1.2)warnings.push(`Week ${week} ${lift}: prescribed tonnage rises more than 20% from the prior week. Review the transition; tonnage is not capacity or recovery.`);}
       weekly.push({...((c.accessories||[]).length?{accessoryWorkload:Accessories.workload(sessions.filter(s=>s.week===week).flatMap(s=>s.exercises))}:{}),week,phase:phase.type,lifts:metrics});
@@ -100,21 +102,21 @@
       if(r.roleSnapshot.length!==expected.length||expected.some(e=>r.roleSnapshot.filter(role=>role.exerciseId===e.exerciseId&&role.role===e.role&&role.competitionLift===e.competitionLift).length!==1))throw Error('Incomplete or conflicting phase exercise-role snapshot');
       const normalized={version:1,id:r.id,createdAt:r.createdAt,config:built.config,sessions:built.sessions,profileSnapshot:profile,roleSnapshot:clone(r.roleSnapshot),goalSnapshot:r.goalSnapshot===undefined?null:clone(r.goalSnapshot),objectiveSnapshot:r.objectiveSnapshot===undefined?null:clone(r.objectiveSnapshot),warnings:[...r.warnings],review:clone(r.review),scheduledAt:r.scheduledAt||null};
       if(r.startingPrescriptionSnapshot!==undefined)normalized.startingPrescriptionSnapshot=StartingPrescription.validateAudit(r.startingPrescriptionSnapshot,built.config);
-      if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'phase-program-review'});if(env.policies.phaseBuilder!==POLICY||env.policies.startingPrescription!==StartingPrescription.POLICY)throw Error('Invalid phase-program decision policy identity');normalized.decisionEnvironment=env;}
+      if(r.decisionEnvironment!==undefined){const env=Observability.validateEnvironment(r.decisionEnvironment,{capturedAt:r.createdAt,purpose:'phase-program-review'});if(built.config.periodization==='wave'&&env.policies.waveLoading!=='phase-wave-v1')throw Error('Invalid wave-loading policy identity');if(env.policies.phaseBuilder!==POLICY||env.policies.startingPrescription!==StartingPrescription.POLICY)throw Error('Invalid phase-program decision policy identity');normalized.decisionEnvironment=env;}
       return normalized;
     });
   }
   function comparableProposal(value){const x=clone(value);if(x?.startingPrescriptionSnapshot)delete x.startingPrescriptionSnapshot.cutoff;return x;}
   function save(state,proposal,{confirmed=false,notes=''}={}, {asOf,now=new Date().toISOString(),id=Core.createId()}={}){
     if(!confirmed||typeof notes!=='string'||notes.length>1000)throw Error('Review every phase and quality warning before saving');const fresh=prepare(state,proposal.config,{asOf,now});if(JSON.stringify(comparableProposal(fresh))!==JSON.stringify(comparableProposal(proposal)))throw Error('Profile, exercise context or recent evidence changed; generate a fresh preview');
-    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'phase-program-review',policies:{startingPrescription:StartingPrescription.POLICY,phaseBuilder:POLICY}}),warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
+    const record={version:1,id,createdAt:now,config:fresh.config,sessions:fresh.sessions,profileSnapshot:fresh.profileSnapshot,roleSnapshot:fresh.roleSnapshot,goalSnapshot:fresh.goalSnapshot||null,objectiveSnapshot:fresh.objectiveSnapshot||null,startingPrescriptionSnapshot:fresh.startingPrescriptionSnapshot,decisionEnvironment:Observability.programEnvironment({capturedAt:now,purpose:'phase-program-review',policies:{startingPrescription:StartingPrescription.POLICY,phaseBuilder:POLICY,...(fresh.config.periodization==='wave'?{waveLoading:'phase-wave-v1'}:{})}}),warnings:fresh.warnings,review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
     return {...Accessories.attach(state,fresh.config.accessories||[]),phasePrograms:validate([...(state.phasePrograms||[]),record])};
   }
   function comparableStartingSnapshot(value){const x=clone(value);if(x){delete x.cutoff;delete x.profileId;}return x;}
   function schedule(state,id,{asOf,now=new Date().toISOString()}={}){
     const records=validate(state.phasePrograms||[]),record=records.find(r=>r.id===id);if(!record||record.scheduledAt)throw Error('Phase program unavailable or already scheduled');const fresh=prepare(state,record.config,{asOf,now});
     const contextChanged=JSON.stringify(fresh.roleSnapshot)!==JSON.stringify(record.roleSnapshot)||(record.goalSnapshot!==null&&JSON.stringify(fresh.goalSnapshot)!==JSON.stringify(record.goalSnapshot))||(record.objectiveSnapshot!==null&&JSON.stringify(fresh.objectiveSnapshot)!==JSON.stringify(record.objectiveSnapshot))||(record.startingPrescriptionSnapshot!==undefined&&JSON.stringify(comparableStartingSnapshot(fresh.startingPrescriptionSnapshot))!==JSON.stringify(comparableStartingSnapshot(record.startingPrescriptionSnapshot)));if(contextChanged)throw Error('Exercise roles, goal context, transition objective or starting evidence changed since review; build and review a fresh proposal');
-    if((state.sportPrograms||[]).some(p=>p.scheduledAt&&p.config.startDate<=record.sessions.at(-1).date&&p.weekly.at(-1).through>=record.config.startDate))throw Error('A sport cycle overlaps this program');
+    if((state.sportPrograms||[]).some(p=>!Cancellation.isCancelled(state,p.id,'sport-program')&&p.scheduledAt&&p.config.startDate<=record.sessions.at(-1).date&&p.weekly.at(-1).through>=record.config.startDate))throw Error('A sport cycle overlaps this program');
     const existing=Schedule.list(state.scheduledSessions||[]);if(existing.some(s=>s.status==='scheduled'&&record.sessions.some(p=>p.date===s.date)))throw Error('Calendar conflict: resolve existing scheduled dates first');
     let sessions=state.scheduledSessions||[];for(const s of record.sessions)sessions=Schedule.create(sessions,{name:record.config.name+' · '+s.name,date:s.date,role:s.phase==='deload'?'deload':'mixed',goal:record.config.name,prescription:Intent.createPrescription(s.exercises,{type:'program',referenceId:record.id,label:record.config.name+' · '+s.name},now)},{id:`phase:${record.id}:${s.key}`,now});
     record.scheduledAt=now;return {...state,phasePrograms:validate(records),scheduledSessions:sessions};

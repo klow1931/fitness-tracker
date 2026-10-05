@@ -1,15 +1,15 @@
 /* v2.55 — deterministic, conflict-first sync model. No network transport. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./data-integrity'));
-  else root.LoadnoteSync=factory(root.LoadnoteIntegrity);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./data-integrity'),require('./program-cancellation'));
+  else root.LoadnoteSync=factory(root.LoadnoteIntegrity,root.LoadnoteProgramCancellation);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity,Cancellation){
   'use strict';
   if(!Integrity)throw Error('Loadnote sync requires data integrity');
   const PROTOCOL='loadnote-sync-v1';
   const COLLECTIONS=[
     'workouts','scheduledSessions','workoutRevisions','trainingBlocks','exerciseCatalog','exerciseRoles',
     'athleteGoals','reviewedPrograms','programReviews','programmingProfiles','phasePrograms','phaseReviews',
-    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews',
+    'meetCycles','adoptedPrograms','transitionSnapshots','decisionEvents','workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews','programCancellations',
     'templates','prs','goals','programs','restDays','nutrition','foodLibrary','bodyweight','measurements','formReviews'
   ];
   const DOCUMENTS=['athleteProfile','exerciseNotes','programStates','activeProgramId'];
@@ -53,6 +53,7 @@
         ids.add(id);
       }
     }
+    try{Cancellation.validateState(state||{});}catch(e){issues.push({severity:'blocking',collection:'programCancellations',code:'invalid-history',detail:e.message});}
     const relationships=Integrity.auditRelationships(state||{});
     for(const issue of relationships.issues.filter(row=>row.severity==='blocking'))issues.push({severity:'blocking',collection:'relationships',code:issue.code,detail:issue.detail});
     const blockers=issues.filter(issue=>issue.severity==='blocking').length;
@@ -83,7 +84,7 @@
     const collectionKeys=Object.keys(data.collections).sort(),documentKeys=Object.keys(data.documents).sort();
     // Older projects omitted workload profiles / technical practice. Preserve
     // their original checksum basis while defaulting absent collections on import.
-    const expectedCollections=COLLECTIONS.filter(name=>!['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews'].includes(name)||Object.hasOwn(data.collections,name)).sort(),expectedDocuments=[...DOCUMENTS].sort();
+    const expectedCollections=COLLECTIONS.filter(name=>!['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews','programCancellations'].includes(name)||Object.hasOwn(data.collections,name)).sort(),expectedDocuments=[...DOCUMENTS].sort();
     if(collectionKeys.length!==expectedCollections.length||collectionKeys.some((key,index)=>key!==expectedCollections[index]))throw Error('Sync project collection set does not match the protocol.');
     if(documentKeys.length!==expectedDocuments.length||documentKeys.some((key,index)=>key!==expectedDocuments[index]))throw Error('Sync project document set does not match the protocol.');
     const state={};
@@ -95,7 +96,7 @@
     projectState(data);
     const collections={},documents={};let records=0;
     for(const name of COLLECTIONS){
-      if(['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews'].includes(name)&&!Object.hasOwn(data.collections,name))continue;
+      if(['workloadProfiles','olympicPractice','hypertrophyPrograms','sportPrograms','athleticPractice','coachingReviews','programCancellations'].includes(name)&&!Object.hasOwn(data.collections,name))continue;
       const map=recordMap(data.collections[name],name),entries=[...map].sort(([a],[b])=>a.localeCompare(b)).map(([id,value])=>({id,fingerprint:fingerprint(value)}));
       collections[name]={count:entries.length,entries,fingerprint:fingerprint(entries)};records+=entries.length;
     }
@@ -117,10 +118,12 @@
     if(typeof (pkg.releaseVersion??'')!=='string'||String(pkg.releaseVersion||'').length>80)return {status:'invalid',verified:false,reason:'Sync package release metadata is malformed.'};
     try{
       if(Number(pkg.schemaVersion)>=26&&!Object.hasOwn(pkg.data?.collections||{},'workloadProfiles'))throw Error('Schema-26 sync project is missing workload profiles.');
+      if(Number(pkg.schemaVersion)>=31&&!Object.hasOwn(pkg.data?.collections||{},'programCancellations'))throw Error('Schema-31 sync project is missing program cancellation history.');
       if(Number(pkg.schemaVersion)>=30&&!Object.hasOwn(pkg.data?.collections||{},'coachingReviews'))throw Error('Schema-30 sync project is missing coaching review data.');
       if(Number(pkg.schemaVersion)>=29&&['sportPrograms','athleticPractice'].some(k=>!Object.hasOwn(pkg.data?.collections||{},k)))throw Error('Schema-29 sync project is missing sport planning/journal data.');
       if(Number(pkg.schemaVersion)>=28&&!Object.hasOwn(pkg.data?.collections||{},'hypertrophyPrograms'))throw Error('Schema-28 sync project is missing hypertrophy programs.');
       if(Number(pkg.schemaVersion)>=27&&!Object.hasOwn(pkg.data?.collections||{},'olympicPractice'))throw Error('Schema-27 sync project is missing technical practice.');
+      Cancellation.validateState(projectState(pkg.data));
       const actual=manifestFromProject(pkg.data);
       if(!pkg.manifest||pkg.manifest.fingerprint!==actual.fingerprint)return {status:'invalid',verified:false,reason:'Sync package contents do not match the recorded manifest fingerprint.'};
       if(Number(pkg.manifest.records)!==actual.records)return {status:'invalid',verified:false,reason:'Sync package record count does not match its manifest.'};
