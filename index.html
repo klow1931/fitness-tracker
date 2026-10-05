@@ -257,7 +257,8 @@
           <canvas id="progressChart" height="220"></canvas>
           <div class="progress-controls"><label>Range <select id="progress-range" class="input" onchange="renderProgressChart()"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="0" selected>All time</option></select></label><label>Metric <select id="progress-metric" class="input" onchange="renderProgressChart()"><option value="estimate">Estimated 1RM</option><option value="load">Heaviest actual set</option></select></label></div>
           <p id="progress-description" class="more-hint"></p><button type="button" class="btn-secondary" onclick="if(document.getElementById('progress-exercise').value)openExerciseDetail(document.getElementById('progress-exercise').value)">Exercise details</button>
-        </di       <div class="card">
+        </div>
+        <div class="card">
           <h2 class="font-semibold mb-4">Nutrition (Last 14 days)</h2>
           <canvas id="nutritionChart" height="220"></canvas>
         </div>
