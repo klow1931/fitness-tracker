@@ -833,8 +833,9 @@ body.dark .coach-follow-up{border-color:#475569}
 #panel-coach .decision-workspace details.card[open] > summary::after,
 #panel-prs #progress-explore[open] > summary::after { transform:rotate(180deg); }
 #decision-action-center .adaptive-entry-actions,
-#decision-action-center .program-lifecycle-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; margin-top:.75rem; }
-#decision-action-center :is(.adaptive-entry-actions,.program-lifecycle-actions) > button { width:100%; min-width:0; min-height:44px; margin:0; padding:.65rem .7rem; font-size:.82rem; line-height:1.35; white-space:normal; }
+#decision-action-center .program-lifecycle-actions,
+#decision-action-center .smart-coach-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; margin-top:.75rem; }
+#decision-action-center :is(.adaptive-entry-actions,.program-lifecycle-actions,.smart-coach-actions) > button { width:100%; min-width:0; min-height:44px; margin:0; padding:.65rem .7rem; font-size:.82rem; line-height:1.35; white-space:normal; }
 #decision-action-center .program-lifecycle-empty > button { width:100%; min-height:44px; margin:.65rem 0 0; }
 #decision-action-center .adaptive-entry-actions { padding-top:.75rem; border-top:1px solid var(--line); }
 #decision-action-center .adaptive-entry-actions > button:last-child { grid-column:1 / -1; }
