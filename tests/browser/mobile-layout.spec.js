@@ -9,6 +9,8 @@ test.beforeEach(async({page})=>{
 });
 
 test('mobile Profile and Coach avoid empty header space and overlapping duplicate actions',async({page},info)=>{
+ await expect(page.locator('.app-shell > #panel-profile')).toHaveCount(1);
+ await expect(page.locator('.app-shell > #panel-tools')).toHaveCount(1);
  const before=await page.evaluate(()=>JSON.stringify(data));
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:740});
