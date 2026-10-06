@@ -71,7 +71,10 @@
   if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
   const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
-  const bottom=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
+  const nav=document.getElementById('mobile-nav'),navBounds=nav?.getBoundingClientRect();
+  const navInset=navBounds?.height&&getComputedStyle(nav).position==='fixed'?Math.max(0,innerHeight-navBounds.top)+12:0;
+  const dockInset=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
+  const bottom=Math.max(navInset,dockInset);
   root.style.scrollPaddingTop=top?top+'px':'';
   root.style.scrollPaddingBottom=bottom?bottom+'px':'';
  }

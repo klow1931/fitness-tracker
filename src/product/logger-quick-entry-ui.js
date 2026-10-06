@@ -61,7 +61,8 @@
     const transitioned=window.LoadnoteTrainingCockpitUI?.onSetComplete?.(set,next)||false;
     focusedSet=transitioned?null:next;refresh();
     if(!transitioned){
-      next.scrollIntoView({block:'center',behavior:'smooth'});
+      // Wait for cockpit/dock layout updates before locating the next entry.
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{if(next.isConnected)next.scrollIntoView({block:'center',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}));
       const weight=next.querySelector('.set-weight'),measure=next.querySelector('.set-reps,.set-duration'),rpeInput=next.querySelector('.set-rpe');
       const target=weight&&weight.value===''?weight:measure&&measure.value===''?measure:rpeInput||measure||weight;
       // Rest is a pause in entry, not a request to open the next numeric keyboard.

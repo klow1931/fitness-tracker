@@ -1,7 +1,7 @@
 const {test,expect}=require('playwright/test');
 
 async function hitTarget(page,locator){
- await locator.scrollIntoViewIfNeeded();
+ await locator.evaluate(button=>button.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
  await expect.poll(()=>locator.evaluate(button=>{
   const r=button.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
   return r.width>=44&&r.height>=44&&x>=0&&x<innerWidth&&y>=0&&y<innerHeight&&button.contains(document.elementFromPoint(x,y));
@@ -22,7 +22,7 @@ test('short screens and enlarged text keep Coach actions and Progress explanatio
   for(const button of await page.locator('#decision-action-center .adaptive-entry-actions>button').all())await hitTarget(page,button);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.evaluate(()=>showTab('prs'));
-  const method=page.locator('.progress-story-method');
+  const method=page.locator('.progress-story-method').filter({has:page.getByText('How to read these stories',{exact:true})});
   await expect(method).not.toHaveAttribute('open','');
   await hitTarget(page,method.locator('summary'));
   await method.locator('summary').click();await expect(method).toHaveAttribute('open','');
@@ -41,6 +41,7 @@ test('enlarged short-screen logger keeps actual set entry and completion hit tar
   showTab('workouts');showSubTab('workouts','wo-log');
   fillWorkoutForm([{name:'Competition Bench Press',type:'strength',sets:[{weight:100,reps:5,rpe:''},{weight:100,reps:5,rpe:''}]}],'',false);
  });
+ await expect.poll(()=>page.evaluate(()=>parseFloat(document.documentElement.style.scrollPaddingBottom)||0)).toBeGreaterThanOrEqual(await page.locator('#mobile-nav').evaluate(nav=>nav.getBoundingClientRect().height));
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduled:data.scheduledSessions}));
  await hitTarget(page,page.locator('.quick-set-entry:visible [data-quick-rpe="8"]'));
  await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
