@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
 });
 test('Decisions prioritizes plan, compact lift summaries, grouped programs and evidence action',async({page})=>{
  const labels=await page.locator('#panel-coach .section-tab').allTextContents();
- expect(labels.map(s=>s.trim())).toEqual(['Overview','Insights','Coach','Goals']);
+ expect(labels.map(s=>s.trim())).toEqual(['Today','Your program','Ask Coach']);
  const positions=await page.evaluate(()=>['decision-action-center','decision-readiness-card','phase-review-panel','programming-profile-panel','program-outcomes-panel'].map(id=>document.getElementById(id)?.getBoundingClientRect().top));
  expect(positions.every((p,i)=>i===0||p>positions[i-1])).toBe(true);
  await expect(page.locator('.decision-title')).toContainText('TRAINING DECISIONS');
