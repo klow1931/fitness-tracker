@@ -2,7 +2,7 @@ const {test,expect}=require('playwright/test');
 test.beforeEach(async({page})=>{
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>{
-  dismissOnboarding();data.gymModeUserSet=true;
+  data.onboardingDismissed=true;updateOnboardingUI();data.gymModeUserSet=true;
   data.programmingProfiles=LoadnoteProgrammingProfile.save([],{goal:'meet',experience:'intermediate',consistency:'consistent',availableDays:[1,3,4,6],sessionMinutes:109,equipment:['barbell','plates','rack','bench'],preferredExerciseIds:[],avoidedExerciseIds:[],eventDate:'2027-01-09',priorities:'',notes:''},{id:'layout-profile',now:'2026-10-05T00:00:00.000Z'});
   invalidateViews();
  });
