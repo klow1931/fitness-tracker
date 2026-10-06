@@ -53,11 +53,13 @@ test('invalid quick completion cannot check a set or start rest',async({page})=>
 });
 test('pound display remains kilograms in reviewed history and repeated completion is ignored',async({page})=>{
  await page.evaluate(()=>setUnit('lb'));await page.locator('#today-training [data-today-train]').click();
- await expect(page.locator('.set-weight').first()).toHaveValue('220.46');
+ // Planned loads use the established one-decimal display contract.
+ await expect(page.locator('.set-weight').first()).toHaveValue('220.5');
  await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
  expect(await page.evaluate(()=>completeLoggerSetQuickly(document.querySelector('.sets-container > div'),9))).toBe(false);
  await expect(page.locator('.set-rpe').first()).toHaveValue('8');
  await page.locator('[data-cockpit-review]').click();await page.locator('#confirm-workout-save').click();
  await expect(page.locator('#workout-review')).not.toBeVisible();
- expect(await page.evaluate(()=>data.workouts.find(w=>w.id!=='previous').exercises[0].sets[0].weight)).toBeCloseTo(100,2);
+ // 220.5 lb rounds to 100.02 kg in storage, never 220.5 kg.
+ expect(await page.evaluate(()=>data.workouts.find(w=>w.id!=='previous').exercises[0].sets[0].weight)).toBe(100.02);
 });
