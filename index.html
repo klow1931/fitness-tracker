@@ -1017,15 +1017,15 @@
       <div class="decision-workspace"><header class="decision-section-heading"><span class="eyebrow">01 · TODAY</span><h2>Your training</h2><p>Current plan and next action, without opening programming tools.</p></header>
       <div id="decision-action-center" aria-label="Current plan and recommended next action"></div>
       <header class="decision-section-heading"><span class="eyebrow">02 · YOUR LIFTS</span><h2>Lift decisions</h2></header>
-      <details class="card more-details"><summary><b>Muscle workload & training knowledge</b><small>Confirmed muscle assignments, effort coverage and source-backed explanations</small></summary><div id="muscle-workload" class="more-details-body"></div></details>
+      <details class="card more-details"><summary><b>Muscle workload & training knowledge</b><small>Workload, coverage and coaching references</small></summary><div id="muscle-workload" class="more-details-body"></div></details>
       <details class="card" id="shared-coaching-panel"><summary><b>Shared coaching review</b><small>Weekly evidence, check-ins and future proposals</small></summary><button type="button" class="btn-secondary" onclick="LoadnoteCoachingLibraryUI.open()">Explore coaching references</button><div id="shared-coaching-review"></div></details>
       <div class="card decision-summary-card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
       <header class="decision-section-heading"><span class="eyebrow">03 · YOUR PROGRAM</span><h2>Programming</h2><p>Review your current training before creating another plan.</p></header>
       <div id="cycle-week-review" aria-label="Weekly meet-cycle review"></div>
       <div id="cycle-response" aria-label="Meet-cycle training response"></div>
       <div id="cycle-journal" aria-label="Meet-cycle decision journal"></div>
-      <details class="card" id="phase-review-panel"><summary><b>Program reviews</b><small>Weekly/phase evidence, response history and approved future adjustments</small></summary><div id="phase-review"></div></details>
-      <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Evidence, recovery and approved next-week changes</small></summary><div id="program-week-review"></div></details>
+      <details class="card" id="phase-review-panel"><summary><b>Program reviews</b><small>Phase evidence and approved adjustments</small></summary><div id="phase-review"></div></details>
+      <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Recovery, evidence and next-week changes</small></summary><div id="program-week-review"></div></details>
       <div class="decision-group-label"><b>Build or change a program</b><small>One recommended path first; alternate tools stay out of the way</small></div>
       <div id="programming-workspace" class="card programming-workspace" aria-label="Program planner"></div>
       <details class="card" id="athlete-planning-tools"><summary><b>Intake, cardio &amp; exercise edits</b><small>Review your context and exact planned targets</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.open()">Edit planned exercises</button><button type="button" class="btn-secondary" onclick="LoadnoteCardioPlannerUI.open()">Plan cardio</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.learning()">What edits show</button></div></details>
@@ -1395,7 +1395,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v2.99.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.5.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

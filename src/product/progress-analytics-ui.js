@@ -121,7 +121,7 @@
   let details=document.getElementById('progress-explore');
   if(!details){
    details=document.createElement('details');details.id='progress-explore';details.className='card progress-story-explore';
-   details.innerHTML='<summary><span><b>Explore Progress</b><small>Exercise evidence, adherence details, programming history, Training Review, records, measurements and photos</small></span></summary><div id="progress-explore-story-details"></div>';
+   details.innerHTML='<summary><span><b>Explore Progress</b><small>Lift details, reviews, records and body tracking</small></span></summary><div id="progress-explore-story-details"></div>';
    host.insertAdjacentElement('afterend',details);
    const parent=host.parentElement;
    for(const node of [parent?.querySelector('#progress-overview'),parent?.querySelector('.progress-quick-actions'),parent?.querySelector('#training-review'),parent?.querySelector('.more-columns')])if(node)details.appendChild(node);

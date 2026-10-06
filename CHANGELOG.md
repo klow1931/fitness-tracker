@@ -1,3 +1,11 @@
+# v3.5.0 — Mobile readability and compact program actions
+
+- Stack disclosure titles and descriptions consistently across Decisions, Cycle journal and Explore Progress; reserve a separate column for the chevron.
+- Give program actions equal spacing and responsive widths, retaining direct access and existing approval flows.
+- Shorten review labels and reduce mobile padding without hiding evidence or changing training logic.
+- Add responsive desktop/mobile walkthroughs, screenshot capture, dark-mode checks and training-data integrity assertions.
+- No data-schema changes; v3.4 remains the rollback release. Physical Safari acceptance remains separate from Chromium CI.
+
 # v3.4.0 — Local Coach Companion conversation
 
 - Extend the optional device model into private Coach conversation with explicit training-context consent and shared recent chat.

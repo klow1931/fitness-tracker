@@ -17,6 +17,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Mobile flow demo and formatting checks
+        run: npx playwright test tests/browser/mobile-flow.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-flow-demo
+          path: test-results/
+          retention-days: 7
       - name: Accessibility interaction smoke checks
         run: npx playwright test tests/browser/mobile-accessibility.spec.js
       - name: Recovery interaction smoke checks
