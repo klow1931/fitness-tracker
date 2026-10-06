@@ -840,6 +840,10 @@ body.dark .coach-follow-up{border-color:#475569}
 #panel-profile .measure-hero { padding:1rem 1.15rem; }
 #panel-profile .measure-hero h1 { font-size:clamp(1.4rem,4.8vw,2rem); }
 #panel-profile .measure-hero p:not(.measure-eyebrow) { font-size:.84rem; line-height:1.45; }
+@media(max-width:640px) {
+ #panel-profile .profile-actions { display:grid; grid-template-columns:minmax(0,1fr); }
+ #panel-profile .profile-actions > button { width:100%; min-width:0; min-height:44px; padding:.65rem .75rem; font-size:.85rem; line-height:1.35; white-space:normal; }
+}
 #panel-coach .programming-workspace-head .readiness-status { color:var(--ink); background:var(--surface); border:1px solid var(--line); white-space:normal; max-width:100%; }
 .programming-workspace-explanation > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:.5rem; font-size:.8rem; font-weight:600; color:var(--muted); }
 .programming-workspace-explanation > summary::after { content:'⌄'; }

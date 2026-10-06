@@ -20,6 +20,8 @@ test('mobile Profile and Coach avoid empty header space and overlapping duplicat
    const gap=await page.evaluate(()=>document.querySelector('#panel-profile').getBoundingClientRect().top-document.querySelector('.app-shell > header').getBoundingClientRect().bottom);
    expect(gap).toBeGreaterThanOrEqual(0);expect(gap).toBeLessThanOrEqual(24);
    await expect(page.locator('#coach-companion-launcher')).not.toBeVisible();
+   const widths=await page.locator('#profile-training-setup .profile-actions').evaluate(actions=>({row:actions.clientWidth,buttons:[...actions.children].map(b=>b.getBoundingClientRect().width)}));
+   for(const width of widths.buttons)expect(width).toBeGreaterThanOrEqual(widths.row-1);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
    await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-today');});
    const spacing=await page.locator('[data-sub="co-today"].sub-panel').evaluate(panel=>{
@@ -32,7 +34,7 @@ test('mobile Profile and Coach avoid empty header space and overlapping duplicat
   }
  }
  await page.setViewportSize({width:390,height:740});
- await page.screenshot({path:info.outputPath('coach-today-mobile.png')});
+ await page.evaluate(()=>document.activeElement?.blur());await page.screenshot({path:info.outputPath('coach-today-mobile.png')});
  await page.locator('.coach-more > summary').click();
  await page.getByRole('button',{name:'Open Coach companion',exact:true}).click();
  await expect(page.locator('#coach-companion-panel')).toBeVisible();await page.locator('.cc-close').click();
