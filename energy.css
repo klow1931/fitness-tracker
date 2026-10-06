@@ -821,6 +821,15 @@ body.dark .coach-follow-up{border-color:#475569}
  align-items:center; min-height:48px; list-style:none; cursor:pointer;
 }
 
+/* v3.7 — primary Coach paths and reversible quick completion. */
+.coach-more>summary,.recap-details>summary { cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600; }
+.coach-more .programming-workspace-actions { margin-top:.4rem; }
+.cockpit-undo { display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;font-size:.8rem; }
+.cockpit-undo button { min-height:44px; }
+.workout-takeaway { border-left:3px solid var(--accent);padding-left:.75rem;margin:.75rem 0; }
+.workout-takeaway p { margin:.35rem 0;overflow-wrap:anywhere; }
+.proposal-targets { width:100%;border-collapse:collapse;margin:.5rem 0;font-size:.85rem;table-layout:fixed; }
+.proposal-targets th,.proposal-targets td { text-align:left;border-bottom:1px solid var(--line);padding:.5rem;vertical-align:top;overflow-wrap:anywhere; }
 /* v3.6 — unobtrusive, truthful save status in the active workout. */
 .cockpit-save-health { display:flex; gap:.5rem; align-items:center; margin-top:.45rem; border-top:1px solid var(--line); padding-top:.4rem; }
 .cockpit-save-health p { margin:0; font-size:.7rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }

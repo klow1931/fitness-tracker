@@ -103,6 +103,8 @@ test('quick RPE completion advances to the next entered set and survives reload'
  await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
  await expect(page.locator('.set-rpe').first()).toHaveValue('8');await expect(page.locator('.set-done-check').first()).toBeChecked();
  await expect(page.locator('.logger-active-set')).toHaveCount(1);await expect(page.locator('.logger-active-set .set-rpe')).toHaveValue('');
+ await expect(page.locator('#workout-log-card #gym-floor-dock')).toHaveCount(1);
+ expect(await page.locator('#gym-floor-dock').evaluate(el=>getComputedStyle(el).position)).toBe('static');
  await page.locator('.quick-set-entry:visible [data-quick-rpe="8.5"]').click();
  await expect(page.locator('.set-rpe').nth(1)).toHaveValue('8.5');await expect(page.locator('.set-done-check').nth(1)).toBeChecked();
  await page.reload();await page.evaluate(()=>showTab('workouts'));

@@ -37,5 +37,10 @@ function initRestTimer(){
  try{const s=JSON.parse(localStorage.getItem(REST_KEY));if(s&&typeof s.paused==='boolean'&&[s.total,s.deadline,s.remaining].every(Number.isFinite)&&s.total>0&&s.remaining>=0&&s.remaining<=s.total)restState=s;}catch(_){}
  scheduleRest();tickRest();document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickRest();});
 }
-if(typeof window!=='undefined')window.LoadnoteRestTimer={snapshot:publicRestSnapshot,start:startRest,pause:pauseRest,add:addRestTime,stop:stopRest};
+function restCheckpoint(){return restState?{...restState}:null;}
+function restoreRestCheckpoint(previous,expected){
+ if(JSON.stringify(restState)!==JSON.stringify(expected))return false;
+ restState=previous?{...previous}:null;saveRestState();scheduleRest();tickRest();return true;
+}
+if(typeof window!=='undefined')window.LoadnoteRestTimer={snapshot:publicRestSnapshot,checkpoint:restCheckpoint,restoreCheckpoint:restoreRestCheckpoint,start:startRest,pause:pauseRest,add:addRestTime,stop:stopRest};
 if(typeof module==='object'&&module.exports)module.exports={restRemaining};

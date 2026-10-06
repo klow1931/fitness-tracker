@@ -54,6 +54,9 @@ test('v2.60 primary navigation is Home Train Progress Coach Profile',async({page
  const labels=await page.locator('#mobile-nav .mobile-nav-btn span:last-child').allTextContents();
  expect(labels).toEqual(['Home','Train','Progress','Coach','Profile']);
  await page.evaluate(()=>showTab('coach'));
+ await expect(page.locator('[data-panel="coach"][data-sub="co-today"]')).toBeVisible();
+ await expect(page.locator('#coach-today-brief')).toBeVisible();
+ await page.locator('#panel-coach .section-tab[data-sub="co-programs"]').click();
  await expect(page.locator('[data-panel="coach"][data-sub="co-programs"]')).toBeVisible();
  await expect(page.locator('[data-panel="coach"][data-sub="co-insights"]')).toBeHidden();
  await expect(page.locator('#decision-readiness-card')).toBeVisible();
@@ -128,6 +131,7 @@ test('primary navigation and Home hide secondary tools without removing them',as
  await expect(page.locator('#panel-calendar')).toBeVisible();
  await page.evaluate(()=>showTab('coach'));
  await expect(page.locator('.coach-programming-details')).not.toHaveAttribute('open','');
+ await page.locator('#panel-coach .section-tab[data-sub="co-programs"]').click();
  await expect(page.locator('#decision-readiness-card')).toBeVisible();
  await page.locator('.coach-programming-details > summary').click();
  await expect(page.locator('#athlete-profile-card')).toBeVisible();

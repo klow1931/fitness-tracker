@@ -62,15 +62,19 @@
  function syncViewportInsets(){
   const root=document.documentElement,cockpit=document.getElementById('training-cockpit'),dock=document.getElementById('gym-floor-dock');
   const transitioning=!!cockpit?.querySelector('[data-cockpit-transition]');
-  if(cockpit)cockpit.style.position=active&&optionsOpen?'static':'';
+  // Secondary controls remain reachable in normal flow; they must not cover RPE chips.
+  const inlineDock=active&&cockpit&&!cockpit.hidden;
+  if(dock){const parent=inlineDock?document.getElementById('workout-log-card'):document.body;if(parent&&dock.parentElement!==parent)parent.appendChild(dock);dock.style.position=inlineDock?'static':'';dock.style.marginTop=inlineDock?'.75rem':'';}
+  const tallCockpit=cockpit&&cockpit.getBoundingClientRect().height>innerHeight*.4;
+  if(cockpit)cockpit.style.position=active&&(optionsOpen||tallCockpit)?'static':'';
   if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
-  const top=!optionsOpen&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
-  const bottom=!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(dock.getBoundingClientRect().height)+12:0;
+  const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
+  const bottom=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
   root.style.scrollPaddingTop=top?top+'px':'';
   root.style.scrollPaddingBottom=bottom?bottom+'px':'';
  }
- function syncViewportSoon(){requestAnimationFrame(syncViewportInsets);}
+ function syncViewportSoon(){requestAnimationFrame(()=>{syncViewportInsets();window.LoadnoteCoachCompanionUI?.syncLauncherPosition?.();});}
  function update(){
   decorateSecondary();
   const next=shouldActivate();
