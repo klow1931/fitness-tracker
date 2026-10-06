@@ -56,6 +56,7 @@ function navigateTab(name) {
   if(nav.sub[name])navigateSubTab(name,nav.sub[name],true);else renderVisibleView(name);
   if(changed) {section.classList.add('view-enter');section.tabIndex=-1;section.focus({preventScroll:true});}
   applyGymMode();updateBackupBanner();restoreViewPosition(name);
+  window.LoadnoteCoachCompanionUI?.refresh();
 }
 function navigateSubTab(panel,sub,fromTab=false) {
   if(panel==='coach'&&sub==='co-decisions')sub='co-programs';
@@ -68,6 +69,7 @@ function navigateSubTab(panel,sub,fromTab=false) {
   document.querySelectorAll('#panel-'+panel+' .section-tab').forEach(btn=>{btn.classList.toggle('active',btn.dataset.sub===sub);btn.setAttribute('aria-selected',String(btn.dataset.sub===sub));});
   window.LoadnoteAccessibility?.syncTabs();
   renderVisibleView(panel,sub);
+  if(!fromTab)window.LoadnoteCoachCompanionUI?.refresh();
   if(!fromTab && nav.active===panel)restoreViewPosition(panel);
 }
 function updateFoodEntrySummary() {
