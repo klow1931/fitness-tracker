@@ -3,10 +3,10 @@
 .profile-preference-row > div:first-child { min-width:0; }
 #profile-preferences .profile-inline-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.35rem; min-width:0; }
 #profile-preferences .profile-preference-row button { width:100%; min-width:0; min-height:44px; margin:0; padding:.55rem .6rem; font-size:.85rem; line-height:1.35; white-space:normal; }
-#profile-preferences .profile-choice-active { background:var(--brand); color:#fff; box-shadow:none; }
+#profile-preferences .profile-preference-row button[aria-pressed="true"] { background:var(--brand); color:#fff; box-shadow:none; }
+.mobile-nav,body.dark .mobile-nav { background:var(--surface); }
 @media(max-width:640px) {
  #profile-preferences .profile-preference-row { grid-template-columns:minmax(0,1fr); align-items:stretch; gap:.45rem; }
- .mobile-nav,body.dark .mobile-nav { background:var(--surface); }
 }
 .schedule-row { border-top:1px solid var(--line); padding:1rem 0; overflow-wrap:anywhere; }
 .schedule-dialog { width:min(620px,calc(100% - 24px)); max-height:85dvh; overflow:auto; color:var(--ink); background:var(--surface); }
