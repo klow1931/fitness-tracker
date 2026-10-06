@@ -65,12 +65,16 @@
   // Secondary controls remain reachable in normal flow; they must not cover RPE chips.
   const inlineDock=active&&cockpit&&!cockpit.hidden;
   if(dock){const parent=inlineDock?document.getElementById('workout-log-card'):document.body;if(parent&&dock.parentElement!==parent)parent.appendChild(dock);dock.style.position=inlineDock?'static':'';dock.style.marginTop=inlineDock?'.75rem':'';}
-  const tallCockpit=cockpit&&cockpit.getBoundingClientRect().height>innerHeight*.4;
+  const availableHeight=window.visualViewport?.height||innerHeight;
+  const tallCockpit=cockpit&&cockpit.getBoundingClientRect().height>availableHeight*.4;
   if(cockpit)cockpit.style.position=active&&(optionsOpen||tallCockpit)?'static':'';
   if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
   const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
-  const bottom=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
+  const nav=document.getElementById('mobile-nav'),navBounds=nav?.getBoundingClientRect();
+  const navInset=navBounds?.height&&getComputedStyle(nav).position==='fixed'?Math.max(0,innerHeight-navBounds.top)+12:0;
+  const dockInset=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
+  const bottom=Math.max(navInset,dockInset);
   root.style.scrollPaddingTop=top?top+'px':'';
   root.style.scrollPaddingBottom=bottom?bottom+'px':'';
  }
@@ -132,6 +136,7 @@
   // whenever the cockpit content changes.
   const cockpit=document.getElementById('training-cockpit');if(cockpit)new MutationObserver(syncViewportSoon).observe(cockpit,{childList:true,subtree:true});
   window.addEventListener('resize',syncViewportSoon,{passive:true});
+  window.visualViewport?.addEventListener('resize',syncViewportSoon,{passive:true});
  }
  window.LoadnoteTrainingExecutionUI={init,refresh:update,isActive:()=>active,optionsOpen:()=>optionsOpen,toggleOptions,closeOptions,rowSnapshot};
  window.refreshTrainingExecution=update;

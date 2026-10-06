@@ -1,3 +1,10 @@
+# v3.7.1 — Mobile usability and release confidence
+
+- Compact program actions, shorter Progress empty states, and disclosed interpretation notes.
+- Larger-text Coach tabs and visible-viewport cockpit sizing.
+- Short-screen hit-target regressions and explicit three-set click-budget coverage.
+- Four browser CI shards with an aggregate gate; physical-phone acceptance checklist and human logging baseline remain pending.
+
 # v3.7.0 — Clear coaching and reversible completion
 
 - Three primary Coach paths: Today, Your program and Ask Coach; secondary tools remain under More.

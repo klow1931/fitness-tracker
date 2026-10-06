@@ -3,7 +3,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
-  test:
+  smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -18,7 +18,7 @@ jobs:
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
       - name: Mobile flow demo and formatting checks
-        run: npx playwright test tests/browser/mobile-flow.spec.js
+        run: npx playwright test tests/browser/mobile-flow.spec.js tests/browser/mobile-usability.spec.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -49,12 +49,48 @@ jobs:
         run: npx playwright test tests/browser/coaching-library.spec.js tests/browser/local-companion-ai.spec.js
       - name: Athlete planning smoke checks
         run: npx playwright test tests/browser/athlete-planning.spec.js
-      - run: npm run test:browser
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-report
+          name: smoke-test-report
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+  browser:
+    name: Browser regressions (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Full browser coverage shard
+        run: npx playwright test --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-report-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  test:
+    if: always()
+    needs: [smoke, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all smoke checks and browser shards
+        env:
+          SMOKE_RESULT: ${{ needs.smoke.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+        run: |
+          test "$SMOKE_RESULT" = success
+          test "$BROWSER_RESULT" = success
