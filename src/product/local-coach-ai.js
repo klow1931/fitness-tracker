@@ -21,9 +21,11 @@
   let engine=null,busy=false,generation=0,state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};
   const snapshot=()=>JSON.parse(JSON.stringify(state));
   async function disable(){generation++;const old=engine;engine=null;state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};if(old){await old.interruptGenerate?.();await old.unload();}return snapshot();}
-  function setConversationConsent({confirmed=false}={}){if(confirmed&&state.status!=='ready')throw Error('Enable and test the local model first');if(state.conversationConsent!==(confirmed===true))generation++;state.conversationConsent=confirmed===true;if(confirmed)try{globalThis.LoadnoteCoachVoiceUI?.stop();}catch{}return snapshot();}
+  function setConversationConsent({confirmed=false}={}){if(confirmed&&state.status!=='ready')throw Error('Enable and test the local model first');const changed=state.conversationConsent!==(confirmed===true);if(changed)generation++;state.conversationConsent=confirmed===true;if(confirmed&&changed)try{globalThis.LoadnoteCoachVoiceUI?.stop();}catch{}return snapshot();}
   async function enable({confirmed=false,conversationConsent=false,onProgress=()=>{}}={}){
    if(!confirmed)throw Error('Confirm the optional model download first');if(busy||engine)throw Error('Local AI is already loading or active');
+   // Selection is a routing promise, including during download and initialization failure.
+   state.conversationConsent=conversationConsent===true;if(conversationConsent)try{globalThis.LoadnoteCoachVoiceUI?.stop();}catch{}
    if(!gpu()){state.status='unsupported';throw Error('This browser does not expose WebGPU. Referenced local coaching remains available.');}
    busy=true;const ticket=++generation;state.status='loading';let candidate=null;
    try{
