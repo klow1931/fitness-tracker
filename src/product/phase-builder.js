@@ -89,7 +89,8 @@
     if(objectiveSnapshot?.status==='ready'&&objectiveSnapshot.transition)for(const lift of LIFTS){const o=objectiveSnapshot.lifts[lift]?.nextObjective;if(o&&objectiveSnapshot.lifts[lift]?.targetKg)result.warnings.push(`${lift} transition objective: ${o.label}. This records why the next block emphasis was chosen; it does not auto-change lift prescriptions.`);}
     const startingPrescriptionSnapshot=StartingPrescription?.inspect?StartingPrescription.audit(StartingPrescription.inspect(state,{asOf,knownAt:cutoff}),c):null;
     if(startingPrescriptionSnapshot?.warnings?.length)result.warnings.push(...startingPrescriptionSnapshot.warnings.map(w=>'Starting prescription review: '+w));
-    return {...result,profileSnapshot,roleSnapshot,goalSnapshot,objectiveSnapshot,startingPrescriptionSnapshot};
+    const library=typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary;const knowledgeReview=library?.review(state,result,{asOf,knownAt:cutoff});if(knowledgeReview)result.warnings.push(...knowledgeReview.findings.map(f=>'Referenced review: '+f.message));
+    return {...result,profileSnapshot,roleSnapshot,goalSnapshot,objectiveSnapshot,startingPrescriptionSnapshot,...(knowledgeReview?{knowledgeReview}:{})};
   }
   function validate(records){
     if(!Array.isArray(records)||records.length>100)throw Error('Invalid phase programs');const ids=new Set();return records.map(r=>{
