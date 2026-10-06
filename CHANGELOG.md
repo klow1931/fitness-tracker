@@ -1,3 +1,9 @@
+# v3.7.3 — Uniform preferences
+
+- Equal-width settings controls, side-by-side weight units and accessible toggle states.
+- Shorter preference helper text and opaque mobile navigation.
+- Phone-width, larger-text, theme, toggle and training-integrity regressions.
+
 # v3.7.2 — Mobile layout polish
 
 - Compact header and Profile hero; consistent Coach spacing and clearer disclosures.
