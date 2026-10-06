@@ -34,7 +34,7 @@
  function strengthStoryHtml(report){
   const rows=report.summary?.strength||[];
   const content=rows.length?rows.map(row=>'<article class="progress-story-mini"><div><span>'+esc(row.label)+'</span><b>'+esc(statusTone(row.status))+'</b><small>'+esc(summaryStrengthLine(row))+'</small></div><div class="progress-story-mini-side"><button type="button" class="btn-secondary text-sm" data-progress-open-exercise="'+esc(row.name)+'">Details</button></div></article>').join(''):
-   '<p class="more-hint">Log comparable rep-based strength work to build strength stories. Loadnote will not manufacture a trend from missing evidence.</p>';
+   '<p class="more-hint">Log comparable strength sets to build a trend.</p>';
   return '<section class="progress-story-summary-section" data-progress-summary="strength"><div class="progress-story-section-head"><div><p class="eyebrow">Strength</p><h3>What is changing?</h3><p>RPE-aware demonstrated-capacity evidence, with sparse data left unresolved.</p></div></div><div class="progress-story-movement-list">'+content+'</div></section>';
  }
  function consistencyStoryHtml(report){
@@ -52,7 +52,7 @@
   const body=rows.length?'<div class="progress-story-review-list">'+rows.map(row=>{
    if(row.type==='capacity-high')return '<article><div><span>'+esc(fmtDate(row.date))+' · '+esc(row.label)+'</span><b>'+esc(row.headline)+'</b></div><p>'+esc(displayKg(row.valueKg)+' vs previous '+displayKg(row.previousKg)+' · '+signed(row.deltaPct)+'%')+'</p><p class="more-hint">'+esc(row.detail)+'</p></article>';
    return '<article><div><span>Recent 4 weeks</span><b>'+esc(row.headline)+'</b></div><p>'+esc(row.detail)+'</p></article>';
-  }).join('')+'</div>':'<article class="progress-story-adherence-card"><p><b>No milestone claimed yet.</b></p><p class="more-hint">Loadnote waits for enough comparable evidence instead of turning ordinary training into achievement spam.</p></article>';
+  }).join('')+'</div>':'<article class="progress-story-adherence-card"><p><b>No milestone claimed yet.</b></p><p class="more-hint">More comparable evidence is needed.</p></article>';
   return '<section class="progress-story-summary-section" data-progress-summary="milestones"><div class="progress-story-section-head"><div><p class="eyebrow">Milestones</p><h3>What stands out?</h3><p>Only bounded claims supported by the selected training window.</p></div></div>'+body+'</section>';
  }
  function changesStoryHtml(report){
@@ -62,13 +62,13 @@
    body='<div class="progress-story-review-list">'+changes.rows.map(row=>'<article><div><span>'+esc(fmtDate(row.date))+' · '+esc(row.sourceLabel)+'</span><b>'+esc(row.name)+' · '+esc(actionLabel(row.action))+'</b></div><p>'+esc(row.why)+'</p>'+(row.evidence?.length?'<details><summary>Evidence</summary><p class="more-hint">'+row.evidence.map(esc).join(' · ')+'</p></details>':'')+'</article>').join('')+'</div>';
   }else if(changes.latestReview){
    body='<article class="progress-story-adherence-card"><p><b>Latest accepted review kept the plan.</b></p><p>'+esc(fmtDate(changes.latestReview.date)+' · '+changes.latestReview.sourceLabel)+'</p><p class="more-hint">No changed prescription is being presented as a change.</p></article>';
-  }else body='<article class="progress-story-adherence-card"><p><b>No accepted programming changes in this window.</b></p><p class="more-hint">When a reviewed adjustment is accepted, Loadnote will show what changed and the stored reason here.</p></article>';
+  }else body='<article class="progress-story-adherence-card"><p><b>No accepted programming changes in this window.</b></p><p class="more-hint">Accepted changes and their reasons will appear here.</p></article>';
   return '<section class="progress-story-summary-section" data-progress-summary="changes"><div class="progress-story-section-head"><div><p class="eyebrow">Recent changes</p><h3>What did Loadnote change?</h3><p>Accepted programming decisions from stored review history—not inferred causality.</p></div></div>'+body+'</section>';
  }
  function summaryHtml(report){
   return '<div class="progress-story-head"><div><p class="eyebrow">YOUR PROGRESS</p><h2>What your training is doing.</h2><p>Strength, consistency, milestones and recent programming changes from evidence you actually logged.</p></div><label>Story window<select class="input" data-progress-window><option value="8">8 weeks</option><option value="12">12 weeks</option><option value="24">24 weeks</option></select></label></div>'+
    '<div class="progress-story-overview" data-progress-story-summary>'+strengthStoryHtml(report)+consistencyStoryHtml(report)+milestoneHtml(report)+changesStoryHtml(report)+'</div>'+
-   '<p class="more-hint">'+esc(report.summary?.note||'Progress stays descriptive and evidence-backed.')+'</p>';
+   '<details class="progress-story-method"><summary>How to read these stories</summary><p class="more-hint">'+esc(report.summary?.note||'Progress stays descriptive and evidence-backed.')+'</p></details>';
  }
  function reviewMarkersHtml(story){
   if(!story.reviews.length)return '<p class="more-hint">No accepted '+story.weeks+'-week programming reviews are linked to this movement.</p>';
