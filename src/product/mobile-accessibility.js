@@ -30,6 +30,8 @@
     button.setAttribute('role','tab');button.setAttribute('aria-selected',String(selected));button.setAttribute('aria-controls',target.id);button.tabIndex=selected?0:-1;
     target.setAttribute('role','tabpanel');target.setAttribute('aria-labelledby',button.id);target.tabIndex=0;
    });
+   // Secondary screens can be opened from More without selecting a primary tab.
+   const tabs=[...list.querySelectorAll('[role="tab"]')];if(tabs.length&&!tabs.some(tab=>tab.tabIndex===0))tabs[0].tabIndex=0;
   });
  }
  function skip(event){event.preventDefault();const panel=[...document.querySelectorAll('section[id^="panel-"]')].find(node=>!node.classList.contains('hidden'));if(panel){panel.tabIndex=-1;panel.focus();panel.scrollIntoView({block:'start'});}}

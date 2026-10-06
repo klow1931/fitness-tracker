@@ -38,7 +38,7 @@ test('v2.76 Home defaults to training and keeps secondary evidence behind disclo
 });
 
 test('v2.76 keeps legacy programming reachable but one level deeper',async({page})=>{
- await page.evaluate(()=>showTab('coach'));
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');});
  const programming=page.locator('.coach-programming-details');
  await programming.locator(':scope > summary').click();
  const advanced=page.locator('.calm-advanced-programming');

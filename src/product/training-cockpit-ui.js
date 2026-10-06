@@ -211,9 +211,11 @@
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
     quick+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+transitionHtml()+restHtml()+
+    (window.LoadnoteQuickCompletionUndo?.canUndo?.()?'<div class="cockpit-undo"><span>Last set checked complete</span><button type="button" class="btn-secondary" data-cockpit-undo>Undo set completion</button></div>':'')+
     '<div class="cockpit-save-health"><p role="status" data-cockpit-save-status></p><button type="button" class="btn-secondary" data-cockpit-retry-save hidden>Retry draft save</button></div>';
   host.hidden=false;
   refreshSaveStatus();
+  host.querySelector('[data-cockpit-undo]')?.addEventListener('click',()=>window.LoadnoteQuickCompletionUndo?.undo?.());
   host.querySelector('[data-cockpit-retry-save]')?.addEventListener('click',()=>{saveLoggerDraft();refreshSaveStatus();});
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelector('[data-cockpit-guidance]')?.addEventListener('click',()=>window.LoadnoteMovementGuidanceUI?.open?.(exerciseName));
@@ -264,7 +266,7 @@
   timer=setInterval(()=>{if(!document.hidden)queueRefresh();},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRefresh();});
  }
- window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,useTarget,adjust,current,startNextExercise};
+ window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,adjust,current,startNextExercise};
  window.refreshTrainingCockpit=render;
  window.refreshTrainingCockpitRest=refreshRest;
  window.refreshTrainingCockpitSaveStatus=refreshSaveStatus;

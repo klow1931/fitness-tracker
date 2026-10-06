@@ -1,7 +1,19 @@
 /* v2.74 — one-tap RPE, completion, and exercise-aware next-set flow. */
 (function(){
  'use strict';
- let focusedSet=null;
+ let focusedSet=null,lastCompletion=null;
+ function fingerprint(set){const row=set.closest('#exercise-rows > div');return JSON.stringify([currentUnit(),document.getElementById('wo-date')?.value,row?.querySelector('.ex-name')?.value,...[...set.querySelectorAll('input')].map(i=>i.type==='checkbox'?i.checked:i.value)]);}
+ function canUndo(){return !!lastCompletion?.set?.isConnected&&lastCompletion.set.querySelector('.set-done-check')?.checked&&fingerprint(lastCompletion.set)===lastCompletion.after;}
+ function undo(){
+  if(!canUndo()){lastCompletion=null;window.refreshTrainingCockpit?.();return false;}
+  const entry=lastCompletion;lastCompletion=null;
+  entry.set.querySelector('.set-rpe').value=entry.rpe;
+  entry.set.querySelector('.set-done-check').checked=false;entry.set.classList.remove('set-row-done');
+  window.LoadnoteRestTimer?.restoreCheckpoint?.(entry.restBefore,entry.restAfter);
+  focusedSet=entry.set;window.LoadnoteTrainingCockpitUI?.onSetUndone?.();
+  saveLoggerDraft();updateTrainingFlow();refresh();window.refreshGymFloorUI?.();window.refreshTrainingCockpit?.();
+  showToast('Set completion undone; load and reps kept','info');return true;
+ }
  const H=()=>window.LoadnoteLoggerQuickEntry;
  function snapshot(set){return {reps:set.querySelector('.set-reps')?.value||'',duration:set.querySelector('.set-duration')?.value||'',done:!!set.querySelector('.set-done-check')?.checked};}
  function ensureCheck(set){
@@ -38,8 +50,10 @@
   const invalid=H().completionError(values);
   if(invalid){loggerValidationFailure(invalid.field==='name'?name:set.querySelector('.set-'+invalid.field),invalid.message);return false;}
   window.LoadnoteAccessibility?.clearErrors();
+  const entry={set,rpe:set.querySelector('.set-rpe')?.value||'',restBefore:window.LoadnoteRestTimer?.checkpoint?.()};
   const input=set.querySelector('.set-rpe');if(rpe!=null&&input){input.value=String(H().normalizeRpe(rpe));input.dispatchEvent(new Event('input',{bubbles:true}));}
   const check=ensureCheck(set);check.checked=true;check.dispatchEvent(new Event('change',{bubbles:true}));
+  entry.restAfter=window.LoadnoteRestTimer?.checkpoint?.();entry.after=fingerprint(set);lastCompletion=entry;
   if(window.LoadnoteRestTimer?.snapshot?.().active&&document.activeElement?.matches?.('#exercise-rows input'))document.activeElement.blur();
   const all=rows(),index=all.indexOf(set);focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
   const model=all.map(row=>({done:!!row.querySelector('.set-done-check')?.checked})),nextIndex=window.LoadnoteGymFloor?.nextUnfinishedIndex(model,index)??-1,next=nextIndex>=0?all[nextIndex]:null;
@@ -53,7 +67,7 @@
       // Rest is a pause in entry, not a request to open the next numeric keyboard.
       if(window.LoadnoteRestTimer?.snapshot?.().active){
         if(document.activeElement?.matches?.('#exercise-rows input'))document.activeElement.blur();
-      }else setTimeout(()=>{if(!next.isConnected||window.LoadnoteRestTimer?.snapshot?.().active)return;target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
+      }else setTimeout(()=>{if(!next.isConnected||!check.checked||window.LoadnoteRestTimer?.snapshot?.().active)return;target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
     }
   }
   window.refreshGymFloorUI?.();window.refreshTrainingCockpit?.();
@@ -70,4 +84,5 @@
  });
  window.refreshLoggerQuickEntry=refresh;
  window.completeLoggerSetQuickly=complete;
+ window.LoadnoteQuickCompletionUndo={canUndo,undo};
 })();

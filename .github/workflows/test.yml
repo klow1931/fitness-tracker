@@ -26,7 +26,7 @@ jobs:
           path: test-results/
           retention-days: 7
       - name: Training loop demo and save-safety checks
-        run: npx playwright test tests/browser/training-loop.spec.js tests/browser/gym-floor.spec.js
+        run: npx playwright test tests/browser/training-loop.spec.js tests/browser/gym-floor.spec.js tests/browser/clear-coaching.spec.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:

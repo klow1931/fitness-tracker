@@ -74,14 +74,18 @@ function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
  const host=document.getElementById('workout-recap');if(!host)return;host.replaceChildren();host.hidden=false;
  const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;host.appendChild(el);return el;};
  add('h2',editing?'Workout updated':'Session saved. Work logged.');
+ const takeaway=window.LoadnoteTrainingCockpit?.workoutTakeaway?.(workout);
+ if(takeaway){const section=add('section','');section.className='workout-takeaway';section.setAttribute('aria-label','Workout takeaway');for(const [label,text] of [['Logged',takeaway.logged],['Watch',takeaway.watch],['Next',takeaway.next]]){const p=document.createElement('p'),b=document.createElement('b');b.textContent=label+': ';p.append(b,document.createTextNode(text));section.append(p);}}
+ const details=add('details','');details.className='recap-details';const summary=document.createElement('summary');summary.textContent='Session details and previous sets';details.append(summary);
+ const detail=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;details.append(el);return el;};
  const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length||0),0);
- add('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
+ detail('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
  for(const pr of newPRs)add('p',`★ New personal best: ${pr.exercise} · ${formatStrengthSet(pr)}`);
  for(const exercise of workout.exercises){
   const last=LoadnoteSession.previous(previousWorkouts,exercise.name,workout.date,workout.id,exercise.type,exercise.trackBy);
-  if(exercise.type==='cardio'){add('p',`${exercise.name}: ${exercise.duration||0} min · ${exercise.distance||0} ${exercise.distanceUnit}`);continue;}
-  if(!last){add('p',`${exercise.name}: first matching session logged.`);continue;}
-  add('h3',exercise.name);add('p','This session: '+exercise.sets.map(formatStrengthSet).join(' / '));add('p',`Previous (${last.date}): `+last.exercise.sets.map(formatStrengthSet).join(' / '));
+  if(exercise.type==='cardio'){detail('p',`${exercise.name}: ${exercise.duration||0} min · ${exercise.distance||0} ${exercise.distanceUnit}`);continue;}
+  if(!last){detail('p',`${exercise.name}: first matching session logged.`);continue;}
+  detail('h3',exercise.name);detail('p','This session: '+exercise.sets.map(formatStrengthSet).join(' / '));detail('p',`Previous (${last.date}): `+last.exercise.sets.map(formatStrengthSet).join(' / '));
  }
  const close=add('button','Dismiss recap');close.type='button';close.className='btn-secondary';close.onclick=()=>{host.hidden=true;};
 }

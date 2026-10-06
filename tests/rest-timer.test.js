@@ -8,3 +8,13 @@ context.pauseRest();assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).dead
 now+=110001;context.tickRest();context.tickRest();assert.equal(context.notifications,1);assert.equal(stored.size,0);
 context.startRest(60);context.stopRest();assert.equal(stored.size,0);
 console.log('Rest pause, resume, extension, expiry and cancellation tests passed');
+context.startRest(60);const prior=context.restCheckpoint();now+=10000;
+context.startRest(90);const completion=context.restCheckpoint();
+assert.equal(context.restoreRestCheckpoint(prior,completion),true);
+assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).deadline,prior.deadline);
+context.startRest(90);const changed=context.restCheckpoint();context.addRestTime();
+assert.equal(context.restoreRestCheckpoint(null,changed),false);
+assert.equal(JSON.parse(stored.get('loadnote-rest-v1')).total,120000);
+context.stopRest();context.startRest(90);const fresh=context.restCheckpoint();
+assert.equal(context.restoreRestCheckpoint(null,fresh),true);assert.equal(stored.size,0);
+console.log('Completion undo preserves prior rest deadline and independently changed timers');

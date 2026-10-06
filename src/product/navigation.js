@@ -1,5 +1,5 @@
 /* Session-local navigation state. No workout/nutrition schema changes. */
-const LoadnoteNavigation={active:null,sub:{workouts:'wo-log',nutrition:'nu-today',coach:'co-programs'},scroll:{},revision:0,rendered:{},frame:0,metrics:{renders:0,skips:0}};
+const LoadnoteNavigation={active:null,sub:{workouts:'wo-log',nutrition:'nu-today',coach:'co-today'},scroll:{},revision:0,rendered:{},frame:0,metrics:{renders:0,skips:0}};
 function invalidateViews() { LoadnoteNavigation.revision++; }
 function navigationKey(panel) {return panel+':'+(LoadnoteNavigation.sub[panel] || 'main');}
 function renderVisibleView(panel,sub) {
@@ -58,6 +58,7 @@ function navigateTab(name) {
   applyGymMode();updateBackupBanner();restoreViewPosition(name);
 }
 function navigateSubTab(panel,sub,fromTab=false) {
+  if(panel==='coach'&&sub==='co-decisions')sub='co-programs';
   const nav=LoadnoteNavigation;
   const target=document.querySelector('.sub-panel[data-panel="'+panel+'"][data-sub="'+sub+'"]');
   if(!target)return;
@@ -118,7 +119,7 @@ function initCalmNavigation(){
     const legacy=[...coach.querySelectorAll('.card')].filter(card=>{const title=card.querySelector('h2')?.textContent.trim()||'';return title==='Legacy generator selection'||title==='Legacy program library';});
     if(legacy.length){const details=document.createElement('details');details.className='card calm-advanced-programming';details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);}
   }
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v3.6.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v3.7.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});

@@ -55,5 +55,10 @@
   const from=Number(fromExerciseIndex),to=Number(toExerciseIndex);
   return Number.isInteger(from)&&Number.isInteger(to)&&from>=0&&to===from+1;
  }
- return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,transition};
+ function workoutTakeaway(workout){
+  const sets=(workout?.exercises||[]).filter(e=>e.type!=='cardio').flatMap(e=>e.sets||[]);
+  const known=sets.filter(s=>s.rpe!=null&&s.rpe!==''&&Number.isFinite(Number(s.rpe))&&Number(s.rpe)>=1&&Number(s.rpe)<=10).length;
+  return {logged:sets.length+' strength sets recorded.',watch:!sets.length?'Cardio recorded; no strength-effort comparison.':known<sets.length?(sets.length-known)+' sets have no recorded RPE; effort comparisons are limited.':'Effort recorded for every strength set; recovery is still separate.',next:'Keep scheduled targets until a supported change is reviewed.'};
+ }
+ return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,transition,workoutTakeaway};
 });

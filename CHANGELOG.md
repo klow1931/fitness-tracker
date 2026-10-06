@@ -1,3 +1,10 @@
+# v3.7.0 — Clear coaching and reversible completion
+
+- Three primary Coach paths: Today, Your program and Ask Coach; secondary tools remain under More.
+- Guarded session-local undo for the latest quick completion, preserving prior effort and independently changed rest timers.
+- Exact before/after proposal tables and Why? evidence, retaining explicit approval safeguards.
+- Concise logged-evidence workout takeaway after successful save; detailed set comparisons remain available.
+
 # v3.6.0 — Between-set flow and visible draft safety
 
 - Keep the next numeric keyboard closed while rest is active after quick completion.
