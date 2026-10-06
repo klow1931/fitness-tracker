@@ -569,7 +569,7 @@ body.dark .decision-open-hint { color:#a5b4fc; }
 #panel-coach .decision-workspace > details.card > summary b,#panel-coach .decision-build-tools > details.card > summary b { display:block; font-size:.88rem; font-weight:750; line-height:1.4; }
 #panel-coach .decision-workspace > details.card > summary small,#panel-coach .decision-build-tools > details.card > summary small { display:block; font-size:.72rem; font-weight:450; line-height:1.45; margin-top:.1rem; color:var(--muted); }
 #panel-coach .decision-workspace > details.card[open] > summary,#panel-coach .decision-build-tools > details.card[open] > summary { margin-bottom:.7rem; border-bottom:1px solid var(--line); padding-bottom:.5rem; }
-#panel-coach .section-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.2rem; }
+#panel-coach .section-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.2rem; }
 #panel-coach .section-tab { min-width:0; padding:.65rem .15rem; font-size:.78rem; }
 #panel-coach .decision-workspace > *,#panel-coach .decision-build-tools > * { min-width:0; }
 @media(max-width:480px){ #panel-coach .decision-answer-first .readiness-grid { grid-template-columns:1fr; } }
@@ -864,6 +864,8 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
 #decision-action-center .adaptive-entry-actions { padding-top:.75rem; border-top:1px solid var(--line); }
 #decision-action-center .adaptive-entry-actions > button:last-child { grid-column:1 / -1; }
 @media(max-width:640px) {
+ #decision-action-center .adaptive-entry-actions { grid-template-columns:1fr;gap:.35rem;margin-top:.65rem; }
+ #decision-action-center .adaptive-entry-actions>button { padding:.55rem .75rem;text-align:left;overflow-wrap:anywhere; }
  #panel-coach .decision-workspace > .card,
  #panel-coach .decision-workspace details.card,
  #panel-prs #progress-explore { padding:1rem; }

@@ -17,9 +17,14 @@ test('short screens and enlarged text keep Coach actions and Progress explanatio
  for(const size of [{width:320,height:480},{width:390,height:568},{width:667,height:390}]){
   await page.setViewportSize(size);
   await page.evaluate(()=>{document.documentElement.style.fontSize='24px';showTab('coach');showSubTab('coach','co-today');});
+  expect(await page.locator('#panel-coach .section-tabs').evaluate(tabs=>getComputedStyle(tabs).gridTemplateColumns.split(' ').length)).toBe(3);
   for(const tab of await page.locator('#panel-coach .section-tab').all())await hitTarget(page,tab);
   await page.locator('#panel-coach .section-tab[data-sub="co-programs"]').click();
   for(const button of await page.locator('#decision-action-center .adaptive-entry-actions>button').all())await hitTarget(page,button);
+  if(size.width<=640){
+   const widths=await page.locator('#decision-action-center .adaptive-entry-actions').evaluate(actions=>({row:actions.clientWidth,buttons:[...actions.children].map(button=>button.getBoundingClientRect().width)}));
+   for(const width of widths.buttons)expect(width).toBeGreaterThanOrEqual(widths.row-1);
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.evaluate(()=>showTab('prs'));
   const method=page.locator('.progress-story-method').filter({has:page.getByText('How to read these stories',{exact:true})});

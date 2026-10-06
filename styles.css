@@ -1836,9 +1836,6 @@ body.dark .logger-validation-error { background:#450a0a; color:#fecaca; }
 .progress-story-method>summary { min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:.85rem;font-weight:600; }
 .progress-story-adherence-card p { margin:.3rem 0; }
 @media(max-width:640px){
- #decision-action-center .adaptive-entry-actions { display:grid;grid-template-columns:1fr;gap:.35rem;margin-top:.65rem; }
- #decision-action-center .adaptive-entry-actions>button { width:100%;min-height:44px;padding:.55rem .75rem;text-align:left;white-space:normal;overflow-wrap:anywhere; }
- #panel-coach .section-tabs { display:grid;grid-template-columns:repeat(3,minmax(0,1fr)); }
  #panel-coach .section-tab { min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center; }
  .program-lifecycle-head>div,.progress-story-head>div { min-width:0;overflow-wrap:anywhere; }
  .program-lifecycle-empty details { margin:.4rem 0; }
