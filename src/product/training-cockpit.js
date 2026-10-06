@@ -58,7 +58,8 @@
  function workoutTakeaway(workout){
   const sets=(workout?.exercises||[]).filter(e=>e.type!=='cardio').flatMap(e=>e.sets||[]);
   const known=sets.filter(s=>s.rpe!=null&&s.rpe!==''&&Number.isFinite(Number(s.rpe))&&Number(s.rpe)>=1&&Number(s.rpe)<=10).length;
-  return {logged:sets.length+' strength sets recorded.',watch:!sets.length?'Cardio recorded; no strength-effort comparison.':known<sets.length?(sets.length-known)+' sets have no recorded RPE; effort comparisons are limited.':'Effort recorded for every strength set; recovery is still separate.',next:'Keep scheduled targets until a supported change is reviewed.'};
+  const missing=sets.length-known;
+  return {logged:sets.length+' strength set'+(sets.length===1?'':'s')+' recorded.',watch:!sets.length?'Cardio recorded; no strength-effort comparison.':missing?missing+(missing===1?' set has':' sets have')+' no recorded RPE; effort comparisons are limited.':'Effort recorded for every strength set; recovery is still separate.',next:'Keep scheduled targets until a supported change is reviewed.'};
  }
  return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,transition,workoutTakeaway};
 });

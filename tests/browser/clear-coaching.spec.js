@@ -37,7 +37,7 @@ test('undo will not replace later edits or an independently changed timer',async
 test('takeaway appears only after successful reviewed save; undo cannot change history',async({page})=>{
  await enter(page);await page.locator('[data-quick-done]:visible').click();
  await page.locator('[data-cockpit-review]').click();await expect(page.locator('.workout-takeaway')).toHaveCount(0);
- await page.locator('#confirm-workout-save').click();await expect(page.locator('.workout-takeaway')).toContainText('1 sets have no recorded RPE');
+ await page.locator('#confirm-workout-save').click();await expect(page.locator('.workout-takeaway')).toContainText('1 set has no recorded RPE');
  await expect(page.locator('.recap-details')).not.toHaveAttribute('open','');
  const before=await page.evaluate(()=>JSON.stringify(data.workouts));expect(await page.evaluate(()=>LoadnoteQuickCompletionUndo.undo())).toBe(false);
  expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
