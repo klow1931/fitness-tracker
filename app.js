@@ -2331,6 +2331,7 @@
       const status = document.getElementById('coach-online-status');
       const accountLink = document.getElementById('coach-account-link');
       if (!status || !window.LoadnoteCoachClient) return;
+      if(window.LoadnoteLocalCoachAI?.snapshot().conversationConsent){status.textContent='Local conversation selected · '+window.LoadnoteLocalCoachAI.snapshot().status+'. Online Coach is paused.';status.className='text-xs text-slate-500 mt-1';accountLink?.setAttribute('hidden','');return;}
       const signedIn = await window.LoadnoteCoachClient.ensureSignedIn();
       accountLink?.toggleAttribute('hidden', signedIn);
       if (!signedIn) {
@@ -2351,6 +2352,7 @@
     }
 
     async function requestStructuredCoach(userMessage) {
+      if(window.LoadnoteLocalCoachAI?.snapshot().conversationConsent)throw new Error('Online Coach is paused while local AI conversation is selected.');
       if (!window.LoadnoteCoachClient) throw new Error('Secure Coach client is unavailable.');
       const structured = await window.LoadnoteCoachClient.ask({
         question: userMessage,
@@ -2395,6 +2397,7 @@
     async function refreshCoachAnalysis(btn) {
       if (btn) { btn.disabled = true; btn.textContent = 'Analyzing…'; }
       try {
+        if(window.LoadnoteLocalCoachAI?.snapshot().conversationConsent){window.LoadnoteCoachCompanionUI?.open();return await window.LoadnoteCoachCompanionUI?.ask('How is my training going?');}
         const useApi = !!window.LoadnoteCoachClient && await window.LoadnoteCoachClient.ensureSignedIn();
         if (!useApi) { renderProactiveCoachPreview(); return; }
         const snapshot = await requestStructuredCoach('Analyze my current training and give me the single most useful next-workout recommendation.');

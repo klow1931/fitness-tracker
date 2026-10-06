@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.3.0 · Development build.**
+**v3.4.0 · Development build.**
 
-Explore coaching references in Decisions for shared offline NSCA/Westside educational summaries, source coverage and an optional experimental local language model. The coach links its sources; generated explanations never approve training changes. See [v3.3 release notes](docs/releases-v3.3.md) for content coverage and device limitations.
+Coach Companion can run an optional local conversation model using a bounded, freshly read training summary and recent conversation after separate consent. Open Local AI in Companion or coaching references in Decisions to download and test it. Both Coach views share the same session; generated conversation cannot edit training. See [v3.4 release notes](docs/releases-v3.4.md) for privacy, fallback and device limitations.
 
 Athlete intake records training history, reported concerns and activity limits. Reviewed Calendar edits support custom strength/cardio movements, and stable-dose cardio plans use explicit approval. Repeated preference edits can inform future exclusions after confirmation. Intake supports programming constraints and general education; it does not diagnose injuries or prescribe rehabilitation. An adaptive strength-training log that learns how you train.
 

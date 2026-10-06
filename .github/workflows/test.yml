@@ -25,6 +25,8 @@ jobs:
         run: npx playwright test tests/browser/accessory-programming.spec.js
       - name: Local conversation smoke checks
         run: npx playwright test tests/browser/coach-conversation.spec.js
+      - name: Local AI conversation smoke checks
+        run: npx playwright test tests/browser/coaching-library.spec.js tests/browser/local-companion-ai.spec.js
       - name: Athlete planning smoke checks
         run: npx playwright test tests/browser/athlete-planning.spec.js
       - run: npm run test:browser

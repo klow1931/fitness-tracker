@@ -1,3 +1,11 @@
+# v3.4.0 — Local Coach Companion conversation
+
+- Extend the optional device model into private Coach conversation with explicit training-context consent and shared recent chat.
+- Build bounded fresh summaries of confirmed setup, structured intake, goals, weekly evidence, current task and upcoming movements; omit raw records and free-text injury notes.
+- Keep injury, exact-dose, target and training-change questions on reviewed handlers. Retain canonical guidance and citations beside experimental generated text.
+- Add a direct Local AI control, private-mode status, generation timeout, consent revocation, and local fallback without Online Coach requests.
+- Preserve existing programming approvals, data schema and session-only conversation. No model-weight training or claimed clinical/device validation.
+
 # v3.3.0 — Referenced coaching knowledge and optional local AI
 
 - Add a shared source catalog, original educational summaries, transparent book coverage and offline search for Decisions and both Coach views.

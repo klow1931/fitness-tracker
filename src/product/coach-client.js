@@ -13,6 +13,8 @@
   try{return globalThis.LoadnoteAccountSession?.snapshot?.()||{status:'unknown'};}catch{return {status:'unknown'};}
  }
  function signedIn(){return session().status==='authenticated';}
+ function localMode(){return globalThis.LoadnoteLocalCoachAI?.snapshot?.().conversationConsent===true;}
+ function requireOnlineMode(){if(localMode()){const error=new Error('Online Coach is paused while local AI conversation is selected.');error.code='coach_local_ai_selected';throw error;}}
  async function ensureSignedIn(){
   let current=session();
   if(current.status==='unknown'&&typeof globalThis.LoadnoteAccountSession?.refresh==='function'){
@@ -21,6 +23,7 @@
   return current?.status==='authenticated';
  }
  async function availability({force=false,request=globalThis.LoadnoteAccountSession?.request||globalThis.fetch}={}){
+  if(localMode())return {online:false,authRequired:false,voiceConfigured:false,reason:'local_ai_selected'};
   if(globalThis.Capacitor?.isNativePlatform?.())return {online:false,authRequired:true,voiceConfigured:false,reason:'native_beta_local_only'};
   const now=Date.now();
   if(!force&&healthCache&&now-healthAt<60000)return healthCache;
@@ -34,8 +37,10 @@
   healthAt=now;return healthCache;
  }
  async function ask({question,context,history=[]}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
+  requireOnlineMode();
   if(globalThis.Capacitor?.isNativePlatform?.()){const error=new Error('Online Coach is unavailable in the native beta. Local workout guidance remains available.');error.code='native_beta_local_only';throw error;}
   if(!await ensureSignedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
+  requireOnlineMode();
   if(typeof request!=='function'){const error=new Error('Secure Coach connection is unavailable.');error.code='coach_unavailable';throw error;}
   const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:withoutIntake(context),history})});
   let body={};try{body=await response.json();}catch{}

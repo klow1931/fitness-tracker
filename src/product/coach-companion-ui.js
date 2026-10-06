@@ -103,6 +103,7 @@
   panel.querySelector('.cc-close').addEventListener('click',close);
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text||asking)return;input.value='';void serialAsk(text);});
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
+  const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
   document.body.appendChild(panel);
   append('I’m here throughout Loadnote. During a workout I can read your current set, answer questions from your training context, and control the rest timer.','assistant');
   refresh();
@@ -131,6 +132,7 @@
   const current=Core()?.currentSetSummary(context);
   status.textContent=context.coaching?.currentTask?.name||current||('Viewing '+context.surface);
   const chips=[`<span class="cc-chip">${esc(context.surface)}</span>`];
+  const ai=window.LoadnoteLocalCoachAI?.snapshot();if(ai?.conversationConsent)chips.push('<span class="cc-chip">Local AI '+esc(ai.status)+'</span>');
   if(context.sportWorkout)chips.push('<span class="cc-chip live">Sport session active</span>');
   if(context.liveWorkout?.active)chips.push('<span class="cc-chip live">Workout active</span>');
   if(context.restTimer?.active)chips.push(`<span class="cc-chip">Rest ${esc(context.restTimer.remainingSeconds)}s${context.restTimer.paused?' paused':''}</span>`);
@@ -169,16 +171,22 @@
   const live=companionContext(),command=Core()?.classifyCommand(text);
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
-  if(local?.knowledgeIds?.length&&window.LoadnoteLocalCoachAI?.snapshot().status==='ready'){const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await window.LoadnoteLocalCoachAI.explain(local.intent.referenceQuestion,cards);if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};}
+  const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
+  if(localMode){
+   const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
+   const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
+   const generated=await ai.respond(text,{context,history,cards,canonical:local});
+   if(generated)local={...(local||{}),readOnly:true,text:'Local AI conversation (experimental): '+generated+(local?.text?'\n\nReviewed guidance: '+local.text:''),source:'Local AI · on-device conversation'};
+  }else if(local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};}
   const offline=local?.text||Core()?.offlineReply(live,text);
   const authoritative=local?.source?.startsWith('Shared coaching');
-  const client=authoritative?null:Client();
+  const client=authoritative||localMode?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
-   reply=reply||(window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   const message=append(reply,'assistant',local?.source||'Built-in companion');attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
+   const message=append(reply,'assistant',local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion'));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
