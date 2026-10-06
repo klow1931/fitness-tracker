@@ -11,12 +11,12 @@
     const host=document.getElementById('programming-workspace');if(!host)return;
     let route;try{route=LoadnoteProgrammingWorkspace.route(data,{asOf:today()});}catch(e){host.innerHTML='<p role="alert">'+esc(e.message)+'</p>';return;}
     const p=route.profile,meta=p?(esc(p.goalLabel)+' · '+esc(p.availableDayLabels.join(', '))+' · up to '+esc(p.sessionMinutes)+' min'+(p.eventDate?' · event '+esc(p.eventDate):'')):'No programming setup saved yet';
-    host.innerHTML='<div class="programming-workspace-head"><div><span class="eyebrow">PROGRAM PLANNER</span><h3>'+esc(route.title)+'</h3><p>'+esc(route.reason)+'</p></div><span class="readiness-status">'+esc(route.status.replaceAll('-',' '))+'</span></div>'+
+    host.innerHTML='<div class="programming-workspace-head"><div><span class="eyebrow">PROGRAM PLANNER</span><h3>'+esc(route.title)+'</h3></div><span class="readiness-status">'+esc(route.status.replaceAll('-',' '))+'</span></div>'+
       '<div class="programming-workspace-meta"><b>Your setup</b><span>'+meta+'</span></div>'+
       '<div class="programming-workspace-actions"><button type="button" class="btn-primary" id="programming-workspace-primary">'+esc(primaryLabel(route.primaryAction))+'</button>'+
       (p?'<button type="button" class="btn-secondary" id="programming-workspace-profile">Edit setup</button>':'')+
       '<button type="button" class="btn-secondary" id="programming-workspace-tools">Show all program tools</button></div>'+
-      '<p class="more-hint">Decisions chooses one primary route from your saved setup and calculates supported program structure where possible. The 4-week builder, manual controls and adoption tools still exist, but they no longer compete for attention.</p>';
+      '<details class="programming-workspace-explanation"><summary>Why this plan?</summary><p>'+esc(route.reason)+'</p><p>Loadnote uses your saved setup to recommend a starting point. Open all program tools for other options. Review your plan before saving; schedule sessions separately.</p></details>';
     host.querySelector('#programming-workspace-profile')?.addEventListener('click',()=>window.openProgrammingProfile?.());
     host.querySelector('#programming-workspace-tools').addEventListener('click',()=>panel('programming-tools-panel'));
     host.querySelector('#programming-workspace-primary').addEventListener('click',()=>{

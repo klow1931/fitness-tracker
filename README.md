@@ -1,6 +1,6 @@
 # Loadnote
 
-**v3.7.1 · Development build.**
+**v3.7.2 · Development build.**
 
 Coach Companion can run an optional local conversation model using a bounded, freshly read training summary and recent conversation after separate consent. Open Local AI in Companion or coaching references in Decisions to download and test it. Both Coach views share the same session; generated conversation cannot edit training. See [v3.4 release notes](docs/releases-v3.4.md) for privacy, fallback and device limitations.
 

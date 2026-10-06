@@ -1,3 +1,10 @@
+# v3.7.2 — Mobile layout polish
+
+- Compact header and Profile hero; consistent Coach spacing and clearer disclosures.
+- Readable planner status in both themes and expandable route explanation.
+- Companion access under More tools avoids duplicate floating controls on Coach and Profile.
+- Phone-width layout, contrast and training-data integrity regressions with fresh demos.
+
 # v3.7.1 — Mobile usability and release confidence
 
 - Compact program actions, shorter Progress empty states, and disclosed interpretation notes.

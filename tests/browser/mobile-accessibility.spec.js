@@ -33,7 +33,10 @@ test('section tabs support arrows and Home/End with linked panels and one tab st
 test('small viewport keeps logger controls usable with reduced motion and keyboard skip link',async({page})=>{
  await page.setViewportSize({width:320,height:640});await page.emulateMedia({reducedMotion:'reduce'});
  await page.evaluate(()=>{document.documentElement.style.fontSize='20px';window.refreshGymFloorUI();});
- const remove=page.locator('#exercise-rows [data-workout-action="remove-set"]');const box=await remove.boundingBox();expect(box.width).toBeGreaterThanOrEqual(44);expect(box.height).toBeGreaterThanOrEqual(44);
+ const remove=page.locator('#exercise-rows [data-workout-action="remove-set"]');const box=await remove.boundingBox();
+ // DOM rectangles can subtract large fractional offsets to 43.999755px.
+ // Compare at hundredth-pixel precision while retaining the 44px minimum.
+ expect(Math.round(box.width*100)/100).toBeGreaterThanOrEqual(44);expect(Math.round(box.height*100)/100).toBeGreaterThanOrEqual(44);
  const input=page.locator('.set-weight');expect(await input.evaluate(node=>parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16);
  await page.locator('.skip-link').focus();await expect(page.locator('.skip-link')).toBeInViewport();await page.locator('.skip-link').press('Enter');await expect(page.locator('#panel-workouts')).toBeFocused();
  expect(await page.locator('#panel-workouts').evaluate(node=>getComputedStyle(node).animationName)).toBe('none');
