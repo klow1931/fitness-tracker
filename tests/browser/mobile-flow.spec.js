@@ -6,10 +6,10 @@ async function boot(page){
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(seed=>{
   data=normalizeDataShape({...data,...seed.state});
-  const args={asOf:'2026-09-24',now:'2026-09-24T12:00:00Z'};
+  const args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
   data=LoadnotePhaseBuilder.save(data,LoadnotePhaseBuilder.prepare(data,seed.config,args),{confirmed:true},{...args,id:'layout-base'});
   data=LoadnoteMeetCycle.save(data,LoadnoteMeetCycle.prepare(data,data.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},args),{confirmed:true},{...args,id:'layout-cycle'});
-  data=LoadnoteMeetCycle.schedule(data,'layout-cycle',{...args,now:'2026-09-24T13:00:00Z'});
+  data=LoadnoteMeetCycle.schedule(data,'layout-cycle',{...args,now:'2026-09-24T13:00:00.000Z'});
   invalidateViews();showTab('coach');showSubTab('coach','co-programs');
  },phaseFixture());
 }
