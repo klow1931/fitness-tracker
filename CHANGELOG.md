@@ -1,3 +1,11 @@
+# v3.3.0 — Referenced coaching knowledge and optional local AI
+
+- Add a shared source catalog, original educational summaries, transparent book coverage and offline search for Decisions and both Coach views.
+- Include NSCA Essentials (fifth edition reference) and Louie Simmons’ Book of Methods (reference supported by public Westside articles); preserve actual excerpt editions.
+- Explain conjugate effort methods, variation identity, accessory priorities, workload management, phases and hypertrophy with source links and bounded follow-ups.
+- Add referenced phase-preview reviews and personal context from saved setup and confirmed edit preferences; no automatic target changes.
+- Offer an explicit optional WebLLM download, two device checks, labelled generated explanations, output checks and deterministic fallback. No model weights are trained on books or personal logs.
+
 # v3.2.0 — Athlete intake and reviewed programming edits
 
 - Add revisioned training history, past/current concerns, laterality, reported activity limits and serratus/soleus priorities to Athlete intake.

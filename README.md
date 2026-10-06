@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.2.0 · Development build.**
+**v3.3.0 · Development build.**
+
+Explore coaching references in Decisions for shared offline NSCA/Westside educational summaries, source coverage and an optional experimental local language model. The coach links its sources; generated explanations never approve training changes. See [v3.3 release notes](docs/releases-v3.3.md) for content coverage and device limitations.
 
 Athlete intake records training history, reported concerns and activity limits. Reviewed Calendar edits support custom strength/cardio movements, and stable-dose cardio plans use explicit approval. Repeated preference edits can inform future exclusions after confirmation. Intake supports programming constraints and general education; it does not diagnose injuries or prescribe rehabilitation. An adaptive strength-training log that learns how you train.
 

@@ -117,7 +117,7 @@
   const full=document.getElementById('chat-messages');if(full){row.fullView=row.cloneNode(true);full.append(row.fullView);full.scrollTop=full.scrollHeight;}
   return row;
  }
- function attachReply(message,reply){for(const host of [message,message?.fullView])window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));}
+ function attachReply(message,reply){for(const host of [message,message?.fullView]){window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);}}
  function quickButtons(context){
   const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
@@ -169,6 +169,7 @@
   const live=companionContext(),command=Core()?.classifyCommand(text);
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
+  if(local?.knowledgeIds?.length&&window.LoadnoteLocalCoachAI?.snapshot().status==='ready'){const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await window.LoadnoteLocalCoachAI.explain(local.intent.referenceQuestion,cards);if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};}
   const offline=local?.text||Core()?.offlineReply(live,text);
   const authoritative=local?.source?.startsWith('Shared coaching');
   const client=authoritative?null:Client();
