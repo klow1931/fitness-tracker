@@ -37,6 +37,8 @@ jobs:
         run: npx playwright test tests/browser/mobile-accessibility.spec.js
       - name: Proposal, Coach tabs and mobile RPE regressions
         run: npx playwright test tests/browser/coaching-review.spec.js tests/browser/v3-coaching.spec.js tests/browser/decisions-ux.spec.js tests/browser/logger.spec.js --grep "preview applies|shorter future|Decisions prioritizes|quick RPE"
+      - name: Coach launcher and live workout context
+        run: npx playwright test tests/browser/coach-companion.spec.js
       - name: Recovery interaction smoke checks
         run: npx playwright test tests/browser/mobile-reliability.spec.js
       - name: Accessory programming smoke checks

@@ -74,7 +74,7 @@
   root.style.scrollPaddingTop=top?top+'px':'';
   root.style.scrollPaddingBottom=bottom?bottom+'px':'';
  }
- function syncViewportSoon(){requestAnimationFrame(syncViewportInsets);}
+ function syncViewportSoon(){requestAnimationFrame(()=>{syncViewportInsets();window.LoadnoteCoachCompanionUI?.syncLauncherPosition?.();});}
  function update(){
   decorateSecondary();
   const next=shouldActivate();

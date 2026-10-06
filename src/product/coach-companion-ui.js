@@ -124,11 +124,22 @@
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }
+ function syncLauncherPosition(){
+  const launcher=document.getElementById('coach-companion-launcher'),dock=document.getElementById('gym-floor-dock');
+  if(!launcher)return;
+  launcher.style.bottom='';
+  if(!dock||!window.matchMedia('(max-width: 640px)').matches)return;
+  const button=launcher.getBoundingClientRect(),controls=dock.getBoundingClientRect();
+  if(controls.height&&controls.top<button.bottom&&controls.bottom>button.top&&controls.left<button.right&&controls.right>button.left){
+   launcher.style.bottom=(window.innerHeight-controls.top+12)+'px';
+  }
+ }
  function refresh(){
   const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
   if(!launcher||!host)return;
   launcher.hidden=context.surface==='coach'&&!document.querySelector('[data-panel="coach"][data-sub="co-chat"]')?.classList.contains('hidden');
   launcher.dataset.live=context.liveWorkout?.active||context.sportWorkout?'true':'false';
+  syncLauncherPosition();
   const current=Core()?.currentSetSummary(context);
   status.textContent=context.coaching?.currentTask?.name||current||('Viewing '+context.surface);
   const chips=[`<span class="cc-chip">${esc(context.surface)}</span>`];
@@ -201,10 +212,10 @@
  function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
  function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');if(panel){panel.hidden=true;document.body.append(panel);}if(backdrop){backdrop.hidden=true;document.body.append(backdrop);}if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
  function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
- function init(){ensure();}
+ function init(){ensure();window.addEventListener('scroll',syncLauncherPosition,{passive:true});window.addEventListener('resize',syncLauncherPosition,{passive:true});}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  async function serialAsk(text){if(asking||!String(text??'').trim())return null;asking=true;const buttons=[document.querySelector('#cc-form button'),document.getElementById('chat-send-btn')];for(const b of buttons)if(b)b.disabled=true;try{return await ask(String(text).trim().slice(0,500));}finally{asking=false;for(const b of buttons)if(b)b.disabled=false;}}
  function clearConversation(){if(asking)return;history.length=0;document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about your current training evidence.');}
  function appendTranscript(text,role='assistant',meta='Voice Companion'){if(['user','assistant'].includes(role)){history.push({role,content:String(text??'').slice(0,role==='user'?500:2000)});if(history.length>24)history.splice(0,history.length-24);}return append(text,role,meta);}
- window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,ask:serialAsk,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
+ window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
 })();
