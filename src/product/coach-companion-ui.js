@@ -137,7 +137,7 @@
  function refresh(){
   const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
   if(!launcher||!host)return;
-  launcher.hidden=context.surface==='coach'&&!document.querySelector('[data-panel="coach"][data-sub="co-chat"]')?.classList.contains('hidden');
+  launcher.hidden=['coach','profile'].includes(context.surface);
   launcher.dataset.live=context.liveWorkout?.active||context.sportWorkout?'true':'false';
   syncLauncherPosition();
   const current=Core()?.currentSetSummary(context);
