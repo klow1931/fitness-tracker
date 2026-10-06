@@ -38,10 +38,9 @@
     '</section>'+
     '<section class="card profile-card" id="profile-preferences">'+
      '<p class="eyebrow">PREFERENCES</p><h2>How Loadnote feels</h2>'+
-     '<p class="more-hint">Keep global settings here so Home and Train stay focused on training.</p>'+
-     '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Stored training weights remain normalized internally.</p></div><div class="profile-inline-actions"><button type="button" class="btn-secondary" data-profile-unit="kg">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb">lb</button></div></div>'+
-     '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger controls for logging between sets.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode">'+(data.gymMode?'On':'Off')+'</button></div>'+
-     '<div class="profile-preference-row"><div><b>Appearance</b><p class="more-hint">Switch between light and dark appearance.</p></div><button type="button" class="btn-secondary" id="profile-theme">'+(data.dark?'Dark':'Light')+'</button></div>'+
+     '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Display units only. Saved loads stay unchanged.</p></div><div class="profile-inline-actions" role="group" aria-label="Weight display"><button type="button" class="btn-secondary" data-profile-unit="kg" aria-label="Kilograms">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb" aria-label="Pounds">lb</button></div></div>'+
+     '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger workout controls.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode" aria-label="Gym mode" aria-pressed="'+Boolean(data.gymMode)+'">'+(data.gymMode?'On':'Off')+'</button></div>'+
+     '<div class="profile-preference-row"><div><b>Appearance</b><p class="more-hint">Choose light or dark.</p></div><button type="button" class="btn-secondary" id="profile-theme" aria-label="Dark appearance" aria-pressed="'+Boolean(data.dark)+'">'+(data.dark?'Dark':'Light')+'</button></div>'+
     '</section>'+
     '<section class="card profile-card profile-secondary" id="profile-more">'+
      '<p class="eyebrow">MORE FEATURES</p><h2>Open only what you need</h2>'+
