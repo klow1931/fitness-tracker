@@ -16,7 +16,8 @@ test('draft failure stays visible in execution mode and retry checkpoints latest
  await expect(page.locator('#logger-draft-failure')).toContainText('excludes unfinished sets');
  expect(await page.evaluate(()=>readLoggerDraft().rows[0].sets[0].weight)).toBe('100');
  await page.evaluate(()=>{Storage.prototype.setItem=window.originalDraftSet;});
- await page.getByRole('button',{name:'Retry draft save',exact:true}).click();
+ // Exercise the original warning; the cockpit shortcut has separate coverage.
+ await page.locator('#logger-draft-failure').getByRole('button',{name:'Retry draft save',exact:true}).click();
  await expect(page.locator('#logger-draft-failure')).toBeHidden();
  await page.reload();await expect(page.locator('.set-weight')).toHaveValue('105');
  expect(await page.evaluate(()=>data.workouts.length)).toBe(0);

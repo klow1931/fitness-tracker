@@ -32,8 +32,15 @@
   for(const set of rows())setState(set,set===active);
  }
  function complete(set,rpe){
+  if(!set?.isConnected||set.querySelector('.set-done-check')?.checked)return false;
+  const row=set.closest('#exercise-rows > div'),name=row?.querySelector('.ex-name');
+  const values={...snapshot(set),name:name?.value||'',trackBy:row?.dataset.trackBy,weight:set.querySelector('.set-weight')?.value??'',rpe:rpe??set.querySelector('.set-rpe')?.value??''};
+  const invalid=H().completionError(values);
+  if(invalid){loggerValidationFailure(invalid.field==='name'?name:set.querySelector('.set-'+invalid.field),invalid.message);return false;}
+  window.LoadnoteAccessibility?.clearErrors();
   const input=set.querySelector('.set-rpe');if(rpe!=null&&input){input.value=String(H().normalizeRpe(rpe));input.dispatchEvent(new Event('input',{bubbles:true}));}
   const check=ensureCheck(set);check.checked=true;check.dispatchEvent(new Event('change',{bubbles:true}));
+  if(window.LoadnoteRestTimer?.snapshot?.().active&&document.activeElement?.matches?.('#exercise-rows input'))document.activeElement.blur();
   const all=rows(),index=all.indexOf(set);focusedSet=null;saveLoggerDraft();updateTrainingFlow();refresh();
   const model=all.map(row=>({done:!!row.querySelector('.set-done-check')?.checked})),nextIndex=window.LoadnoteGymFloor?.nextUnfinishedIndex(model,index)??-1,next=nextIndex>=0?all[nextIndex]:null;
   if(next){
@@ -43,10 +50,14 @@
       next.scrollIntoView({block:'center',behavior:'smooth'});
       const weight=next.querySelector('.set-weight'),measure=next.querySelector('.set-reps,.set-duration'),rpeInput=next.querySelector('.set-rpe');
       const target=weight&&weight.value===''?weight:measure&&measure.value===''?measure:rpeInput||measure||weight;
-      setTimeout(()=>{target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
+      // Rest is a pause in entry, not a request to open the next numeric keyboard.
+      if(window.LoadnoteRestTimer?.snapshot?.().active){
+        if(document.activeElement?.matches?.('#exercise-rows input'))document.activeElement.blur();
+      }else setTimeout(()=>{if(!next.isConnected||window.LoadnoteRestTimer?.snapshot?.().active)return;target?.focus({preventScroll:true});try{target?.select();}catch{}},120);
     }
   }
   window.refreshGymFloorUI?.();window.refreshTrainingCockpit?.();
+  return true;
  }
  document.addEventListener('focusin',event=>{
   const input=event.target.matches?.('.set-reps,.set-duration,.set-weight,.set-rpe')?event.target:null;

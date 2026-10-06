@@ -25,6 +25,14 @@ jobs:
           name: mobile-flow-demo
           path: test-results/
           retention-days: 7
+      - name: Training loop demo and save-safety checks
+        run: npx playwright test tests/browser/training-loop.spec.js tests/browser/gym-floor.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: training-loop-demo
+          path: test-results/
+          retention-days: 7
       - name: Accessibility interaction smoke checks
         run: npx playwright test tests/browser/mobile-accessibility.spec.js
       - name: Recovery interaction smoke checks

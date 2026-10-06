@@ -18,5 +18,13 @@
   if(!Number.isFinite(n)||n<1||n>10)return null;
   return Math.round(n*2)/2;
  }
- return {RPE_VALUES,entered,done,nextIncompleteIndex,normalizeRpe};
+ function completionError(set){
+  if(!String(set?.name||'').trim())return {field:'name',message:'Name the exercise before finishing a set.'};
+  const duration=set.trackBy==='duration',field=duration?'duration':'reps',measure=Number(set[field]);
+  if(!Number.isFinite(measure)||measure<=0||(!duration&&!Number.isInteger(measure)))return {field,message:duration?'Enter positive hold seconds.':'Enter positive whole-number reps.'};
+  if(set.weight!==''&&set.weight!=null&&(!Number.isFinite(Number(set.weight))||Number(set.weight)<0))return {field:'weight',message:'Enter a valid, nonnegative weight.'};
+  if(set.rpe!==''&&set.rpe!=null&&(!Number.isFinite(Number(set.rpe))||Number(set.rpe)<1||Number(set.rpe)>10))return {field:'rpe',message:'RPE must be between 1 and 10.'};
+  return null;
+ }
+ return {RPE_VALUES,entered,done,nextIncompleteIndex,normalizeRpe,completionError};
 });

@@ -31,6 +31,7 @@ function saveLoggerDraft() {
   const failure=document.getElementById('logger-draft-failure');
   if(failure)failure.hidden=saved;
   window.LoadnoteDraftSaveHealth=saved?'saved':'failed';
+  window.refreshTrainingCockpitSaveStatus?.();
   updateLoggerSummary();
   renderPrescriptionSummary();
   updateSessionComparisons();

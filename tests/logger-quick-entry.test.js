@@ -6,3 +6,10 @@ const sets=[{reps:5,done:true},{reps:5,done:false},{reps:'',done:false},{duratio
 assert.equal(Quick.nextIncompleteIndex(sets,-1),1);assert.equal(Quick.nextIncompleteIndex(sets,1),3);assert.equal(Quick.nextIncompleteIndex([{reps:5,done:true}],0),-1);
 assert.equal(Quick.entered({reps:5}),true);assert.equal(Quick.entered({}),false);assert.equal(Quick.done({reps:5,done:true}),true);
 console.log('v2.49 quick-entry helper tests passed');
+const valid={name:'Bench',trackBy:'reps',reps:'5',weight:'100',rpe:'8'};
+assert.equal(Quick.completionError(valid),null);
+for(const [change,field] of [[{name:''},'name'],[{reps:0},'reps'],[{reps:2.5},'reps'],[{reps:Infinity},'reps'],[{weight:-1},'weight'],[{weight:'NaN'},'weight'],[{rpe:11},'rpe']])assert.equal(Quick.completionError({...valid,...change}).field,field);
+assert.equal(Quick.completionError({...valid,weight:'',rpe:''}),null);
+assert.equal(Quick.completionError({...valid,trackBy:'duration',duration:30.5}),null);
+assert.equal(Quick.completionError({...valid,trackBy:'duration',duration:0}).field,'duration');
+console.log('Quick completion validates active set without inventing load or effort');

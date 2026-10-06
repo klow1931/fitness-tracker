@@ -1,3 +1,11 @@
+# v3.6.0 — Between-set flow and visible draft safety
+
+- Keep the next numeric keyboard closed while rest is active after quick completion.
+- Validate the active set before RPE/Done completion and ignore duplicate completion attempts.
+- Show actual draft-save status and direct retry in the active cockpit, without opening Workout options.
+- Compact mobile rest controls while retaining 44px tap targets.
+- Add measured synthetic tap-count, recovery, missing-RPE and failed-save walkthroughs. No training-engine or data-schema changes.
+
 # v3.5.0 — Mobile readability and compact program actions
 
 - Stack disclosure titles and descriptions consistently across Decisions, Cycle journal and Explore Progress; reserve a separate column for the chevron.

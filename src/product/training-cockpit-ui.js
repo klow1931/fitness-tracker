@@ -178,6 +178,14 @@
   }
   host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);
  }
+ function refreshSaveStatus(){
+  const host=document.getElementById('training-cockpit'),status=host?.querySelector('[data-cockpit-save-status]');if(!status)return;
+  const text=document.getElementById('logger-draft-status')?.textContent||'Draft save status unavailable';
+  if(status.textContent!==text)status.textContent=text;
+  const failed=window.LoadnoteDraftSaveHealth==='failed';
+  host.classList.toggle('cockpit-save-failed',failed);
+  const retry=host.querySelector('[data-cockpit-retry-save]');if(retry)retry.hidden=!failed;
+ }
  function render(){
   const host=ensure();if(!host)return;
   let hasDraft=false;try{hasDraft=loggerHasContent();}catch{}
@@ -202,8 +210,11 @@
   const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options>'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
-    quick+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+transitionHtml()+restHtml();
+    quick+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+transitionHtml()+restHtml()+
+    '<div class="cockpit-save-health"><p role="status" data-cockpit-save-status></p><button type="button" class="btn-secondary" data-cockpit-retry-save hidden>Retry draft save</button></div>';
   host.hidden=false;
+  refreshSaveStatus();
+  host.querySelector('[data-cockpit-retry-save]')?.addEventListener('click',()=>{saveLoggerDraft();refreshSaveStatus();});
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelector('[data-cockpit-guidance]')?.addEventListener('click',()=>window.LoadnoteMovementGuidanceUI?.open?.(exerciseName));
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.addEventListener('click',()=>adjust(Number(button.dataset.cockpitAdjust))));
@@ -256,5 +267,6 @@
  window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,useTarget,adjust,current,startNextExercise};
  window.refreshTrainingCockpit=render;
  window.refreshTrainingCockpitRest=refreshRest;
+ window.refreshTrainingCockpitSaveStatus=refreshSaveStatus;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

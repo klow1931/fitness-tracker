@@ -820,6 +820,21 @@ body.dark .coach-follow-up{border-color:#475569}
  display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.2rem .75rem;
  align-items:center; min-height:48px; list-style:none; cursor:pointer;
 }
+
+/* v3.6 — unobtrusive, truthful save status in the active workout. */
+.cockpit-save-health { display:flex; gap:.5rem; align-items:center; margin-top:.45rem; border-top:1px solid var(--line); padding-top:.4rem; }
+.cockpit-save-health p { margin:0; font-size:.7rem; line-height:1.35; color:var(--muted); overflow-wrap:anywhere; }
+.cockpit-save-health button { flex:0 0 auto; min-height:44px; font-size:.75rem; }
+.cockpit-save-failed .cockpit-save-health { border-color:#dc2626; }
+.cockpit-save-failed .cockpit-save-health p { color:#b91c1c; }
+body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
+@media(max-width:640px) {
+ .training-cockpit-actions button,.training-cockpit-quick button,.training-cockpit-link,.training-cockpit-rest-actions button { min-height:44px; }
+ .training-cockpit-rest { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:.4rem; }
+ .training-cockpit-rest-actions { display:flex; flex-wrap:nowrap; }
+ .training-cockpit-rest-actions button { min-width:44px; padding:.3rem .4rem; }
+ .cockpit-save-failed .cockpit-save-health { flex-direction:column; align-items:flex-start; }
+}
 #panel-coach .decision-workspace details.card > summary::-webkit-details-marker,
 #panel-prs #progress-explore > summary::-webkit-details-marker { display:none; }
 #panel-coach .decision-workspace details.card > summary > :is(b,small,span),

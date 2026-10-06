@@ -31,7 +31,9 @@ test('v2.62 previous-set context can refill a blank set without copying RPE or c
  if(await completion.count())await expect(completion).not.toBeChecked();
 });
 
-test('v2.62 numeric keyboards and Enter advance to the next unfinished set',async({page})=>{
+test('numeric keyboards and Enter advance a valid set outside rest mode',async({page})=>{
+ await page.locator('.ex-name').fill('Bench Press');
+ await page.evaluate(()=>{data.gymMode=false;data.gymModeUserSet=true;});
  await page.getByRole('button',{name:'+ Same Set'}).click();
  const sets=page.locator('.logger-set');
  await expect(sets).toHaveCount(2);
