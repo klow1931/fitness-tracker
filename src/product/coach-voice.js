@@ -28,7 +28,9 @@
   const onTranscript=typeof options.onTranscript==='function'?options.onTranscript:()=>{};
   const onEvent=typeof options.onEvent==='function'?options.onEvent:()=>{};
   const audioFactory=options.audioFactory||(()=>{if(!root.document)return null;const audio=root.document.createElement('audio');audio.autoplay=true;audio.playsInline=true;return audio;});
-  let pc=null,channel=null,stream=null,remoteAudio=null,state='off',muted=false,assistantBuffer='',handledCalls=new Set(),finalTranscripts=new Set();
+  let pc=null,channel=null,stream=null,remoteAudio=null,state='off',muted=false,assistantBuffer='',handledCalls=new Set(),finalTranscripts=new Set(),generation=0;
+  function localMode(){return root.LoadnoteLocalCoachAI?.snapshot?.().conversationConsent===true;}
+  function checkStart(ticket){if(localMode())throw makeError('Turn off local AI conversation before starting online realtime voice.','voice_local_ai_selected');if(ticket!==generation)throw makeError('Voice start was cancelled.','voice_start_cancelled');}
   function snapshot(){return {state,active:!!pc,muted,connected:channel?.readyState==='open'};}
   function setState(next,detail=''){state=next;onState({...snapshot(),detail});}
   function send(event){if(channel?.readyState!=='open')throw makeError('Voice data channel is not ready.','voice_channel_unavailable');channel.send(JSON.stringify(event));}
@@ -66,15 +68,19 @@
    if(event.type==='error')setState('error',String(event.error?.message||'Realtime voice error'));
   }
   async function start({context=null}={}){
+   if(localMode())throw makeError('Turn off local AI conversation before starting online realtime voice.','voice_local_ai_selected');
    if(root.Capacitor?.isNativePlatform?.())throw makeError('Voice is unavailable in the local-only native beta.','native_beta_local_only');
    if(pc)return snapshot();
    if(typeof fetchImpl!=='function'||typeof PeerConnection!=='function'||!mediaDevices?.getUserMedia)throw makeError('Realtime voice is not supported on this device.','voice_unsupported');
    setState('connecting');
+   const ticket=++generation;
    let session;
    try{session=await requestSession(context);}catch(error){setState('error',error.message);throw error;}
+   checkStart(ticket);
    const secret=String(session?.clientSecret?.value||session?.value||'');if(!secret){const error=makeError('Voice session did not include a client secret.','voice_secret_missing');setState('error',error.message);throw error;}
    try{
     stream=await mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+    checkStart(ticket);
     pc=new PeerConnection();for(const track of stream.getAudioTracks())pc.addTrack(track,stream);
     remoteAudio=audioFactory();
     pc.ontrack=event=>{if(remoteAudio){const fallback=typeof MediaStream==='function'?new MediaStream([event.track]):null;remoteAudio.srcObject=event.streams?.[0]||fallback;const play=remoteAudio.play?.();if(play?.catch)play.catch(()=>{});}};
@@ -83,14 +89,16 @@
     if(typeof channel.addEventListener==='function')channel.addEventListener('message',handleEvent);else channel.onmessage=handleEvent;
     channel.onopen=()=>setState(muted?'muted':'listening');channel.onclose=()=>{if(pc)setState('error','Voice connection closed.');};
     const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+    checkStart(ticket);
     const response=await fetchImpl(CALLS_URL,{method:'POST',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/sdp'},body:offer.sdp});
     if(!response.ok)throw makeError('Realtime voice connection was rejected.','voice_webrtc_failed');
-    const answer=await response.text();await pc.setRemoteDescription({type:'answer',sdp:answer});return snapshot();
+    const answer=await response.text();checkStart(ticket);await pc.setRemoteDescription({type:'answer',sdp:answer});return snapshot();
    }catch(error){stop();setState('error',error.message);throw error;}
   }
   function setMuted(next){muted=!!next;for(const track of stream?.getAudioTracks?.()||[])track.enabled=!muted;if(pc)setState(muted?'muted':'listening');return snapshot();}
   function toggleMuted(){return setMuted(!muted);}
   function stop(){
+   generation++;
    try{channel?.close?.();}catch{}channel=null;try{pc?.close?.();}catch{}pc=null;
    for(const track of stream?.getTracks?.()||[])try{track.stop();}catch{}stream=null;
    if(remoteAudio){try{remoteAudio.pause?.();remoteAudio.srcObject=null;}catch{}}remoteAudio=null;assistantBuffer='';handledCalls=new Set();finalTranscripts=new Set();muted=false;setState('off');return snapshot();

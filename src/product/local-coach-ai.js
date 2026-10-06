@@ -21,7 +21,7 @@
   let engine=null,busy=false,generation=0,state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};
   const snapshot=()=>JSON.parse(JSON.stringify(state));
   async function disable(){generation++;const old=engine;engine=null;state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};if(old){await old.interruptGenerate?.();await old.unload();}return snapshot();}
-  function setConversationConsent({confirmed=false}={}){if(confirmed&&state.status!=='ready')throw Error('Enable and test the local model first');if(state.conversationConsent!==(confirmed===true))generation++;state.conversationConsent=confirmed===true;return snapshot();}
+  function setConversationConsent({confirmed=false}={}){if(confirmed&&state.status!=='ready')throw Error('Enable and test the local model first');if(state.conversationConsent!==(confirmed===true))generation++;state.conversationConsent=confirmed===true;if(confirmed)try{globalThis.LoadnoteCoachVoiceUI?.stop();}catch{}return snapshot();}
   async function enable({confirmed=false,conversationConsent=false,onProgress=()=>{}}={}){
    if(!confirmed)throw Error('Confirm the optional model download first');if(busy||engine)throw Error('Local AI is already loading or active');
    if(!gpu()){state.status='unsupported';throw Error('This browser does not expose WebGPU. Referenced local coaching remains available.');}
@@ -45,7 +45,7 @@
     if(ticket!==generation){await candidate.unload();return snapshot();}
     state.evaluation={passed:checks.every(Boolean),checks:checks.length,elapsedMs:clock()-start};
     if(!state.evaluation.passed)throw Error('This device/model did not pass the explanation checks');
-    engine=candidate;state.status='ready';state.conversationConsent=conversationConsent===true;state.progress='Ready for local explanations on this device';return snapshot();
+    engine=candidate;state.status='ready';state.progress='Ready for local explanations on this device';return setConversationConsent({confirmed:conversationConsent});
    }catch(e){if(candidate&&candidate!==engine)try{await candidate.unload();}catch{}if(ticket===generation){state.status='unavailable';state.progress=e.message;}throw e;}finally{busy=false;}
   }
   async function explain(question,cards){
