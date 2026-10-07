@@ -17,7 +17,8 @@ test('v2.76 keeps primary navigation global and moves preferences to Profile',as
  await expect(page.locator('[data-profile-unit="kg"]')).toBeVisible();
  await expect(page.locator('#profile-gym-mode')).toBeVisible();
  await expect(page.locator('#profile-theme')).toBeVisible();
- await expect(page.locator('#profile-more')).toContainText('Open only what you need');
+ await expect(page.locator('#profile-more').getByRole('heading',{name:'More tools',exact:true})).toBeVisible();
+ await expect(page.locator('#profile-more [data-profile-tab]')).toHaveCount(5);
  const release=await page.evaluate(()=>window.LoadnoteCore.RELEASE_VERSION);
  await expect(page.locator('#app-version')).toContainText('v'+release);
 });
