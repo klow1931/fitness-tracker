@@ -24,7 +24,7 @@
     }
     const all=[...exerciseIds,...LIFTS.map(l=>lifts[l].variation?.exerciseId).filter(Boolean)];if(new Set(all).size!==all.length)throw Error('Do not reuse an exercise identity across lift roles');
     if(days.some(d=>!used.has(d)))throw Error('Each selected training day needs at least one lift exposure');
-    if(raw.periodization==='undulating'&&!LIFTS.some(l=>lifts[l].exposures.length>1))throw Error('Daily-undulating loading needs at least one lift practiced on two different days');
+    if(raw.periodization==='undulating'&&!LIFTS.some(l=>lifts[l].exposures.some(e=>e.role==='light')))throw Error('Daily-undulating loading needs primary and light competition practice on two different days');
     const accessories=Accessories.normalize(raw.accessories,days,all);
     return {...(['wave','undulating'].includes(raw.periodization)?{periodization:raw.periodization}:{}),...(accessories.length?{accessories}:{}),version:1,name:raw.name.trim(),startDate:raw.startDate,days:[...days].sort((a,b)=>a-b),sessionMinutes:raw.sessionMinutes,incrementKg:raw.incrementKg,phases:raw.phases.map(p=>({type:p.type,weeks:p.weeks})),lifts};
   }
