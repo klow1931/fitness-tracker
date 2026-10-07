@@ -38,7 +38,8 @@ test('setup checklist uses saved status, optional history and goal-specific mapp
  }
  expect(await saved()).toBe(before);
  await page.evaluate(()=>{document.documentElement.style.fontSize='16px';scrollTo(0,0);});
- await page.screenshot({path:info.outputPath('setup-checklist-mobile.png')});
+ await page.setViewportSize({width:390,height:740});await expect(page.locator('#toast-host .toast')).toHaveCount(0);
+ await page.screenshot({path:info.outputPath('setup-checklist-mobile.png'),fullPage:true});
 });
 
 test('Coach puts the primary next action above optional tools and retains encouragement access',async({page},info)=>{

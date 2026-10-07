@@ -843,7 +843,7 @@ body.dark .coach-follow-up{border-color:#475569}
 .coach-more > summary::after { content:'⌄'; }
 .coach-more[open] > summary::after { transform:rotate(180deg); }
 #panel-coach > :not(.hidden) { margin-top:0; margin-bottom:0; }
-#panel-coach:not(.hidden) { display:grid; gap:.65rem; }
+#panel-coach:not(.hidden) { display:grid; gap:max(16px,.65rem); }
 #panel-coach > .sub-panel[data-sub="co-today"]:not(.hidden) { display:grid; gap:.85rem; }
 #panel-coach .sub-panel[data-sub="co-today"] > .decision-section-heading { margin:0; }
 #panel-profile .measure-hero { padding:1rem 1.15rem; }
