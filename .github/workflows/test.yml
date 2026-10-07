@@ -25,6 +25,14 @@ jobs:
           name: whole-product-demo
           path: test-results/
           retention-days: 7
+      - name: Cycle journal interface checks
+        run: npx playwright test tests/browser/cycle-review.spec.js --grep "cycle journal|blocking journal"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cycle-timeline-demo
+          path: test-results/
+          retention-days: 7
       - name: Mobile flow demo and formatting checks
         run: npx playwright test tests/browser/mobile-flow.spec.js tests/browser/mobile-usability.spec.js tests/browser/mobile-layout.spec.js tests/browser/profile-uniformity.spec.js tests/browser/workflow-polish.spec.js tests/browser/meet-prep-setup.spec.js
       - uses: actions/upload-artifact@v4

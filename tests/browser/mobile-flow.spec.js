@@ -31,7 +31,7 @@ test('mobile demo: stacked review rows and compact actions preserve training',as
   await page.setViewportSize({width,height:844});
   for(const dark of [false,true]){
    await page.evaluate(d=>document.body.classList.toggle('dark',d),dark);
-   for(const selector of ['#cycle-journal summary','#phase-review-panel > summary','#program-week-review-panel > summary','.decision-workspace > .more-details > summary'])await stacked(page,selector);
+   for(const selector of ['#cycle-journal > .cycle-journal-panel > summary','#phase-review-panel > summary','#program-week-review-panel > summary','.decision-workspace > .more-details > summary'])await stacked(page,selector);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
  }
