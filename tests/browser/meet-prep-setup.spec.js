@@ -39,6 +39,7 @@ test('preferred accessories beat library order and repeated suggestions do not d
 test('weekly-undulating setup explains its targets and retains the style through save, event handoff and reload',async({page},info)=>{
  await open(page);const d=page.locator('#phase-dialog');
  await page.locator('#phase-periodization').selectOption('weekly-undulating');
+ await expect(page.locator('#phase-bench-step').locator('..')).toContainText('per two-week pair');
  await d.locator('#phase-style-reason > summary').click();
  await expect(d.locator('#phase-style-reason')).toContainText('two-week pair');
  await expect(d.locator('#phase-style-reason')).toContainText('Phase structure and loading style are separate');

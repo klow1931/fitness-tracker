@@ -26,6 +26,7 @@ Use isolated synthetic records, never overwrite an athlete's live account or imp
 - Architecture incorrectly described the decision engine as disabled; corrected its boundary without changing decision logic.
 - Meet timeline style display would call the new weekly option linear; it now names the saved weekly style, with a handoff regression.
 - Weekly style explanations separate phase structure from loading and describe progression per pair. Legacy plans remain unchanged.
+- Base-step field labels now follow the selected style (weekly, per wave or per two-week pair), avoiding a misleading weekly label on nonweekly progression. Selected evidence-audit steps are described as base steps rather than falsely labeled per week.
 
 ## Validation status
 
