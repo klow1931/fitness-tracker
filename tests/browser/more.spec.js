@@ -51,7 +51,7 @@ test('More pages fit the viewport in light and dark modes',async({page})=>{
 test('Profile groups secondary navigation and Tools keeps disclosures',async({page})=>{
  await page.evaluate(()=>showTab('profile'));
  const copy=await page.locator('#profile-more').textContent();
- expect(copy).toContain('Other parts of Loadnote');
+ await expect(page.locator('#profile-more').getByRole('heading',{name:'More tools',exact:true})).toBeVisible();
  expect(copy).toContain('Nutrition log and targets');
  expect(copy).toContain('Calculators, backups, integrity checks, privacy and app information');
  await page.evaluate(()=>showTab('coach'));

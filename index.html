@@ -892,8 +892,7 @@
         <button type="button" class="section-tab" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">Your program</button>
         <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">Ask Coach</button>
       </div>
-      <details class="coach-more"><summary>More tools</summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="showSubTab('coach','co-insights')">Insights</button><button type="button" class="btn-secondary" onclick="showSubTab('coach','co-goals')">Goals</button><button type="button" class="btn-secondary" onclick="LoadnoteCoachCompanionUI.open()">Open Coach companion</button></div></details>
-      <div class="sub-panel" data-panel="coach" data-sub="co-today"><header class="decision-section-heading"><span class="eyebrow">TODAY</span><h2>Your next step</h2><p>One next action. Your targets stay unchanged until you review a proposal.</p></header><div id="coach-today-brief"></div><div class="card"><h3>Need a training partner?</h3><p>Talk through your session or ask for encouragement.</p><button type="button" class="btn-secondary" onclick="showSubTab('coach','co-chat')">Ask Coach</button></div></div>
+      <div class="sub-panel" data-panel="coach" data-sub="co-today"><header class="decision-section-heading"><span class="eyebrow">TODAY</span><h2>Your next step</h2><p>Review proposals before changing your targets.</p></header><div id="coach-today-brief"></div></div>
 
 
 
@@ -1156,6 +1155,7 @@
       </div><!-- /coach-programming-content -->
       </details>
       </div><!-- /co-programs -->
+      <details class="coach-more"><summary>More tools</summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="showSubTab('coach','co-insights')">Insights</button><button type="button" class="btn-secondary" onclick="showSubTab('coach','co-goals')">Goals</button><button type="button" class="btn-secondary" onclick="LoadnoteCoachCompanionUI.open()">Open Coach companion</button></div></details>
     </section>
 
     <!-- PROFILE -->
@@ -1394,7 +1394,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.7.3 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.8.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>

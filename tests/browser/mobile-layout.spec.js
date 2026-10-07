@@ -25,11 +25,12 @@ test('mobile Profile and Coach avoid empty header space and overlapping duplicat
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
    await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-today');});
    const spacing=await page.locator('[data-sub="co-today"].sub-panel').evaluate(panel=>{
-    const first=panel.querySelector('#coach-today-brief').getBoundingClientRect(),second=panel.querySelector(':scope > .card').getBoundingClientRect();
+    const first=panel.querySelector('#coach-today-brief').getBoundingClientRect();
     const more=document.querySelector('.coach-more').getBoundingClientRect();
-    return {cards:second.top-first.bottom,section:panel.getBoundingClientRect().top-more.bottom};
+    return {tools:more.top-first.bottom};
    });
-   expect(spacing.cards).toBeGreaterThanOrEqual(12);expect(spacing.section).toBeLessThanOrEqual(24);
+   expect(spacing.tools).toBeGreaterThanOrEqual(12);
+   await expect(page.locator('[data-sub="co-today"].sub-panel > .card')).toHaveCount(0);
    await expect(page.locator('#coach-companion-launcher')).not.toBeVisible();
   }
  }

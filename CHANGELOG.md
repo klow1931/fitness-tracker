@@ -1,3 +1,10 @@
+# v3.8.0 — Focused Coach and guided setup
+
+- Primary next action above optional Coach tools, without a duplicate chat card.
+- Ordered setup checklist with saved defaults, optional athlete history and goal-specific lift mapping.
+- Shared mobile action sizing, shorter helper copy and disclosed advanced guidance.
+- Goal-edit/intake preservation, narrow-width and Coach hierarchy regressions.
+
 # v3.7.3 — Uniform preferences
 
 - Equal-width settings controls, side-by-side weight units and accessible toggle states.
