@@ -1,10 +1,28 @@
 # Loadnote
 
-**v3.9.0 · Development build.**
+**v3.10.0 · Development build.**
+
+An adaptive strength-training log that learns how you train.
+
+## Current experience
+
+Home → Train → Progress → Coach → Profile. Home leads with today's workout or a recoverable draft; Train supports quick load/reps/RPE entry, previous-performance context, rest timing and review-before-save. Secondary nutrition, measurements, photos, Calendar and calculators live under Profile's More tools.
+
+Programming changes are deterministic, explainable and athlete-approved. Logged evidence can support review of future prescriptions; Loadnote does not silently rewrite workouts, infer training maxes or diagnose recovery. Completed training and original reviewed plans remain preserved.
+
+Meet prep has two steps: lift/schedule setup, then event-date review. Loading styles are linear, three-week waves, daily undulating and weekly undulating. Decisions suggestion remains the default in meet setup and currently selects linear or daily undulating from recorded experience and selected light exposures—not a prediction that one style will work best. Weekly undulating alternates volume/intensity weeks, with explicit rep/load targets and a base step per two-week pair. Accumulation/strength/peaking/taper describe phase structure, not additional loading-style options. Peak/taper protections and separate scheduling approval remain intact. See [v3.10 notes](docs/releases-v3.10.md) and the [feature-demo checklist](docs/feature-demo-v3.10.md).
+
+Current schema: **32**. Internal weights are kilograms; kg/lb is a display/input preference. JSON backups carry integrity metadata and replacement imports require review. Device-local drafts and photo binaries are not account-sync records. Manual account sync and Online Coach need a configured backend; GitHub Pages alone does not provide them.
+
+Native Android/iOS packages are an unsigned, local-only beta. Compilation is not physical-device acceptance or TestFlight distribution. WebGPU local AI is experimental and its real-device performance/availability is not established. See [mobile acceptance](docs/mobile-acceptance.md), [native acceptance](docs/native-device-acceptance.md) and [store readiness](docs/store-readiness.md).
 
 Coach Companion can run an optional local conversation model using a bounded, freshly read training summary and recent conversation after separate consent. Open Local AI in Companion or coaching references in Decisions to download and test it. Both Coach views share the same session; generated conversation cannot edit training. See [v3.4 release notes](docs/releases-v3.4.md) for privacy, fallback and device limitations.
 
-Athlete intake records training history, reported concerns and activity limits. Reviewed Calendar edits support custom strength/cardio movements, and stable-dose cardio plans use explicit approval. Repeated preference edits can inform future exclusions after confirmation. Intake supports programming constraints and general education; it does not diagnose injuries or prescribe rehabilitation. An adaptive strength-training log that learns how you train.
+Athlete intake records training history, reported concerns and activity limits. Reviewed Calendar edits support custom strength/cardio movements, and stable-dose cardio plans use explicit approval. Repeated preference edits can inform future exclusions after confirmation. Intake supports programming constraints and general education; it does not diagnose injuries or prescribe rehabilitation.
+
+## Selected release history
+
+The versioned sections below describe their release at the time. Their schema/build numbers and historical navigation names are not the current application status; use the current experience above, package metadata and newest changelog entry.
 
 v3.1 adds reviewed accessory alternatives, explicit time-budget estimates and direct movement guidance. Equipment and exclusion preferences are saved explicitly on this device; approval revises only an unperformed Calendar session. Primary/technical protocols and original programs remain protected. See [v3.1 release notes](docs/releases-v3.1.md). Schema 31; unsigned build 30100.
 
@@ -528,7 +546,7 @@ Block analysis is explicitly retrospective and filters workouts through the anal
 
 ## Run locally
 
-Use Node.js 22. Run `npm run serve` and open `http://127.0.0.1:8000`.
+Use Node.js 22. Run `node scripts/serve.js` and open `http://127.0.0.1:8000` for the static local app. `npm start` runs the optional backend; see its account/Coach configuration before enabling network features.
 The static app and Node checks do not require dependency installation.
 Styles and charts ship with the app. After the first online load completes offline setup, workouts, history, timers and charts can be used offline. Online coaching and food lookup still require internet.
 
@@ -562,10 +580,10 @@ Use `npm ci` for locked installs and `npm run build:assets` to regenerate commit
 | `docs/archive/`, `dev-archive/` | Historical documentation and source |
 | `backend/` | Optional coach server; not supplied by static hosting |
 
-Native packaging remains experimental; see `docs/archive/README-NATIVE.md`.
+Native packaging remains an unsigned local-only beta; see [native beta](docs/native-beta.md), [iOS compilation](docs/ios-cloud-build.md) and [Android compilation](docs/android-cloud-build.md). Archived native instructions are historical, not the current packaging procedure.
 
 ## Data and development status
 
-Workout drafts, recovery snapshots, progress-photo binaries and device preferences remain device-local. Signed-in athletes may manually sync the verified structured account/training record through the configured Loadnote backend; GitHub stores app code, not personal training backups. Export JSON before destructive import or upgrade testing. The current data schema is v25, with migrations preserving older supported records.
+Workout drafts, recovery snapshots, progress-photo binaries and device preferences remain device-local. Signed-in athletes may manually sync the verified structured account/training record through the configured Loadnote backend; GitHub stores app code, not personal training backups. Export JSON before destructive import or upgrade testing. The current data schema is v32, with migrations preserving older supported records. Background sync and simultaneous-tab data coordination remain unimplemented.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.

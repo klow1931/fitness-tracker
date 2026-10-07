@@ -1,3 +1,10 @@
+# v3.10.0 — Weekly loading and feature validation
+
+- Genuine weekly-undulating base prescriptions with per-pair progression, explicit review and protected peak/taper behavior.
+- Loading-style explanations distinguish within-phase loading from cycle phase structure; Decisions remains the meet-setup default.
+- Correct current README commands, schema, navigation, AI, sync and native limitations; preserve labeled historical release notes.
+- Expanded end-to-end demo coverage and regression checks; see docs/feature-demo-v3.10.md for scope and acceptance limits.
+
 # v3.9.0 — Approachable meet prep
 
 - Essential lift setup first, optional evidence and advanced controls, compact day selection and clear two-step event handoff.

@@ -36,3 +36,23 @@ test('preferred accessories beat library order and repeated suggestions do not d
  await page.evaluate(()=>{const p=data.programmingProfiles[0].context;p.priorities='Upper back';const id=LoadnoteIntegrity.stableExerciseId('Lat Pulldown');data.exerciseCatalog.push({id,name:'Lat Pulldown',aliases:[]});p.preferredExerciseIds=[id];});await open(page);const d=page.locator('#phase-dialog');await d.locator('[data-accessory-editor]>summary').click();await d.locator('[data-accessory-suggest]').click();
  await expect(d.locator('[data-accessory=name]').first()).toHaveValue('Lat Pulldown');await expect(d.locator('[data-accessory-row]')).toHaveCount(2);await d.locator('[data-accessory-suggest]').click();await expect(d.locator('[data-accessory-row]')).toHaveCount(2);await expect(d.locator('[data-accessory-hint]')).toContainText('already listed');
 });
+test('weekly-undulating setup explains its targets and retains the style through save, event handoff and reload',async({page},info)=>{
+ await open(page);const d=page.locator('#phase-dialog');
+ await page.locator('#phase-periodization').selectOption('weekly-undulating');
+ await d.locator('#phase-style-reason > summary').click();
+ await expect(d.locator('#phase-style-reason')).toContainText('two-week pair');
+ await expect(d.locator('#phase-style-reason')).toContainText('Phase structure and loading style are separate');
+ for(const width of [320,390,430]){await page.setViewportSize({width,height:844});expect(await d.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);}
+ await d.getByRole('button',{name:'Review lift setup',exact:true}).click();await expect(page.locator('#phase-error')).toBeEmpty();
+ await expect(page.locator('#phase-preview')).toContainText('Weekly-undulating loading');
+ await page.locator('#phase-confirm').check();await page.locator('#phase-save').click();
+ await expect(page.locator('#cycle-dialog')).toContainText('Reviewed loading style: Weekly undulating');
+ const before=await page.evaluate(()=>({workouts:JSON.stringify(data.workouts),source:data.phasePrograms.at(-1)}));
+ expect(before.source.config.periodization).toBe('weekly-undulating');
+ const primary=phase=>before.source.sessions.filter(s=>s.phase===phase).flatMap(s=>s.exercises).filter(e=>e.lift==='bench'&&e.role==='primary').map(e=>e.sets[0].reps);
+ expect(primary('accumulation').slice(0,2)).toEqual([6,4]);expect(primary('strength').slice(0,2)).toEqual([4,2]);
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('weekly-loading-event-handoff.png')});
+ await page.locator('#cycle-dialog button[type=submit]').click();await expect(page.locator('#cycle-preview')).toContainText('Decisions calculated your prep');
+ expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before.workouts);
+ await page.reload();expect(await page.evaluate(()=>data.phasePrograms.at(-1).config.periodization)).toBe('weekly-undulating');
+});
