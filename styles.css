@@ -1926,6 +1926,19 @@ body.dark .review-facts li,body.dark .review-check-in,body.dark #shared-coaching
 .workload-table-scroll table { min-width:32rem; width:100%; }
 .workload-table-scroll caption { text-align:left; font-size:.85rem; padding:.5rem; }
 .workload-table-scroll:focus-visible { outline:3px solid #6366f1; outline-offset:3px; }
+.cycle-journal-timeline { list-style:none; padding:0; margin:1rem 0; }
+.cycle-journal-timeline > li { border-left:3px solid #c7d2fe; padding:0 0 1rem .9rem; margin-left:.25rem; }
+.cycle-journal-event { min-width:0; overflow-wrap:anywhere; }
+.cycle-journal-event h3 { font-weight:700; font-size:1rem; margin:0 0 .35rem; }
+.cycle-journal-event p { margin:.35rem 0; }
+.cycle-journal-facts { list-style:none; padding:0; margin:.4rem 0; font-size:.9rem; }
+.cycle-record-details { margin-top:.45rem; font-size:.9rem; }
+.cycle-journal-audit { border-top:1px solid #cbd5e1; margin-top:.75rem; }
+.cycle-audit-counts > div { display:flex; justify-content:space-between; gap:1rem; padding:.35rem 0; }
+.cycle-audit-counts dd { font-weight:700; }
+.cycle-journal-warning { border-left:3px solid #d97706; padding:.5rem .75rem; }
+body.dark .cycle-journal-timeline > li { border-color:#6366f1; }
+body.dark .cycle-journal-audit { border-color:#475569; }
 .program-lifecycle-empty>[data-lifecycle-action] { margin:.65rem 0; }
 @media(max-width:640px){
  .setup-checklist>li { grid-template-columns:minmax(0,1fr); gap:.65rem; }

@@ -142,8 +142,8 @@ test('peaking review preserves structure and only offers a bounded downward comp
 });
 
 
-test('cycle journal is available for an upcoming scheduled cycle and remains compact on mobile',async({page})=>{
- await page.setViewportSize({width:390,height:844});
+test('cycle journal is available for an upcoming scheduled cycle and remains compact on mobile',async({page},info)=>{
+ await page.setViewportSize({width:320,height:844});
  await page.clock.setFixedTime(new Date('2026-09-25T12:00:00.000Z'));
  await page.evaluate(()=>{renderCycleJournal();});
  const journal=page.locator('#cycle-journal');
@@ -151,5 +151,29 @@ test('cycle journal is available for an upcoming scheduled cycle and remains com
  await journal.locator('.cycle-journal-panel > summary').click();
  await expect(journal).toContainText('Starting program reviewed');
  await expect(journal).toContainText('Meet cycle reviewed');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await expect(journal.locator('.cycle-journal-status')).toHaveText('No weekly reviews saved yet.');
+ await expect(journal.getByRole('list',{name:'Saved cycle events'})).toBeVisible();
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ const details=journal.locator('.cycle-record-details').first();
+ await expect(details).toHaveJSProperty('open',false);
+ await expect(details.locator('p').first()).toBeHidden();
+ await details.locator('summary').focus();await page.keyboard.press('Enter');
+ await expect(details).toHaveJSProperty('open',true);
+ await expect(details).toContainText('not the current app version');
+ await expect(details).toContainText('schema');
+ await page.keyboard.press('Space');await expect(details).toHaveJSProperty('open',false);
+ await expect(journal.locator('.cycle-journal-audit')).toHaveJSProperty('open',false);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
+ for(const dark of [false,true]){await page.evaluate(dark=>{data.dark=dark;applyDark();},dark);await journal.locator('.cycle-journal-panel > summary').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:info.outputPath('cycle-timeline-'+(dark?'dark':'light')+'.png')});}
+});
+
+test('blocking journal audit remains visible and expands while clean counts stay secondary',async({page})=>{
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ await page.evaluate(()=>{const original=LoadnoteCycleObservability.audit;LoadnoteCycleObservability.audit=(...args)=>({...original(...args),blocking:1,warnings:0,issues:[{severity:'blocking',detail:'Synthetic record mismatch requires review'}]});renderCycleJournal();});
+ const journal=page.locator('#cycle-journal');await journal.locator('.cycle-journal-panel > summary').click();
+ await expect(journal.locator('.cycle-journal-warning')).toBeVisible();
+ await expect(journal.locator('.cycle-journal-audit')).toHaveJSProperty('open',true);
+ await expect(journal.locator('.cycle-journal-audit')).toContainText('Synthetic record mismatch requires review');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });

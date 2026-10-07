@@ -1,3 +1,11 @@
+# v3.12.0 — A clearer cycle timeline
+
+- Cycle journal now presents saved plan reviews and choices as a compact timeline, with full policy IDs, historical schema/release versions and record timestamps under accessible Technical details.
+- Empty audit counters move into Technical audit. No saved reviews is described directly; clean record consistency is not presented as training readiness.
+- Audit warnings stay visible and blocking findings expand automatically. Weekly lift entries show the selected action first, with recommendations and follow-up evidence retained inside.
+- Saved-record metadata explicitly describes the historical record, not the app currently installed. No frozen record, audit logic, training prescription or schema change.
+- Keyboard, disclosure, warning, data nonmutation and 320px theme screenshots cover the new presentation. Version 3.12.0/build 31200; schema 32 unchanged.
+
 # v3.11.0 — Clearer menus and weekly reviews
 
 - Audited expandable sections and select menus across the app. Shortened long headings and subtitles while retaining context, experimental/read-only labels, selected values and explicit approval semantics.
