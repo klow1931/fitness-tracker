@@ -1907,11 +1907,11 @@ body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 .setup-details button { margin:.5rem .5rem 0 0; }
 .coach-more { border-top:1px solid var(--measure-line); }
 .review-overview { margin:.85rem 0; }
-.review-facts { display:flex; flex-wrap:wrap; gap:.5rem 1rem; list-style:none; padding:0; margin:.65rem 0; }
-.review-facts li { flex:1 1 8rem; border:1px solid var(--measure-line); border-radius:.65rem; padding:.65rem; }
+.review-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.5rem; list-style:none; padding:0; margin:.65rem 0; }
+.review-facts li { min-width:0; border:1px solid var(--measure-line,#cbd5e1); border-radius:.65rem; padding:.5rem; font-size:.8rem; overflow-wrap:anywhere; }
 .review-facts b { display:block; font-size:1.15rem; }
 .review-priority { border-left:3px solid #6366f1; padding:.5rem .75rem; font-weight:650; }
-.review-check-in { margin:1rem 0; padding:.85rem; border:1px solid var(--measure-line); border-radius:.75rem; }
+.review-check-in { margin:1rem 0; padding:.85rem; border:1px solid var(--measure-line,#cbd5e1); border-radius:.75rem; }
 .review-check-in label { display:block; margin:.65rem 0; }
 .review-check-in :is(select,textarea) { width:100%; min-width:0; }
 #panel-coach details:not(.readiness-lift) > summary,
@@ -1920,7 +1920,8 @@ body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 #panel-nutrition details > summary,
 #panel-measures details > summary { min-height:44px; padding-block:.65rem; cursor:pointer; overflow-wrap:anywhere; }
 #panel-coach details:not(.readiness-lift) > summary small { display:block; margin-top:.25rem; font-weight:400; }
-#shared-coaching-review > details { margin:.4rem 0; border-top:1px solid var(--measure-line); }
+#shared-coaching-review > details { margin:.4rem 0; border-top:1px solid var(--measure-line,#cbd5e1); }
+body.dark .review-facts li,body.dark .review-check-in,body.dark #shared-coaching-review > details { border-color:#475569; }
 .workload-table-scroll { max-width:100%; min-width:0; overflow-x:auto; margin:.75rem 0; }
 .workload-table-scroll table { min-width:32rem; width:100%; }
 .workload-table-scroll caption { text-align:left; font-size:.85rem; padding:.5rem; }
