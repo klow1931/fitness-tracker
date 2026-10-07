@@ -4,6 +4,7 @@
 - Loading-style explanations distinguish within-phase loading from cycle phase structure; Decisions remains the meet-setup default.
 - Correct current README commands, schema, navigation, AI, sync and native limitations; preserve labeled historical release notes.
 - Expanded end-to-end demo coverage and regression checks; see docs/feature-demo-v3.10.md for scope and acceptance limits.
+- Fix reproduced 320px workout-set overflow with a compact two-row layout, preserving fields and completion/removal controls.
 
 # v3.9.0 — Approachable meet prep
 

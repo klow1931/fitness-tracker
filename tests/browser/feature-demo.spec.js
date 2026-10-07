@@ -12,8 +12,12 @@ test('product demo visits every consumer destination in both themes without chan
   await page.evaluate(dark=>{data.dark=dark;applyDark();},dark);
   for(const panel of ['dashboard','workouts','prs','coach','profile','calendar','nutrition','measures','photos','tools']){
    await page.evaluate(panel=>showTab(panel),panel);await expect(page.locator('#panel-'+panel)).toBeVisible();
-   for(const width of [320,390,430]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),panel).toBe(true);}
+   for(const width of [320,390,430]){
+    await page.setViewportSize({width,height:844});
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth),{message:panel+' must fit '+width+'px'}).toBeLessThanOrEqual(width+1);
+   }
    await page.setViewportSize({width:390,height:844});
+   await page.locator('#panel-'+panel).evaluate(el=>el.scrollIntoView({block:'start'}));
    await page.screenshot({path:info.outputPath(`${panel}-${dark?'dark':'light'}.png`)});
   }
  }

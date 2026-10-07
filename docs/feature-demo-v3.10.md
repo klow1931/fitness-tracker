@@ -27,6 +27,7 @@ Use isolated synthetic records, never overwrite an athlete's live account or imp
 - Meet timeline style display would call the new weekly option linear; it now names the saved weekly style, with a handoff regression.
 - Weekly style explanations separate phase structure from loading and describe progression per pair. Legacy plans remain unchanged.
 - Base-step field labels now follow the selected style (weekly, per wave or per two-week pair), avoiding a misleading weekly label on nonweekly progression. Selected evidence-audit steps are described as base steps rather than falsely labeled per week.
+- The fresh full-product demo reproduced 320px Train overflow: the seven-column logger minimum widths exceeded the card. A scoped two-row layout retains numeric entry, completion and removal without clipping. The demo compares against the requested viewport width (not an expanded mobile `innerWidth`) and waits for layout stabilization.
 
 ## Validation status
 
