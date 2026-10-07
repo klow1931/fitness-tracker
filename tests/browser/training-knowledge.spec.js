@@ -6,7 +6,7 @@ test.beforeEach(async({page})=>{
  await page.evaluate(()=>{data=normalizeDataShape({...data,exerciseCatalog:[{id:'q',name:'My Squat',aliases:[]}],workouts:[{id:'w',date:'2026-10-04',exercises:[{exerciseId:'q',name:'My Squat',type:'strength',sets:[{weight:100,reps:5,rpe:8},{weight:100,reps:5}]}]}]});showTab('coach');showSubTab('coach','co-programs');renderDecisionReadiness();});
 });
 test('confirm mappings, workload evidence and persisted metadata',async({page})=>{
- await page.locator('summary').filter({hasText:'Muscle workload & training knowledge'}).click();
+ await page.locator('summary').filter({hasText:'Muscle workload'}).click();
  await expect(page.locator('#muscle-workload')).toContainText('2 unmapped sets');
  await page.locator('#muscle-map-open').click();await page.locator('#muscle-suggest').click();
  await expect(page.locator('#muscle-map-status')).toContainText('Suggestion only');
@@ -36,7 +36,7 @@ test('Coach and Companion share workload evidence and sport limits without modif
 test('malformed imported mappings remain unknown and can be repaired',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.evaluate(()=>{data.exerciseCatalog[0].muscles={confirmed:true,mode:'resistance',primary:{},secondary:[]};renderDecisionReadiness();});
- await page.locator('summary').filter({hasText:'Muscle workload & training knowledge'}).click();
+ await page.locator('summary').filter({hasText:'Muscle workload'}).click();
  await expect(page.locator('#muscle-workload')).toContainText('2 unmapped sets');
  await page.locator('#muscle-map-open').click();await expect(page.locator('#muscle-map-status')).toContainText('Unknown until confirmed');
  await page.locator('#muscle-suggest').click();await page.locator('#muscle-map-dialog').getByRole('button',{name:'Save confirmed mapping',exact:true}).click();

@@ -30,7 +30,7 @@
       '<button type="button" class="btn-primary" id="profile-edit-training">'+(setup.ready?'Edit training setup':'Set up training')+'</button>'+
      '</div></li><li><div><b>2. Training background</b><p class="more-hint">'+(context?.intake?'Recorded · review if your history or limits change.':'Optional · history, priorities and reported limits.')+'</p></div><button type="button" class="btn-secondary" id="profile-athlete-intake" '+(!setup.ready?'disabled':'')+'>Athlete intake</button></li>'+
      (powerlifting?'<li><div><b>3. Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Match your squat, bench and deadlift names.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></li>':'')+
-     '</ol><details class="setup-details"><summary>Advanced setup &amp; guidance</summary><p class="more-hint">Availability, equipment and avoided exercises constrain generated plans. Free-text notes are context, not automatic prescriptions. Athlete intake is optional; review reported limits before programming.</p>'+
+     '</ol><details class="setup-details"><summary>Advanced setup</summary><p class="more-hint">Availability, equipment and avoided exercises constrain generated plans. Free-text notes are context, not automatic prescriptions. Athlete intake is optional; review reported limits before programming.</p>'+
      (!powerlifting?'<p class="more-hint">Powerlifting mapping is only needed for squat/bench/deadlift-specific Decisions.</p><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button>':'')+
      '<button type="button" class="btn-secondary" id="profile-go-train">Go to Train</button></details>'+
     '</section>'+

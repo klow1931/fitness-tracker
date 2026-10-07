@@ -91,7 +91,7 @@ test('legacy totals, recent food, targets and date isolation',async({page})=>{
  await page.getByRole('button',{name:'Repeat recent food',exact:true}).click();
  await page.locator('#nutrition-dialog [data-recent="0"]').click();
  await expect(page.locator('#tot-cal')).toHaveText('500');
- await page.getByText('My nutrition targets (optional)',{exact:true}).click();
+ await page.getByText('Nutrition targets',{exact:true}).click();
  await page.locator('#nutrition-target-calories').fill('2500');await page.locator('#nutrition-target-protein').fill('160');
  await page.getByRole('button',{name:'Save targets',exact:true}).click();
  await expect(page.locator('#nutrition-target-summary')).toContainText('500 / 2500');

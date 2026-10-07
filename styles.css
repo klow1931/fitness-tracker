@@ -1906,6 +1906,25 @@ body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 .setup-details>summary,.coach-more>summary,.program-lifecycle-empty summary { min-height:44px; padding:.65rem 0; cursor:pointer; }
 .setup-details button { margin:.5rem .5rem 0 0; }
 .coach-more { border-top:1px solid var(--measure-line); }
+.review-overview { margin:.85rem 0; }
+.review-facts { display:flex; flex-wrap:wrap; gap:.5rem 1rem; list-style:none; padding:0; margin:.65rem 0; }
+.review-facts li { flex:1 1 8rem; border:1px solid var(--measure-line); border-radius:.65rem; padding:.65rem; }
+.review-facts b { display:block; font-size:1.15rem; }
+.review-priority { border-left:3px solid #6366f1; padding:.5rem .75rem; font-weight:650; }
+.review-check-in { margin:1rem 0; padding:.85rem; border:1px solid var(--measure-line); border-radius:.75rem; }
+.review-check-in label { display:block; margin:.65rem 0; }
+.review-check-in :is(select,textarea) { width:100%; min-width:0; }
+#panel-coach details:not(.readiness-lift) > summary,
+#panel-profile details > summary,
+#panel-tools details > summary,
+#panel-nutrition details > summary,
+#panel-measures details > summary { min-height:44px; padding-block:.65rem; cursor:pointer; overflow-wrap:anywhere; }
+#panel-coach details:not(.readiness-lift) > summary small { display:block; margin-top:.25rem; font-weight:400; }
+#shared-coaching-review > details { margin:.4rem 0; border-top:1px solid var(--measure-line); }
+.workload-table-scroll { max-width:100%; min-width:0; overflow-x:auto; margin:.75rem 0; }
+.workload-table-scroll table { min-width:32rem; width:100%; }
+.workload-table-scroll caption { text-align:left; font-size:.85rem; padding:.5rem; }
+.workload-table-scroll:focus-visible { outline:3px solid #6366f1; outline-offset:3px; }
 .program-lifecycle-empty>[data-lifecycle-action] { margin:.65rem 0; }
 @media(max-width:640px){
  .setup-checklist>li { grid-template-columns:minmax(0,1fr); gap:.65rem; }

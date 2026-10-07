@@ -15,11 +15,11 @@ test.beforeEach(async({page})=>{
  });
 });
 test('confirmed roles create separated evidence without enabling decisions',async({page})=>{
- const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
+ const card=page.locator('#decision-readiness-card');await expect(card).toContainText('0/3 ready');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Exercise roles & relationships'}).click();await page.locator('#apply-role-suggestions').click();expect(await page.locator('[data-role]').evaluateAll(nodes=>nodes.map(node=>node.value))).toEqual(['competition','competition','competition']);
  await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Latest logged load');await expect(card).toContainText('Baseline capacity');await expect(card).toContainText('Latest capacity');await expect(card).toContainText('Observed RPE≥7 sets/week');await expect(card).toContainText('Planned-session coverage');await expect(card).toContainText('No planned-work snapshots are recorded');await expect(card).toContainText('Block training max');await expect(card).toContainText('Known 1RM');await expect(card).toContainText('Profile benchmark');await expect(card).toContainText('not equivalent to strength gains');await expect(card).toContainText('TRAINING DECISIONS');await expect(card).toContainText('Insufficient evidence');await expect(card).toContainText('Next exposure');await expect(card).toContainText('Watch next');await expect(card.locator('.decision-answer-first')).toBeVisible();await expect(card.locator('.decision-evidence-panel')).not.toHaveAttribute('open','');expect(await page.evaluate(()=>typeof LoadnoteDecisionEngine?.snapshot)).toBe('function');expect(await page.evaluate(()=>LoadnoteReadiness.snapshot(data,{asOf:'2026-09-13',retrospective:true}).decisionAllowed)).toBe(false);
 });
 test('historical as-recorded replay withholds later block and mapping knowledge',async({page})=>{
- const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Confirm exercise roles and lift relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
+ const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary', {hasText:'Exercise roles & relationships'}).click();await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
  await card.locator('.decision-review-tools > summary').click();
  await card.locator('.decision-date-tools > summary').click();
  await page.locator('#readiness-date').fill('2026-06-30');await page.locator('#readiness-date').dispatchEvent('change');await page.locator('#readiness-as-recorded').check();await expect(card).toContainText('Historical as-recorded replay');await expect(card).toContainText('No active block on this date');await expect(card).toContainText('0/3 ready');await expect(card).toContainText('Competition lift not mapped');
@@ -31,7 +31,7 @@ test('competition names can be confirmed without renaming workouts',async({page}
   data.exerciseRoles=[];data.exerciseCatalog=[];data.trainingBlocks=[];data.workouts=names.map((name,i)=>({id:'named-'+i,date:'2026-09-20',exercises:[{name,sets:[{weight:100,reps:5,rpe:8}]}]}));
   data=LoadnoteIntegrity.normalizeState(data);invalidateViews();window.renderDecisionReadiness();
  });
- const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
+ const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Exercise roles & relationships'}).click();
  await expect(card).toContainText('Your exercise names can be anything');
  await page.locator('#apply-role-suggestions').click();expect(await page.evaluate(()=>data.exerciseRoles.length)).toBe(0);
  await page.locator('#save-exercise-roles').click();await expect.poll(()=>page.evaluate(()=>LoadnoteReadiness.list(data.exerciseRoles).length)).toBe(3);
@@ -42,7 +42,7 @@ test('competition names can be confirmed without renaming workouts',async({page}
 
 test('live decisions record athlete feedback while historical replay stays read-only',async({page})=>{
  const card=page.locator('#decision-readiness-card');
- await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Confirm exercise roles and lift relationships'}).click();
+ await card.locator('.decision-review-tools > summary').click();await card.locator('summary',{hasText:'Exercise roles & relationships'}).click();
  await page.locator('#apply-role-suggestions').click();await page.locator('#save-exercise-roles').click();
  await expect.poll(()=>page.evaluate(()=>data.exerciseRoles.length)).toBe(3);
  const squat=card.locator('.decision-answer-first .readiness-lift').filter({hasText:'Squat'}).first();
@@ -81,7 +81,7 @@ test('Decision Performance attributes one follow-up once and filters lifts',asyn
  await panel.locator('#decision-performance-lift').selectOption('squat');
  await expect(panel).toContainText('Overlapping · excluded');
  await expect(panel).toContainText('hold → increase');
- const audit=panel.locator('details').filter({has:page.locator('summary',{hasText:'Audit decision and workout evidence'})}).first();
+ const audit=panel.locator('details').filter({has:page.locator('summary',{hasText:'Decision evidence audit'})}).first();
  await audit.locator('summary').first().click();
  const observed=audit.locator('.decision-performance-rows article').filter({hasText:'Unique follow-up'}).first();
  await observed.locator('summary',{hasText:'Evidence and original recommendation'}).click();
@@ -153,7 +153,7 @@ test('Decision Performance shows adaptive decision learning with conservative ev
  });
  const card=page.locator('#decision-readiness-card');await card.locator('.decision-review-tools > summary').click();
  const panel=card.locator('.decision-performance');await panel.locator('summary').first().click();
- await expect(panel.locator('#adaptive-outcome-learning')).toContainText('Adaptive decision outcome learning');
+ await expect(panel.locator('#adaptive-outcome-learning')).toContainText('Adaptive follow-ups');
  await panel.locator('#adaptive-outcome-learning > summary').click();
  await expect(panel.locator('[data-adaptive-pattern="squat:reduce-load"]')).toContainText('early-pattern');
  await expect(panel.locator('[data-adaptive-pattern="squat:reduce-load"]')).toContainText('2 improved / 1 stable / 0 declined');
