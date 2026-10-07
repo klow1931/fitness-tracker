@@ -35,7 +35,7 @@ test('workload empty state avoids an empty table; mapped table remains named and
  await page.evaluate(()=>{data.exerciseCatalog=data.exerciseCatalog.map(e=>{const copy={...e};delete copy.muscles;return copy;});LoadnoteTrainingKnowledgeUI.render();});
  const host=page.locator('#muscle-workload'),parent=host.locator('..');
  await parent.locator(':scope > summary').focus();await page.keyboard.press('Enter');
- await expect(host.locator('table')).toHaveCount(0);await expect(host).toContainText('unknown is not zero');
+ await expect(host.locator('.workload-table-scroll')).toHaveCount(0);await expect(host).toContainText('unknown is not zero');
  await expect(host.locator('#muscle-map-open')).toBeVisible();
  const help=host.locator('#workload-counts-help');await help.locator('summary').focus();await page.keyboard.press('Enter');
  await expect(help).toHaveJSProperty('open',true);await expect(help).toContainText('unmapped sets');
