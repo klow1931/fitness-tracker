@@ -32,8 +32,9 @@ test('setup checklist uses saved status, optional history and goal-specific mapp
  expect(await page.evaluate(()=>LoadnoteProgrammingProfile.current(data.programmingProfiles).context.intake.years)).toBe(5);
  for(const width of [320,390,430])for(const size of [16,24]){
   await page.setViewportSize({width,height:740});await page.evaluate(font=>{document.documentElement.style.fontSize=font+'px';},size);
-  const widths=await page.locator('.setup-checklist').evaluate(list=>[...list.querySelectorAll('button')].map(b=>{const r=b.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height,font:getComputedStyle(b).fontSize};}));
-  for(const b of widths){expect(b.left).toBeGreaterThanOrEqual(0);expect(b.right).toBeLessThanOrEqual(width);expect(b.height).toBeGreaterThanOrEqual(43.99);expect(Math.abs(b.width-widths[0].width)).toBeLessThan(1);expect(Math.abs(b.height-widths[0].height)).toBeLessThan(1);expect(b.font).toBe(widths[0].font);}
+  const widths=await page.locator('.setup-checklist').evaluate(list=>[...list.querySelectorAll('button')].map(b=>{const r=b.getBoundingClientRect(),s=getComputedStyle(b);return {left:r.left,right:r.right,width:r.width,height:r.height,font:s.fontSize,line:s.lineHeight,padding:s.paddingTop+' '+s.paddingBottom,clipped:b.scrollHeight>b.clientHeight+1};}));
+  // Enlarged labels may wrap: share typography/padding, never force a clipping height.
+  for(const b of widths){expect(b.left).toBeGreaterThanOrEqual(0);expect(b.right).toBeLessThanOrEqual(width);expect(b.height).toBeGreaterThanOrEqual(43.99);expect(Math.abs(b.width-widths[0].width)).toBeLessThan(1);if(size===16)expect(Math.abs(b.height-widths[0].height)).toBeLessThan(1);expect(b.font).toBe(widths[0].font);expect(b.line).toBe(widths[0].line);expect(b.padding).toBe(widths[0].padding);expect(b.clipped).toBe(false);}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  }
  expect(await saved()).toBe(before);
