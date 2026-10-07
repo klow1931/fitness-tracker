@@ -18,6 +18,7 @@
   host.innerHTML='<summary>Optional accessories · complete your sessions</summary><p>Add up to 3 movements per day. Select purpose, actual equipment and an explicit starting load. Suggestions use reported priorities/name matches, not a diagnosis. Loads do not auto-progress.</p><button type="button" class="btn-secondary" data-accessory-suggest>Suggest from my priorities</button><button type="button" class="btn-secondary" data-accessory-add>Add accessory</button><div data-accessory-rows></div><p data-accessory-hint role="status"></p>';
   dialog.querySelector('button[type=submit]').before(host);
   const container=host.querySelector('[data-accessory-rows]'),hint=host.querySelector('[data-accessory-hint]');
+  const available=()=>{const preferred=new Set(profile?.context?.preferredExerciseIds||[]),excluded=new Set([...(profile?.context?.avoidedExerciseIds||[]),...(data.exerciseRoles||[]).filter(r=>r.role==='competition'||r.role==='close-variation').map(r=>r.exerciseId)]);return A.LIBRARY.map(t=>{const known=LoadnoteIntegrity.resolveExercise(data.exerciseCatalog,t.name);return {...t,id:known?.id||t.id,name:known?.name||t.name};}).filter(t=>!excluded.has(t.id)).sort((a,b)=>Number(preferred.has(b.id))-Number(preferred.has(a.id)));};
   const notify=()=>host.dispatchEvent(new Event('input',{bubbles:true}));
   function add(template){
    if(container.children.length>=12){hint.textContent='At most 12 accessory slots are supported.';return;}
@@ -30,20 +31,29 @@
    row.querySelector('[data-accessory=name]').addEventListener('input',resetSelection);
    row.querySelector('[data-accessory=equipment]').addEventListener('change',resetSelection);
    row.querySelector('[data-accessory=day]').value=String(template?.day??selectedDays()[0]??0);
+   const picker=document.createElement('label');picker.textContent='Choose a movement';
+   const movement=document.createElement('select');movement.className='input';movement.dataset.accessoryMovement='true';movement.innerHTML='<option value="">Custom exercise · enter below</option>'+available().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(A.GROUPS[t.group])+'</option>').join('');
+   picker.append(movement);row.querySelector('legend').after(picker);movement.value=template?.id||'';
+   const daySelect=row.querySelector('[data-accessory=day]');const syncDays=()=>{const chosen=selectedDays();[...daySelect.options].forEach(o=>o.disabled=!chosen.includes(Number(o.value)));if(!chosen.includes(Number(daySelect.value)))daySelect.value=String(chosen[0]??'');};syncDays();
+   dialog.querySelector('form').addEventListener('change',syncDays);
    const select=row.querySelector('[data-accessory=mode]');select.value=mode;
    const sync=()=>{row.querySelector('[data-accessory-strength]').hidden=select.value==='cardio';row.querySelector('[data-accessory-cardio]').hidden=select.value!=='cardio';row.querySelector('[data-accessory-reps]').hidden=select.value!=='reps';row.querySelector('[data-accessory-hold]').hidden=select.value!=='duration';};
+   movement.addEventListener('change',()=>{const chosen=available().find(t=>t.id===movement.value);if(!chosen)return;row.querySelector('[data-accessory=name]').value=chosen.name;row.querySelector('[data-accessory=group]').value=chosen.group;row.querySelector('[data-accessory=equipment]').value=chosen.equipment;row.querySelector('[data-accessory=purpose]').value=chosen.group==='conditioning'?'conditioning':chosen.group==='trunk'?'trunk':'hypertrophy';select.value=chosen.group==='conditioning'?'cardio':chosen.group==='trunk'?'duration':'reps';resetSelection();if(chosen.equipment==='bodyweight')row.querySelector('[data-accessory=weight]').value='0';sync();notify();});
+   row.querySelector('[data-accessory=name]').addEventListener('input',()=>movement.value='');
    select.addEventListener('change',sync);sync();row.querySelector('[data-accessory-remove]').onclick=()=>{row.remove();notify();};container.append(row);host.open=true;notify();
   }
   host.querySelector('[data-accessory-add]').onclick=()=>add();
   host.querySelector('[data-accessory-suggest]').onclick=()=>{
    const selected=selectedDays(),p=profile?.context;if(!selected.length){hint.textContent='Choose training days first.';return;}
    const priorities=String(p?.priorities||'').toLowerCase(),patterns={'upper-back':/upper.?back|lat|row/,quadriceps:/quad/,arms:/arm|bicep|tricep/,trunk:/core|trunk/,'posterior-chain':/hamstring|posterior/,chest:/chest/,conditioning:/condition/};
-   const preferred=new Set(p?.preferredExerciseIds||[]),avoided=new Set(p?.avoidedExerciseIds||[]),competition=new Set((data.exerciseRoles||[]).filter(r=>r.role==='competition'||r.role==='close-variation').map(r=>r.exerciseId));
-   const candidates=A.LIBRARY.map(t=>{const known=LoadnoteIntegrity.resolveExercise(data.exerciseCatalog,t.name);return {...t,id:known?.id||t.id,name:known?.name||t.name};}).filter(t=>!avoided.has(t.id)&&!competition.has(t.id)&&(preferred.has(t.id)||patterns[t.group].test(priorities)));
-   if(!candidates.length){hint.textContent='No supported priority match. Add an accessory manually, or record priorities in your programming profile.';return;}
-   const seen=new Set();let added=0;
-   for(const t of candidates){if(seen.has(t.group)||added>=selected.length)continue;seen.add(t.group);add({...t,day:selected[added%selected.length]});added++;}
-   hint.textContent='Suggestions match reported priorities or preferred identities in the starter library. Add other movements manually. Review equipment, starting loads and total session time before generating. Existing slots are not replaced.';
+   const preferred=new Set(p?.preferredExerciseIds||[]);
+   const candidates=available().filter(t=>preferred.has(t.id)||patterns[t.group].test(priorities));
+   if(!candidates.length){hint.textContent='No supported priority match. Choose a movement from the picker or add a custom exercise.';return;}
+   const existing=new Set([...container.children].map(row=>row.querySelector('[data-accessory=name]').value.toLowerCase())),counts=Object.fromEntries(selected.map(day=>[day,[...container.children].filter(row=>Number(row.querySelector('[data-accessory=day]').value)===day).length]));
+   let added=0;
+   for(const t of candidates){if(existing.has(t.name.toLowerCase())||added>=selected.length||container.children.length>=12)continue;const day=selected.filter(d=>counts[d]<3).sort((a,b)=>counts[a]-counts[b])[0];if(day===undefined)break;add({...t,day});existing.add(t.name.toLowerCase());counts[day]++;added++;}
+   hint.textContent=added?added+' suggested movement(s) added. Preferred movements come first. Use the picker to swap; confirm equipment and starting loads before previewing.':'Matching movements are already listed, or accessory slots are full. Use the movement picker to swap a suggestion.';
+
   };
   function read(){return [...container.children].map(row=>{
    const v=k=>row.querySelector(`[data-accessory="${k}"]`).value,name=v('name').trim(),known=LoadnoteIntegrity.resolveExercise(data.exerciseCatalog,name),mode=v('mode');

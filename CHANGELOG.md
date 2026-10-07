@@ -1,3 +1,10 @@
+# v3.9.0 — Approachable meet prep
+
+- Essential lift setup first, optional evidence and advanced controls, compact day selection and clear two-step event handoff.
+- Linear, three-week wave and daily-undulating prescriptions supported in meet base phases; transparent Decisions style suggestion.
+- Direct accessory movement picker, preferred-first nonduplicating suggestions and selected-day controls.
+- Legacy prescription replay, protected peak/taper, save/schedule integrity and mobile setup regressions.
+
 # v3.8.0 — Focused Coach and guided setup
 
 - Primary next action above optional Coach tools, without a duplicate chat card.

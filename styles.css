@@ -1869,6 +1869,16 @@ body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 #athlete-intake-dialog textarea { max-width:100%; }
 
 /* Shared workflow rows: a clear main action, with context below it. */
+/* Meet setup keeps essential inputs visible and advanced choices optional. */
+#phase-dialog.meet-setup-dialog [hidden] { display:none!important; }
+#phase-dialog.meet-setup-dialog fieldset { min-width:0; margin:.8rem 0; }
+#phase-dialog.meet-setup-dialog .phase-day-grid { display:flex; flex-wrap:wrap; gap:.5rem; }
+#phase-dialog.meet-setup-dialog .phase-day-grid label { display:inline-flex; align-items:center; gap:.4rem; min-height:44px; margin:0; }
+#phase-dialog.meet-setup-dialog .phase-main-lifts label { display:grid; gap:.35rem; margin:.75rem 0; }
+#phase-dialog.meet-setup-dialog summary { min-height:44px; padding:.65rem 0; cursor:pointer; }
+#phase-dialog.meet-setup-dialog button { min-height:44px; white-space:normal; }
+#phase-dialog.meet-setup-dialog>form { overflow-wrap:anywhere; }
+#phase-dialog.meet-setup-dialog input,#phase-dialog.meet-setup-dialog select { max-width:100%; min-width:0; }
 .setup-checklist { list-style:none; padding:0; margin:1rem 0; }
 .setup-checklist>li { display:grid; grid-template-columns:minmax(0,1fr) minmax(9rem,auto); align-items:center; gap:1rem; padding:.85rem 0; border-top:1px solid var(--measure-line); }
 .setup-checklist .profile-actions { margin:0; }
