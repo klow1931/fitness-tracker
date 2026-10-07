@@ -17,6 +17,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Whole-product feature demo
+        run: npx playwright test tests/browser/feature-demo.spec.js tests/browser/more.spec.js tests/browser/measurements.spec.js tests/browser/nutrition.spec.js tests/browser/history-reliability.spec.js tests/browser/profile.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: whole-product-demo
+          path: test-results/
+          retention-days: 7
       - name: Mobile flow demo and formatting checks
         run: npx playwright test tests/browser/mobile-flow.spec.js tests/browser/mobile-usability.spec.js tests/browser/mobile-layout.spec.js tests/browser/profile-uniformity.spec.js tests/browser/workflow-polish.spec.js tests/browser/meet-prep-setup.spec.js
       - uses: actions/upload-artifact@v4

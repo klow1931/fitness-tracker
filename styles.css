@@ -55,7 +55,9 @@ body.dark .more-jump-links a { background:#312e81; color:#e0e7ff; }
 .measure-stat strong { display:block; font-size:1.65rem; letter-spacing:-.04em; margin:.4rem 0; }
 .measure-stat span,.measure-stat small { display:block; color:var(--measure-muted); font-size:.8rem; }
 .measure-workspace { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:1.25rem; align-items:start; }
-.measure-card-heading { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; }
+.measure-card-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; }
+.measure-card,.measure-stat,.measure-card-heading>div { min-width:0; }
+.measure-card-heading h2 { overflow-wrap:anywhere; }
 .measure-card h2 { margin:0; font-size:1.2rem; letter-spacing:-.02em; }
 .measurements-page label { display:block; font-size:.88rem; font-weight:600; }
 .measurements-page .input { box-sizing:border-box; width:100%; margin-top:.4rem; min-height:44px; }
@@ -73,9 +75,10 @@ body.dark .more-jump-links a { background:#312e81; color:#e0e7ff; }
 .measure-field-group summary span { display:block; font-size:.78rem; color:var(--measure-muted); font-weight:400; margin:.2rem 0; }
 .measure-field-group[open] .measure-fields { margin-top:.8rem; }
 .measure-hint { font-size:.78rem; line-height:1.5; }
-.measure-actions { display:flex; gap:.6rem; margin-top:1rem; }
-.measure-actions .btn-primary { flex:1; }
-.measure-chart-wrap { position:relative; min-height:200px; margin-top:1.5rem; }
+.measure-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:1rem; }
+.measure-actions :is(.btn-primary,.btn-secondary) { flex:1 1 120px; min-width:0; min-height:44px; white-space:normal; }
+.measure-chart-wrap { position:relative; min-width:0; min-height:200px; margin-top:1.5rem; }
+.measure-chart-wrap canvas { display:block; max-width:100%; }
 .measure-history { display:grid; gap:.7rem; }
 .measure-history details { border:1px solid var(--measure-line); border-radius:.75rem; padding:1rem; }
 .measure-history summary { cursor:pointer; font-weight:650; min-height:28px; }
@@ -1357,6 +1360,22 @@ body.dark #mobile-nav .workout-draft-active::after{box-shadow:0 0 0 2px #0f172a}
 
 #workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:38px;border-radius:.5rem}
 body.gym-mode #workout-log-card .logger-set [data-workout-action="remove-set"]{min-width:44px}
+
+/* Keep numeric entry usable on narrow phones instead of overflowing a seven-column row. */
+@media(max-width:360px){
+ #workout-log-card .logger-set,
+ #workout-log-card .logger-set:not(:has(.set-done-check)){
+   grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 44px;
+   gap:4px;
+ }
+ #workout-log-card .logger-set .set-number{grid-column:1;grid-row:1}
+ #workout-log-card .logger-set .set-done-check{grid-column:1;grid-row:2}
+ #workout-log-card .logger-set :is(.set-reps,.set-duration){grid-column:2;grid-row:1}
+ #workout-log-card .logger-set .set-weight{grid-column:3;grid-row:1}
+ #workout-log-card .logger-set .set-rpe{grid-column:2 / 4;grid-row:2}
+ #workout-log-card .logger-set>span:not(.set-number){display:none}
+ #workout-log-card .logger-set [data-workout-action="remove-set"]{grid-column:4;grid-row:1 / 3;min-height:44px}
+}
 
 
 /* v2.69.2 — current program workout viewer */
