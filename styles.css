@@ -1867,3 +1867,18 @@ body.dark #chat-messages .cc-msg.assistant small {color:#cbd5e1;}
 #athlete-intake-dialog [data-intake-issue] { min-width:0; }
 #athlete-intake-dialog [data-intake-issue] label { display:block; margin:.65rem 0; }
 #athlete-intake-dialog textarea { max-width:100%; }
+
+/* Shared workflow rows: a clear main action, with context below it. */
+.setup-checklist { list-style:none; padding:0; margin:1rem 0; }
+.setup-checklist>li { display:grid; grid-template-columns:minmax(0,1fr) minmax(9rem,auto); align-items:center; gap:1rem; padding:.85rem 0; border-top:1px solid var(--measure-line); }
+.setup-checklist .profile-actions { margin:0; }
+.setup-checklist button { width:100%; min-height:44px; white-space:normal; }
+.setup-checklist .more-hint { margin:.25rem 0 0; }
+.setup-details>summary,.coach-more>summary,.program-lifecycle-empty summary { min-height:44px; padding:.65rem 0; cursor:pointer; }
+.setup-details button { margin:.5rem .5rem 0 0; }
+.coach-more { margin-top:1rem; border-top:1px solid var(--measure-line); }
+.program-lifecycle-empty>[data-lifecycle-action] { margin:.65rem 0; }
+@media(max-width:640px){
+ .setup-checklist>li { grid-template-columns:minmax(0,1fr); gap:.65rem; }
+ .setup-details button,#coach-today-brief [data-lifecycle-action] { width:100%; }
+}
