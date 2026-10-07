@@ -49,7 +49,7 @@ test('weekly workload reveals frequency, missed work and approved one-set option
  await page.locator('[data-phase-check="discomfort"]').selectOption('none');
  await page.locator('#phase-review-generate').click();
  const bench=page.locator('#phase-review-report article.schedule-row').filter({has:page.locator('[data-phase-choice="bench"]')});
- await expect(bench.locator('details > summary')).toContainText('Weekly workload');
+ await expect(bench.locator('details > summary')).toContainText('Weekly sets & frequency');
  await bench.locator('details > summary').click();
  await expect(bench).toContainText('9 prescribed / 9 logged / 9 exact');
  await expect(bench).toContainText('3 planned / 3 logged');
