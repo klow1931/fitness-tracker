@@ -48,9 +48,9 @@ test('Coach puts the primary next action above optional tools and retains encour
  const order=await page.evaluate(()=>document.querySelector('#coach-today-brief').compareDocumentPosition(document.querySelector('.coach-more'))&Node.DOCUMENT_POSITION_FOLLOWING);
  expect(order).toBeTruthy();
  await expect(page.locator('#panel-coach')).not.toContainText('Need a training partner?');
- await page.locator('#panel-coach .section-tabs').getByRole('button',{name:'Ask Coach',exact:true}).click();
+ await page.locator('#panel-coach .section-tabs').getByRole('tab',{name:'Ask Coach',exact:true}).click();
  await expect(page.locator('[data-sub="co-chat"].sub-panel')).toBeVisible();
- await page.locator('#panel-coach .section-tabs').getByRole('button',{name:'Today',exact:true}).click();
+ await page.locator('#panel-coach .section-tabs').getByRole('tab',{name:'Today',exact:true}).click();
  await page.locator('.coach-more>summary').click();
  await expect(page.getByRole('button',{name:'Open Coach companion',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
