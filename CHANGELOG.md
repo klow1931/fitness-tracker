@@ -1,3 +1,11 @@
+# v3.11.0 — Clearer menus and weekly reviews
+
+- Audited expandable sections and select menus across the app. Shortened long headings and subtitles while retaining context, experimental/read-only labels, selected values and explicit approval semantics.
+- Weekly check-in now starts with compact session/set/effort facts and visible active restrictions. Full weekly evidence, goals/gaps, progression and proposal follow-ups remain available in native expandable sections.
+- Muscle workload has a useful empty state instead of empty table headers. Populated tables retain complete columns, captions and row/column headers in a named, keyboard-focusable horizontal scroll region.
+- Check-in fields retain native labels and unknown values, with a shared accessible help description. Expanders retain native keyboard behavior, visible focus and larger touch targets.
+- No training calculation, prescription, approval, storage schema or existing record changes. Version 3.11.0/build 31100; schema 32 unchanged.
+
 # v3.10.0 — Weekly loading and feature validation
 
 - Genuine weekly-undulating base prescriptions with per-pair progression, explicit review and protected peak/taper behavior.

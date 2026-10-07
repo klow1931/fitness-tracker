@@ -114,7 +114,7 @@
       <div id="today-training" class="card"></div>
       <div id="program-lifecycle-home" class="card program-lifecycle-card hidden"></div>
       <div id="athlete-home-command" class="card v1-command-card"></div>
-      <details id="home-week-plan" class="card home-week-plan"><summary><b>Today's plan &amp; weekly rhythm</b><small>Preview your plan and training calendar</small></summary>
+      <details id="home-week-plan" class="card home-week-plan"><summary><b>Plan &amp; calendar</b><small>Preview your plan and training calendar</small></summary>
       <div id="week-plan" class="card"></div>
       <div id="athlete-goals" class="card"></div>
       <div class="card home-week">
@@ -346,7 +346,7 @@
         <div class="mb-3"><button type="button" class="btn-secondary" data-workout-action="start-session">Start workout now</button><p id="session-timing-summary" class="text-xs" aria-live="polite">Start time not recorded</p></div>
         <details id="workout-plan-context" class="session-intent mb-4" hidden><summary>Why this workout?</summary><div id="workout-plan-context-body" class="planned-work-summary mt-3"></div></details>
         <details id="session-intent" class="session-intent mb-4">
-          <summary><b>Session intent &amp; planned work</b> <span class="text-xs text-slate-500">optional, recommended for v2 readiness</span></summary>
+          <summary><b>Planned workout</b> <span class="text-xs text-slate-500">Optional · compare planned and logged work</span></summary>
           <p class="text-sm text-slate-600 mt-2">Record what this session is meant to accomplish. A planned-work snapshot is kept separate from the performance you complete.</p>
           <div class="grid sm:grid-cols-2 gap-3 mt-3">
             <div>
@@ -639,7 +639,7 @@
         <label><input type="checkbox" id="nutrition-day-complete" onchange="setNutritionDayComplete(this.checked)" /> Finished logging this day</label>
         <p id="nutrition-completeness-status" class="text-sm">Only complete days contribute to averages. Editing foods reopens the day.</p>
         <details class="mt-3">
-          <summary>My nutrition targets (optional)</summary>
+          <summary>Nutrition targets</summary>
           <p class="text-sm">Set your own targets; Loadnote does not prescribe a diet. Leave blank to remove a target.</p>
           <label>Calories (kcal)<input id="nutrition-target-calories" type="number" min="0" max="100000" class="input" /></label>
           <label>Protein (g)<input id="nutrition-target-protein" type="number" min="0" max="100000" class="input" /></label>
@@ -1016,26 +1016,26 @@
       <div class="decision-workspace"><header class="decision-section-heading"><span class="eyebrow">01 · TODAY</span><h2>Your training</h2><p>Current plan and next action, without opening programming tools.</p></header>
       <div id="decision-action-center" aria-label="Current plan and recommended next action"></div>
       <header class="decision-section-heading"><span class="eyebrow">02 · YOUR LIFTS</span><h2>Lift decisions</h2></header>
-      <details class="card more-details"><summary><b>Muscle workload & training knowledge</b><small>Workload, coverage and coaching references</small></summary><div id="muscle-workload" class="more-details-body"></div></details>
-      <details class="card" id="shared-coaching-panel"><summary><b>Shared coaching review</b><small>Weekly evidence, check-ins and future proposals</small></summary><button type="button" class="btn-secondary" onclick="LoadnoteCoachingLibraryUI.open()">Explore coaching references</button><div id="shared-coaching-review"></div></details>
+      <details class="card more-details"><summary><b>Muscle workload</b><small>Sets, effort and muscle coverage</small></summary><div id="muscle-workload" class="more-details-body"></div></details>
+      <details class="card" id="shared-coaching-panel"><summary><b>Weekly check-in</b><small>Your reports and proposed changes</small></summary><button type="button" class="btn-secondary" onclick="LoadnoteCoachingLibraryUI.open()">Explore coaching references</button><div id="shared-coaching-review"></div></details>
       <div class="card decision-summary-card" id="decision-readiness-card"><p class="text-sm text-slate-500">Building the athlete evidence model…</p></div>
       <header class="decision-section-heading"><span class="eyebrow">03 · YOUR PROGRAM</span><h2>Programming</h2><p>Review your current training before creating another plan.</p></header>
       <div id="cycle-week-review" aria-label="Weekly meet-cycle review"></div>
       <div id="cycle-response" aria-label="Meet-cycle training response"></div>
       <div id="cycle-journal" aria-label="Meet-cycle decision journal"></div>
       <details class="card" id="phase-review-panel"><summary><b>Program reviews</b><small>Phase evidence and approved adjustments</small></summary><div id="phase-review"></div></details>
-      <details class="card" id="program-week-review-panel"><summary><b>Program week review</b><small>Recovery, evidence and next-week changes</small></summary><div id="program-week-review"></div></details>
+      <details class="card" id="program-week-review-panel"><summary><b>Weekly program review</b><small>Recovery, evidence and next-week changes</small></summary><div id="program-week-review"></div></details>
       <div class="decision-group-label"><b>Build or change a program</b><small>One recommended path first; alternate tools stay out of the way</small></div>
       <div id="programming-workspace" class="card programming-workspace" aria-label="Program planner"></div>
-      <details class="card" id="athlete-planning-tools"><summary><b>Intake, cardio &amp; exercise edits</b><small>Review your context and exact planned targets</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.open()">Edit planned exercises</button><button type="button" class="btn-secondary" onclick="LoadnoteCardioPlannerUI.open()">Plan cardio</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.learning()">What edits show</button></div></details>
-      <details class="card programming-tools-panel" id="programming-tools-panel"><summary><span><b>Program setup &amp; alternate tools</b><small>Edit setup, use the quick 4-week return block, open the manual designer, or adopt an existing program</small></span></summary>
+      <details class="card" id="athlete-planning-tools"><summary><b>Training context &amp; edits</b><small>Review your context and exact planned targets</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.open()">Edit planned exercises</button><button type="button" class="btn-secondary" onclick="LoadnoteCardioPlannerUI.open()">Plan cardio</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.learning()">What edits show</button></div></details>
+      <details class="card programming-tools-panel" id="programming-tools-panel"><summary><span><b>More program tools</b><small>Setup, return blocks and existing programs</small></span></summary>
       <div class="decision-build-tools programming-tools-content">
       <details class="card" id="programming-profile-panel"><summary><b>Training setup</b><small>Goal, availability, equipment and event-date default</small></summary><div id="programming-profile"></div></details>
-      <details class="card"><summary><b>Guided starting plans</b><small>Reuse your goals and availability, choose movements, then review every dose</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('hypertrophy')">Start muscle-growth setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('weightlifting')">Start Olympic setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('athlete')">Start athlete setup</button></div></details>
-      <details class="card" id="hypertrophy-builder-panel"><summary><b>Reviewed hypertrophy plan</b><small>Explicit exercises, muscle workload, rep ranges and progression review</small></summary><div id="hypertrophy-builder"></div></details>
-      <details class="card" id="sport-planner-panel"><summary><b>Olympic weightlifting & athlete planners</b><small>Technical lifting, strength, speed, jumps, agility and conditioning · separate outcomes</small></summary><div id="sport-planner"></div></details>
+      <details class="card"><summary><b>Starter plans</b><small>Choose movements and review your plan</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('hypertrophy')">Start muscle-growth setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('weightlifting')">Start Olympic setup</button><button type="button" class="btn-secondary" onclick="LoadnoteGuidedPlanUI.open('athlete')">Start athlete setup</button></div></details>
+      <details class="card" id="hypertrophy-builder-panel"><summary><b>Muscle-growth plan</b><small>Exercises, rep ranges and progression</small></summary><div id="hypertrophy-builder"></div></details>
+      <details class="card" id="sport-planner-panel"><summary><b>Sport planners</b><small>Weightlifting, speed and conditioning</small></summary><div id="sport-planner"></div></details>
       <details class="card" id="reviewed-builder-panel"><summary><b>Quick 4-week return block</b><small>Short return/re-entry path · not the main meet-prep generator</small></summary><div id="reviewed-builder"></div></details>
-      <details class="card" id="phase-builder-panel"><summary><b>Program designer</b><small>Primary strength and meet-prep setup · accumulation → strength → deload</small></summary><div id="phase-builder"></div>
+      <details class="card" id="phase-builder-panel"><summary><b>Program designer</b><small>Strength phases and meet preparation</small></summary><div id="phase-builder"></div>
       <div id="meet-cycle" class="mt-4" aria-label="Meet-prep timeline"></div></details>
       <details class="card" id="program-adoption-panel"><summary><b>Adopt an existing program</b><small>Use a saved user program as a reviewed adaptive baseline</small></summary><div id="program-adoption"></div></details>
       </div>
@@ -1198,7 +1198,7 @@
         </div>
       </div>
 
-      <details class="card more-details" id="tools-rpe"><summary>RPE &amp; percentage calculator</summary><div class="more-details-body">
+      <details class="card more-details" id="tools-rpe"><summary>RPE &amp; load calculator</summary><div class="more-details-body">
 
         <p class="text-xs text-slate-500 mb-4">Estimate set weights from a known 1RM, or reverse-estimate 1RM from a set at a given RPE. Charts are approximate — individual strength curves vary.</p>
 
@@ -1318,9 +1318,9 @@
         </div>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import. Unfinished workout drafts are device-only and are not included. Save a reviewed workout first; export photos separately. Opening a download or share sheet does not prove the file was saved.</p>
         <p class="more-hint">Your records stay on this device. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
-        <details class="more-details"><summary>Training data &amp; record health</summary><div id="training-data-health" class="more-details-body"></div></details>
-        <details class="more-details"><summary>Automatic recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
-        <details class="more-details"><summary>Exercise identities & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
+        <details class="more-details"><summary>Data health</summary><div id="training-data-health" class="more-details-body"></div></details>
+        <details class="more-details"><summary>Recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
+        <details class="more-details"><summary>Exercise names & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
       </div>
 
       <details class="card more-details" id="tools-about"><summary>Credits &amp; open source</summary><div class="more-details-body">
@@ -1394,7 +1394,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.10.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.11.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
