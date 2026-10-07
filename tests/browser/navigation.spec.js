@@ -140,7 +140,7 @@ test('mobile Profile keeps secondary destinations one level below primary naviga
  await page.setViewportSize({width:390,height:844});
  await page.locator('#mobile-nav [data-tab="profile"]').click();
  await expect(page.locator('#panel-profile')).toBeVisible();
- await expect(page.locator('#profile-more')).toContainText('Other parts of Loadnote');
+ await expect(page.locator('#profile-more').getByRole('heading',{name:'More tools',exact:true})).toBeVisible();
  await page.locator('#profile-more').getByRole('button',{name:/Calendar/}).click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
 });
