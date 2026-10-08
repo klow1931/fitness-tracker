@@ -6,6 +6,18 @@
 
  function loggerDraft(){try{return typeof readLoggerDraft==='function'?readLoggerDraft():null;}catch{return null;}}
  function meaningfulDraftRows(draft){return (draft?.rows||[]).filter(row=>row?.name||(row?.sets||[]).some(set=>set?.reps||set?.duration||set?.weight||set?.rpe));}
+ function sessionContext(active,lifecycle,belongs){
+  let session=null;
+  if(active&&belongs&&window.LoadnoteProgramWorkoutViewer)try{session=LoadnoteProgramWorkoutViewer.day(data,today(),{asOf:today()}).find(s=>s.id===active.id)||null;}catch{}
+  const p=belongs?lifecycle?.progress:null;
+  return {session,meta:[p?'Week '+p.week+' of '+p.totalWeeks+(p.phaseLabel?' · '+p.phaseLabel+(p.phaseWeek?' '+p.phaseWeek:''):''):'',session?.estimatedMinutes?'~'+session.estimatedMinutes+' min':''].filter(Boolean).join(' · ')};
+ }
+ function focusLine(active){return active?.goal?'<p class="workout-session-focus"><b>Focus:</b> '+esc(active.goal)+'</p>':'';}
+ function exercisePreview(active){
+  const rows=active.exercises.map(e=>'<li><b>'+esc(e.name)+'</b><span>'+esc(e.sets)+' set'+(e.sets===1?'':'s')+'</span></li>').join('');
+  const extra=active.exerciseCount-active.exercises.length;
+  return '<details class="today-session-preview"><summary>Planned exercises · '+active.exerciseCount+'</summary><ul role="list">'+rows+'</ul>'+(extra>0?'<p class="more-hint">'+extra+' more in the full workout.</p>':'')+'</details>';
+ }
  function ensureFastStartUI(){
   if(typeof document==='undefined'||typeof document.getElementById!=='function')return;
   if(!document.getElementById('fast-start-style')){
@@ -34,8 +46,8 @@
   const log=document.getElementById('workout-log-card');
   if(log&&!document.getElementById('train-launcher')){const launcher=document.createElement('section');launcher.id='train-launcher';launcher.className='card';launcher.setAttribute('aria-live','polite');log.before(launcher);}
   if(log&&!document.getElementById('train-fast-options')){
-   const options=document.createElement('div');options.id='train-fast-options';options.innerHTML='<button type="button" class="btn-secondary" data-fast-options-toggle>Workout options</button><span class="more-hint">Date, notes, session intent, planned-work details and setup tools</span>';
-   const cockpit=document.getElementById('training-cockpit');(cockpit||log.firstChild)?.after?.(options);options.querySelector('[data-fast-options-toggle]').addEventListener('click',()=>{document.body.classList.toggle('train-fast-options-open');const open=document.body.classList.contains('train-fast-options-open');options.querySelector('button').textContent=open?'Hide workout options':'Workout options';});
+   const options=document.createElement('div');options.id='train-fast-options';options.innerHTML='<button type="button" class="btn-secondary" data-fast-options-toggle aria-expanded="false">Workout options</button><span class="more-hint">Date, notes and setup</span>';
+   const cockpit=document.getElementById('training-cockpit');(cockpit||log.firstChild)?.after?.(options);options.querySelector('[data-fast-options-toggle]').addEventListener('click',()=>{document.body.classList.toggle('train-fast-options-open');const open=document.body.classList.contains('train-fast-options-open');options.querySelector('button').textContent=open?'Hide workout options':'Workout options';options.querySelector('button').setAttribute('aria-expanded',String(open));});
   }
   const title=document.getElementById('workout-mode-title'),head=title?.parentElement;
   if(head){[...head.children].slice(1).forEach(el=>el.dataset.fastStartSecondary='true');}
@@ -89,19 +101,19 @@
   let title='',subtitle='',badge='',preview='',primaryAction='',primaryLabel='';
   if(active?.draftOpen){
    title=active.name;subtitle='Your scheduled workout is already in progress.';badge='In progress';primaryAction='resume';primaryLabel='Resume workout';
-   preview=active.exercises.map(e=>'<div class="train-launch-exercise"><b>'+esc(e.name)+'</b><span>'+esc(e.sets)+' set'+(e.sets===1?'':'s')+'</span></div>').join('');
+   preview=exercisePreview(active);
   }else if(report.unlinkedDraft){
    const rows=meaningfulDraftRows(draft);title='Workout in progress';subtitle='Your unfinished workout is saved on this device. Resume it before starting something new.';badge='Resume first';primaryAction='resume';primaryLabel='Resume workout';
    preview=rows.slice(0,4).map(row=>'<div class="train-launch-exercise"><b>'+esc(row.name||'Exercise')+'</b><span>'+esc((row.sets||[]).length)+' set'+((row.sets||[]).length===1?'':'s')+'</span></div>').join('');
   }else if(active){
    title=active.name;subtitle=lifecycleGate?lifecycle.nextAction.label:(active.goal||'Today’s scheduled workout is ready.');badge=lifecycleGate?'Review first':'Ready';primaryAction=lifecycleGate?'review':'start';primaryLabel=lifecycleGate?lifecycle.nextAction.label:'Start workout';
-   preview=active.exercises.map(e=>'<div class="train-launch-exercise"><b>'+esc(e.name)+'</b><span>'+esc(e.sets)+' set'+(e.sets===1?'':'s')+'</span></div>').join('');
+   preview=exercisePreview(active);
   }else if(report.completed){
    title='Training logged';subtitle='Today’s scheduled training is complete. Start another session only if you intend to train again.';badge='Complete';primaryAction='empty';primaryLabel='Start another workout';
   }else{
    title='What are you training today?';subtitle='Nothing is scheduled today. Start simple, repeat something familiar, or choose a saved template.';badge='Open training';primaryAction='empty';primaryLabel='Start empty workout';
   }
-  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(preview?'<div class="train-launch-preview">'+preview+'</div>':'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+otherActions(report,primaryAction);
+  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(active?'<p class="more-hint">'+esc(sessionContext(active,lifecycle,belongs).meta)+'</p>':'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+preview+otherActions(report,primaryAction);
   bindLauncher(host,report,active,lifecycle,lifecycleGate);
  }
  function requestTrainLauncher(){trainLaunchRequested=true;requestAnimationFrame(renderTrainLauncher);}
@@ -115,21 +127,18 @@
   const active=report.active;
   const belongs=!!(active&&lifecycle?.program&&(active.id.startsWith('phase:'+lifecycle.program.id+':')||active.id.startsWith('meet:'+lifecycle.program.id+':')));
   const lifecycleGate=belongs&&['resolve-overdue','review-week','review-phase','review-programs'].includes(lifecycle.nextAction?.kind);
-  const lifecycleMeta=belongs&&lifecycle.progress?'Week '+lifecycle.progress.week+' of '+lifecycle.progress.totalWeeks+(lifecycle.progress.phaseLabel?' · '+lifecycle.progress.phaseLabel+(lifecycle.progress.phaseWeek?' '+lifecycle.progress.phaseWeek:''):''):'';
-  let programSession=null;
-  if(active&&belongs&&window.LoadnoteProgramWorkoutViewer){try{programSession=LoadnoteProgramWorkoutViewer.day(data,today(),{asOf:today()}).find(s=>s.id===active.id)||null;}catch{}}
-  const sessionMeta=[lifecycleMeta,programSession?.estimatedMinutes?'~'+programSession.estimatedMinutes+' min':''].filter(Boolean).join(' · ');
+  const context=sessionContext(active,lifecycle,belongs),sessionMeta=context.meta;
   if(active?.draftOpen){
-   const exercises=active.exercises.map(e=>'<span>'+esc(e.name)+(e.sets?' · '+e.sets+' set'+(e.sets===1?'':'s'):'')+'</span>').join('');
-   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>Workout in progress</p></div><span class="badge">In progress</span></div><div class="today-training-exercises">'+exercises+'</div><p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'.</p><div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Resume workout</button></div>';
+
+   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>Workout in progress</p></div><span class="badge">In progress</span></div>'+(sessionMeta?'<p class="more-hint">'+esc(sessionMeta)+'</p>':'')+focusLine(active)+'<p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'.</p><div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Resume workout</button></div>'+exercisePreview(active);
   }else if(report.unlinkedDraft){
    host.innerHTML='<p class="eyebrow">Today</p><h2>Workout in progress</h2><p>Your unfinished workout is saved on this device. Resume it before starting a new scheduled session.</p><button type="button" class="btn-primary" data-today-resume>Resume workout</button>';
   }else if(active){
-   const exercises=active.exercises.map(e=>'<span>'+esc(e.name)+(e.sets?' · '+e.sets+' set'+(e.sets===1?'':'s'):'')+'</span>').join('');
+
    const adaptation=window.LoadnoteAdaptationExplanation?.forSession(data,active.id);
    const adaptationHtml=window.LoadnoteAdaptationExplanationUI?.render(adaptation)||'';
    const viewWorkout=belongs&&window.LoadnoteProgramWorkoutViewerUI?'<button type="button" class="btn-secondary" data-today-view-workout>View workout</button>':'';
-   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>'+esc(lifecycleGate?lifecycle.nextAction.label:sessionMeta||active.goal||'Scheduled training')+'</p></div><span class="badge">'+(lifecycleGate?'Review first':'Ready')+'</span></div><div class="today-training-exercises">'+exercises+'</div><p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+(programSession?.estimatedMinutes?' · about '+programSession.estimatedMinutes+' min':'')+'. Planned work stays separate from what you actually log.</p>'+adaptationHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" '+(lifecycleGate?'data-today-lifecycle':'data-today-train="'+esc(active.id)+'"')+'>'+esc(lifecycleGate?lifecycle.nextAction.label:'Start workout')+'</button>'+viewWorkout+'<button type="button" class="btn-secondary" data-today-calendar>Calendar</button></div>';
+   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>'+esc(lifecycleGate?lifecycle.nextAction.label:sessionMeta||'Scheduled training')+'</p></div><span class="badge">'+(lifecycleGate?'Review first':'Ready')+'</span></div>'+focusLine(active)+'<p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'. Targets are planned; log what you do.</p>'+adaptationHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" '+(lifecycleGate?'data-today-lifecycle':'data-today-train="'+esc(active.id)+'"')+'>'+esc(lifecycleGate?lifecycle.nextAction.label:'Start workout')+'</button>'+viewWorkout+'<button type="button" class="btn-secondary" data-today-calendar>Calendar</button></div>'+exercisePreview(active);
   }else if(report.completed){
    host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+report.completed+' scheduled session'+(report.completed===1?' is':'s are')+' complete today.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
   }else{

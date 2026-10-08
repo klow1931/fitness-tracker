@@ -1017,6 +1017,19 @@ body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; bo
 .today-training-exercises{display:flex;flex-wrap:wrap;gap:.45rem;margin:.9rem 0 .65rem}
 .today-training-exercises span{display:inline-flex;align-items:center;border:1px solid rgba(100,116,139,.22);border-radius:999px;padding:.38rem .65rem;font-size:.82rem;background:rgba(148,163,184,.08)}
 .today-training-actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.9rem}
+.today-session-preview{margin-top:1rem;border-top:1px solid var(--border);padding-top:.55rem}
+.today-session-preview summary,.session-result-evidence summary{min-height:44px;display:list-item;align-content:center;cursor:pointer}
+.today-session-preview ul{list-style:none;padding:0;margin:.25rem 0}
+.today-session-preview li{display:flex;justify-content:space-between;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);font-size:.86rem}
+.today-session-preview li b{min-width:0;overflow-wrap:anywhere}
+.today-session-preview li span{flex-shrink:0;color:var(--muted)}
+.workout-session-focus{font-size:.88rem;line-height:1.45;margin:.55rem 0}
+.session-result-summary{font-weight:600}
+.session-result-evidence{margin:.55rem 0}
+.cockpit-help-actions,.cockpit-rest-start{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.cockpit-rest-start{border-top:1px solid var(--border);padding-top:.45rem;margin-top:.35rem;font-size:.78rem}
+.cockpit-rest-start button,.cockpit-help-actions button{min-height:44px}
+.training-cockpit-quick button{min-height:44px}
 @media(max-width:640px){.today-training-actions>*{flex:1 1 10rem}.today-training-head{gap:.65rem}}
 
 
@@ -1810,7 +1823,7 @@ body.dark .training-cockpit-transition span{color:#6ee7b7}
  .training-cockpit-comparison{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
  .training-cockpit-link{grid-column:2;grid-row:1}
  .training-cockpit-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
- .training-cockpit-quick .btn-secondary{grid-column:1/-1}
+ .training-cockpit-quick .btn-secondary{grid-column:span 2}
  .training-cockpit-quick button{min-width:0;max-width:100%;padding:.35rem .25rem}
  .training-cockpit-transition{align-items:stretch;flex-direction:column;min-width:0}
  .training-cockpit-transition button{width:100%}

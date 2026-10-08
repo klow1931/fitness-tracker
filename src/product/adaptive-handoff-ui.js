@@ -49,8 +49,8 @@
   const review=report.status==='review-available'?'<button type="button" class="btn-primary" data-adaptive-review>'+esc(actionLabel(report))+'</button>':'';
   const view=report.next?'<button type="button" class="'+(review?'btn-secondary':'btn-primary')+'" data-adaptive-next>View next workout</button>':'';
   return '<section class="adaptive-handoff '+statusClass+'" data-adaptive-handoff><div class="adaptive-handoff-head"><div><p class="eyebrow">ADAPTIVE HANDOFF</p><h3>'+esc(report.label)+'</h3></div><span class="badge">'+esc(report.status==='updated'?'Updated':report.status==='review-available'?'Review':report.status==='unchanged'?'Unchanged':'Saved')+'</span></div>'+
-   performanceHtml(report.performance)+'<p class="adaptive-handoff-reason">'+esc(report.reason)+'</p>'+next+changesHtml(report)+
-   '<div class="adaptive-handoff-actions">'+review+view+'<button type="button" class="btn-secondary" data-adaptive-done>Done</button></div><p class="more-hint">'+esc(report.notice)+'</p></section>';
+   '<p class="adaptive-handoff-reason">'+esc(report.reason)+'</p>'+next+changesHtml(report)+'<details class="session-result-evidence"><summary>Training evidence</summary>'+performanceHtml(report.performance)+'<p class="more-hint">'+esc(report.notice)+'</p></details>'+
+   '<div class="adaptive-handoff-actions">'+review+view+'<button type="button" class="btn-secondary" data-adaptive-done>Done</button></div></section>';
  }
  function bind(host,report,state){
   if(!host||!report)return;

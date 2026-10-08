@@ -134,6 +134,15 @@
   const next=H()?.adjustDisplayWeight(input.value,delta);if(next==null)return;
   input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();input.focus({preventScroll:true});try{input.select();}catch{}
  }
+ function usePrevious(){
+  const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
+  const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
+  if(!Number.isFinite(Number(value.weight))||value.weight==null||Number(value.weight)<0||!Number.isFinite(Number(amount))||Number(amount)<=0)return;
+  if((inputs.weight?.value!==''||inputs.measure?.value!=='')&&!confirm('Replace this set’s load and reps or duration with the previous session? Effort and completion stay unchanged.'))return;
+  if(inputs.weight){inputs.weight.value=String(Math.round(toDisplay(value.weight)*100)/100);changed(inputs.weight);}
+  if(inputs.measure){inputs.measure.value=String(amount);changed(inputs.measure);}
+  saveLoggerDraft();window.updateTrainingFlow?.();render();inputs.rpe?.focus({preventScroll:true});
+ }
  function focusSet(set){
   if(!set)return;
   const weight=set.querySelector('.set-weight'),measure=set.querySelector('.set-reps,.set-duration'),rpe=set.querySelector('.set-rpe');
@@ -155,14 +164,15 @@
  }
  function restHtml(){
   const snap=window.LoadnoteRestTimer?.snapshot?.();
-  if(!snap?.active)return '';
+  if(!snap?.active)return '<div class="cockpit-rest-start"><span>Rest</span><button type="button" class="btn-secondary" data-cockpit-rest-start="90" aria-label="Start 90 seconds of rest">90s</button><button type="button" class="btn-secondary" data-cockpit-rest-start="180" aria-label="Start 3 minutes of rest">3m</button></div>';
   return '<div class="training-cockpit-rest" data-cockpit-rest><div><span>REST</span><b>'+esc(snap.label)+'</b></div><div class="training-cockpit-rest-actions">'+
    '<button type="button" data-cockpit-rest-pause>'+(snap.paused?'Resume':'Pause')+'</button>'+
-   '<button type="button" data-cockpit-rest-add>+30</button>'+
+   '<button type="button" data-cockpit-rest-add aria-label="Add 30 seconds of rest">+30s</button>'+
    '<button type="button" data-cockpit-rest-stop>Stop</button>'+
    '</div></div>';
  }
  function bindRest(host){
+  host.querySelectorAll('[data-cockpit-rest-start]').forEach(button=>button.addEventListener('click',()=>{startRest(Number(button.dataset.cockpitRestStart));refreshRest();}));
   host.querySelector('[data-cockpit-rest-pause]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.pause?.());
   host.querySelector('[data-cockpit-rest-add]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.add?.());
   host.querySelector('[data-cockpit-rest-stop]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.stop?.());
@@ -170,7 +180,8 @@
  function refreshRest(){
   const host=document.getElementById('training-cockpit');if(!host||host.hidden)return;
   const snap=window.LoadnoteRestTimer?.snapshot?.(),current=host.querySelector('[data-cockpit-rest]');
-  if(!snap?.active){current?.remove();return;}
+  if(!snap?.active){if(current){current.remove();host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);}return;}
+  host.querySelector('.cockpit-rest-start')?.remove();
   if(current){
    const label=current.querySelector('b');if(label)label.textContent=snap.label;
    const pause=current.querySelector('[data-cockpit-rest-pause]');if(pause)pause.textContent=snap.paused?'Resume':'Pause';
@@ -200,6 +211,7 @@
   const previousLine=ctx.set?'<div><span>Last</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
+    (prior?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
     '<button type="button" data-cockpit-adjust="'+(-steps.large)+'">−'+steps.large+'</button>'+
     '<button type="button" data-cockpit-adjust="'+(-steps.small)+'">−'+steps.small+'</button>'+
     '<button type="button" data-cockpit-adjust="'+steps.small+'">+'+steps.small+'</button>'+
@@ -207,10 +219,10 @@
     '</div>':'';
   const timer=!meta.started&&document.getElementById('wo-date')?.value===today()?'<button type="button" class="btn-secondary" data-cockpit-start>Start session</button>':'';
   const why=meta.scheduled?'<button type="button" class="training-cockpit-link" data-cockpit-why>Why?</button>':'';
-  const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options>'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
+  const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options aria-expanded="'+String(!!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())+'">'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
-    quick+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+transitionHtml()+restHtml()+
+    quick+'<div class="cockpit-help-actions"><button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+(ctx.row?'<button type="button" class="training-cockpit-link" data-cockpit-swap>Swap exercise</button>':'')+'</div>'+transitionHtml()+restHtml()+
     (window.LoadnoteQuickCompletionUndo?.canUndo?.()?'<div class="cockpit-undo"><span>Last set checked complete</span><button type="button" class="btn-secondary" data-cockpit-undo>Undo set completion</button></div>':'')+
     '<div class="cockpit-save-health"><p role="status" data-cockpit-save-status></p><button type="button" class="btn-secondary" data-cockpit-retry-save hidden>Retry draft save</button></div>';
   host.hidden=false;
@@ -218,6 +230,9 @@
   host.querySelector('[data-cockpit-undo]')?.addEventListener('click',()=>window.LoadnoteQuickCompletionUndo?.undo?.());
   host.querySelector('[data-cockpit-retry-save]')?.addEventListener('click',()=>{saveLoggerDraft();refreshSaveStatus();});
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
+  host.querySelector('[data-cockpit-previous]')?.addEventListener('click',usePrevious);
+  host.querySelector('[data-cockpit-swap]')?.addEventListener('click',()=>{const button=ctx.row?.querySelector('[data-workout-action="swap-exercise"]');if(button)openExerciseSwap(button);});
+  host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.setAttribute('aria-label',(Number(button.dataset.cockpitAdjust)>0?'Increase':'Decrease')+' load by '+Math.abs(Number(button.dataset.cockpitAdjust))+' '+unitLabel()));
   host.querySelector('[data-cockpit-guidance]')?.addEventListener('click',()=>window.LoadnoteMovementGuidanceUI?.open?.(exerciseName));
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.addEventListener('click',()=>adjust(Number(button.dataset.cockpitAdjust))));
   host.querySelector('[data-cockpit-start]')?.addEventListener('click',()=>{startWorkoutNow();queueRefresh();});

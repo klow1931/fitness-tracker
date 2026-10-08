@@ -87,5 +87,5 @@ function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
   if(!last){detail('p',`${exercise.name}: first matching session logged.`);continue;}
   detail('h3',exercise.name);detail('p','This session: '+exercise.sets.map(formatStrengthSet).join(' / '));detail('p',`Previous (${last.date}): `+last.exercise.sets.map(formatStrengthSet).join(' / '));
  }
- const close=add('button','Dismiss recap');close.type='button';close.className='btn-secondary';close.onclick=()=>{host.hidden=true;};
+ const close=add('button','Dismiss recap');close.type='button';close.className='btn-secondary recap-dismiss';close.onclick=()=>{host.hidden=true;};
 }

@@ -77,7 +77,7 @@ test('v2.70 Today previews the exact reviewed workout and deep-links its session
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  const todayCard=page.locator('#today-training');
  await expect(todayCard).toContainText(info.name);
- await expect(todayCard).toContainText('about '+info.minutes+' min');
+ await expect(todayCard).toContainText('~'+info.minutes+' min');
  await todayCard.getByRole('button',{name:'View workout'}).click();
  const dialog=page.locator('#program-workout-dialog');await expect(dialog).toBeVisible();
  const target=dialog.locator('[data-program-session="'+info.id+'"]');

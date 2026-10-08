@@ -17,6 +17,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Daily workout interface checks
+        run: npx playwright test tests/browser/workout-flow.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: daily-workout-demo
+          path: test-results/
+          retention-days: 7
       - name: Whole-product feature demo
         run: npx playwright test tests/browser/feature-demo.spec.js tests/browser/interface-clarity.spec.js tests/browser/more.spec.js tests/browser/measurements.spec.js tests/browser/nutrition.spec.js tests/browser/history-reliability.spec.js tests/browser/profile.spec.js
       - uses: actions/upload-artifact@v4

@@ -1,3 +1,11 @@
+# v3.13.0 — Smoother daily training
+
+- Today and Train put Start/Resume before expandable exercise previews; saved focus, phase and available time estimates remain concise.
+- Current-set copying preserves effort and completion, protects existing entries with confirmation, and leaves other sets alone.
+- Rest start and exercise swap controls are reachable during execution; load adjustments announce their units.
+- Finish keeps the saved result, deviations, review status and next session visible, with complete evidence under native disclosures.
+- Version 3.13.0/build 31300, schema 32 unchanged. No training calculation, approval or record changes.
+
 # v3.12.0 — A clearer cycle timeline
 
 - Cycle journal now presents saved plan reviews and choices as a compact timeline, with full policy IDs, historical schema/release versions and record timestamps under accessible Technical details.
