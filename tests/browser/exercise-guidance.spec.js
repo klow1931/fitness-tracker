@@ -19,11 +19,12 @@ test('priority options use available tools, explain matches and require reviewed
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('Companion explains shared equipment and follows alternatives without changing data',async({page},info)=>{
- const before=await page.evaluate(()=>JSON.stringify(data));await page.locator('#coach-companion-launcher').click();
+ const before=await page.evaluate(()=>JSON.stringify(data));await page.evaluate(()=>{window.exerciseRemoteCalls=0;LoadnoteCoachClient.ensureSignedIn=async()=>true;LoadnoteCoachClient.ask=async()=>{window.exerciseRemoteCalls++;throw Error('Shared exercise answers must remain local');};});await page.locator('#coach-companion-launcher').click();
  async function ask(q){await page.locator('#cc-input').fill(q);await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();}
  await ask('What equipment for Lat Pulldown?');await expect(page.locator('#cc-messages .assistant').last()).toContainText('Equipment: Cable');
  await ask('Only dumbbells instead?');await expect(page.locator('#cc-messages .assistant').last()).toContainText('Chest-supported Row');await expect(page.locator('#cc-messages .assistant').last()).toContainText('separate starting load');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ expect(await page.evaluate(()=>window.exerciseRemoteCalls)).toBe(0);
  await screenshots(page,info,'companion-alternatives');
 });
 test('saved accessory access survives profile editing and blocks unavailable new proposals',async({page})=>{
