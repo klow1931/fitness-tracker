@@ -24,9 +24,10 @@
   const lines=(e.sets||[]).map(s=>weight(s.weight)+' × '+(s.duration!=null?s.duration+' sec':s.minReps!=null?s.minReps+'–'+s.maxReps:s.reps)+' · RPE cap '+(s.targetRpe??'unknown'));
   return e.name+' · '+(lines.length&&lines.every(l=>l===lines[0])?lines.length+' sets · '+lines[0]:lines.map((l,i)=>'Set '+(i+1)+': '+l).join(' / '));
  }
- function summary(r){if(r.status==='empty')return 'No scheduled workout is recorded for that window. Open Calendar to review your plan.';if(r.status==='ambiguous')return 'More than one workout is scheduled on '+r.candidates[0].date+'. Choose the exact session in Calendar.';
+ function review(state,options){try{return inspect(state,options);}catch{return {status:'invalid',candidates:[],notice:NOTICE};}}
+ function summary(r){if(r.status==='invalid')return 'The saved Calendar context could not be validated. Open Calendar to resolve it before interpreting targets.';if(r.status==='empty')return 'No scheduled workout is recorded for that window. Open Calendar to review your plan.';if(r.status==='ambiguous')return 'More than one workout is scheduled on '+r.candidates[0].date+'. Choose the exact session in Calendar.';
   return r.session.date+' · '+r.session.name+'. '+(r.progress?'Week '+r.progress.week+' of '+r.progress.totalWeeks+' · '+r.progress.phaseLabel+'. ':'')+'Focus: '+r.focus+'. '+r.purpose+(r.event?' '+(r.event.type==='competition'?'Competition':'Mock meet')+' on '+r.event.date+'.':'')+(r.reasons.length?' '+r.reasons[0]:'')+' '+NOTICE;
  }
- function answer(state,q,options){if(Support.health(q)||!/\b(explain|why|focus|prepare|what)\b.*\b(next (workout|session)|today.s workout|tomorrow.s workout|next week.s workout|this workout)\b|\b(workout|session)\b.*\b(purpose|focus)\b/i.test(q))return null;const r=inspect(state,{...options,question:q});return {text:summary(r),source:'Shared coaching · workout explanation',readOnly:true,evidence:[r],actions:[{kind:'workout-brief',label:'See workout targets',question:q,...(r.session?{sessionId:r.session.id}:{})}],followUps:['Why?','What about next week?']};}
- return {inspect,describe,summary,answer,NOTICE};
+ function answer(state,q,options){if(Support.health(q)||!/\b(explain|why|focus|prepare|what)\b.*\b(next (workout|session)|today.s workout|tomorrow.s workout|next week.s workout|this workout)\b|\b(workout|session)\b.*\b(purpose|focus)\b/i.test(q))return null;const r=review(state,{...options,question:q});return {text:summary(r),source:'Shared coaching · workout explanation',readOnly:true,evidence:[r],actions:[{kind:'workout-brief',label:'See workout targets',question:q,...(r.session?{sessionId:r.session.id}:{})}],followUps:['Why?','What about next week?']};}
+ return {inspect,review,describe,summary,answer,NOTICE};
 });

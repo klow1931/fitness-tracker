@@ -20,3 +20,5 @@ const AI=require('../src/product/local-coach-ai');assert.equal(AI.eligible('Why?
 assert.equal(T.resolve(state,'Why?',[{role:'user',content:'How is my Competition Squat progress?'}]).follow,false);
 
 assert.match(T.resolve(state,'Should I keep that weight?',[{role:'user',content:'Tell me about Competition Bench'}]).clarification,/Competition Bench/);
+
+assert.equal(W.answer({scheduledSessions:[{invalid:true}]},'Explain my next workout',options).source,'Shared coaching · workout explanation');assert.match(W.answer({scheduledSessions:[{invalid:true}]},'Explain my next workout',options).text,/could not be validated/);
