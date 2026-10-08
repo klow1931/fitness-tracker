@@ -33,6 +33,8 @@
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
   if(intent.topic!=='health'){
+   const accessory=(typeof module==='object'&&module.exports?require('./accessory-review'):globalThis.LoadnoteAccessoryReview)?.answer(state,q,{asOf,unit,history,live});
+   if(accessory)return {...accessory,intent};
    const exercise=(typeof module==='object'&&module.exports?require('./exercise-explanation'):globalThis.LoadnoteExerciseExplanation)?.answer(state,q,{history,live,intelligence});
    if(exercise)return {...exercise,intent};
   }

@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.14.0 · Development build.**
+**v3.15.0 · Development build.**
 
-Exercise references now connect accessory planning and Coach Companion. Set available accessory equipment in Training setup; suggestions show which reported priority or preference they match. Companion explains named/current movements and offers alternatives for review, without copying loads or changing workouts. Legacy profiles retain unknown equipment until updated. See [v3.14 notes](docs/releases-v3.14.md).
+Accessory reviews now connect actual logged reps and effort to a single future Calendar target. In Decisions, open Training context & edits → Review accessory targets, or ask Companion what to do next time for a named accessory. Compare the two latest planned exposures, confirm equipment and load convention, and review the exact change before approval. Missing evidence keeps the target unchanged. See [v3.15 notes](docs/releases-v3.15.md).
 
 An adaptive strength-training log that learns how you train.
 

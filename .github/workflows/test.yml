@@ -17,6 +17,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Accessory progression checks
+        run: npx playwright test tests/browser/accessory-review.spec.js tests/browser/accessory-programming.spec.js tests/browser/exercise-guidance.spec.js tests/browser/coach-conversation.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessory-review-demo
+          path: test-results/
+          retention-days: 7
       - name: Shared exercise guidance checks
         run: npx playwright test tests/browser/exercise-guidance.spec.js tests/browser/adaptive-session.spec.js tests/browser/unified-coach.spec.js tests/browser/meet-prep-setup.spec.js
       - uses: actions/upload-artifact@v4

@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),R=require('../src/product/accessory-review'),C=require('../src/product/coach-conversation'),S=require('../src/product/schedule'),P=require('../src/product/programming-profile'),M=require('../src/product/meet-cycle');
+const {fixture,args,row}=require('./fixtures/accessory-review');
+const state=fixture(),before=JSON.stringify(state),report=R.analyze(state,args),request={equipmentConfirmed:true,noCurrentConcerns:true,loadConvention:'per-hand',weightKg:31};
+assert.equal(report.status,'review-load');assert.equal(JSON.stringify(state),before);
+const p=R.preview(state,report,request,args),next=R.approve(state,p,{...args,confirmed:true});
+assert.deepEqual(next.workouts,state.workouts);assert.deepEqual(next.phasePrograms,state.phasePrograms);assert.deepEqual(next.programmingProfiles,state.programmingProfiles);
+assert.equal(next.scheduledSessions.filter((s,i)=>JSON.stringify(s)!==JSON.stringify(state.scheduledSessions[i])).length,1);
+const target=S.list(next.scheduledSessions).find(s=>s.id===args.sessionId);assert.equal(target.prescription.plannedExercises.at(-1).sets[0].weight,31);assert.equal(target.prescription.plannedExercises.at(-1).loadConvention,'per-hand');assert.match(target.reason,/logs log-phase/);
+assert.deepEqual(target.prescription.plannedExercises.slice(0,-1),p.before.plannedExercises.slice(0,-1));assert.equal(R.analyze(next,args).status,'manual-review');
+assert.throws(()=>R.approve(state,p,args),/approve/);assert.throws(()=>R.approve(state,p,{...args,confirmed:true,draftOpen:true}),/draft/);
+for(const edit of [{weightKg:32},{weightKg:30},{weightKg:0},{weightKg:NaN},{weightKg:31.001},{loadConvention:'stack'},{equipmentConfirmed:false},{noCurrentConcerns:false}])assert.throws(()=>R.preview(state,report,{...request,...edit},args));
+const actual=s=>s.workouts.at(-1).exercises.at(-1),mutate=f=>{const s=fixture();f(s);return s;};
+for(const change of [s=>actual(s).sets[0].rpe=null,s=>actual(s).sets[0].rpe='7',s=>actual(s).sets[0].reps=21,s=>actual(s).sets[0].weight=31,s=>actual(s).sets.pop(),s=>actual(s).name='Another row',s=>actual(s).exerciseId='wrong',s=>actual(s).trackBy='duration',s=>s.workouts.at(-1).sessionIntent.deviationReason='time',s=>s.workouts.at(-1).sessionIntent.prescription.capturedAt='2026-10-05T10:00:00.000Z',s=>s.workouts.at(-1).createdAt='2026-10-07T00:00:00.000Z',s=>s.workouts.at(-1).sessionIntent.schedule.revisionAt='2026-10-01T00:00:00.000Z',s=>s.workouts.push(structuredClone(s.workouts.at(-1))),s=>s.workouts.pop(),s=>s.exerciseCatalog.find(e=>e.id===row.exerciseId).name='Renamed',s=>s.programmingProfiles[0].context.avoidedExerciseIds=[row.exerciseId],s=>s.programmingProfiles[0].context.accessoryEquipment=['cable']])assert.equal(R.analyze(mutate(change),args).status,'manual-review');
+let low=mutate(s=>actual(s).sets[0].reps=10);assert.equal(R.analyze(low,args).status,'hold');
+let over=mutate(s=>actual(s).sets[0].rpe=8);let reduce=R.analyze(over,args);assert.equal(reduce.status,'review-reduce');assert.equal(R.preview(over,reduce,{...request,weightKg:29},args).after.plannedExercises.at(-1).sets[0].weight,29);assert.throws(()=>R.preview(over,reduce,request,args),/direction/);
+for(const change of [s=>actual(s).sets[0].reps=10,s=>s.programmingProfiles[0].context.notes='changed',s=>s.scheduledSessions=S.change(s.scheduledSessions,args.sessionId,{reason:'Manual move'},'2026-10-06T11:00:00.000Z')])assert.throws(()=>R.approve(mutate(change),p,{...args,confirmed:true}),/changed/);
+assert.throws(()=>R.analyze(mutate(s=>s.workouts.push({id:'finished',date:'2026-10-12',sessionIntent:{schedule:{id:args.sessionId}}})),args),/unperformed/);
+assert.throws(()=>R.preview(state,report,request,{...args,asOf:'2026-10-07'}),/date changed/);
+assert.equal(R.analyze(state,{...args,now:'2026-10-07T01:00:00.000Z'}).status,'review-load'); // Local evening crosses UTC midnight.
+const response=C.answer(state,'What should I do next time for Chest-supported Row?',{asOf:args.asOf,unit:'lb'});assert.match(response.text,/66.14 lb/);assert.equal(response.actions[0].kind,'accessory-review');assert.equal(JSON.stringify(state),before);
+assert.notEqual(C.answer(state,'My Chest-supported Row hurts; increase it?',{asOf:args.asOf}).source,'Shared coaching · accessory review');
+assert.equal(R.answer(state,'What is Chest-supported Row?',{asOf:args.asOf}),null);assert.equal(R.answer(state,'Increase my bench training max',{asOf:args.asOf}),null);
+assert.equal(R.answer(state,'Review my accessory progression',{asOf:args.asOf}).actions[0].sessionId,args.sessionId);
+const raw=fixture();raw.scheduledSessions=[];raw.workouts=[];const t={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'};
+let meet=M.save(raw,M.prepare(raw,raw.phasePrograms[0],{version:1,weeks:12,peakWeeks:2,taperWeeks:1,meetDate:'2026-12-19'},t),{confirmed:true},{...t,id:'cycle'});meet=M.schedule(meet,'cycle',t);
+assert(R.targets(meet,args).length>0);assert(R.targets(meet,{asOf:'2026-12-01'}).length===0);
+console.log('Accessory review: exact evidence, missing/changed logs, caps, approval, stale previews, one-session protection, meet targets and Companion passed');
