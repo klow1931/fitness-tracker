@@ -54,7 +54,7 @@
    const candidates=R.suggestions({priorities:p?.priorities,preferredExerciseIds:p?.preferredExerciseIds,equipment:equipment(),excludedExerciseIds:excluded,catalog:data.exerciseCatalog,identify:LoadnoteIntegrity.stableExerciseId});
    if(!candidates.length){hint.textContent='No match with the selected tools. Check your priorities or tools, choose a library movement, or add a custom exercise.';return;}
    const existing=new Set([...container.children].map(row=>row.querySelector('[data-accessory=name]').value.toLowerCase())),counts=Object.fromEntries(selected.map(day=>[day,[...container.children].filter(row=>Number(row.querySelector('[data-accessory=day]').value)===day).length]));
-   let added=0;const suggestedGroups=new Set();
+   let added=0;const suggestedGroups=new Set([...container.children].map(row=>row.querySelector('[data-accessory=group]').value));
    for(const t of candidates){if(suggestedGroups.has(t.group)||existing.has(t.name.toLowerCase())||added>=selected.length||container.children.length>=12)continue;const day=selected.filter(d=>counts[d]<3).sort((a,b)=>counts[a]-counts[b])[0];if(day===undefined)break;add({...t,day});existing.add(t.name.toLowerCase());counts[day]++;suggestedGroups.add(t.group);added++;}
    hint.textContent=added?added+' suggested movement(s) added. Preferred movements come first. Use the picker to swap; confirm equipment and starting loads before previewing.':'Matching movements are already listed, or accessory slots are full. Use the movement picker to swap a suggestion.';
 

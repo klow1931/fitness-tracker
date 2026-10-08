@@ -12,6 +12,7 @@
  }
  function answer(state,question,{history=[],live=null,intelligence=null}={}){
   const q=String(question||'').trim();
+  if(/\b(occupied|busy|unavailable|replace|swap|substitut)\w*\b/i.test(q))return null; // Existing reviewed-session workflow owns constraint/change requests.
   if(/\b(training max|1rm|benchmark|progress|increase|add weight|rpe|phase|why.*set|why.*load|why.*weight)\b/i.test(q))return null;
   if(!/\b(exercise|movement|equipment|tools|alternative|instead|substitut|swap|why this|what is|what's|tell me about|what else|only dumbbells|only bodyweight)\w*\b/i.test(q))return null;
   let e=named(q),current=live?.liveWorkout?.currentExercise||null,contextual=false;
@@ -24,7 +25,7 @@
    if(!e&&/\b(this|current)\b/i.test(prior?.content||'')&&current?.name){e=Reference.resolve(current.name);contextual=true;}
   }
   const result=text=>({text,source:'Shared exercise reference',evidence:[],readOnly:true});
-  if(!e)return /\b(exercise|movement|alternative|substitut|equipment)\w*\b/i.test(q)?result('Which exact movement do you mean? Name it, or open the workout and ask about the current exercise.'):null;
+  if(!e)return /\b(exercise|movement|equipment)\w*\b/i.test(q)?result('Which exact movement do you mean? Name it, or open the workout and ask about the current exercise.'):null;
   const p=Profile.current(state.programmingProfiles||[])?.context;
   const parts=[Reference.explain(e.name)];
   if(contextual){
