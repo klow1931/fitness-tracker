@@ -1,13 +1,13 @@
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./data-integrity'));
- else root.LoadnoteAccessories=factory(root.LoadnoteIntegrity);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./data-integrity'),require('./exercise-reference'));
+ else root.LoadnoteAccessories=factory(root.LoadnoteIntegrity,root.LoadnoteExerciseReference);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Integrity,Reference){
  'use strict';
  const POLICY='accessory-programming-v1';
  const GROUPS={'upper-back':'Upper back',quadriceps:'Quadriceps','posterior-chain':'Posterior chain',chest:'Chest',arms:'Arms',trunk:'Trunk',conditioning:'Conditioning'};
  const PURPOSES={supplemental:'Supplemental strength',hypertrophy:'Muscle development',trunk:'Trunk work',conditioning:'Conditioning'};
- const EQUIPMENT={bodyweight:'Bodyweight',barbell:'Barbell',dumbbells:'Dumbbells',cable:'Cable',machine:'Machine',cardio:'Cardio equipment'};
- const LIBRARY=[['Chest-supported Row','upper-back','dumbbells'],['Lat Pulldown','upper-back','cable'],['Leg Extension','quadriceps','machine'],['Split Squat','quadriceps','dumbbells'],['Leg Curl','posterior-chain','machine'],['Dumbbell Bench Press','chest','dumbbells'],['Biceps Curl','arms','dumbbells'],['Triceps Pushdown','arms','cable'],['Plank','trunk','bodyweight'],['Cycling','conditioning','cardio']].map(([name,group,equipment])=>({name,group,equipment,id:Integrity.stableExerciseId(name)}));
+ const EQUIPMENT=Reference.EQUIPMENT;
+ const LIBRARY=Reference.accessories.map(e=>({...e,id:Integrity.stableExerciseId(e.name)}));
  const integer=(x,min,max)=>Number.isInteger(x)&&x>=min&&x<=max;
  function normalize(raw,days,excluded=[]){
   if(raw===undefined)return [];
@@ -24,7 +24,7 @@
    if(a.mode==='cardio'){
     if(!integer(a.minutes,5,30))throw Error('Choose 5–30 accessory conditioning minutes');out.minutes=a.minutes;
    }else{
-    if(!integer(a.sets,1,3)||!Number.isFinite(a.weightKg)||a.weightKg<0||a.weightKg>500||a.weightKg===0&&a.equipment!=='bodyweight'||!Number.isFinite(a.targetRpe)||a.targetRpe<6||a.targetRpe>8)throw Error('Choose 1–3 sets, an explicit load (zero only for bodyweight) and an RPE cap of 6–8');
+    if(!integer(a.sets,1,3)||!Number.isFinite(a.weightKg)||a.weightKg<0||a.weightKg>500||a.weightKg===0&&!['bodyweight','pullup'].includes(a.equipment)||!Number.isFinite(a.targetRpe)||a.targetRpe<6||a.targetRpe>8)throw Error('Choose 1–3 sets, an explicit load (zero only for bodyweight) and an RPE cap of 6–8');
     if(a.mode==='reps'&&(!integer(a.minReps,6,20)||!integer(a.maxReps,a.minReps,20)))throw Error('Choose a 6–20 rep range');
     if(a.mode==='duration'&&!integer(a.seconds,15,60))throw Error('Choose 15–60 hold seconds');
     Object.assign(out,{sets:a.sets,weightKg:a.weightKg,targetRpe:a.targetRpe},a.mode==='reps'?{minReps:a.minReps,maxReps:a.maxReps}:{seconds:a.seconds});
@@ -41,6 +41,7 @@
    const byId=catalog.find(e=>e.id===a.exerciseId),byName=Integrity.resolveExercise(catalog,a.name);
    if(byId&&byId.name!==a.name||byName&&byName.id!==a.exerciseId||!byId&&a.exerciseId!==Integrity.stableExerciseId(a.name))throw Error('Accessory exercise identity changed; rebuild the proposal');
    if(a.equipment==='barbell'&&profile?.context&&!profile.context.equipment.includes('barbell'))throw Error('Accessory requires unavailable barbell equipment');
+   if(profile?.context?.accessoryEquipment&&!profile.context.accessoryEquipment.includes(a.equipment))throw Error('Accessory requires equipment absent from your saved accessory setup; update actual access or choose another movement');
   }
  }
  function attach(state,accessories){

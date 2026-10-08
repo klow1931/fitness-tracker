@@ -17,6 +17,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Shared exercise guidance checks
+        run: npx playwright test tests/browser/exercise-guidance.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exercise-guidance-demo
+          path: test-results/
+          retention-days: 7
       - name: Daily workout interface checks
         run: npx playwright test tests/browser/workout-flow.spec.js
       - uses: actions/upload-artifact@v4

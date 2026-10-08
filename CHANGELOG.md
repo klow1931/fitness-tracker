@@ -1,3 +1,11 @@
+# v3.14.0 — Shared exercise guidance
+
+- Accessory planning and Companion share movement descriptions, equipment and explicit aliases. Saved exercise identities and muscle confirmations stay separate.
+- Suggestions filter reported tools, respect exclusions and show preference/priority reasons; one movement per matched group keeps proposals varied.
+- Training setup records optional accessory equipment. Legacy unknown access remains compatible with per-movement confirmation; explicit access constrains new proposals.
+- Companion explains named/current movements and reviewed purpose, offers equipment-aware alternatives and records completion context without changing prescriptions.
+- Version 3.14.0/build 31400, schema 32 unchanged.
+
 # v3.13.0 — Smoother daily training
 
 - Today and Train put Start/Resume before expandable exercise previews; saved focus, phase and available time estimates remain concise.

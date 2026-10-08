@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.13.0';
+const CACHE = 'loadnote-v3.14.0';
 const ASSETS = [
   './src/product/coaching-library.js',
   './src/product/local-coach-ai.js',
@@ -78,6 +78,8 @@ const ASSETS = [
   './src/product/next-block-handoff-ui.js',
   './src/product/program-outcomes.js',
   './src/product/program-outcomes-ui.js',
+  './src/product/exercise-reference.js',
+  './src/product/exercise-explanation.js',
   './src/product/accessory-programming.js',
   './src/product/accessory-programming-ui.js',
   './src/product/program-builder.js',

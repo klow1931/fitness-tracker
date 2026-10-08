@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.13.0 · Development build.**
+**v3.14.0 · Development build.**
+
+Exercise references now connect accessory planning and Coach Companion. Set available accessory equipment in Training setup; suggestions show which reported priority or preference they match. Companion explains named/current movements and offers alternatives for review, without copying loads or changing workouts. Legacy profiles retain unknown equipment until updated. See [v3.14 notes](docs/releases-v3.14.md).
 
 An adaptive strength-training log that learns how you train.
 

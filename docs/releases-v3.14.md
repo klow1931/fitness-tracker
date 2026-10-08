@@ -1,0 +1,9 @@
+# Loadnote v3.14.0
+
+Accessory planning and Coach Companion now share a movement reference with 18 accessory options, exact aliases, equipment and short descriptions. Library reference keys do not replace saved exercise IDs, roles or athlete-confirmed muscle mappings.
+
+In Profile → Training setup, record accessory equipment. Older profiles keep access unknown until edited. New explicit equipment selections constrain new accessory proposals; they do not rewrite previously saved training. In a builder, select tools for suggestions, then **Suggest from my priorities**. Suggestions show a reported preference or priority match and distribute at most one movement per matched group across available slots. Suggested strength loads remain blank; bodyweight starts at zero external load. Confirm the exact setup, enter loads and review the time estimate before saving. The picker groups options by workload group and shows required equipment.
+
+Companion answers questions such as “What equipment for Lat Pulldown?”, “Why this exercise?” and “What alternatives can I use instead?”. A follow-up like “Only dumbbells instead?” uses the previous user-named movement and freshly reads saved exclusions. An open workout supplies its current movement, saved purpose when available and sets marked complete. No completion is treated as proof of target adherence or readiness. Alternatives share a workload group, not an equivalent dose, technique or prescription; choose a separate starting load. Companion changes no workout or program.
+
+Existing accessory ceilings, explicit review, time budgets, deload reductions, peak/taper/event omissions and fixed loads remain enforced. Schema 32 is unchanged; release 3.14.0, unsigned development build 31400. Browser coverage uses desktop/mobile Chromium; native compilation and source checks do not establish physical iPhone or VoiceOver acceptance.
