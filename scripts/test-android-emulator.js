@@ -10,7 +10,7 @@ for(const file of [apk,testApk])if(!fs.existsSync(file))throw Error('Build the b
 fs.mkdirSync(output,{recursive:true});
 fs.rmSync(path.join(output,'acceptance.json'),{force:true});
 const test=(name,label)=>{
- const text=adb('shell','am','instrument','-w','-e','class','app.loadnote.mobile.'+name,appId+'.test/androidx.test.runner.AndroidJUnitRunner');
+ const text=adb('shell','am','instrument','-w','-e','class','app.loadnote.mobile.'+name,'-e','betaPhase',name==='BetaJourneyTest'?'journey':'cold',appId+'.test/androidx.test.runner.AndroidJUnitRunner');
  fs.writeFileSync(path.join(output,label+'.txt'),text);process.stdout.write(text);
  if(!/OK \(1 test\)/.test(text)||/FAILURES!!!|INSTRUMENTATION_FAILED/.test(text))throw Error(label+' instrumentation failed');
 };
