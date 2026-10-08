@@ -9,7 +9,7 @@
  function eligible(question,canonical,history=[]){
   const q=String(question||'');if(!q.trim()||SENSITIVE.test(q)||CHANGES.test(q))return false;
   if(/^(why|how so|tell me more|explain (that|more)|how.*that)\W*$/i.test(q)){const prior=history.filter(r=>r.role==='user').at(-1)?.content||'';if(SENSITIVE.test(prior)||CHANGES.test(prior))return false;}
-  if(/workout explanation|accessory (review|follow-up)/i.test(canonical?.source||''))return false;
+  if(/weekly review|primary-lift follow-up|workout explanation|accessory (review|follow-up)/i.test(canonical?.source||''))return false;
   return canonical?.intent?.topic!=='health'&&!/athlete intake|capability limit|injury|medical/i.test(canonical?.source||'');
  }
  function acceptable(raw){

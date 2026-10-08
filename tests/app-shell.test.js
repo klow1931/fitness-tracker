@@ -22,3 +22,6 @@ assert(fs.readFileSync(releaseNote,'utf8').startsWith(`# Loadnote v${version}`),
 console.log('App shell, version, script-order, cached-module, and release-note tests passed');
 
 for(const name of ['coach-turn-context','workout-brief']){assert(html.indexOf('src/product/'+name+'.js')>html.indexOf('src/product/coach-support.js'));assert(html.indexOf('src/product/'+name+'.js')<html.indexOf('src/product/coach-conversation.js'));}
+
+for(const dependency of ['schedule','program-lifecycle','decision-readiness','weekly-evidence','cycle-review','cycle-adaptive-controller','cycle-response','adaptive-outcome-learning','primary-follow-up','coach-support'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/weekly-coaching.js'),'Weekly coaching must load after '+dependency);
+assert(scripts.indexOf('src/product/weekly-coaching.js')<scripts.indexOf('src/product/coach-conversation.js'));

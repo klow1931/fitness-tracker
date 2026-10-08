@@ -120,7 +120,7 @@
  }
  function attachReply(message,reply){for(const host of [message,message?.fullView]){window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);}}
  function quickButtons(context){
-  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How is my training going?','What should I focus on next?'];
+  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How did this week go?','Explain my next workout','What should I focus on next?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }

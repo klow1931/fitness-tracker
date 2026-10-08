@@ -34,6 +34,7 @@
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   if(intent.topic!=='health'){
+   const weekly=(typeof module==='object'&&module.exports?require('./weekly-coaching'):globalThis.LoadnoteWeeklyCoaching)?.answer(state,intent.follow?intent.referenceQuestion:q,{asOf,unit,now});if(weekly)return {...weekly,intent};
    const workout=(typeof module==='object'&&module.exports?require('./workout-brief'):globalThis.LoadnoteWorkoutBrief)?.answer(state,q,{asOf,unit,now});if(workout)return {...workout,intent};
    const followup=(typeof module==='object'&&module.exports?require('./accessory-follow-up'):globalThis.LoadnoteAccessoryFollowUp)?.answer(state,q,{asOf,unit,history,now});
    if(followup)return {...followup,intent};

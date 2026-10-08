@@ -33,7 +33,7 @@ assert.equal(replacementCount,3);
 assert(quick.buttons.some(b=>b.dataset.ccQ==='Why this set?'));
 current={surface:'progress',liveWorkout:null,restTimer:{active:false}};
 refresh();
-assert.equal(quick.buttons[0].dataset.ccQ,'How is my training going?');
+assert.equal(quick.buttons[0].dataset.ccQ,'How did this week go?');
 let dockBounds={top:530,bottom:580,left:8,right:382,height:50};
 elements['gym-floor-dock']={getBoundingClientRect:()=>dockBounds};
 window.LoadnoteCoachCompanionUI.syncLauncherPosition();
