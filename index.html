@@ -112,6 +112,7 @@
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
       <div id="today-training" class="card"></div>
+      <section class="card training-hub" data-training-hub="full" aria-label="Training journey"></section>
       <div id="program-lifecycle-home" class="card program-lifecycle-card hidden"></div>
       <div id="athlete-home-command" class="card v1-command-card"></div>
       <details id="home-week-plan" class="card home-week-plan"><summary><b>Plan &amp; calendar</b><small>Preview your plan and training calendar</small></summary>
@@ -892,7 +893,7 @@
         <button type="button" class="section-tab" data-sub="co-programs" onclick="showSubTab('coach','co-programs')">Your program</button>
         <button type="button" class="section-tab" data-sub="co-chat" onclick="showSubTab('coach','co-chat')">Ask Coach</button>
       </div>
-      <div class="sub-panel" data-panel="coach" data-sub="co-today"><header class="decision-section-heading"><span class="eyebrow">TODAY</span><h2>Your next step</h2><p>Review proposals before changing your targets.</p></header><div id="coach-today-brief"></div></div>
+      <div class="sub-panel" data-panel="coach" data-sub="co-today"><header class="decision-section-heading"><span class="eyebrow">TODAY</span><h2>Your next step</h2><p>Review proposals before changing your targets.</p></header><section class="card training-hub" data-training-hub="compact" aria-label="Coach training hub"></section><div id="coach-today-brief"></div></div>
 
 
 
@@ -1015,6 +1016,7 @@
       <div class="sub-panel hidden" data-panel="coach" data-sub="co-programs">
       <div class="decision-workspace"><header class="decision-section-heading"><span class="eyebrow">01 · TODAY</span><h2>Your training</h2><p>Current plan and next action, without opening programming tools.</p></header>
       <div id="decision-action-center" aria-label="Current plan and recommended next action"></div>
+      <section class="card training-hub" data-training-hub="compact" aria-label="Decisions training hub"></section>
       <div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteWeeklyCoachingUI.open()">Review my week</button></div>
       <header class="decision-section-heading"><span class="eyebrow">02 · YOUR LIFTS</span><h2>Lift decisions</h2></header>
       <details class="card more-details"><summary><b>Muscle workload</b><small>Sets, effort and muscle coverage</small></summary><div id="muscle-workload" class="more-details-body"></div></details>
@@ -1395,7 +1397,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.18.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.19.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2137,6 +2139,11 @@
   <script src="src/product/primary-follow-up.js" defer></script>
   <script src="src/product/weekly-coaching.js" defer></script>
   <script src="src/product/weekly-coaching-ui.js" defer></script>
+  <script src="src/product/training-hub.js" defer></script>
+  <script src="src/product/training-hub-ui.js" defer></script>
+  <script src="src/product/session-options-ui.js" defer></script>
+  <script src="src/product/exercise-library.js" defer></script>
+  <script src="src/product/exercise-library-ui.js" defer></script>
   <script src="src/product/coaching-library.js" defer></script>
   <script src="src/product/local-coach-ai.js" defer></script>
   <script src="src/product/local-coach-context.js" defer></script>

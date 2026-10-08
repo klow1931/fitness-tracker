@@ -295,6 +295,7 @@
     function renderDashboard() {
       window.renderSchedule?.();
       window.renderTodayTraining?.();
+      window.LoadnoteTrainingHubUI?.render();
       window.LoadnoteProgramLifecycleUI?.home?.();
       renderHomeActivity();
       const now = new Date();
@@ -2429,6 +2430,7 @@
       window.renderSportPlanner?.();
       window.renderPhaseBuilder?.();
       window.renderProgrammingWorkspace?.();
+      window.LoadnoteTrainingHubUI?.render();
       window.renderPhaseReview?.();
       window.LoadnoteProgramLifecycleUI?.coach?.();
       window.renderProgramWeekReview?.();

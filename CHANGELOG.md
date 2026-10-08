@@ -1,3 +1,11 @@
+# v3.19.0 — Guided training foundation
+
+- Shared Home/Coach/Decisions training hub derives setup, scheduled plan, first saved session and weekly review from existing records.
+- Draft-first handoffs preserve unfinished work and existing lifecycle/review policies.
+- Searchable exercise library filters equipment, role and exact-name instructions; custom equipment stays unknown.
+- Session-constraint shortcuts route to reviewed adaptation, fresh-target edits and Calendar without automatic changes.
+- Athlete journey acceptance suite and staged native-beta roadmap; version 3.19.0/build 31900, schema 32 unchanged.
+
 # v3.18.0 — Weekly coaching and primary-lift follow-ups
 
 - Companion and Decisions share a completed-program-week review for squat, bench, deadlift and accessories, with maintain, evidence and supported-review reasons.
