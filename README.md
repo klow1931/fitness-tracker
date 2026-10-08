@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.19.0 · Development build.**
+**v3.20.0 · Development build.**
 
-Home, Coach and Decisions share a training journey: saved setup, draft-first next action and weekly review. A searchable exercise library and session-constraint shortcuts connect existing guidance and reviewed adjustment tools. This is the first guided-training release, not signed store distribution. See [v3.19 notes](docs/releases-v3.19.md) and the [athlete acceptance plan](docs/athlete-journey-acceptance.md).
+Home, Coach and Decisions share actionable setup steps, saved-session briefings and corrected weekly observations. Athlete intake guides missing setup rather than leaving a disabled control. Exercise discovery and session constraints connect existing reviewed tools. Android/Google Play is the first distribution priority; signed release and physical-device acceptance remain outstanding. See [v3.20 notes](docs/releases-v3.20.md) and the [athlete acceptance plan](docs/athlete-journey-acceptance.md).
 
 An adaptive strength-training log that learns how you train.
 

@@ -9,7 +9,7 @@ test('setup checklist uses saved status, optional history and goal-specific mapp
  const saved=()=>page.evaluate(()=>JSON.stringify({workouts:data.workouts,plans:data.phasePrograms,sessions:data.scheduledSessions}));
  const before=await saved();
  await page.evaluate(()=>{data.programmingProfiles=[];renderProfileHub();});
- await expect(page.locator('#profile-athlete-intake')).toBeDisabled();
+ await expect(page.locator('#profile-athlete-intake')).toBeEnabled();
  await page.locator('#profile-edit-training').click();
  await page.locator('#profile-goal').selectOption('hypertrophy');
  await page.locator('#programming-profile-dialog button[type="submit"]').click();

@@ -18,7 +18,7 @@ jobs:
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
       - name: Athlete journey acceptance
-        run: npx playwright test tests/browser/athlete-journey.spec.js
+        run: npx playwright test tests/browser/athlete-journey.spec.js tests/browser/first-week.spec.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -130,15 +130,37 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+  webkit:
+    name: iPhone WebKit intake and first week
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test tests/browser/first-week.spec.js --project=mobile-webkit
+        env:
+          LOADNOTE_WEBKIT: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iphone-webkit-demo
+          path: test-results/
+          retention-days: 7
   test:
     if: always()
-    needs: [smoke, browser]
+    needs: [smoke, browser, webkit]
     runs-on: ubuntu-latest
     steps:
       - name: Require all smoke checks and browser shards
         env:
           SMOKE_RESULT: ${{ needs.smoke.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
+          WEBKIT_RESULT: ${{ needs.webkit.result }}
         run: |
           test "$SMOKE_RESULT" = success
           test "$BROWSER_RESULT" = success
+          test "$WEBKIT_RESULT" = success

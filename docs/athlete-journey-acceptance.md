@@ -2,7 +2,7 @@
 
 ## Release scope
 
-v3.19 is the first guided-training slice: shared journey, library discovery and safe adjustment handoffs. Do not equate this with completion of the full store roadmap. Native state remains unsigned development and local-only.
+v3.20 adds actionable setup/intake, a saved-session briefing and corrected current-week observations to v3.19's journey, library and safe adjustment handoffs. Android/Google Play is the first distribution priority. iPhone Home Screen testing continues; paid Apple distribution is deferred. Do not equate this with completion of the full store roadmap. Native state remains unsigned development and local-only.
 
 ## Automated athlete scenarios
 
@@ -11,6 +11,8 @@ Use synthetic records in isolated browser profiles, never an athlete's real hist
 | Scenario | Required behavior |
 | --- | --- |
 | New lifter | Save actual availability/equipment, see progress, reach supported planner; no account or automatic program required |
+| Intake before setup | Button explains prerequisite; cancellation/failure creates nothing; successful setup continues to intake |
+| Corrected training week | Distinguish unconfirmed, skipped, cancelled and logged; unknown RPE and changed/duplicate links remain explicit |
 | Independent lifter | Log actual work without generating a plan |
 | Interrupted session | Reload and resume exact actual load/RPE; finish and save while offline; verify durable save on reload |
 | Meet-cycle athlete | Home/Coach/Decisions show the same review; opening evidence never changes targets |
@@ -20,7 +22,7 @@ Use synthetic records in isolated browser profiles, never an athlete's real hist
 | Library discovery | Search aliases, filter equipment/role, preserve unknown custom equipment and exact-name guidance limits |
 | Accessibility/layout | Keyboard focus through filtering and dismissal; 320px light/dark and enlarged text screenshots |
 
-Run `npx playwright test tests/browser/athlete-journey.spec.js` plus existing logger, profile, weekly coaching, adaptive-session, program-edit and native acceptance regressions. The CI `athlete-journey-demo` artifact retains screenshots and failure traces. Assertions use real DOM interactions for setup and workout entry; synthetic fixtures are used only where weeks of training are needed.
+Run `npx playwright test tests/browser/athlete-journey.spec.js tests/browser/first-week.spec.js` plus existing logger, profile, weekly coaching, adaptive-session, program-edit and native acceptance regressions. The CI `athlete-journey-demo` and `iphone-webkit-demo` artifacts retain screenshots and failure traces. Assertions use real DOM interactions for setup/intake and workout entry; synthetic fixtures are used where weeks of training are needed. Mobile WebKit is a regression aid, not physical-iPhone acceptance.
 
 These tests simulate athlete workflows, not physiological training results. Chromium mobile emulation does not prove iOS/Android WebView, VoiceOver/TalkBack, native background behavior or on-device model performance.
 

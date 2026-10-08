@@ -1,6 +1,7 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.19.0';
+const CACHE = 'loadnote-v3.20.0';
 const ASSETS = [
+  './src/product/training-week.js',
   './src/product/training-hub.js',
   './src/product/training-hub-ui.js',
   './src/product/session-options-ui.js',
