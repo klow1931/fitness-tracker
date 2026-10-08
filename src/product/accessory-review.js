@@ -25,7 +25,7 @@
  function analyze(state,{sessionId,exerciseId,asOf,now=new Date().toISOString()}={}){
   if(!S.date(asOf)||!stamp(now)||asOf>now.slice(0,10))throw Error('Review date must be today or earlier');
   const sessions=S.validate(state.scheduledSessions||[]),session=S.list(sessions).find(s=>s.id===sessionId),o=session&&origin(state,session);
-  if(!o||session.status!=='scheduled'||session.date<=asOf||(state.workouts||[]).some(w=>w.sessionIntent?.schedule?.id===sessionId))throw Error('Choose an unperformed future accessory from a reviewed phase or meet cycle');
+  if(!o?.program.scheduledAt||session.status!=='scheduled'||session.date<=asOf||(state.workouts||[]).some(w=>w.sessionIntent?.schedule?.id===sessionId))throw Error('Choose an unperformed future accessory from a reviewed phase or meet cycle');
   const source=o.source.exercises.filter(e=>e.role==='accessory'&&e.exerciseId===exerciseId),config=o.accessories.filter(a=>a.exerciseId===exerciseId&&a.day===o.source.day);
   // Older session rows encode the day in their stable key rather than a field.
   const day=Number(/d(\d+)$/.exec(o.source.key)?.[1]);

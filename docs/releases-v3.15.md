@@ -1,4 +1,4 @@
-# v3.15 — Review the next accessory target
+# v3.15.0 — Review the next accessory target
 
 In Decisions, open **Training context & edits → Review accessory targets**. Companion can open the same review when asked “What should I do next time for Chest-supported Row?” Chat reads the evidence; approval happens in the review dialog.
 
