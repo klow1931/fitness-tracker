@@ -1,3 +1,11 @@
+# v3.18.0 — Weekly coaching and primary-lift follow-ups
+
+- Companion and Decisions share a completed-program-week review for squat, bench, deadlift and accessories, with maintain, evidence and supported-review reasons.
+- Existing meet-cycle policies supply the next-week proposal; exact session dates and before/after targets appear before approval and refresh with lift choices.
+- Primary-lift follow-ups compare saved previous/approved targets with exact linked, corrected performance for meet-cycle and phase reviews. Later Calendar notes do not erase an earlier matched log.
+- Phase programs retain completed-phase review and check-in requirements; dedicated hypertrophy and sport reviews remain available.
+- Canonical weekly and follow-up answers stay local, including with the optional model enabled. Version 3.18.0/build 31800; schema 32 unchanged.
+
 # v3.17.0 — Coaching continuity and workout explanations
 
 - Short accessory follow-ups retain user-named movement context across bounded turns; topic changes and expired history clear it. Assistant claims are never training evidence.

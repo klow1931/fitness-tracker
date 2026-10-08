@@ -100,9 +100,9 @@
   }
   return LIFTS.filter(l=>choices[l]!=='keep');
  }
- function apply(state,report,choices,{confirmed=false,notes='',asOf,now=new Date().toISOString(),id=Core.createId(),lockedSessionIds=[],controllerSnapshot}={}){
-  if(!confirmed||typeof notes!=='string'||notes.length>1000||!iso(now)||asOf!==report?.asOf||(asOf!==now.slice(0,10)&&dayAfter(asOf)!==now.slice(0,10)))throw Error('Approve a fresh weekly review for today');
-  const frozenController=Observability.validateControllerSnapshot(controllerSnapshot,report,{savedAt:now});
+ function previewTargets(state,report,choices,{now=new Date().toISOString(),lockedSessionIds=[]}={}){
+  const asOf=report?.asOf;
+  if(!iso(now))throw Error('Choose a valid preview timestamp');
   const selected=preview(report,choices),fresh=analyze(state,{cycleId:report.cycleId,week:report.week,asOf,now});
   const semantic=value=>{const x=copy(value);delete x.cutoff;delete x.guidance.cutoff;return x;};
   if(!same(semantic(report),semantic(fresh)))throw Error('Training evidence or Calendar changed; regenerate the weekly review');
@@ -143,11 +143,18 @@
    }
    for(const lift of selected)if(!changes.some(e=>sources.find(s=>'meet:'+cycle.id+':'+s.key===e.id)?.exercises.some(ex=>ex.lift===lift)))throw Error('A selected lift has no complete eligible next-week edit');
   }
+  return changes;
+ }
+ function apply(state,report,choices,{confirmed=false,notes='',asOf,now=new Date().toISOString(),id=Core.createId(),lockedSessionIds=[],controllerSnapshot}={}){
+  if(!confirmed||typeof notes!=='string'||notes.length>1000||!iso(now)||asOf!==report?.asOf||(asOf!==now.slice(0,10)&&dayAfter(asOf)!==now.slice(0,10)))throw Error('Approve a fresh weekly review for today');
+  const frozenController=Observability.validateControllerSnapshot(controllerSnapshot,report,{savedAt:now});
+  const changes=previewTargets(state,report,choices,{now,lockedSessionIds}),records=validate(state),cycle=records.find(c=>c.id===report.cycleId),sessions=Schedule.validate(state.scheduledSessions||[]);
+  for(const change of changes)sessions.find(s=>s.id===change.id).revisions.push(copy(change.after));
   const event={version:5,policy:POLICY,id,cycleId:cycle.id,week:report.week,kind:report.kind,asOf,createdAt:now,notes:notes.trim(),choices:copy(choices),controllerSnapshot:frozenController,report:copy(report),changes};
   cycle.weeklyReviews=[...(cycle.weeklyReviews||[]),event];
   const result={...state,meetCycles:records,scheduledSessions:Schedule.validate(sessions)};
   validate(result);
   return result;
  }
- return {POLICY,analyze,preview,apply,validate};
+ return {POLICY,analyze,preview,previewTargets,apply,validate};
 });

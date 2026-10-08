@@ -1,0 +1,15 @@
+# Loadnote v3.18.0 — Weekly coaching and primary-lift follow-ups
+
+In Decisions → Your program, choose **Review my week**. Companion answers **How did this week go, and what should I do next week?** from the same local report. Scheduled phase programs and meet cycles show the latest completed Monday–Sunday program week; choose another completed week to inspect it. Overlapping programs require an explicit selection. Work remains assigned to its original program week when Calendar dates move.
+
+Squat, bench, deadlift and accessories each show prescribed sets, exact comparable effort, cap exceedances and a short **Maintain**, **Gather evidence** or **Review adjustment** explanation. Expand work and evidence for recorded loads, reps, actual effort and comparison gaps. Missing, duplicate, changed or poorly timed logs never become proof that the target was completed. Corrections are read at the review's knowledge cutoff.
+
+Meet-cycle next-week proposals reuse the existing phase-specific controller. A supported proposal shows the affected dates and exact before/after targets. **Review in Decisions** opens the existing approval workflow, with keep selected by default. Its new exact preview refreshes when lift choices change and clears confirmation. Stale evidence, manually edited targets, completed work and open drafts remain protected; failed storage retains the selected choices and original saved data. No target changes merely by opening a review or asking Coach.
+
+Phase programs keep their planned targets during a phase. At a completed phase boundary, the review routes to the existing phase evidence and recovery check-in workflow; weekly observations do not bypass it. Dedicated hypertrophy and sport programs continue to use their existing weekly check-in and domain-specific evidence reviews.
+
+**Training context & edits → Primary-lift follow-ups** compares previous targets, saved athlete-approved meet-cycle/phase changes and recorded work. The weekly review also lists approved primary changes whose exposures fall in that week. A matching log must reference the exact Calendar revision and before-training prescription with matching movement, sets, load, reps and valid actual effort. Missing effort remains unknown. A later Calendar note does not erase performance already linked to the approved revision. These are descriptive follow-ups, not causal attribution or permission to increase again.
+
+Weekly and primary follow-up replies stay canonical and local even when signed in or the optional on-device model is enabled. The device model and its physical iPhone validation are unchanged. Schema 32 is unchanged; web and native version 3.18.0/build 31800.
+
+Validation covers deterministic comparisons, immutable previews, controller reuse, phase boundaries, overlap handling, corrected follow-ups, durable save failure, stale-plan rejection, local Companion parity, narrow-screen light/dark layouts and keyboard dismissal. Browser screenshots do not establish physical iPhone or VoiceOver validation.

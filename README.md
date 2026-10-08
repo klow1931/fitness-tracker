@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.17.0 · Development build.**
+**v3.18.0 · Development build.**
 
-Companion now retains a named movement through short follow-ups and explains the next saved workout with its phase, focus and exact expandable targets. Decisions opens the same read-only review. Local AI settings distinguish built-in coaching from the optional WebGPU device model; target reviews remain canonical. See [v3.17 notes](docs/releases-v3.17.md).
+Companion and Decisions now share a completed-week review for scheduled phase programs and meet cycles: lift-by-lift work, evidence gaps and the supported next step. Meet-cycle approval previews exact future targets, and primary-lift follow-ups compare previous, approved and recorded work. See [v3.18 notes](docs/releases-v3.18.md).
 
 An adaptive strength-training log that learns how you train.
 
