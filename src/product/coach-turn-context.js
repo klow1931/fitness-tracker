@@ -25,6 +25,7 @@
   const movement=context.movements[0]||null;
   if(context.kind==='workout'||/next week/i.test(original))return {question:/next week/i.test(original)?"Explain next week's workout"+(movement?' for '+movement:''):context.question,original,follow:true,movement};
   if(!movement)return {question:original,original,follow:false};
+  if(context.kind==='reference'&&/weight|load/i.test(original))return {question:original,original,follow:true,movement,clarification:'Which planned session and target for '+movement+' do you mean? Open Calendar to review its exact saved targets.'};
   const q=context.kind==='reference'&&!/weight|load/i.test(original)?'Tell me about '+movement:context.kind==='follow-up'?'How did my accessory change work for '+movement:'What should I do next time for '+movement+'?';
   return {question:q,original,follow:true,movement};
  }

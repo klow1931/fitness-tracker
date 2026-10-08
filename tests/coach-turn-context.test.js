@@ -18,3 +18,5 @@ assert.equal(JSON.stringify(state),before);console.log('Bounded user-only coachi
 const AI=require('../src/product/local-coach-ai');assert.equal(AI.eligible('Why?',{source:'Shared coaching · workout explanation'}),false);
 
 assert.equal(T.resolve(state,'Why?',[{role:'user',content:'How is my Competition Squat progress?'}]).follow,false);
+
+assert.match(T.resolve(state,'Should I keep that weight?',[{role:'user',content:'Tell me about Competition Bench'}]).clarification,/Competition Bench/);
