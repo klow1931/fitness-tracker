@@ -17,7 +17,11 @@
   let e=named(q),current=live?.liveWorkout?.currentExercise||null,contextual=false;
   if(!e&&/\b(this|current)\b/i.test(q)&&current?.name){e=Reference.resolve(current.name);contextual=true;}
   if(!e&&/\b(it|that|instead|alternative|what else|only dumbbells|only bodyweight)\w*\b/i.test(q)){
-   const prior=history.filter(r=>r.role==='user').at(-1);e=named(prior?.content);
+   const prior=history.filter(r=>r.role==='user').at(-1);
+   const Support=typeof module==='object'&&module.exports?require('./coach-support'):globalThis.LoadnoteCoachSupport;
+   if(Support?.health(prior?.content||''))return {text:'I can explain movement roles, but cannot choose a substitute to treat pain or an injury. Review that constraint with a qualified clinician.',source:'Capability limit',evidence:[],readOnly:true};
+   e=named(prior?.content);
+   if(!e&&/\b(this|current)\b/i.test(prior?.content||'')&&current?.name){e=Reference.resolve(current.name);contextual=true;}
   }
   const result=text=>({text,source:'Shared exercise reference',evidence:[],readOnly:true});
   if(!e)return /\b(exercise|movement|alternative|substitut|equipment)\w*\b/i.test(q)?result('Which exact movement do you mean? Name it, or open the workout and ask about the current exercise.'):null;

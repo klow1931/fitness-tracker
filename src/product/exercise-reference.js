@@ -30,6 +30,7 @@
  const entries=[...accessories,...(Training?.exercises||[]).filter(t=>!accessories.some(a=>normalize(a.name)===normalize(t.name))).map(t=>({...t,key:t.id,aliases:[],role:t.competitionLift?'main lift':'variation',description:t.movement.replace(/_/g,' ')+' work'}))];
  const mainAliases={back_squat:['squat','barbell squat'],bench_press:['bench','barbell bench'],deadlift:['barbell deadlift'],overhead_press:['ohp'],romanian_deadlift:['rdl']};
  for(const e of entries)if(mainAliases[e.key])e.aliases=mainAliases[e.key];
+ for(const e of entries)if(!e.equipment){e.equipment=['leg_press'].includes(e.key)?'machine':e.key==='bulgarian_split_squat'?'dumbbells':'barbell';}
  function resolve(name){const n=normalize(name);return entries.find(e=>[e.key,e.name,...e.aliases].some(x=>normalize(x)===n))||null;}
  function alternatives(name,equipment){const e=resolve(name);if(!e?.group)return [];return accessories.filter(a=>a.key!==e.key&&a.group===e.group&&(!equipment||equipment.includes(a.equipment)));}
  function suggestions({priorities='',preferredExerciseIds=[],equipment=[],excludedExerciseIds=[],catalog=[],identify}={}){

@@ -22,6 +22,9 @@ const follow=E.answer(updated,'Only dumbbells instead?',{history:[{role:'user',c
 const live={liveWorkout:{currentExercise:{name:'Plank',index:0},exercises:[{name:'Plank',completedSets:1,totalSets:2}]}},intelligence={session:{plannedExercise:{name:'Plank',purpose:'Reviewed trunk hold'}}};
 const current=E.answer(updated,'Why this exercise?',{live,intelligence});assert.match(current.text,/Reviewed trunk hold/);assert.match(current.text,/1 of 2 sets marked complete/);
 const swapped=E.answer(updated,'Why this exercise?',{live,intelligence:{session:{plannedExercise:{name:'Side Plank',purpose:'Old target'}}}});assert(!swapped.text.includes('Old target'));
+assert.match(E.answer(updated,'What alternatives instead?',{live,history:[{role:'user',content:'Why this exercise?'}]}).text,/Side Plank/);
+assert.match(E.answer(updated,'What alternatives instead?',{history:[{role:'user',content:'Lat Pulldown hurts my shoulder'}]}).text,/cannot choose a substitute/);
+assert.match(E.answer(updated,'What equipment for Back Squat?').text,/Barbell/);
 assert.match(C.answer(updated,'Can I swap this exercise because my knee hurts?',{asOf:'2026-09-24',live,intelligence}).text,/cannot diagnose/);
 const row={policy:A.POLICY,name:'Lat Pulldown',exerciseId:I.stableExerciseId('Lat Pulldown'),equipment:'cable',equipmentConfirmed:true,group:'upper-back',purpose:'hypertrophy',day:0,mode:'reps',sets:2,weightKg:20,targetRpe:7,minReps:8,maxReps:12};
 assert.throws(()=>A.context(updated,[row],P.current(updated.programmingProfiles)),/absent/);

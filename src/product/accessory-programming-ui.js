@@ -38,7 +38,7 @@
    movement.innerHTML='<option value="">Custom exercise · enter below</option>'+Object.entries(A.GROUPS).map(([g,label])=>'<optgroup label="'+esc(label)+'">'+available().filter(t=>t.group===g).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(A.EQUIPMENT[t.equipment])+'</option>').join('')+'</optgroup>').join('');
    picker.append(movement);row.querySelector('legend').after(picker);movement.value=template?.id||'';
    const reason=document.createElement('p');reason.dataset.accessoryReason='true';reason.setAttribute('role','status');picker.after(reason);
-   const explain=(chosen)=>{reason.textContent=chosen?[(chosen.reason||'Library option for '+A.GROUPS[chosen.group]+'.'),R.explain(chosen.name),'Review load, tracking and the full equipment setup; alternatives do not share a prescribed load.'].filter(Boolean).join(' '):'Custom movement: review its purpose, equipment and starting load.';};explain(template);
+   const explain=(chosen)=>{reason.textContent=chosen?[(chosen.reason||'Library option for '+A.GROUPS[chosen.group]+'.'),chosen.description+'.','Review a separate load and the exact equipment setup.'].filter(Boolean).join(' '):'Custom movement: review its purpose, equipment and starting load.';};explain(template);
    const daySelect=row.querySelector('[data-accessory=day]');const syncDays=()=>{const chosen=selectedDays();[...daySelect.options].forEach(o=>o.disabled=!chosen.includes(Number(o.value)));if(!chosen.includes(Number(daySelect.value)))daySelect.value=String(chosen[0]??'');};syncDays();
    dialog.querySelector('form').addEventListener('change',syncDays);
    const select=row.querySelector('[data-accessory=mode]');select.value=mode;
