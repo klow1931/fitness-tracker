@@ -1,0 +1,14 @@
+const assert=require('assert/strict'),Hub=require('../src/product/training-hub'),Library=require('../src/product/exercise-library'),Profile=require('../src/product/programming-profile');
+const args={asOf:'2026-10-04',now:'2026-10-04T19:00:00.000Z'};
+const fresh=Hub.inspect({},args);assert.equal(fresh.primary.kind,'setup');assert.equal(fresh.weeklyStatus,'empty');assert.equal(fresh.review.available,false);assert(fresh.steps.every(s=>!s.done));
+const state=require('./fixtures/weekly-coaching').fixture(),before=JSON.stringify(state),r=Hub.inspect(state,args);assert.equal(r.weeklyStatus,'ready');assert.equal(r.review.available,true);assert.equal(r.primary.kind,'lifecycle');assert.equal(r.lifecycle.nextAction.kind,'review-week');assert(r.steps.every(s=>s.done));assert.equal(JSON.stringify(state),before);
+const draft={rows:[{name:'My bench',sets:[{weight:100,reps:5,rpe:8}]}]};assert.equal(Hub.inspect(state,{...args,draft}).primary.kind,'resume');assert.equal(Hub.inspect({},{...args,draft}).primary.kind,'resume');assert.equal(Hub.inspect(state,{...args,sportDraft:true}).primary.kind,'resume');
+const overlap=structuredClone(state);overlap.meetCycles.push({...structuredClone(overlap.meetCycles[0]),id:'second'});assert.equal(Hub.inspect(overlap,args).weeklyStatus,'ambiguous');assert.equal(Hub.inspect(overlap,args).lifecycle.nextAction.kind,'review-programs');assert.equal(Hub.inspect(overlap,{...args,draft}).primary.kind,'resume');
+const waiting=Hub.inspect(state,{asOf:'2026-10-01',now:'2026-10-01T12:00:00.000Z'});assert.equal(waiting.weeklyStatus,'waiting');assert.equal(waiting.review.available,false);
+const unknown=require('./fixtures/weekly-coaching').fixture({logged:false});assert.match(Hub.inspect(unknown,args).review.detail,/gather|evidence/i);
+const cleared={programmingProfiles:Profile.save([],{goal:'general',experience:'unknown',consistency:'unknown',availableDays:[0,2,4],sessionMinutes:60,equipment:['barbell','rack','plates','bench']})};assert.equal(Hub.inspect(cleared,{asOf:'2026-10-08',now:'2026-10-08T19:00:00.000Z'}).primary.kind,'plan');
+const custom={exerciseCatalog:[{id:'mine',name:'My cable setup',aliases:['custom machine']}],exerciseNotes:{'My cable setup':'Personal notes'}};
+assert.equal(Library.search(custom,{query:'custom machine'}).length,1);assert.equal(Library.search(custom,{query:'custom machine'})[0].equipment,null);assert.equal(Library.search(custom,{query:'custom machine',equipment:'cable'}).length,0);
+assert(Library.search({}, {equipment:'dumbbells',role:'accessory'}).every(e=>e.equipment==='dumbbells'&&e.role==='accessory'));
+assert(Library.search({}, {instructionsOnly:true}).every(e=>e.instructions));assert.equal(Library.search({}, {query:'not a movement'}).length,0);assert(Library.search({}, {query:'rdl'}).some(e=>e.name==='Romanian Deadlift'));
+console.log('Training hub: first-use, draft priority, lifecycle reuse, separate reviews and immutable exact-name library passed');

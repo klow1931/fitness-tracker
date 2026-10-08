@@ -1984,3 +1984,19 @@ body.dark .cycle-journal-audit { border-color:#475569; }
 .weekly-target dd{margin:0}
 .weekly-target summary{padding:.5rem 0;cursor:pointer}
 body.dark .weekly-target{border-color:#475569}
+.training-hub{min-width:0;overflow-wrap:anywhere}
+.training-hub h2,.training-library-item h3{font-weight:700;margin:.3rem 0 .7rem}
+.training-hub-next,.training-hub-review{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1rem 0}
+.training-hub-review{padding-top:1rem;border-top:1px solid var(--border,#cbd5e1)}
+.training-hub details{margin:.7rem 0}
+.training-hub summary{cursor:pointer;padding:.6rem 0;min-height:44px}
+.training-hub-steps{list-style:decimal;padding-left:1.3rem}
+.training-hub-steps li{padding:.6rem 0}
+.training-hub-steps .badge{display:inline-block;margin-top:.3rem}
+.training-option-list,.training-library-results{display:grid;gap:.8rem;margin:1rem 0}
+.training-library-filters{display:grid;gap:.8rem;grid-template-columns:repeat(2,minmax(0,1fr))}
+.training-library-filters label{min-width:0}
+.training-library-item{padding:1rem;border:1px solid var(--border,#cbd5e1);border-radius:12px;min-width:0;overflow-wrap:anywhere}
+.training-library-item summary{padding:.6rem 0;min-height:44px;cursor:pointer}
+.training-library-item button,.training-hub button,.training-option-list button{min-height:44px;white-space:normal}
+@media(max-width:480px){.training-hub-next,.training-hub-review{align-items:stretch;flex-direction:column}.training-library-filters{grid-template-columns:1fr}.training-hub .programming-workspace-actions button{width:100%}}

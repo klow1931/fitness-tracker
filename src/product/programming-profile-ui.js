@@ -7,7 +7,7 @@
     host.querySelector('#profile-edit').onclick=open;
     if(p)host.querySelector('#profile-clear').onclick=async()=>{if(busy||!confirm('Clear the current programming profile? Revision history and existing programs are preserved.'))return;busy=true;try{await commit(null);render();window.renderProfileHub?.();window.renderPowerliftingBuilder?.();window.renderPhaseBuilder?.();window.renderProgrammingWorkspace?.();}catch(e){host.querySelector('#profile-status').textContent=e.message;}finally{busy=false;}};
   }
-  async function commit(value){const next={...data,programmingProfiles:LoadnoteProgrammingProfile.save(data.programmingProfiles||[],value)};clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();}
+  async function commit(value){const next={...data,programmingProfiles:LoadnoteProgrammingProfile.save(data.programmingProfiles||[],value)};clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();window.LoadnoteTrainingHubUI?.render();}
   function open(){
     let dialog=document.getElementById('programming-profile-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='programming-profile-dialog';dialog.className='card schedule-dialog';document.body.append(dialog);}
     const p=LoadnoteProgrammingProfile.current(data.programmingProfiles||[])?.context||{goal:'general',eventDate:null,experience:'unknown',consistency:'unknown',availableDays:[0,2,4],sessionMinutes:60,equipment:[],preferredExerciseIds:[],avoidedExerciseIds:[],priorities:'',notes:''};

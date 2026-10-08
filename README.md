@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.18.0 · Development build.**
+**v3.19.0 · Development build.**
 
-Companion and Decisions now share a completed-week review for scheduled phase programs and meet cycles: lift-by-lift work, evidence gaps and the supported next step. Meet-cycle approval previews exact future targets, and primary-lift follow-ups compare previous, approved and recorded work. See [v3.18 notes](docs/releases-v3.18.md).
+Home, Coach and Decisions share a training journey: saved setup, draft-first next action and weekly review. A searchable exercise library and session-constraint shortcuts connect existing guidance and reviewed adjustment tools. This is the first guided-training release, not signed store distribution. See [v3.19 notes](docs/releases-v3.19.md) and the [athlete acceptance plan](docs/athlete-journey-acceptance.md).
 
 An adaptive strength-training log that learns how you train.
 
