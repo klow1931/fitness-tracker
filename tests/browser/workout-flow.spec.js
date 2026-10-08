@@ -78,6 +78,7 @@ test('finish shows a concise saved result, retains evidence and routes to the ne
  await expect(evidence).not.toHaveAttribute('open','');await evidence.locator('summary').focus();await evidence.locator('summary').press('Enter');
  await expect(evidence).toContainText('2/2 logged strength sets include RPE');await evidence.locator('summary').press('Space');
  await expect(recap).toContainText('Next: 2026-10-09 · Squat day');
+ const heading=recap.locator('.adaptive-handoff-head h3');expect((await heading.boundingBox()).width).toBeGreaterThan(180);
  await recap.scrollIntoViewIfNeeded();await themes(page,testInfo,'finish');
  await recap.getByRole('button',{name:'View next workout'}).click();await expect(page.locator('#panel-calendar')).toBeVisible();
  expect(await page.evaluate(()=>data.workouts.filter(w=>w.sessionIntent?.schedule?.id==='flow-today').length)).toBe(1);

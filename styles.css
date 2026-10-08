@@ -1563,7 +1563,7 @@ body.dark .gym-floor-current small{color:#94a3b8}
  border-radius:.9rem;
  background:rgba(148,163,184,.045)
 }
-.adaptive-handoff-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem}
+.adaptive-handoff-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:.3rem .5rem}
 .adaptive-handoff-head h3{margin:.1rem 0 .2rem;font-size:1rem}
 .adaptive-handoff-evidence,.adaptive-handoff-reason,.adaptive-handoff-next{margin:.65rem 0;font-size:.8rem;line-height:1.5}
 .adaptive-handoff-evidence{font-weight:650}
