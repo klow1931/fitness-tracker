@@ -35,7 +35,7 @@
    row.querySelector('[data-accessory=day]').value=String(template?.day??selectedDays()[0]??0);
    const picker=document.createElement('label');picker.textContent='Choose a movement';
    const movement=document.createElement('select');movement.className='input';movement.dataset.accessoryMovement='true';movement.innerHTML='<option value="">Custom exercise · enter below</option>'+available().map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(A.GROUPS[t.group])+'</option>').join('');
-   movement.innerHTML='<option value="">Custom exercise · enter below</option>'+Object.entries(A.GROUPS).map(([g,label])=>'<optgroup label="'+esc(label)+'">'+available().filter(t=>t.group===g).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+' · '+esc(A.EQUIPMENT[t.equipment])+'</option>').join('')+'</optgroup>').join('');
+   movement.innerHTML='<option value="">Custom exercise · enter below</option>'+Object.entries(A.GROUPS).map(([g,label])=>'<optgroup label="'+esc(label)+'">'+available().filter(t=>t.group===g).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('')+'</optgroup>').join('');
    picker.append(movement);row.querySelector('legend').after(picker);movement.value=template?.id||'';
    const reason=document.createElement('p');reason.dataset.accessoryReason='true';reason.setAttribute('role','status');picker.after(reason);
    const explain=(chosen)=>{reason.textContent=chosen?[(chosen.reason||'Library option for '+A.GROUPS[chosen.group]+'.'),chosen.description+'.','Review a separate load and the exact equipment setup.'].filter(Boolean).join(' '):'Custom movement: review its purpose, equipment and starting load.';};explain(template);
