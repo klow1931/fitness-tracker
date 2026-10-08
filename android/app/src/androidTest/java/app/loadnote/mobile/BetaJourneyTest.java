@@ -10,7 +10,8 @@ import static org.junit.Assert.*;
 public class BetaJourneyTest extends BetaHarness {
     @Test public void athleteLoggerBackupRestoreAndActivityLifecycle() throws Exception {
         assertEquals("android",js("LoadnoteRuntime.nativePlatform").getString("value"));
-        waitFor("navigator.onLine===false");
+        // navigator.onLine can remain true in a packaged WebView without proving reachability.
+        async("const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),5000);let reached=false;try{await fetch('https://example.com/loadnote-offline-probe',{mode:'no-cors',cache:'no-store',signal:controller.signal});reached=true;}catch{}finally{clearTimeout(timer);}if(reached)throw Error('External network reachable during offline acceptance');");
         js("(()=>{showTab('profile');document.getElementById('profile-athlete-intake').click();return true;})()");
         waitFor("document.getElementById('intake-setup-dialog')?.open");
         js("(()=>{document.querySelector('[data-intake-setup]').click();return true;})()");

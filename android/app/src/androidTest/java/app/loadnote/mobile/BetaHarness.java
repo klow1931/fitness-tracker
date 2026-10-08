@@ -38,7 +38,7 @@ public class BetaHarness {
     }
     protected void async(String body) throws Exception {
         js("(()=>{window.betaAsync={done:false};(async()=>{"+body+"})().then(()=>window.betaAsync={done:true},e=>window.betaAsync={done:true,error:String(e)});return true;})()");
-        waitFor("window.betaAsync?.done");assertFalse(js("window.betaAsync").getJSONObject("value").has("error"));
+        waitFor("window.betaAsync?.done");JSONObject result=js("window.betaAsync").getJSONObject("value");assertFalse(result.toString(),result.has("error"));
     }
     protected void assertState() throws Exception {
         waitFor("data.workouts.length===1 && data.workouts[0].exercises[0].sets[0].weight===100.25 && !!readLoggerDraft()");

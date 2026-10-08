@@ -8,6 +8,7 @@ if(adb('shell','getprop','ro.kernel.qemu').trim()!=='1')throw Error('Refusing no
 const appId=require('../capacitor.config.json').appId+'.beta',apk=path.join(root,'android/app/build/outputs/apk/debug/app-debug.apk'),testApk=path.join(root,'android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk');
 for(const file of [apk,testApk])if(!fs.existsSync(file))throw Error('Build the beta and test APKs first');
 fs.mkdirSync(output,{recursive:true});
+fs.rmSync(path.join(output,'acceptance.json'),{force:true});
 const test=(name,label)=>{
  const text=adb('shell','am','instrument','-w','-e','class','app.loadnote.mobile.'+name,appId+'.test/androidx.test.runner.AndroidJUnitRunner');
  fs.writeFileSync(path.join(output,label+'.txt'),text);process.stdout.write(text);
@@ -17,10 +18,13 @@ try {
  adb('install','-r',apk);adb('install','-r',testApk);adb('shell','pm','clear',appId);
  adb('shell','cmd','connectivity','airplane-mode','enable');
  adb('shell','svc','wifi','disable');adb('shell','svc','data','disable');
+ const airplane=adb('shell','settings','get','global','airplane_mode_on').trim();
+ if(airplane!=='1')throw Error('Airplane mode did not enable');
+ fs.writeFileSync(path.join(output,'network-state.txt'),adb('shell','dumpsys','connectivity'));
  test('BetaJourneyTest','offline-journey');
  adb('shell','am','force-stop',appId);test('BetaColdStartTest','force-stop-cold-start');
  // Same artifact/certificate update without clearing application storage.
  adb('install','-r',apk);adb('shell','am','force-stop',appId);test('BetaColdStartTest','same-certificate-upgrade');
- fs.writeFileSync(path.join(output,'acceptance.json'),JSON.stringify({version:require('../package.json').version,appId,serial,apiLevel:adb('shell','getprop','ro.build.version.sdk').trim(),emulator:true,offlineJourney:true,nativeFilesystemCacheRoundtrip:true,reviewedImport:true,activityRecreation:true,forceStopColdStart:true,sameCertificateUpgrade:true,externalPickerAndShare:false,physicalKeyboardAndTouch:false,talkBack:false,physicalDeviceTested:false,storeReady:false},null,2));
+ fs.writeFileSync(path.join(output,'acceptance.json'),JSON.stringify({version:require('../package.json').version,appId,serial,apiLevel:adb('shell','getprop','ro.build.version.sdk').trim(),emulator:true,offlineJourney:true,externalRequestBlocked:true,nativeFilesystemCacheRoundtrip:true,reviewedImport:true,activityRecreation:true,forceStopColdStart:true,sameCertificateUpgrade:true,externalPickerAndShare:false,physicalKeyboardAndTouch:false,talkBack:false,physicalDeviceTested:false,storeReady:false},null,2));
  console.log('Synthetic offline Android emulator acceptance passed; external sharing and physical-device gates remain open.');
 } finally { adb('shell','cmd','connectivity','airplane-mode','disable');adb('shell','svc','wifi','enable');adb('shell','svc','data','enable'); }
