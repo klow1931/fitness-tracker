@@ -1,12 +1,12 @@
 # Loadnote
 
-**v3.12.0 · Development build.**
+**v3.13.0 · Development build.**
 
 An adaptive strength-training log that learns how you train.
 
 ## Current experience
 
-Home → Train → Progress → Coach → Profile. Home leads with today's workout or a recoverable draft; Train supports quick load/reps/RPE entry, previous-performance context, rest timing and review-before-save. Secondary nutrition, measurements, photos, Calendar and calculators live under Profile's More tools.
+Home → Train → Progress → Coach → Profile. Home leads with today's workout or a recoverable draft; Train supports quick load/reps/RPE entry, previous-performance context, rest timing and review-before-save. Today keeps the Start/Resume action above an expandable exercise preview. In-workout controls include copying one prior set without its effort/completion, rest start/pause/extension and direct exercise swaps. Finish keeps the saved result and next action visible, with full evidence in disclosures. See [v3.13 notes](docs/releases-v3.13.md). Secondary nutrition, measurements, photos, Calendar and calculators live under Profile's More tools.
 
 Programming changes are deterministic, explainable and athlete-approved. Logged evidence can support review of future prescriptions; Loadnote does not silently rewrite workouts, infer training maxes or diagnose recovery. Completed training and original reviewed plans remain preserved.
 
