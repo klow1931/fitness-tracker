@@ -75,9 +75,14 @@
    if(explanation)accepted={sourceLabel:explanation.sourceLabel,createdAt:explanation.createdAt||null,scheduleId,lifts:(explanation.changedLifts||[]).slice(0,3).map(l=>({lift:l.lift,name:l.name,action:l.action,why:l.why,evidence:(l.evidence||[]).slice(0,5),impact:{sessionCount:l.impact?.sessionCount||0,setDelta:l.impact?.setDelta||0,loadDeltasKg:(l.impact?.loadDeltasKg||[]).slice(0,6),repsChanged:!!l.impact?.repsChanged}}))};
   }catch{}
   const role=intent?.role||'unspecified';
+  const sourceId=intent?.prescription?.source?.referenceId;
+  const sources=[...(state.phasePrograms||[]),...(state.reviewedPrograms||[]),...(state.meetCycles||[])].filter(p=>sourceId&&p.id===sourceId);
+  const source=sources.length===1?sources[0]:null;
+  const accessory=(source?.config?.accessories||source?.sourceProgram?.config?.accessories||[]).find(a=>plan?.exerciseId&&a.exerciseId===plan.exerciseId&&a.name===plan.name);
+  const purpose=accessory?'Athlete-selected '+accessory.purpose+' work for '+accessory.group.replace(/-/g,' '):null;
   return {
    scheduleId,role,roleLabel:Intent?.SESSION_ROLES?.[role]||role,goal:String(intent?.goal||'').trim()||null,
-   rolePurpose:rolePurpose[role]||null,plannedExercise:plan?{name:plan.name,trackBy:plan.trackBy||'reps',setCount:(plan.sets||[]).length}:null,
+   rolePurpose:rolePurpose[role]||null,plannedExercise:plan?{name:plan.name,purpose,trackBy:plan.trackBy||'reps',setCount:(plan.sets||[]).length}:null,
    currentPlannedSet:plannedSet,guidance:setGuidance(draft,liveWorkout),acceptedChange:accepted
   };
  }

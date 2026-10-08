@@ -44,7 +44,7 @@ test('quick builder supports bodyweight holds and conditioning without percentag
  const p=await page.evaluate(()=>data.reviewedPrograms.at(-1));expect(p.config.accessories).toHaveLength(2);expect(p.sessions[0].exercises.at(-1).trainingMaxKg).toBeUndefined();
 });
 test('priority suggestions stay reviewable and do not invent starting loads',async({page})=>{
- await page.evaluate(()=>{data.programmingProfiles[0].context.priorities='Upper back, quads and biceps';});await phase(page);const d=page.locator('#phase-dialog');await d.locator('[data-accessory-editor] > summary').click();await d.locator('[data-accessory-suggest]').click();
+ await page.evaluate(()=>{data.programmingProfiles[0].context.priorities='Upper back, quads and biceps';});await phase(page);const d=page.locator('#phase-dialog');await d.locator('[data-accessory-editor] > summary').click();await d.locator('[data-accessory-tool][value=dumbbells]').check();await d.locator('[data-accessory-suggest]').click();
  await expect(d.locator('[data-accessory-row]')).toHaveCount(3);await expect(d.locator('[data-accessory=weight]').first()).toHaveValue('');
  await d.getByRole('button',{name:'Generate phase preview',exact:true}).click();await expect(page.locator('#phase-error')).toContainText('explicit accessory starting load');
  expect(await page.evaluate(()=>data.phasePrograms.length)).toBe(0);

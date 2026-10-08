@@ -14,6 +14,11 @@
     if(!Array.isArray(raw.equipment)||raw.equipment.some(e=>!Object.hasOwn(EQUIPMENT,e))||new Set(raw.equipment).size!==raw.equipment.length)throw Error('Invalid equipment selection');
     const eventDate=raw.eventDate||null;if(eventDate!==null&&!Schedule.date(eventDate))throw Error('Choose a valid meet date');
     const result={goal:raw.goal,eventDate,experience:raw.experience,consistency:raw.consistency,availableDays:[...raw.availableDays].sort((a,b)=>a-b),sessionMinutes:raw.sessionMinutes,equipment:[...raw.equipment].sort()};
+    if(raw.accessoryEquipment!==undefined){
+      const allowed=['bodyweight','barbell','dumbbells','cable','machine','cardio','pullup'];
+      if(!Array.isArray(raw.accessoryEquipment)||raw.accessoryEquipment.some(e=>!allowed.includes(e))||new Set(raw.accessoryEquipment).size!==raw.accessoryEquipment.length)throw Error('Invalid accessory equipment selection');
+      result.accessoryEquipment=[...raw.accessoryEquipment].sort();
+    }
     for(const k of ['preferredExerciseIds','avoidedExerciseIds']){const ids=raw[k]??[];if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||!id||id.length>160)||new Set(ids).size!==ids.length)throw Error('Invalid exercise preferences');result[k]=[...ids].sort();}
     if(result.preferredExerciseIds.some(id=>result.avoidedExerciseIds.includes(id)))throw Error('An exercise cannot be both preferred and avoided');
     for(const k of ['priorities','notes']){if(typeof(raw[k]??'')!=='string'||(raw[k]||'').length>1000)throw Error('Keep programming notes within 1000 characters');result[k]=(raw[k]||'').trim();}

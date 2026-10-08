@@ -32,6 +32,10 @@
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null}={}){
   const intent=resolve(question,history),q=intent.question;
+  if(intent.topic!=='health'){
+   const exercise=(typeof module==='object'&&module.exports?require('./exercise-explanation'):globalThis.LoadnoteExerciseExplanation)?.answer(state,q,{history,live,intelligence});
+   if(exercise)return {...exercise,intent};
+  }
   const support=Support?.answer(q,{history,live});if(support)return support;
   const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced)return referenced;
   const intake=(typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake)?.answer(state,q);if(intake)return intake;
