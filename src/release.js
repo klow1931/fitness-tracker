@@ -21,7 +21,7 @@
       { id:'transition', label:'End-of-program transition baselines', ok:Number(d.schemaVersion || 0) >= 25 && Array.isArray(d.transitionSnapshots) },
       { id:'migration', label:'Current data schema', ok:Number(d.schemaVersion || 0) >= 25 }
     ];
-    return { version:'3.20.0', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
+    return { version:'3.20.1', checks, ready:checks.every(c=>c.ok), completed:checks.filter(c=>c.ok).length, total:checks.length };
   }
   return { assess };
 });

@@ -27,6 +27,10 @@
   const layout=Number(layoutHeight),visible=Number(viewportHeight),cut=Number(threshold);
   return layout>0&&visible>0&&Number.isFinite(cut)&&layout-visible>=cut;
  }
+ function shouldHideNavigation(layoutHeight,viewportHeight,{editing=false,scale=1}={}){
+  // A reduced visual viewport alone can be browser chrome, rotation or zoom.
+  return editing&&Math.abs(Number(scale)-1)<0.05&&keyboardLikelyOpen(layoutHeight,viewportHeight);
+ }
  function sessionProgress(rows){
   const list=Array.isArray(rows)?rows:[];
   let totalSets=0,doneSets=0,totalExercises=0,doneExercises=0,currentExerciseIndex=-1,currentSetIndex=-1;
@@ -48,5 +52,5 @@
   }
   return {totalSets,doneSets,remainingSets:Math.max(0,totalSets-doneSets),totalExercises,doneExercises,currentExerciseIndex,currentSetIndex,complete:totalSets>0&&doneSets===totalSets};
  }
- return {inputMode,previousPayload,nextUnfinishedIndex,keyboardLikelyOpen,sessionProgress};
+ return {inputMode,previousPayload,nextUnfinishedIndex,keyboardLikelyOpen,shouldHideNavigation,sessionProgress};
 });

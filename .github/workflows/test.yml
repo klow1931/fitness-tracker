@@ -18,7 +18,7 @@ jobs:
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
       - name: Athlete journey acceptance
-        run: npx playwright test tests/browser/athlete-journey.spec.js tests/browser/first-week.spec.js
+        run: npx playwright test tests/browser/athlete-journey.spec.js tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -141,7 +141,7 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps webkit
-      - run: npx playwright test tests/browser/first-week.spec.js --project=mobile-webkit
+      - run: npx playwright test tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js --project=mobile-webkit
         env:
           LOADNOTE_WEBKIT: '1'
       - uses: actions/upload-artifact@v4

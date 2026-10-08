@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.20.0';
+const CACHE = 'loadnote-v3.20.1';
 const ASSETS = [
   './src/product/training-week.js',
   './src/product/training-hub.js',
