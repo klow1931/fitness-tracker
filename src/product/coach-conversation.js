@@ -31,8 +31,10 @@
   return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now}={}){
-  const intent=resolve(question,history),q=intent.question;
+  const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
+  if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   if(intent.topic!=='health'){
+   const workout=(typeof module==='object'&&module.exports?require('./workout-brief'):globalThis.LoadnoteWorkoutBrief)?.answer(state,q,{asOf,unit,now});if(workout)return {...workout,intent};
    const followup=(typeof module==='object'&&module.exports?require('./accessory-follow-up'):globalThis.LoadnoteAccessoryFollowUp)?.answer(state,q,{asOf,unit,history,now});
    if(followup)return {...followup,intent};
    const accessory=(typeof module==='object'&&module.exports?require('./accessory-review'):globalThis.LoadnoteAccessoryReview)?.answer(state,q,{asOf,unit,history,live});

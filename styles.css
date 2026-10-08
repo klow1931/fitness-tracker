@@ -1971,3 +1971,5 @@ body.dark .cycle-journal-audit { border-color:#475569; }
 #accessory-follow-up-dialog dt { font-weight:650; margin-top:.65rem; }
 #accessory-follow-up-dialog dd { margin:.2rem 0 0; }
 #accessory-follow-up-dialog summary { min-height:44px; cursor:pointer; padding:.5rem 0; }
+
+#workout-brief-dialog summary { min-height:44px; cursor:pointer; padding:.5rem 0; }

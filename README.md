@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.16.0 · Development build.**
+**v3.17.0 · Development build.**
 
-Accessory follow-ups now show the previous target, approved change and exact linked performance in one compact review. Open Decisions → Training context & edits → Accessory follow-ups, or ask Companion how an accessory change went. Missing effort, changed plans and ambiguous logs stay visible; the recap never changes your targets. See [v3.16 notes](docs/releases-v3.16.md).
+Companion now retains a named movement through short follow-ups and explains the next saved workout with its phase, focus and exact expandable targets. Decisions opens the same read-only review. Local AI settings distinguish built-in coaching from the optional WebGPU device model; target reviews remain canonical. See [v3.17 notes](docs/releases-v3.17.md).
 
 An adaptive strength-training log that learns how you train.
 
