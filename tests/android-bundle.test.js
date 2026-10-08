@@ -10,3 +10,11 @@ assert.throws(()=>verifyAndroidBundle({...fixture,dexMagic:'00000000'},options),
 assert.throws(()=>verifyAndroidBundle({...fixture,files:fixture.files.slice(0,-1)},options),/Missing APK resource/);
 assert.throws(()=>verifyAndroidBundle({...fixture,config:{appId:options.appId,server:{url:'https://example.com'}}},options),/live server/);
 console.log('Synthetic Android metadata guards passed; fixtures do not establish native compilation or device acceptance');
+const debug={...fixture,manifest:fixture.manifest.replace('package="app.loadnote.mobile"','package="app.loadnote.mobile.beta"').replace('<application ','<application android:debuggable="true" '),signatureVerified:true,signatureOutput:'verified'};
+const debugOptions={...options,development:true};
+assert.equal(verifyAndroidBundle(debug,debugOptions).appId,'app.loadnote.mobile.beta');
+assert.equal(verifyAndroidBundle(debug,debugOptions).storeReady,false);
+assert.throws(()=>verifyAndroidBundle({...debug,signatureVerified:false},debugOptions),/signature/);
+assert.throws(()=>verifyAndroidBundle(debug,options),/Expected values/);
+assert.throws(()=>verifyAndroidBundle({...debug,manifest:debug.manifest.replace('android:debuggable="true"','')},debugOptions),/channel/);
+assert.throws(()=>verifyAndroidBundle({...debug,config:{appId:options.appId,server:{url:'http://localhost'}}},debugOptions),/live server/);

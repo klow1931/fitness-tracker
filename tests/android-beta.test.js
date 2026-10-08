@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),{spawnSync}=require('node:child_process');
+const read=p=>fs.readFileSync(p,'utf8'),workflow=read('.github/workflows/android-beta.yml');
+assert(read('android/app/build.gradle').includes('applicationIdSuffix ".beta"'));
+assert(read('android/app/src/debug/AndroidManifest.xml').includes('Loadnote Beta'));
+assert(workflow.indexOf('Offline native athlete journey')<workflow.indexOf('Upload installable beta only after acceptance succeeds'));
+assert(workflow.includes('if-no-files-found: error'));assert(workflow.includes('contents: read'));
+assert(!workflow.includes('*.keystore'));assert(!workflow.includes('*.jks'));
+const runner=read('scripts/test-android-emulator.js');
+for(const marker of ['--disposable-beta','ro.kernel.qemu','force-stop','install','airplane-mode','physicalDeviceTested:false','externalPickerAndShare:false'])assert(runner.includes(marker));
+const fail=spawnSync(process.execPath,['scripts/test-android-emulator.js'],{encoding:'utf8'});
+assert.notEqual(fail.status,0);assert(fail.stderr.includes('--disposable-beta'));
+const hardware=spawnSync(process.execPath,['scripts/test-android-emulator.js','--disposable-beta'],{encoding:'utf8',env:{...process.env,ANDROID_SERIAL:'physical-phone'}});
+assert.notEqual(hardware.status,0);assert(hardware.stderr.includes('never hardware'));
+console.log('Debug beta identity, artifact gate, emulator-only destructive guard and honest evidence boundaries passed');
