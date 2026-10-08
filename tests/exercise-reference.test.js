@@ -3,6 +3,7 @@ const R=require('../src/product/exercise-reference'),E=require('../src/product/e
 const {phaseFixture}=require('./fixtures/phase-builder');
 const {state}=phaseFixture(),before=JSON.stringify(state);
 assert.equal(E.answer(state,'The rack is occupied. Which alternatives can I use?'),null);
+assert.equal(E.answer(state,'Explain exercise physiology'),null);
 assert.equal(R.resolve('DB bench press').name,'Dumbbell Bench Press');
 assert.equal(R.resolve('row'),null);assert.equal(E.named('What is a row?'),null);
 assert.equal(E.named('What is Side Plank?').name,'Side Plank');

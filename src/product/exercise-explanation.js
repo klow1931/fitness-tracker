@@ -25,7 +25,7 @@
    if(!e&&/\b(this|current)\b/i.test(prior?.content||'')&&current?.name){e=Reference.resolve(current.name);contextual=true;}
   }
   const result=text=>({text,source:'Shared coaching · exercise reference',evidence:[],readOnly:true});
-  if(!e)return /\b(exercise|movement|equipment)\w*\b/i.test(q)?result('Which exact movement do you mean? Name it, or open the workout and ask about the current exercise.'):null;
+  if(!e)return /\b(this|current)\b.*\b(exercise|movement)\b|\b(equipment|tools) for\b/i.test(q)?result('Which exact movement do you mean? Name it, or open the workout and ask about the current exercise.'):null;
   const p=Profile.current(state.programmingProfiles||[])?.context;
   const parts=[Reference.explain(e.name)];
   if(contextual){
