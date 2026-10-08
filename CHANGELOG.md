@@ -1,3 +1,10 @@
+# v3.16.0 — Accessory follow-ups
+
+- Compare the previous and approved accessory targets with the exact linked workout's recorded reps and effort.
+- Separate missing logs, changed plans, skipped/cancelled sessions and incomplete evidence from matched performance.
+- Companion provides the same local, read-only recap and opens the matching review. Compact light/dark mobile history retains labelled native controls and expandable evidence.
+- Uses existing Calendar revisions and current corrected logs; schema 32 stays unchanged. No automatic progression or causal outcome claims.
+
 # v3.15.0 — Accessory performance reviews
 
 - Decisions compares two consecutive linked accessory exposures with the next reviewed rep-range target. Full rep ranges, exact load and identity, before-training plans and actual effort are required; missing or changed work stays manual.

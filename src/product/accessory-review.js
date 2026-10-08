@@ -104,5 +104,5 @@
   const load=(r.target?.sets?.[0]?.weight??null),weight=load==null?'not available':Math.round(load*(unit==='lb'?2.2046226218:1)*100)/100+' '+unit;
   return {...reply,text:r.name+' — next target '+r.date+': '+weight+'. '+r.reason+' '+(r.gaps[0]||'Based on the two latest planned exposures and their actual rep/effort logs.')+' Open the review to confirm equipment and inspect the exact before → after. I have not changed your workout.',evidence:[r],followUps:['Review my accessory progression']};
  }
- return {POLICY,targets,analyze,preview,approve,answer};
+ return {POLICY,targets,analyze,preview,approve,answer,origin};
 });

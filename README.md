@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.15.0 · Development build.**
+**v3.16.0 · Development build.**
 
-Accessory reviews now connect actual logged reps and effort to a single future Calendar target. In Decisions, open Training context & edits → Review accessory targets, or ask Companion what to do next time for a named accessory. Compare the two latest planned exposures, confirm equipment and load convention, and review the exact change before approval. Missing evidence keeps the target unchanged. See [v3.15 notes](docs/releases-v3.15.md).
+Accessory follow-ups now show the previous target, approved change and exact linked performance in one compact review. Open Decisions → Training context & edits → Accessory follow-ups, or ask Companion how an accessory change went. Missing effort, changed plans and ambiguous logs stay visible; the recap never changes your targets. See [v3.16 notes](docs/releases-v3.16.md).
 
 An adaptive strength-training log that learns how you train.
 
