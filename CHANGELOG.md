@@ -1,3 +1,10 @@
+# v3.15.0 — Accessory performance reviews
+
+- Decisions compares two consecutive linked accessory exposures with the next reviewed rep-range target. Full rep ranges, exact load and identity, before-training plans and actual effort are required; missing or changed work stays manual.
+- Reaching the top of both ranges within caps offers a load review; above-cap effort offers a smaller-load review. Athlete-entered changes are bounded to 5%, require same-equipment/convention and no-current-concern confirmation, and affect only one unperformed future session.
+- Companion reads the same evidence and opens the same review. Compact last/next summaries keep detailed evidence expandable. Save failure, stale evidence, units and open-draft guards preserve history and targets.
+- Version 3.15.0/build 31500; schema 32 unchanged.
+
 # v3.14.0 — Shared exercise guidance
 
 - Accessory planning and Companion share movement descriptions, equipment and explicit aliases. Saved exercise identities and muscle confirmations stay separate.
