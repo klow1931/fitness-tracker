@@ -7,6 +7,8 @@ const scripts=[...html.matchAll(/<script src="([^":]+)"/g)].map(m=>m[1]);
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 for(const script of scripts){assert(fs.existsSync(path.join(root,script)),script);assert(sw.includes("'./"+script+"'"),'Not cached: '+script);}
 assert(scripts.indexOf('src/product/draft-model.js')<scripts.indexOf('src/product/workout-logger.js'));
+for(const dependency of ['session-intent','schedule','phase-builder','meet-cycle','programming-profile','athlete-intake','coach-support'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/accessory-review.js'),'Accessory review must load after '+dependency);
+assert(scripts.indexOf('src/product/accessory-review.js')<scripts.indexOf('src/product/coach-conversation.js'));
 const version=JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version;
 const navigation=fs.readFileSync(path.join(root,'src/product/navigation.js'),'utf8');
 assert(navigation.includes(`Loadnote web v${version} ·`),'Rendered footer version drift');
