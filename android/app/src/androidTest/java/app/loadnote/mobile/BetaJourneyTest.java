@@ -19,11 +19,11 @@ public class BetaJourneyTest extends BetaHarness {
         js("(()=>{document.querySelector('#programming-profile-dialog button[type=submit]').click();return true;})()");
         waitFor("document.getElementById('athlete-intake-dialog')?.open");
         js("(()=>{document.getElementById('intake-years').value='5';document.getElementById('intake-confirm').checked=true;document.querySelector('#athlete-intake-form button[type=submit]').click();return true;})()");
-        waitFor("!document.getElementById('athlete-intake-dialog').open");
+        waitFor("!document.getElementById('athlete-intake-dialog')?.open");
         js("(()=>{openFastStartLogger({compact:false});const fields={'.ex-name':'Competition Bench Press','.set-reps':'5','.set-weight':'100.25','.set-rpe':'8'};for(const [s,v] of Object.entries(fields)){const el=document.querySelector(s);el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));}document.getElementById('wo-notes').value='Synthetic Android beta acceptance';saveLoggerDraft();reviewWorkout();return true;})()");
         waitFor("document.getElementById('workout-review')?.open");
         js("(()=>{document.getElementById('confirm-workout-save').click();return true;})()");
-        waitFor("data.workouts.length===1 && !document.getElementById('workout-review').open && !readLoggerDraft()");
+        waitFor("data.workouts.length===1 && !document.getElementById('workout-review')?.open && !readLoggerDraft()");
         // Real native filesystem plugin, cache only. No claim of external sharing/picker delivery.
         async("const F=Capacitor.registerPlugin('Filesystem');const payload=LoadnoteIntegrity.addBackupManifest({...data,recoverySnapshots:[],progressPhotos:[]},{releaseVersion:LoadnoteCore.RELEASE_VERSION});const path='loadnote-exports/loadnote-emulator.json';await F.writeFile({path,directory:'CACHE',data:JSON.stringify(payload),encoding:'utf8',recursive:true});const file=await F.readFile({path,directory:'CACHE',encoding:'utf8'});if(!LoadnoteIntegrity.verifyBackupManifest(JSON.parse(file.data)).verified)throw Error('Backup fingerprint failed');window.betaBackup=file.data;data={...data,workouts:[]};await persistNow(data);");
         String upload="(()=>{handleImport({target:{files:[new File([window.betaBackup],'loadnote-emulator.json',{type:'application/json'})],value:''}});return true;})()";
@@ -33,7 +33,7 @@ public class BetaJourneyTest extends BetaHarness {
         assertEquals(0,js("data.workouts.length").getInt("value"));
         js(upload);waitFor("document.getElementById('import-review')?.open");
         js("(()=>{document.getElementById('confirm-import-review').click();return true;})()");
-        waitFor("data.workouts.length===1 && !document.getElementById('import-review').open");
+        waitFor("data.workouts.length===1 && !document.getElementById('import-review')?.open");
         js("(()=>{openFastStartLogger({compact:false});const fields={'.ex-name':'Competition Bench Press','.set-reps':'5','.set-weight':'103','.set-rpe':'7'};for(const [s,v] of Object.entries(fields)){const el=document.querySelector(s);el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));}saveLoggerDraft();return true;})()");
         assertState();scenario.moveToState(Lifecycle.State.CREATED);scenario.moveToState(Lifecycle.State.RESUMED);assertState();
         scenario.recreate();waitFor("typeof data!=='undefined' && !!document.querySelector('.ex-name')");assertState();
