@@ -67,7 +67,7 @@
   if(dock){const parent=inlineDock?document.getElementById('workout-log-card'):document.body;if(parent&&dock.parentElement!==parent)parent.appendChild(dock);dock.style.position=inlineDock?'static':'';dock.style.marginTop=inlineDock?'.75rem':'';}
   const availableHeight=window.visualViewport?.height||innerHeight;
   const tallCockpit=cockpit&&cockpit.getBoundingClientRect().height>availableHeight*.4;
-  if(cockpit)cockpit.style.position=active&&(optionsOpen||tallCockpit)?'static':'';
+  if(cockpit)cockpit.style.position=!active||optionsOpen||tallCockpit?'static':'';
   if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
   const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
