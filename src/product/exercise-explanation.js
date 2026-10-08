@@ -5,8 +5,9 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Reference,Profile){
  'use strict';
  function named(q){
-  const text=String(q||'').toLowerCase().replace(/[-_]/g,' ').replace(/\s+/g,' ');
-  const matches=Reference.entries.filter(e=>[e.name,...e.aliases].some(n=>text.includes(n.toLowerCase().replace(/[-_]/g,' '))));
+  const words=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const text=' '+words(q)+' ';
+  const matches=Reference.entries.filter(e=>[e.name,...e.aliases].some(n=>text.includes(' '+words(n)+' ')));
   const specific=matches.filter(e=>!matches.some(other=>other!==e&&other.name.toLowerCase().includes(e.name.toLowerCase())));
   return specific.length===1?specific[0]:null;
  }
