@@ -1029,7 +1029,13 @@ body.dark .readiness-lift,body.dark .readiness-evidence { background:#0f172a; bo
 .cockpit-help-actions,.cockpit-rest-start{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
 .cockpit-rest-start{border-top:1px solid var(--border);padding-top:.45rem;margin-top:.35rem;font-size:.78rem}
 .cockpit-rest-start button,.cockpit-help-actions button{min-height:44px}
-.training-cockpit-quick button{min-height:44px}
+#training-cockpit .training-cockpit-quick button,
+#training-cockpit .training-cockpit-actions button{min-height:44px;padding:.4rem .5rem;font-size:.82rem}
+#training-cockpit .cockpit-help-actions button{flex:1 1 6rem;font-size:.8rem}
+.workout-takeaway{font-size:.86rem;line-height:1.45}
+.workout-takeaway summary{min-height:44px;align-content:center;cursor:pointer}
+.adaptive-handoff-head>div{min-width:0}
+.adaptive-handoff-head .badge{flex-shrink:0;white-space:nowrap}
 @media(max-width:640px){.today-training-actions>*{flex:1 1 10rem}.today-training-head{gap:.65rem}}
 
 

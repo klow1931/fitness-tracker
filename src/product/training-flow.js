@@ -75,7 +75,16 @@ function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
  const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;host.appendChild(el);return el;};
  add('h2',editing?'Workout updated':'Session saved. Work logged.');
  const takeaway=window.LoadnoteTrainingCockpit?.workoutTakeaway?.(workout);
- if(takeaway){const section=add('section','');section.className='workout-takeaway';section.setAttribute('aria-label','Workout takeaway');for(const [label,text] of [['Logged',takeaway.logged],['Watch',takeaway.watch],['Next',takeaway.next]]){const p=document.createElement('p'),b=document.createElement('b');b.textContent=label+': ';p.append(b,document.createTextNode(text));section.append(p);}}
+ if(takeaway){
+  const section=add('section','');section.className='workout-takeaway';section.setAttribute('aria-label','Workout takeaway');
+  const caution=takeaway.watch.includes('no recorded RPE')||takeaway.watch.startsWith('Cardio recorded');
+  const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Logging notes';details.append(summary);
+  for(const [label,text] of [['Logged',takeaway.logged],['Watch',takeaway.watch],['Next',takeaway.next]]){
+   const p=document.createElement('p'),b=document.createElement('b');b.textContent=label+': ';p.append(b,document.createTextNode(text));
+   (label==='Logged'||label==='Watch'&&caution?section:details).append(p);
+  }
+  section.append(details);
+ }
  const details=add('details','');details.className='recap-details';const summary=document.createElement('summary');summary.textContent='Session details and previous sets';details.append(summary);
  const detail=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;details.append(el);return el;};
  const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length||0),0);

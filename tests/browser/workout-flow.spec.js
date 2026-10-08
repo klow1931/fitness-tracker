@@ -19,6 +19,7 @@ async function seed(page,mode='reps'){
  },mode);
 }
 async function themes(page,testInfo,label){
+ await page.clock.runFor(5000);
  for(const theme of ['light','dark']){
   await page.evaluate(theme=>{data.theme=theme;document.body.classList.toggle('dark',theme==='dark');},theme);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=321)).toBe(true);
