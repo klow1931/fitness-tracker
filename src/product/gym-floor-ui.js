@@ -145,12 +145,17 @@
   if(train)train.setAttribute('aria-label',hasDraft?'Train — workout draft saved':'Train');
  }
  function viewportState(){
-  const vv=window.visualViewport;if(!vv)return;
+  const vv=window.visualViewport;
+  if(!vv){document.body.classList.remove('mobile-keyboard-open');return;}
+  const field=document.activeElement;
+  const editing=!!field&&!field.disabled&&!field.readOnly&&field.getClientRects().length>0&&
+   (field.isContentEditable||field.tagName==='TEXTAREA'||
+    (field.tagName==='INPUT'&&['text','search','email','url','tel','password','number'].includes(field.type)));
   const width=Math.round(vv.width||window.innerWidth||0);
-  if(!viewportWidth||Math.abs(width-viewportWidth)>80){viewportWidth=width;viewportBase=vv.height;}
+  if(!editing||!viewportWidth||Math.abs(width-viewportWidth)>80){viewportWidth=width;viewportBase=vv.height;}
   if(!viewportBase||vv.height>viewportBase)viewportBase=vv.height;
   const layout=Math.max(document.documentElement.clientHeight,viewportBase);
-  const open=H()?.keyboardLikelyOpen(layout,vv.height,140)||false;
+  const open=H()?.shouldHideNavigation(layout,vv.height,{editing,scale:vv.scale??1})||false;
   document.body.classList.toggle('mobile-keyboard-open',open);
  }
  function refresh(){decorateRows();window.LoadnoteAccessibility?.decorateLogger();updateDock();viewportState();}
@@ -172,10 +177,13 @@
   if(rows)new MutationObserver(()=>queueMicrotask(refresh)).observe(rows,{childList:true,subtree:true});
   document.addEventListener('input',event=>{if(event.target.closest?.('#workout-log-card'))queueMicrotask(refresh);});
   document.addEventListener('change',event=>{if(event.target.closest?.('#workout-log-card'))queueMicrotask(refresh);});
-  document.addEventListener('focusin',event=>{if(event.target.closest?.('#workout-log-card'))queueMicrotask(refresh);});
+  document.addEventListener('focusin',()=>queueMicrotask(viewportState));
+  document.addEventListener('focusout',()=>queueMicrotask(viewportState));
   document.addEventListener('keydown',keydown);
   window.visualViewport?.addEventListener('resize',viewportState);
   window.visualViewport?.addEventListener('scroll',viewportState);
+  window.addEventListener('resize',viewportState);
+  window.addEventListener('pageshow',viewportState);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){viewportState();refresh();}});
  }
  window.LoadnoteGymFloorUI={init,refresh,decorateRows,updateDock,viewportState,currentLabel,progressState};

@@ -1,3 +1,9 @@
+# v3.20.1 — Bottom navigation recovery
+
+- Bottom navigation no longer disappears when browser chrome, rotation or zoom reduces the visual viewport without an active keyboard field.
+- Keyboard controls recover on focus changes, primary navigation, resize and app resume; no training records or prescriptions change.
+- Added repeated-navigation and keyboard lifecycle regressions in mobile Chromium and WebKit.
+
 # v3.20.0 — First-week guidance and intake recovery
 
 - Athlete intake no longer stops at a disabled Profile button; missing setup opens an explicit prerequisite and continues only after durable save.

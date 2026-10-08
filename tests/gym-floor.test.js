@@ -18,6 +18,11 @@ assert.equal(Gym.nextUnfinishedIndex([{done:true},{done:true}],0),-1);
 assert.equal(Gym.keyboardLikelyOpen(844,620),true);
 assert.equal(Gym.keyboardLikelyOpen(844,760),false);
 assert.equal(Gym.keyboardLikelyOpen(0,620),false);
+assert.equal(Gym.shouldHideNavigation(844,500),false);
+assert.equal(Gym.shouldHideNavigation(844,500,{editing:true}),true);
+assert.equal(Gym.shouldHideNavigation(844,760,{editing:true}),false);
+assert.equal(Gym.shouldHideNavigation(844,500,{editing:true,scale:1.5}),false);
+assert.equal(Gym.shouldHideNavigation(844,500,{editing:false}),false);
 
 const progress=Gym.sessionProgress([
  {type:'strength',sets:[{entered:true,done:true},{entered:true,done:false}]},
