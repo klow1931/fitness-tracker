@@ -1,3 +1,10 @@
+# v3.17.0 — Coaching continuity and workout explanations
+
+- Short accessory follow-ups retain user-named movement context across bounded turns; topic changes and expired history clear it. Assistant claims are never training evidence.
+- Companion and Decisions share a read-only next-workout explanation with saved phase, focus, Calendar revision and expandable exact targets.
+- Local AI settings explain the built-in fallback and optional device model. Workout/accessory target reviews stay canonical rather than model-generated.
+- Version 3.17.0/build 31700; schema 32 unchanged.
+
 # v3.16.0 — Accessory follow-ups
 
 - Compare the previous and approved accessory targets with the exact linked workout's recorded reps and effort.
