@@ -1,0 +1,12 @@
+const assert=require('assert/strict'),Week=require('../src/product/training-week'),S=require('../src/product/schedule'),I=require('../src/product/session-intent');
+const now='2026-10-08T18:00:00.000Z',args={asOf:'2026-10-08',now},stamp='2026-10-04T12:00:00.000Z';
+const plan=I.createPrescription([{name:'Bench Press',sets:[{weight:100,reps:5,targetRpe:8}]}],{type:'program'},stamp);
+let schedule=[];for(const [id,date] of [['logged','2026-10-05'],['unknown','2026-10-06'],['skip','2026-10-07'],['upcoming','2026-10-09']])schedule=S.create(schedule,{name:id,date,prescription:plan},{id,now:stamp});
+schedule=S.change(schedule,'skip',{status:'skipped',reason:'Athlete explicitly skipped'},'2026-10-07T18:00:00.000Z');
+const state={scheduledSessions:schedule,workouts:[{id:'w',date:'2026-10-05',createdAt:'2026-10-05T18:00:00.000Z',sessionIntent:{schedule:{id:'logged',revisionAt:stamp}},exercises:[{name:'Bench Press',sets:[{weight:100,reps:5,rpe:8},{weight:100,reps:5,rpe:null}]}]},{id:'future',date:'2026-10-09',exercises:[]}]};
+const before=JSON.stringify(state),r=Week.inspect(state,args);assert.equal(r.from,'2026-10-05');assert.equal(r.through,'2026-10-11');assert.equal(r.workouts,1);assert.equal(r.sets,2);assert.equal(r.unknownEffort,1);assert.deepEqual(r.counts,{linked:1,unconfirmed:1,upcoming:1,skipped:1,cancelled:0,changed:0,duplicates:0});assert.equal(r.brief.session.name,'upcoming');assert.equal(JSON.stringify(state),before);
+state.workouts.push({...structuredClone(state.workouts[0]),id:'duplicate'});state.scheduledSessions=S.change(state.scheduledSessions,'logged',{reason:'Corrected Calendar'},'2026-10-08T12:00:00.000Z');assert.equal(Week.inspect(state,args).counts.duplicates,1);assert.equal(Week.inspect(state,args).counts.changed,1);
+assert.equal(Week.inspect({scheduledSessions:[{}]},args).status,'invalid');assert.throws(()=>Week.inspect({}, {asOf:'wrong',now}));
+assert.equal(Week.inspect({}, {asOf:'2026-10-11',now:'2026-10-11T18:00:00.000Z'}).from,'2026-10-05');assert.equal(Week.inspect({}, {asOf:'2026-10-12',now:'2026-10-12T18:00:00.000Z'}).from,'2026-10-12');
+state.workouts[0].createdAt='2026-10-09T18:00:00.000Z';assert.equal(Week.inspect(state,args).workouts,1);
+console.log('Training week: corrected links, explicit skips, unknown effort, duplicates, future evidence, week boundaries and immutability passed');

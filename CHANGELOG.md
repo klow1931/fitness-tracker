@@ -1,3 +1,12 @@
+# v3.20.0 — First-week guidance and intake recovery
+
+- Athlete intake no longer stops at a disabled Profile button; missing setup opens an explicit prerequisite and continues only after durable save.
+- Actionable getting-started steps and optional intake shortcut; existing supported planner and review/scheduling ownership preserved.
+- Shared corrected weekly observations separate unknown RPE, unconfirmed dates, explicit skips/cancellations and changed/duplicate links.
+- Saved-session briefing reuses exact-target explanation without changing a prescription.
+- Desktop/mobile Chromium and mobile WebKit intake/first-week regressions; Android-first distribution roadmap.
+- Version 3.20.0/build 32000, schema 32 unchanged; packages remain unsigned/local-only.
+
 # v3.19.0 — Guided training foundation
 
 - Shared Home/Coach/Decisions training hub derives setup, scheduled plan, first saved session and weekly review from existing records.

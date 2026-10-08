@@ -3,8 +3,10 @@ const workflow=fs.readFileSync(require.resolve('../.github/workflows/test.yml'),
 assert.match(workflow,/fail-fast: false/);
 assert.match(workflow,/shard: \[1, 2, 3, 4\]/);
 assert.match(workflow,/run: npx playwright test --shard=\$\{\{ matrix.shard \}\}\/4/);
-assert.match(workflow,/test:\s+if: always\(\)\s+needs: \[smoke, browser\]/);
+assert.match(workflow,/test:\s+if: always\(\)\s+needs: \[smoke, browser, webkit\]/);
 assert.match(workflow,/test "\$SMOKE_RESULT" = success/);
 assert.match(workflow,/test "\$BROWSER_RESULT" = success/);
+assert.match(workflow,/test "\$WEBKIT_RESULT" = success/);
+assert.match(workflow,/LOADNOTE_WEBKIT: '1'/);
 assert.match(workflow,/name: browser-test-report-\$\{\{ matrix.shard \}\}/);
 console.log('Browser CI covers all four shards and fails the aggregate gate for any non-success result');

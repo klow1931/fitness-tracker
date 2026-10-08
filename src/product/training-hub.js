@@ -1,8 +1,8 @@
 /* Read-only athlete journey. Existing lifecycle and review policies own changes. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-workspace'),require('./today-training'),require('./program-lifecycle'),require('./weekly-coaching'));
- else root.LoadnoteTrainingHub=factory(root.LoadnoteProgrammingWorkspace,root.LoadnoteTodayTraining,root.LoadnoteProgramLifecycle,root.LoadnoteWeeklyCoaching);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Workspace,Today,Lifecycle,Weekly){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-workspace'),require('./today-training'),require('./program-lifecycle'),require('./weekly-coaching'),require('./training-week'));
+ else root.LoadnoteTrainingHub=factory(root.LoadnoteProgrammingWorkspace,root.LoadnoteTodayTraining,root.LoadnoteProgramLifecycle,root.LoadnoteWeeklyCoaching,root.LoadnoteTrainingWeek);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Workspace,Today,Lifecycle,Weekly,Week){
  'use strict';
  function inspect(state,{asOf,now=new Date().toISOString(),draft=null,sportDraft=false}={}){
   const today=Today.inspect(state,{day:asOf,draft}),planner=Workspace.route(state,{asOf});
@@ -28,7 +28,7 @@
   else if(weekly.status==='unsupported')review={label:'Open program review',detail:'Use the dedicated '+(weekly.program.kind==='sport-program'?'sport':'hypertrophy')+' review.',available:true};
   else if(weekly.status==='ambiguous')review={label:'Choose a program to review',detail:'Overlapping programs are reviewed separately.',available:true};
   else review={label:'Weekly review',detail:weekly.status==='invalid'?'Evidence needs review; no change is proposed.':'Schedule a supported program to connect planned and recorded work.',available:weekly.status==='invalid'};
-  return {steps,primary,review,planner,lifecycle,weeklyStatus:weekly.status,started:logs.length>0};
+  return {steps,primary,review,planner,lifecycle,weeklyStatus:weekly.status,started:logs.length>0,week:Week.inspect(state,{asOf,now})};
  }
  return {inspect};
 });

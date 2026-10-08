@@ -2000,3 +2000,8 @@ body.dark .weekly-target{border-color:#475569}
 .training-library-item summary{padding:.6rem 0;min-height:44px;cursor:pointer}
 .training-library-item button,.training-hub button,.training-option-list button{min-height:44px;white-space:normal}
 @media(max-width:480px){.training-hub-next,.training-hub-review{align-items:stretch;flex-direction:column}.training-library-filters{grid-template-columns:1fr}.training-hub .programming-workspace-actions button{width:100%}}
+.training-week-counts { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; }
+.training-week-counts div { min-width:0; }
+.training-week-counts dt { overflow-wrap:anywhere; }
+.training-week-counts dd { margin:0; font-weight:700; }
+.training-hub-brief { margin-block:1rem; overflow-wrap:anywhere; }
