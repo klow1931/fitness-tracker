@@ -81,7 +81,7 @@
    text+='Decision evidence: '+row.status+'. '+row.reasons.slice(0,3).join(' ');
    if(row.interpretation)text+=' '+row.interpretation;
    text+=' This describes evidence, not a tested max, historical as-recorded replay or an instruction to increase load. Review any adjustment in Decisions.';
-   return result(text,'Current corrected lift evidence',row.reasons);
+   return {...result(text,'Current corrected lift evidence',row.reasons),actions:row.competitionExercise?[]:[{kind:'mappings',label:'Confirm lift mappings'}]};
   }
   if(intent.topic==='evidence'&&/\b(increase|add weight|plateau|stronger|ready|readiness)\b/i.test(q))return result('Which lift should we inspect: squat, bench or deadlift? I will check its mapped evidence and limitations before discussing progression. Completing a session alone does not justify an automatic load increase.','Clarification');
   if(intent.topic==='session'&&/last time|previous/i.test(q))return result(live?.liveWorkout?.currentExercise?.set?.previous?'Previous comparison shown in the logger: '+live.liveWorkout.currentExercise.set.previous+'. This is recorded comparison context, not a new target.':'There is no previous-set comparison available in the current logger context. Name the movement and open its history to compare equivalent work.','Logger comparison');

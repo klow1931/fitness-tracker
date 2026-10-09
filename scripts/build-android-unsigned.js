@@ -2,13 +2,13 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const root=path.resolve(__dirname,'..'),output=path.join(root,'build-android'),sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
 if(!sdk)throw Error('Android SDK is required. Use the Loadnote Android compilation GitHub workflow.');
 const apk=path.join(root,'android/app/build/outputs/apk/release/app-release-unsigned.apk');
-const analyzer=path.join(sdk,'cmdline-tools/latest/bin/apkanalyzer'),signer=path.join(sdk,'build-tools/35.0.0/apksigner');
+const analyzer=path.join(sdk,'cmdline-tools/latest/bin/apkanalyzer'),signer=path.join(sdk,'build-tools/36.0.0/apksigner');
 for(const tool of [analyzer,signer])if(!fs.existsSync(tool))throw Error('Missing SDK tool '+path.basename(tool));
 fs.rmSync(output,{recursive:true,force:true});fs.mkdirSync(output,{recursive:true});
 const java=spawnSync('java',['-version'],{encoding:'utf8'}),javaVersion=(java.stderr||'')+(java.stdout||'');
 if(java.status!==0||!/(?:version|openjdk) "?21[.\s"]/.test(javaVersion))throw Error('Use JDK 21 for the locked Capacitor 7 Android project');
 const gradle=execFileSync('bash',['./gradlew','--version','--no-daemon'],{cwd:path.join(root,'android'),encoding:'utf8'});
-fs.writeFileSync(path.join(output,'toolchain.txt'),javaVersion+'\n'+gradle+'\nSDK baseline: API 35 / build-tools 35.0.0\n');
+fs.writeFileSync(path.join(output,'toolchain.txt'),javaVersion+'\n'+gradle+'\nSDK baseline: API 36 / build-tools 36.0.0\n');
 // Never accept a stale APK as compilation evidence.
 fs.rmSync(apk,{force:true});
 const result=spawnSync('bash',['./gradlew',':app:assembleRelease','--no-daemon','--stacktrace'],{cwd:path.join(root,'android'),encoding:'utf8',maxBuffer:64*1024*1024,timeout:25*60*1000});

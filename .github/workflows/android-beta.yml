@@ -27,7 +27,7 @@ jobs:
         with:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
-      - run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+      - run: sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check:native
       - name: Build and verify separate debug beta
@@ -39,7 +39,7 @@ jobs:
       - name: Offline native athlete journey and lifecycle acceptance
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_2

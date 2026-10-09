@@ -1,6 +1,6 @@
 # Loadnote
 
-**v3.21.0 · Development build.**
+**v3.22.0 · Development build.**
 
 Android-first beta: [Windows emulator installation and safe updates](docs/android-beta-windows.md). The **Loadnote Android beta** workflow publishes a separate debug-signed `.beta` APK only after offline emulator acceptance. Production release/iOS signing and physical-device acceptance remain separate gates. [Free-first monetization options](docs/monetization-options.md) are proposals only; no ads or billing SDK is installed.
 

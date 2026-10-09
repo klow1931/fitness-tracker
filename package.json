@@ -1,8 +1,8 @@
 {
   "name": "loadnote",
-  "version": "3.21.0",
+  "version": "3.22.0",
   "private": true,
-  "description": "Loadnote — adaptive strength-training log",
+  "description": "Loadnote \u2014 adaptive strength-training log",
   "scripts": {
     "start": "node backend/server.js",
     "check": "node scripts/check.js",
@@ -18,7 +18,10 @@
     "build:ios:unsigned": "node scripts/build-ios-unsigned.js",
     "build:android:unsigned": "node scripts/build-android-unsigned.js",
     "build:android:beta": "node scripts/build-android-beta.js",
-    "test:android:emulator": "node scripts/test-android-emulator.js"
+    "test:android:emulator": "node scripts/test-android-emulator.js",
+    "setup:bundletool": "node scripts/setup-bundletool.js",
+    "build:android:aab": "node scripts/build-android-aab.js",
+    "build:android:aab:signed": "node scripts/build-android-aab.js --signed"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

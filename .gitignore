@@ -16,3 +16,6 @@ build-ios/
 build-android/
 build-android-beta/
 build-android-emulator/
+
+.tools/
+build-android-aab/

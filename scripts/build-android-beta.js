@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const root=path.resolve(__dirname,'..'),output=path.join(root,'build-android-beta'),sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
 if(!sdk)throw Error('Android SDK required; use the Android beta GitHub workflow or Android Studio.');
 const android=path.join(root,'android'),apk=path.join(android,'app/build/outputs/apk/debug/app-debug.apk');
-const analyzer=path.join(sdk,'cmdline-tools/latest/bin/apkanalyzer'),signer=path.join(sdk,'build-tools/35.0.0/apksigner');
+const analyzer=path.join(sdk,'cmdline-tools/latest/bin/apkanalyzer'),signer=path.join(sdk,'build-tools/36.0.0/apksigner');
 for(const tool of [analyzer,signer])if(!fs.existsSync(tool))throw Error('Missing SDK tool '+path.basename(tool));
 fs.mkdirSync(output,{recursive:true});fs.rmSync(apk,{force:true});
 const java=spawnSync('java',['-version'],{encoding:'utf8'});

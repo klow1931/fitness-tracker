@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://esm.run https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Loadnote — What you lifted. What comes next.</title>
@@ -1340,6 +1341,7 @@
       </div></details>
 
       <div class="card" id="privacy-policy">
+        <p><a href="privacy.html" class="underline">Full privacy policy</a> · <a href="support.html" class="underline">Support</a> · <a href="delete-account.html" class="underline">Delete data or account</a></p>
         <h2 class="font-semibold mb-2">Privacy policy</h2>
         <p class="text-xs text-slate-500 mb-3">Last updated: September 28, 2026 · Plain-language summary for Loadnote (web).</p>
         <div class="text-sm text-slate-600 space-y-3">
@@ -1390,14 +1392,14 @@
           </div>
           <div>
             <p class="font-medium text-slate-800">Contact</p>
-            <p>For questions about this app, contact the person who shared Loadnote with you (the project maintainer).</p>
+            <p>For questions, use the <a href="support.html" class="underline">Loadnote support instructions</a>. Do not post private records in public issues.</p>
           </div>
         </div>
       </div>
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.21.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.22.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2151,6 +2153,7 @@
   <script src="src/product/coaching-library-ui.js" defer></script>
   <script src="src/product/exercise-explanation.js" defer></script>
   <script src="src/product/coach-conversation.js" defer></script>
+  <script src="src/product/plate-calculator.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

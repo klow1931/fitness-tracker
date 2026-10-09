@@ -1,9 +1,10 @@
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up']);
+ const KINDS=new Set(['review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up','mappings']);
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
+  if(a.kind==='mappings'){window.openExerciseRoleSetup?.();return;}
   if(a.kind==='library'){window.LoadnoteCoachingLibraryUI?.open?.();return;}
   if(a.kind==='accessory-review'){window.LoadnoteAccessoryReviewUI?.open?.(a);return;}
   if(a.kind==='weekly-coaching'){window.LoadnoteWeeklyCoachingUI?.open?.(a);return;}

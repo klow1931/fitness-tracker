@@ -1,0 +1,24 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),signed=process.argv.includes('--signed'),output=path.join(root,'build-android-aab'),bundle=path.join(root,'android/app/build/outputs/bundle/release/app-release.aab');
+const jar=process.env.LOADNOTE_BUNDLETOOL_JAR||path.join(root,'.tools/bundletool.jar');
+if(!fs.existsSync(jar))throw Error('Run npm run setup:bundletool first');require('./setup-bundletool').verify(fs.readFileSync(jar));
+const signing=['LOADNOTE_ANDROID_KEYSTORE','LOADNOTE_ANDROID_KEYSTORE_PASSWORD','LOADNOTE_ANDROID_KEY_ALIAS','LOADNOTE_ANDROID_KEY_PASSWORD'];
+if(signed&&!signing.every(key=>process.env[key]))throw Error('Signed AAB requires all four owner-supplied signing environment variables');
+if(!signed&&signing.some(key=>process.env[key]))throw Error('Unsigned AAB build requires signing variables to be unset');
+fs.mkdirSync(output,{recursive:true});fs.rmSync(bundle,{force:true});
+try{const logs=execFileSync('bash',['./gradlew',':app:bundleRelease','--no-daemon'],{cwd:path.join(root,'android'),encoding:'utf8',maxBuffer:64*1024*1024,timeout:25*60*1000});fs.writeFileSync(path.join(output,'build.log'),logs);}catch(error){fs.writeFileSync(path.join(output,'build.log'),String(error.stdout||'')+'\n'+String(error.stderr||''));throw Error('AAB compilation failed; inspect build-android-aab/build.log');}
+execFileSync('java',['-jar',jar,'validate','--bundle='+bundle],{stdio:'inherit'});
+const manifest=execFileSync('java',['-jar',jar,'dump','manifest','--bundle='+bundle,'--module=base'],{encoding:'utf8'});
+fs.writeFileSync(path.join(output,'manifest.xml'),manifest);
+const names=execFileSync('unzip',['-Z1',bundle],{encoding:'utf8'}).trim().split('\n');
+const files=names.map(x=>x.replace(/^base\//,'').replace(/^dex\//,'').replace(/^manifest\//,''));
+const config=JSON.parse(execFileSync('unzip',['-p',bundle,'base/assets/capacitor.config.json'],{encoding:'utf8'}));
+const dex=execFileSync('unzip',['-p',bundle,'base/dex/classes.dex'],{maxBuffer:64*1024*1024});
+const signatures=names.filter(x=>/^META-INF\/.*\.(RSA|DSA|EC|SF)$/i.test(x));
+let signatureVerified=false;
+if(signed){if(!signatures.length)throw Error('Signed bundle lacks signing material');const result=execFileSync('jarsigner',['-verify',bundle],{encoding:'utf8'});if(!/jar verified\./.test(result))throw Error('AAB signature verification failed');signatureVerified=true;}else if(signatures.length)throw Error('Unsigned bundle contains signing material');
+const report=require('./verify-android-bundle').verifyAndroidBundle({manifest,files,config,dexMagic:dex.subarray(0,4).toString('hex'),signatureVerified,signatureOutput:'not signed'},{signedRelease:signed});
+const copy=path.join(output,signed?'loadnote-release-signed.aab':'loadnote-release-unsigned.aab');fs.copyFileSync(bundle,copy);
+fs.writeFileSync(path.join(output,'build-report.json'),JSON.stringify({...report,format:'aab',bundletoolValidated:true,aabSha256:crypto.createHash('sha256').update(fs.readFileSync(bundle)).digest('hex')},null,2));
+console.log('AAB compiled and validated. Store submission and device acceptance remain separate.');

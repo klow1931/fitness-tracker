@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// Owner-supplied upload key only. No key or password is committed or generated.
+def signingEnv = ['LOADNOTE_ANDROID_KEYSTORE', 'LOADNOTE_ANDROID_KEYSTORE_PASSWORD', 'LOADNOTE_ANDROID_KEY_ALIAS', 'LOADNOTE_ANDROID_KEY_PASSWORD']
+def hasSigning = signingEnv.any { System.getenv(it) }
+if (hasSigning && !signingEnv.every { System.getenv(it) }) {
+    throw new GradleException('Incomplete Loadnote upload-key environment')
+}
+
 android {
     namespace "app.loadnote.mobile"
     compileSdk rootProject.ext.compileSdkVersion
@@ -7,8 +14,8 @@ android {
         applicationId "app.loadnote.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 32100
-        versionName "3.21.0"
+        versionCode 32200
+        versionName "3.22.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,11 +23,22 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasSigning) {
+            upload {
+                storeFile file(System.getenv('LOADNOTE_ANDROID_KEYSTORE'))
+                storePassword System.getenv('LOADNOTE_ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('LOADNOTE_ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('LOADNOTE_ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix ".beta"
         }
         release {
+            if (hasSigning) signingConfig signingConfigs.upload
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

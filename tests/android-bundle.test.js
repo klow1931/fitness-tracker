@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),{verifyAndroidBundle}=require('../scripts/verify-android-bundle');
 const options={version:'2.88.0',buildNumber:28800,appId:'app.loadnote.mobile'};
-const fixture={manifest:'<manifest package="app.loadnote.mobile" android:versionCode="28800" android:versionName="2.88.0"><uses-sdk android:minSdkVersion="23" android:targetSdkVersion="35"/><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="false" android:usesCleartextTraffic="false"/></manifest>',files:['AndroidManifest.xml','classes.dex','assets/capacitor.config.json','assets/public/index.html','assets/public/assets/capacitor.js','assets/public/src/product/native-backup.js','assets/public/src/product/beta-onboarding.js'],config:{appId:options.appId},dexMagic:'6465780a',signatureVerified:false,signatureOutput:'ERROR: Missing META-INF/MANIFEST.MF'};
+const fixture={manifest:'<manifest package="app.loadnote.mobile" android:versionCode="28800" android:versionName="2.88.0"><uses-sdk android:minSdkVersion="23" android:targetSdkVersion="36"/><uses-permission android:name="android.permission.INTERNET"/><application android:allowBackup="false" android:usesCleartextTraffic="false"/></manifest>',files:['AndroidManifest.xml','classes.dex','assets/capacitor.config.json','assets/public/index.html','assets/public/assets/capacitor.js','assets/public/src/product/native-backup.js','assets/public/src/product/beta-onboarding.js'],config:{appId:options.appId},dexMagic:'6465780a',signatureVerified:false,signatureOutput:'ERROR: Missing META-INF/MANIFEST.MF'};
 assert.equal(verifyAndroidBundle(fixture,options).physicalDeviceTested,false);
-for(const [a,b] of [['28800','28700'],['2.88.0','2.87.0'],['android:allowBackup="false"','android:allowBackup="true"'],['android:targetSdkVersion="35"','android:targetSdkVersion="34"']])assert.throws(()=>verifyAndroidBundle({...fixture,manifest:fixture.manifest.replace(a,b)},options));
+for(const [a,b] of [['28800','28700'],['2.88.0','2.87.0'],['android:allowBackup="false"','android:allowBackup="true"'],['android:targetSdkVersion="36"','android:targetSdkVersion="35"']])assert.throws(()=>verifyAndroidBundle({...fixture,manifest:fixture.manifest.replace(a,b)},options));
 assert.throws(()=>verifyAndroidBundle({...fixture,manifest:fixture.manifest.replace('</manifest>','<uses-permission android:name="android.permission.RECORD_AUDIO"/></manifest>')},options),/Unexpected merged permission/);
 assert.throws(()=>verifyAndroidBundle({...fixture,signatureVerified:true},options),/Unsigned APK/);
 assert.throws(()=>verifyAndroidBundle({...fixture,signatureOutput:'tool failed'},options),/inconclusive/);
@@ -18,3 +18,6 @@ assert.throws(()=>verifyAndroidBundle({...debug,signatureVerified:false},debugOp
 assert.throws(()=>verifyAndroidBundle(debug,options),/Expected values/);
 assert.throws(()=>verifyAndroidBundle({...debug,manifest:debug.manifest.replace('android:debuggable="true"','')},debugOptions),/channel/);
 assert.throws(()=>verifyAndroidBundle({...debug,config:{appId:options.appId,server:{url:'http://localhost'}}},debugOptions),/live server/);
+
+assert.equal(verifyAndroidBundle({...fixture,signatureVerified:true},{...options,signedRelease:true}).channel,'signed-release');
+assert.throws(()=>verifyAndroidBundle({...fixture,signatureVerified:false},{...options,signedRelease:true}),/signature/);

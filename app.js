@@ -1206,41 +1206,14 @@
     }
 
     function calcPlates() {
-      const targetDisp = parseFloat(document.getElementById('plate-target').value);
-      const barDisp = parseFloat(document.getElementById('plate-bar').value) || (currentUnit() === 'lb' ? 45 : 20);
-      if (!targetDisp) return;
-      const target = toStorage(targetDisp);
-      const bar = toStorage(barDisp);
-      let perSide = (target - bar) / 2;
-      if (perSide < 0) {
-        document.getElementById('plate-result').innerHTML = '<p class="text-red-500">Target is less than bar weight.</p>';
-        return;
-      }
-      // Plates in kg
-      const platesKg = currentUnit() === 'lb'
-        ? [25, 20, 15, 10, 5, 2.5, 1.25] // will convert display
-        : [25, 20, 15, 10, 5, 2.5, 1.25];
-      // Use standard kg plates for calc, convert display
-      const std = [25, 20, 15, 10, 5, 2.5, 1.25];
-      const result = [];
-      let remaining = Math.round(perSide * 100) / 100;
-      for (const p of std) {
-        let count = 0;
-        while (remaining >= p - 0.01) {
-          remaining -= p;
-          remaining = Math.round(remaining * 100) / 100;
-          count++;
-        }
-        if (count) result.push({ plate: p, count });
-      }
-      if (!result.length && perSide > 0) {
-        document.getElementById('plate-result').innerHTML = '<p>Could not match exact weight with standard plates.</p>';
-        return;
-      }
-      document.getElementById('plate-result').innerHTML =
-        `<p class="mb-1">Per side (${toDisplay(perSide)} ${unitLabel()}):</p>` +
-        result.map(r => `<p>• ${r.count} × ${toDisplay(r.plate)} ${unitLabel()}</p>`).join('') +
-        (remaining > 0.05 ? `<p class="text-amber-600 text-xs mt-1">Remainder ~${toDisplay(remaining)} ${unitLabel()} unmatched</p>` : '');
+      const host=document.getElementById('plate-result');
+      try {
+        const unit=currentUnit(),rawBar=document.getElementById('plate-bar').value;
+        const result=LoadnotePlateCalculator.calculate(Number(document.getElementById('plate-target').value),rawBar.trim()===''?(unit==='lb'?45:20):Number(rawBar),unit);
+        host.innerHTML=`<p class="mb-1">Per side (${result.perSide} ${unit}):</p>`+
+          (result.plates.map(r=>`<p>• ${r.count} × ${r.plate} ${unit}</p>`).join('')||'<p>Bar only.</p>')+
+          (result.remainder>0.0001?`<p class="text-amber-600 text-xs mt-1">${result.remainder} ${unit} per side unmatched; loaded total ${result.loaded} ${unit}.</p>`:'');
+      } catch(error) { host.textContent=error.message; }
     }
 
     function chartTheme() {
