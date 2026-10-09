@@ -4,6 +4,7 @@
 - Compare nutrition imports by date, ignoring migration-only IDs, and count missing/duplicate identities without collapsing rows.
 - Persist logout revocations across restarts; reject replayed cookie and bearer sessions and fail closed on corrupt revocation storage.
 - Bound paid AI setup calls per account/minute/day and globally, with shared concurrency limits, Retry-After responses and leases covering response parsing.
+- Escape legacy goal/program/advice text and pass imported IDs through data attributes; retain numeric and string identity compatibility.
 - Add a compatible baseline CSP, frame protection and safe public server failure messages. Legacy inline handlers remain allowed; this is not a strict XSS-proof policy.
 - Link unmapped Coach lift replies directly to athlete-confirmed mapping review; suppress duplicate unavailable goal context in the program designer.
 - Add public, packaged privacy/support/deletion pages with explicit local-only native scope and honest owner-contact requirements.

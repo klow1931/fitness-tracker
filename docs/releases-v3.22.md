@@ -7,6 +7,7 @@ Audit remediation release. Schema remains 32; existing kg storage, workout ident
 - Imperial plate calculations use 45/35/25/10/5/2.5 lb plates. Metric calculations use 25/20/15/10/5/2.5/1.25 kg plates. Remainders are per side and the actual loaded total is shown.
 - Reimporting an unchanged nutrition backup no longer reports a generated migration ID as a deleted and added day. Multiple rows without IDs remain visible in the preview.
 - Unmapped lift questions in Coach offer **Confirm lift mappings**, opening the existing review form. Suggestions still require explicit confirmation; chat never silently maps a lift.
+- Legacy goal/program cards and advice render imported/user text safely and pass record IDs as data, including numeric and string IDs.
 - Duplicate unavailable goal guidance is suppressed in the program designer.
 - Privacy, support and data/account deletion instructions are linked in Tools and bundled for offline/native access.
 
