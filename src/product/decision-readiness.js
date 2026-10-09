@@ -4,7 +4,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Intent){
   'use strict';
   if(!Core||!Blocks||!Intent)throw Error('Loadnote readiness dependencies are required');
-  const ROLES={competition:'Competition lift','close-variation':'Close variation',supplemental:'Supplemental movement',assistance:'Assistance movement','isolation-rehab':'Isolation / rehabilitation',conditioning:'Conditioning'};
+  const ROLES={competition:'Competition lift','close-variation':'Close variation',supplemental:'Supplemental movement',assistance:'Assistance movement','isolation-rehab':'Isolation / other accessory',conditioning:'Conditioning'};
   const LIFTS={squat:'Squat',bench:'Bench Press',deadlift:'Deadlift'};
   const clone=value=>value==null?value:JSON.parse(JSON.stringify(value));
   const iso=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString()===value;

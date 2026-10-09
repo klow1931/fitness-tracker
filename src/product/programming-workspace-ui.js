@@ -5,7 +5,7 @@
   function panel(id){const el=document.getElementById(id);if(!el)return;el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'});}
   function phaseSource(id){try{return LoadnotePhaseBuilder.validate(data.phasePrograms||[]).find(p=>p.id===id)||null;}catch{return null;}}
   function primaryLabel(action){
-    return {sport:'Start guided sport plan','review-sport':'Review saved sport plan',hypertrophy:'Start guided muscle-growth plan','review-hypertrophy':'Review saved hypertrophy plan',profile:'Set up training preferences',quick:'Build 4-week return block',phase:'Open program designer','phase-meet':'Start meet-prep setup',meet:'Continue to meet timeline','view-reviewed-cycle':'Review saved cycle','view-current':'View current program',adopt:'Adopt an existing program'}[action]||'Continue';
+    return {'review-phase':'Review and schedule saved program',sport:'Start guided sport plan','review-sport':'Review saved sport plan',hypertrophy:'Start guided muscle-growth plan','review-hypertrophy':'Review saved hypertrophy plan',profile:'Set up training preferences',quick:'Build 4-week return block',phase:'Open program designer','phase-meet':'Start meet-prep setup',meet:'Continue to meet timeline','view-reviewed-cycle':'Review saved cycle','view-current':'View current program',adopt:'Adopt an existing program'}[action]||'Continue';
   }
   function render(){
     const host=document.getElementById('programming-workspace');if(!host)return;
@@ -28,6 +28,7 @@
         case 'profile': window.openProgrammingProfile?.();break;
         case 'quick': window.LoadnoteProgramBuilderUI?.open?.();break;
         case 'phase': window.LoadnotePhaseBuilderUI?.open?.();break;
+        case 'review-phase': panel('programming-tools-panel');panel('phase-builder-panel');window.LoadnotePhaseBuilderUI?.show?.(route.sourceId);break;
         case 'phase-meet': window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;
         case 'meet': {const source=phaseSource(route.sourceId);if(source)window.LoadnoteMeetCycleUI?.open?.(source);else window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;}
         case 'view-reviewed-cycle': panel('programming-tools-panel');panel('phase-builder-panel');setTimeout(()=>document.getElementById('meet-cycle')?.scrollIntoView({behavior:'smooth',block:'start'}),50);break;

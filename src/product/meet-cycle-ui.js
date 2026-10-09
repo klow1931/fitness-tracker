@@ -26,7 +26,7 @@
    '<details class="more-details"><summary>Builder notes · '+p.warnings.length+'</summary><ul>'+p.warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></details>'+
    p.weekly.map(w=>'<details class="more-details" data-cycle-week="'+w.week+'"><summary>Week '+w.week+' / '+p.config.weeks+' · '+esc(w.phase)+' · '+w.sessionCount+' sessions</summary><p>'+esc(w.startDate)+' – '+esc(w.endDate)+'</p>'+
      (w.meetDate?'<p><b>'+esc(label)+' '+esc(w.meetDate)+'.</b> No attempts or meet-day training are inferred. Record actual results separately.</p>':'')+
-     p.sessions.filter(s=>s.week===w.week).map(s=>'<article><b>'+esc(s.date)+' · '+esc(s.name)+'</b> · ~'+s.estimatedMinutes+' min'+s.exercises.map(e=>'<p>'+esc(e.name)+': '+esc(window.LoadnoteAccessoriesUI.describe(e))+(e.progression?'<br>'+esc(e.progression):'')+'</p>').join('')+'</article>').join('')+
+     p.sessions.filter(s=>s.week===w.week).map(s=>'<article><b>'+esc(s.date)+' · '+esc(s.name)+'</b> · ~'+s.estimatedMinutes+' min'+s.exercises.map(e=>'<p>'+esc(e.name)+': '+esc(window.LoadnoteAccessoriesUI.describe(e))+(e.progression?'<br>'+esc(LoadnoteAccessories.explanation(e)):'')+'</p>').join('')+'</article>').join('')+
      '<p>'+Object.entries(w.lifts).map(([lift,l])=>esc(lift)+': '+l.exposures+' exposures / '+l.sets+' planned sets').join(' · ')+'</p>'+weekQuality(p,w)+'</details>').join('')+
    '<label>Review notes<textarea class="input" id="cycle-notes" maxlength="1000" placeholder="Anything you want to remember when reviewing this cycle"></textarea></label>'+
    '<label class="cycle-check"><input type="checkbox" id="cycle-confirm"> I reviewed the complete original program, training maxes, whole-cycle quality gate, peak, taper, event type, date, and attempt-recording limitations.</label>'+

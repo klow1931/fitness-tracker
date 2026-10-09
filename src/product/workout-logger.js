@@ -22,6 +22,7 @@ function captureLoggerDraft() {
 function saveLoggerDraft() {
   const status = document.getElementById('logger-draft-status');
   if (!status) return;
+  if(loggerHasContent())window.clearWorkoutRecap?.();
   let saved=false;
   try {
     if (loggerHasContent()) { localStorage.setItem(LOGGER_DRAFT_KEY, JSON.stringify(captureLoggerDraft())); status.textContent = 'Draft saved on this device'; }

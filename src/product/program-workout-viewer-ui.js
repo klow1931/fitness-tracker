@@ -22,7 +22,7 @@
    if(exercise.loadConvention)parts.push(window.LoadnoteHypertrophyBuilder?.CONVENTIONS[exercise.loadConvention]||exercise.loadConvention);
    if(exercise.restSeconds)parts.push(exercise.restSeconds+'s rest allowance');
    if(exercise.purpose)parts.push(exercise.purpose);
-   if(exercise.progression)parts.push(exercise.progression);
+   if(exercise.progression)parts.push(LoadnoteAccessories.explanation(exercise));
    if(exercise.role)parts.push(exercise.role.replaceAll('-',' ')+' role');
    if(exercise.format)parts.push(exercise.format.replaceAll('-',' ')+' format');
    return parts.join(' · ');

@@ -47,6 +47,10 @@ function reviewWorkout(){
     add('p','Original plan timing: '+LoadnoteIntent.planTiming(workout.sessionIntent.prescription,workout.date,workout.sessionIntent.timing)+' · '+(workout.sessionIntent.timing?.revisions.length||0)+' recorded plan changes');
     const role=window.LoadnoteIntent.SESSION_ROLES[workout.sessionIntent.role]||'Not specified';add('p','Session role: '+role+(workout.sessionIntent.goal?' · '+workout.sessionIntent.goal:''));
     const comparison=window.LoadnoteIntent.compare(workout);if(comparison)add('p',`Planned vs completed: ${comparison.completedSets}/${comparison.plannedSets} planned sets represented · ${comparison.exactRate}% unchanged${comparison.status!=='as-planned'&&comparison.hasExplanation?' · change explained':''}.`);
+    if(comparison&&comparison.status!=='as-planned'&&!comparison.hasExplanation){
+      add('p','Your recorded work differs from the plan, but no reason is recorded. You can save as-is; Decisions may withhold progression conclusions until you explain the change.');
+      const explain=add('button','Add a reason for the change');explain.type='button';explain.className='btn-secondary';explain.onclick=()=>{closeWorkoutReview();const input=document.getElementById('session-deviation-reason');for(let parent=input?.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;input?.scrollIntoView({block:'center'});input?.focus();};
+    }
   }
   if(workoutEdit)add('p','This replaces the saved session. The previous version remains available from History → Recent workout changes.');
   const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length || 0),0);

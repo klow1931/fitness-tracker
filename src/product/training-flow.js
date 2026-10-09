@@ -70,6 +70,9 @@ function expandTrainingExercise(button){const row=button.closest('[data-idx]');i
 function moveTrainingExercise(button,direction){const row=button.closest('[data-idx]'),sibling=direction<0?row.previousElementSibling:row.nextElementSibling;if(!sibling)return;if(direction<0)row.parentElement.insertBefore(row,sibling);else row.parentElement.insertBefore(sibling,row);saveLoggerDraft();button.focus({preventScroll:true});}
 function openExerciseSwap(button){swapRow=button.closest('[data-idx]');document.getElementById('swap-current').textContent=swapRow.querySelector('.ex-name').value||'Unnamed exercise';document.getElementById('swap-name').value='';document.getElementById('exercise-swap').showModal();}
 function confirmExerciseSwap(){const input=document.getElementById('swap-name'),name=input.value.trim();if(!name){input.reportValidity();return;}if(!swapRow?.isConnected)return;swapRow.querySelector('.ex-name').value=name;saveLoggerDraft();document.getElementById('exercise-swap').close();swapRow=null;}
+function clearWorkoutRecap(){
+ const host=document.getElementById('workout-recap');if(!host)return;host.hidden=true;host.replaceChildren();
+}
 function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
  const host=document.getElementById('workout-recap');if(!host)return;host.replaceChildren();host.hidden=false;
  const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;host.appendChild(el);return el;};
