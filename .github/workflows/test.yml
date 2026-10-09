@@ -12,6 +12,8 @@ jobs:
         with:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Dependency vulnerability gate
+        run: npm audit --audit-level=moderate
       - run: npm run check
       - run: npm test
       - run: npm run check:mobile

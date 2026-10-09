@@ -791,7 +791,7 @@
       sessions.forEach(w => {
         const lines = (w.exercises || []).map(ex => {
           if (ex.type === 'cardio') {
-            return `• ${escapeHtml(ex.name)}: ${ex.duration || '—'} min` + (ex.distance ? `, ${ex.distance} ${ex.distanceUnit || 'km'}` : '');
+            return `• ${escapeHtml(ex.name)}: ${escapeHtml(ex.duration || '—')} min` + (ex.distance ? `, ${escapeHtml(ex.distance)} ${escapeHtml(ex.distanceUnit || 'km')}` : '');
           }
           const sets = (ex.sets || []).map(s => formatStrengthSet(s)).join(', ');
           return `• ${escapeHtml(ex.name)}: ${escapeHtml(sets)}`;
@@ -1206,41 +1206,14 @@
     }
 
     function calcPlates() {
-      const targetDisp = parseFloat(document.getElementById('plate-target').value);
-      const barDisp = parseFloat(document.getElementById('plate-bar').value) || (currentUnit() === 'lb' ? 45 : 20);
-      if (!targetDisp) return;
-      const target = toStorage(targetDisp);
-      const bar = toStorage(barDisp);
-      let perSide = (target - bar) / 2;
-      if (perSide < 0) {
-        document.getElementById('plate-result').innerHTML = '<p class="text-red-500">Target is less than bar weight.</p>';
-        return;
-      }
-      // Plates in kg
-      const platesKg = currentUnit() === 'lb'
-        ? [25, 20, 15, 10, 5, 2.5, 1.25] // will convert display
-        : [25, 20, 15, 10, 5, 2.5, 1.25];
-      // Use standard kg plates for calc, convert display
-      const std = [25, 20, 15, 10, 5, 2.5, 1.25];
-      const result = [];
-      let remaining = Math.round(perSide * 100) / 100;
-      for (const p of std) {
-        let count = 0;
-        while (remaining >= p - 0.01) {
-          remaining -= p;
-          remaining = Math.round(remaining * 100) / 100;
-          count++;
-        }
-        if (count) result.push({ plate: p, count });
-      }
-      if (!result.length && perSide > 0) {
-        document.getElementById('plate-result').innerHTML = '<p>Could not match exact weight with standard plates.</p>';
-        return;
-      }
-      document.getElementById('plate-result').innerHTML =
-        `<p class="mb-1">Per side (${toDisplay(perSide)} ${unitLabel()}):</p>` +
-        result.map(r => `<p>• ${r.count} × ${toDisplay(r.plate)} ${unitLabel()}</p>`).join('') +
-        (remaining > 0.05 ? `<p class="text-amber-600 text-xs mt-1">Remainder ~${toDisplay(remaining)} ${unitLabel()} unmatched</p>` : '');
+      const host=document.getElementById('plate-result');
+      try {
+        const unit=currentUnit(),rawBar=document.getElementById('plate-bar').value;
+        const result=LoadnotePlateCalculator.calculate(Number(document.getElementById('plate-target').value),rawBar.trim()===''?(unit==='lb'?45:20):Number(rawBar),unit);
+        host.innerHTML=`<p class="mb-1">Per side (${result.perSide} ${unit}):</p>`+
+          (result.plates.map(r=>`<p>• ${r.count} × ${r.plate} ${unit}</p>`).join('')||'<p>Bar only.</p>')+
+          (result.remainder>0.0001?`<p class="text-amber-600 text-xs mt-1">${result.remainder} ${unit} per side unmatched; loaded total ${result.loaded} ${unit}.</p>`:'');
+      } catch(error) { host.textContent=error.message; }
     }
 
     function chartTheme() {
@@ -1630,13 +1603,13 @@
 
     function deleteGoal(id) {
       if (!confirm('Delete this goal?')) return;
-      data.goals = data.goals.filter(g => g.id !== id);
+      data.goals = data.goals.filter(g => String(g.id) !== String(id));
       saveData(data);
       renderCoach();
     }
 
     function completeGoal(id) {
-      const g = data.goals.find(g => g.id === id);
+      const g = data.goals.find(g => String(g.id) === String(id));
       if (g) { g.completed = true; saveData(data); renderCoach(); }
     }
 
@@ -1889,11 +1862,13 @@
 
     function getActiveProgram() {
       if (!data.activeProgramId) return null;
-      return (data.programs || []).find(p => p.id === data.activeProgramId) || null;
+      return (data.programs || []).find(p => String(p.id) === String(data.activeProgramId)) || null;
     }
 
     function activateProgram(id) {
-      data.activeProgramId = id;
+      const selected = (data.programs || []).find(p => String(p.id) === String(id));
+      if (!selected) return;
+      data.activeProgramId = selected.id;
       saveData(data);
       renderCoach();
     }
@@ -1906,8 +1881,8 @@
 
     function deleteProgram(id) {
       if (!confirm('Delete this program from your library?')) return;
-      data.programs = (data.programs || []).filter(p => p.id !== id);
-      if (data.activeProgramId === id) data.activeProgramId = null;
+      data.programs = (data.programs || []).filter(p => String(p.id) !== String(id));
+      if (String(data.activeProgramId) === String(id)) data.activeProgramId = null;
       saveData(data);
       renderCoach();
     }
@@ -2440,7 +2415,7 @@
       // Advice
       const adviceEl = document.getElementById('coach-advice');
       const tips = getCoachAdvice();
-      if (adviceEl) adviceEl.innerHTML = (tips || []).map(t => `<p>• ${t}</p>`).join('');
+      if (adviceEl) adviceEl.innerHTML = (tips || []).map(t => `<p>• ${escapeHtml(t)}</p>`).join('');
       try { if (lastCoachSnapshot) renderCoachSnapshot(lastCoachSnapshot); else renderProactiveCoachPreview(); } catch (e) { console.warn(e); }
       try { refreshDeloadHelper(); } catch (e) { console.warn(e); }
       void updateCoachConnectionUI();
@@ -2459,19 +2434,19 @@
           else if (g.type === 'consistency') detail = `${g.targetPerWeek} workouts / week`;
           const status = g.completed
             ? '<span class="text-green-600 text-xs font-medium">Completed</span>'
-            : `<button onclick="completeGoal(${g.id})" class="text-xs text-indigo-600 hover:underline">Mark done</button>`;
+            : `<button data-goal-id="${escapeHtml(g.id)}" onclick="completeGoal(this.dataset.goalId)" class="text-xs text-indigo-600 hover:underline">Mark done</button>`;
           return `
             <div class="border border-slate-200 rounded-lg p-3 flex justify-between items-start">
               <div>
-                <div class="font-medium">${detail}</div>
+                <div class="font-medium">${escapeHtml(detail)}</div>
                 <div class="text-xs text-slate-500 mt-0.5">
                   ${g.deadline ? 'Target: ' + formatDate(g.deadline) + ' · ' : ''}Created ${formatDate(g.created)}
-                  ${g.notes ? ' · ' + g.notes : ''}
+                  ${g.notes ? ' · ' + escapeHtml(g.notes) : ''}
                 </div>
               </div>
               <div class="flex gap-2 items-center">
                 ${status}
-                <button onclick="deleteGoal(${g.id})" class="btn-danger text-xs">Delete</button>
+                <button data-goal-id="${escapeHtml(g.id)}" onclick="deleteGoal(this.dataset.goalId)" class="btn-danger text-xs">Delete</button>
               </div>
             </div>
           `;
@@ -2490,23 +2465,23 @@
         const p = active;
         progEl.innerHTML = `
           <div class="mb-3">
-            <div class="font-medium text-lg">${p.name}</div>
-            <div class="text-sm text-slate-500">${p.level} · ${p.daysPerWeek} days/week · ${p.focus} focus · Generated ${formatDate(p.generated)}</div>
+            <div class="font-medium text-lg">${escapeHtml(p.name)}</div>
+            <div class="text-sm text-slate-500">${escapeHtml(p.level)} · ${escapeHtml(p.daysPerWeek)} days/week · ${escapeHtml(p.focus)} focus · Generated ${formatDate(p.generated)}</div>
           </div>
           <div class="grid sm:grid-cols-2 gap-3">
             ${p.days.map((d, di) => `
               <div class="border border-slate-200 rounded-lg p-3 bg-slate-50">
                 <div class="flex justify-between items-start gap-2 mb-1">
-                  <div class="font-medium text-indigo-700">${d.day}</div>
+                  <div class="font-medium text-indigo-700">${escapeHtml(d.day)}</div>
                   <button onclick="startProgramDay(${di})" class="text-xs text-indigo-600 hover:underline shrink-0">Start this day</button>
                 </div>
                 <ul class="text-sm text-slate-700 space-y-0.5">
-                  ${d.exercises.map(e => `<li>• ${e}</li>`).join('')}
+                  ${d.exercises.map(e => `<li>• ${escapeHtml(e)}</li>`).join('')}
                 </ul>
               </div>
             `).join('')}
           </div>
-          <p class="text-xs text-slate-500 mt-3"><b>Loading scheme (${p.schemeLabel || 'Linear'}):</b> ${p.progressionTip || 'Add weight when you complete all sets/reps with good form.'}</p>
+          <p class="text-xs text-slate-500 mt-3"><b>Loading scheme (${escapeHtml(p.schemeLabel || 'Linear')}):</b> ${escapeHtml(p.progressionTip || 'Add weight when you complete all sets/reps with good form.')}</p>
         `;
       }
 
@@ -2548,12 +2523,12 @@
           return `
             <div class="border border-slate-200 rounded-lg p-3 flex justify-between items-center ${isActive ? 'bg-indigo-50 border-indigo-200' : ''}">
               <div>
-                <div class="font-medium">${p.name} ${isActive ? '<span class="text-xs text-indigo-600">• Library selection</span>' : ''}</div>
-                <div class="text-xs text-slate-500">${p.level} · ${p.daysPerWeek} days · ${p.focus} · ${formatDate(p.generated)}</div>
+                <div class="font-medium">${escapeHtml(p.name)} ${isActive ? '<span class="text-xs text-indigo-600">• Library selection</span>' : ''}</div>
+                <div class="text-xs text-slate-500">${escapeHtml(p.level)} · ${escapeHtml(p.daysPerWeek)} days · ${escapeHtml(p.focus)} · ${formatDate(p.generated)}</div>
               </div>
               <div class="flex gap-2">
-                ${!isActive ? `<button onclick="activateProgram(${p.id})" class="text-xs text-indigo-600 hover:underline">Select</button>` : ''}
-                <button onclick="deleteProgram(${p.id})" class="btn-danger text-xs">Delete</button>
+                ${!isActive ? `<button data-program-id="${escapeHtml(p.id)}" onclick="activateProgram(this.dataset.programId)" class="text-xs text-indigo-600 hover:underline">Select</button>` : ''}
+                <button data-program-id="${escapeHtml(p.id)}" onclick="deleteProgram(this.dataset.programId)" class="btn-danger text-xs">Delete</button>
               </div>
             </div>
           `;

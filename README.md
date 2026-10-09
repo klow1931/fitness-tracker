@@ -1,6 +1,6 @@
 # Loadnote
 
-**v3.21.0 · Development build.**
+**v3.22.0 · Development build.**
 
 Android-first beta: [Windows emulator installation and safe updates](docs/android-beta-windows.md). The **Loadnote Android beta** workflow publishes a separate debug-signed `.beta` APK only after offline emulator acceptance. Production release/iOS signing and physical-device acceptance remain separate gates. [Free-first monetization options](docs/monetization-options.md) are proposals only; no ads or billing SDK is installed.
 
@@ -569,7 +569,7 @@ Develop changes on a branch and open a pull request. The read-only GitHub Action
 
 `package.json` is the release-version reference. Update the release helper, app footer, service-worker cache, README and newest changelog entry together. Tests reject disagreement. Keep historical changelog entries and archived documents at their original versions. A branch name does not define the app version.
 
-Use `npm ci` for locked installs and `npm run build:assets` to regenerate committed styles and charts. Updates wait for Save and update; drafts and data must save first. Close other Loadnote tabs before applying an update.
+Use `npm ci` for locked installs and `npm run build:assets` to restore the approved vendored utility CSS and locked Chart.js assets. Define new styles in `styles.css` or `energy.css`; the historical Tailwind 3 generator/config is retained as provenance only and is not executed. Updates wait for Save and update; drafts and data must save first. Close other Loadnote tabs before applying an update.
 
 ## Project map
 

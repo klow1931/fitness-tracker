@@ -25,3 +25,6 @@ for(const name of ['coach-turn-context','workout-brief']){assert(html.indexOf('s
 
 for(const dependency of ['schedule','program-lifecycle','decision-readiness','weekly-evidence','cycle-review','cycle-adaptive-controller','cycle-response','adaptive-outcome-learning','primary-follow-up','coach-support'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/weekly-coaching.js'),'Weekly coaching must load after '+dependency);
 assert(scripts.indexOf('src/product/weekly-coaching.js')<scripts.indexOf('src/product/coach-conversation.js'));
+
+const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
+for(const name of ['privacy.html','support.html','delete-account.html']){assert(pages.includes(name),'Public deployment must include '+name);assert(sw.includes("'./"+name+"'"),'Offline policy asset missing '+name);}

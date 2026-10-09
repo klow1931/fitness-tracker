@@ -42,3 +42,8 @@ assert.equal(analysis.frequencyPerWeek,null);assert.equal(analysis.observedFrequ
 const mergedAnalysis=Blocks.analyze(records,merged.workouts,records[0].id,{asOf:'2026-08-31',retrospective:true});assert.equal(mergedAnalysis.exercises.length,2);assert.equal(Core.exerciseHistory(merged.workouts,'Hip Adduction').length,2);
 const complete=Blocks.upsert(records,{...context,dataCompleteness:'complete'},{id:records[0].id,now:'2026-09-05T00:00:00.000Z'});assert.equal(Blocks.analyze(complete,migrated.workouts,records[0].id,{asOf:'2026-08-31',retrospective:true}).frequencyPerWeek,0.5);
 console.log('Data integrity migration, aliases, revisions, health audit, recovery, previews, and coverage passed');
+
+const daily=[{date:'2026-10-07',calories:2000},{date:'2026-10-08',calories:2100}];
+assert.deepEqual(Integrity.previewImport({nutrition:daily},{nutrition:daily.map((x,i)=>({...x,id:'generated'+i}))}).nutrition,{before:2,after:2,added:0,changed:0,removed:0});
+assert.equal(Integrity.previewImport({nutrition:daily},{nutrition:[{...daily[0],id:'new',calories:2200}]}).nutrition.changed,1);
+assert.equal(Integrity.previewImport({workouts:[{},{}]},{workouts:[{},{}]}).workouts.before,2);

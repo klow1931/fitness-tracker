@@ -182,13 +182,24 @@
  }
 
  function previewImport(current,incoming){
-  const diff=(before,after)=>{const a=new Map((before||[]).map(x=>[String(x.id),x])),b=new Map((after||[]).map(x=>[String(x.id),x]));let added=0,changed=0,removed=0;for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;for(const id of a.keys())if(!b.has(id))removed++;return {before:a.size,after:b.size,added,changed,removed};};
+  const diff=(before,after,{byDate=false}={})=>{
+   const rows=list=>{const counts=new Map();return new Map((list||[]).map((x,i)=>{
+    const base=byDate&&x.date?'date:'+x.date:x.id!=null?'id:'+x.id:'position:'+i;
+    const n=counts.get(base)||0;counts.set(base,n+1);
+    const value=byDate?Object.fromEntries(Object.entries(x).filter(([key])=>key!=='id')):x;
+    return [base+':'+n,value];
+   }));};
+   const a=rows(before),b=rows(after);let added=0,changed=0,removed=0;
+   for(const [id,value]of b)a.has(id)?changed+=same(a.get(id),value)?0:1:added++;
+   for(const id of a.keys())if(!b.has(id))removed++;
+   return {before:a.size,after:b.size,added,changed,removed};
+  };
   return {
    programCancellations:diff(current?.programCancellations,incoming?.programCancellations),coachingReviews:diff(current?.coachingReviews,incoming?.coachingReviews),sportPrograms:diff(current?.sportPrograms,incoming?.sportPrograms),athleticPractice:diff(current?.athleticPractice,incoming?.athleticPractice),hypertrophyPrograms:diff(current?.hypertrophyPrograms,incoming?.hypertrophyPrograms),olympicPractice:diff(current?.olympicPractice,incoming?.olympicPractice),workloadProfiles:diff(current?.workloadProfiles,incoming?.workloadProfiles),
    transitionSnapshots:diff(current?.transitionSnapshots,incoming?.transitionSnapshots),adoptedPrograms:diff(current?.adoptedPrograms,incoming?.adoptedPrograms),meetCycles:diff(current?.meetCycles,incoming?.meetCycles),scheduledSessions:diff(current?.scheduledSessions,incoming?.scheduledSessions),
    phaseReviews:diff(current?.phaseReviews,incoming?.phaseReviews),phasePrograms:diff(current?.phasePrograms,incoming?.phasePrograms),programmingProfiles:diff(current?.programmingProfiles,incoming?.programmingProfiles),programReviews:diff(current?.programReviews,incoming?.programReviews),reviewedPrograms:diff(current?.reviewedPrograms,incoming?.reviewedPrograms),
    athleteGoals:diff(current?.athleteGoals,incoming?.athleteGoals),workouts:diff(current?.workouts,incoming?.workouts),workoutRevisions:diff(current?.workoutRevisions,incoming?.workoutRevisions),trainingBlocks:diff(current?.trainingBlocks,incoming?.trainingBlocks),templates:diff(current?.templates,incoming?.templates),exerciseCatalog:diff(current?.exerciseCatalog,incoming?.exerciseCatalog),exerciseRoles:diff(current?.exerciseRoles,incoming?.exerciseRoles),decisionEvents:diff(current?.decisionEvents,incoming?.decisionEvents),
-   prs:diff(current?.prs,incoming?.prs),nutrition:diff(current?.nutrition,incoming?.nutrition),bodyweight:diff(current?.bodyweight,incoming?.bodyweight),measurements:diff(current?.measurements,incoming?.measurements),progressPhotos:diff(current?.progressPhotos,incoming?.progressPhotos),restDays:diff(current?.restDays,incoming?.restDays)
+   prs:diff(current?.prs,incoming?.prs),nutrition:diff(current?.nutrition,incoming?.nutrition,{byDate:true}),bodyweight:diff(current?.bodyweight,incoming?.bodyweight),measurements:diff(current?.measurements,incoming?.measurements),progressPhotos:diff(current?.progressPhotos,incoming?.progressPhotos),restDays:diff(current?.restDays,incoming?.restDays)
   };
  }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
