@@ -179,7 +179,7 @@
  }
  async function ask(text){
   ensure();append(text,'user');
-  const live=companionContext(),command=Core()?.classifyCommand(text);
+  const live=companionContext(),safety=window.LoadnoteCoachSupport?.kind(text),command=['health','urgent-support'].includes(safety)?null:Core()?.classifyCommand(text);
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;

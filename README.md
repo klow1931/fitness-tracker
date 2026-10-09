@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.22.0 · Development build.**
+**v3.23.0 · Development build.**
+
+Current boundary review and Android release rehearsal: [v3.23 release notes](docs/releases-v3.23.md). Engineering checks do not replace independent coaching review, owner signing or physical-device acceptance.
 
 Android-first beta: [Windows emulator installation and safe updates](docs/android-beta-windows.md). The **Loadnote Android beta** workflow publishes a separate debug-signed `.beta` APK only after offline emulator acceptance. Production release/iOS signing and physical-device acceptance remain separate gates. [Free-first monetization options](docs/monetization-options.md) are proposals only; no ads or billing SDK is installed.
 

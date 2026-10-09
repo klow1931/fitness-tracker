@@ -1,7 +1,7 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.22.0';
+const CACHE = 'loadnote-v3.23.0';
 const ASSETS = [
-  './privacy.html', './support.html', './delete-account.html', './src/product/plate-calculator.js',
+  './privacy.html', './support.html', './delete-account.html', './src/product/plate-calculator.js', './src/product/decision-boundaries.js',
   './src/product/training-week.js',
   './src/product/training-hub.js',
   './src/product/training-hub-ui.js',
