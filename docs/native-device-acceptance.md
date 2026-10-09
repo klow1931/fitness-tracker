@@ -1,4 +1,4 @@
-# Native beta device acceptance — v2.88
+# Native device acceptance — current release candidate
 
 **Status: NOT RUN on physical devices.** Automated browser tests use a mocked native bridge; compilation jobs do not launch an app. Do not mark a row passed from those results. Use synthetic training for destructive/reinstall checks, retaining an external backup and the original production data on its source device.
 

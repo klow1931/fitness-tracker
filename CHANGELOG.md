@@ -1,3 +1,11 @@
+# v3.23.0 — Coaching boundaries and Android release rehearsal
+
+- Withhold lift directions for active intake restrictions, avoided competition movements, corrupt restriction data and matching invalid/suspicious lift records.
+- Check raw workout IDs before historical replay can collapse duplicates; preserve knowledge-cutoff behavior and unrelated/future evidence exclusion.
+- Route symptom/crisis questions before movement clarification, timer commands and provider conversation; keep health limits authoritative and read-only.
+- Add read-only Android signed/unsigned preflight checks, CI rehearsal and a documented qualified-review/owner release checklist.
+- Add deterministic and real-browser boundary regressions. Preserve schema 32 and existing kg storage.
+
 # v3.22.0 — Audit fixes and Play release preparation
 
 - Use standard pound plates in imperial plate calculations; preserve kg training storage.

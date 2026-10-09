@@ -31,6 +31,11 @@
   return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now}={}){
+  // Safety boundaries precede movement clarification, educational routing and AI.
+  // Inspect the original question: truncation must not drop a reported symptom.
+  const safetyKind=Support?.kind(String(question||''));
+  if(safetyKind==='urgent-support')return Support.answer(question,{history,live});
+  if(Support?.health(String(question||'')))return {text:'I cannot diagnose pain or decide that an injured area is safe to load from your log. Do not use this chat as clearance to continue training through symptoms. Describe the location, onset and what aggravates it to a qualified clinician. If symptoms are severe or you may be in immediate danger, contact local emergency services now. I will not prescribe injury rehabilitation or a substitute training dose.',source:'Shared coaching · capability limit',readOnly:true,evidence:[],intent:{topic:'health'},actions:[{kind:'intake',label:'Review athlete intake'}]};
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   if(intent.topic!=='health'){
@@ -49,7 +54,7 @@
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}
   if(intent.topic!=='health'&&Unified){try{const unified=Unified.answer(state,q,{asOf,unit,history,live,sportLive:live?.sportWorkout||null});if(unified)return unified;}catch{/* Existing domain-specific evidence handlers remain available. */}}
   const result=(text,source='Built-in explanation',evidence=[])=>({text,source,evidence,intent,readOnly:true});
-  if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Capability limit');
+  if(intent.topic==='health')return result('I cannot diagnose pain or decide that an injured area is safe to load from your log. Describe the location, onset and what aggravates it to a qualified clinician. I can explain recorded training targets, but I will not prescribe injury rehabilitation.','Shared coaching · capability limit');
   if(intent.topic==='hypertrophy'&&Hyp&&/\b(program|plan|progression)\b/i.test(intent.referenceQuestion)){
    try{const programs=Hyp.validate(state.hypertrophyPrograms||[]).filter(r=>!Cancellation.isCancelled(state,r.id,'hypertrophy-program')&&r.scheduledAt&&r.config.startDate<=asOf&&r.weekly.at(-1).through>=asOf);if(programs.length===1){const report=Hyp.progression(state,programs[0].id,{asOf});return result(Hyp.explain(report),'Shared hypertrophy progression review',[report]);}return result(programs.length>1?'More than one hypertrophy plan covers today. Resolve overlapping programs before progression review.':'Build or schedule a reviewed hypertrophy plan in Decisions first; no exercise loads are inferred.','Hypertrophy programming policy');}catch{return result('Hypertrophy evidence could not be validated. Open Decisions to resolve it; no change is proposed.','Hypertrophy evidence unavailable');}
   }

@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),{assess}=require('../scripts/android-release-preflight');
+const env={ANDROID_HOME:'/test-sdk'},options={env,java:'openjdk version "21.0.9"',exists:()=>true,isFile:()=>true,unsigned:true};
+assert.equal(assess(options).buildPrerequisitesReady,true);assert.equal(assess(options).storeReady,false);assert.equal(assess(options).physicalDeviceTested,false);
+assert.equal(assess({...options,java:'openjdk version "17.0.1"'}).buildPrerequisitesReady,false);
+assert.equal(assess({...options,exists:()=>false}).buildPrerequisitesReady,false);
+const signed={...env,LOADNOTE_ANDROID_KEYSTORE:'/private/upload.jks',LOADNOTE_ANDROID_KEYSTORE_PASSWORD:'never-output-password',LOADNOTE_ANDROID_KEY_ALIAS:'never-output-alias',LOADNOTE_ANDROID_KEY_PASSWORD:'never-output-key-password'};
+assert.equal(assess({...options,env:signed}).buildPrerequisitesReady,false);
+const good=assess({...options,env:signed,unsigned:false});assert.equal(good.buildPrerequisitesReady,true);
+assert(!/private|never-output/.test(JSON.stringify(good)));
+assert.equal(assess({...options,env:{...signed,LOADNOTE_ANDROID_KEYSTORE:'relative.jks'},unsigned:false}).buildPrerequisitesReady,false);
+assert.equal(assess({...options,unsigned:false}).buildPrerequisitesReady,false);
+assert.equal(assess({...options,env:signed,unsigned:false,isFile:()=>{throw Error('denied');}}).buildPrerequisitesReady,false);
+console.log('Android release preflight: read-only prerequisites, secret redaction and unsigned/signed separation passed');

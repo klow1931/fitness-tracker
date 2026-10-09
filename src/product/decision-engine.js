@@ -1,11 +1,11 @@
 /* Loadnote v2 decision engine — deterministic, read-only, evidence-backed. */
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./decision-readiness'),require('./block-decision-context'));
-  else root.LoadnoteDecisionEngine=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteReadiness,root.LoadnoteBlockDecisionContext);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness,BlockContext){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./training-blocks'),require('./decision-readiness'),require('./block-decision-context'),require('./decision-boundaries'));
+  else root.LoadnoteDecisionEngine=factory(root.LoadnoteCore,root.LoadnoteBlocks,root.LoadnoteReadiness,root.LoadnoteBlockDecisionContext,root.LoadnoteDecisionBoundaries);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Blocks,Readiness,BlockContext,Boundaries){
   'use strict';
-  if(!Core||!Blocks||!Readiness||!BlockContext)throw Error('Loadnote decision engine dependencies are required');
-  const VERSION=5;
+  if(!Core||!Blocks||!Readiness||!BlockContext||!Boundaries)throw Error('Loadnote decision engine dependencies are required');
+  const VERSION=6;
   const DEFAULT_POLICY=Object.freeze({
     maxEvidenceAgeDays:28,
     intervalTolerancePct:0.5,
@@ -57,6 +57,8 @@
     const evidence=competitionEvidence(state,lift,asOf,{retrospective,knownAt:options.knownAt,startDate:readinessSnapshot.windowStart});
     const finish=value=>BlockContext.contextualize(value,readinessSnapshot.block);
     const base={version:VERSION,lift,label:readiness.label,asOf,mode:retrospective?'current-corrected':'as-recorded',readiness:readiness.status,decision:'insufficient-evidence',decisionAllowed:false,reason:'',nextExposure:'Collect more evidence before making a directional training change.',watchNext:'Complete a fresh, well-mapped competition-lift exposure with usable load, reps and RPE.',evidenceWindowStart:readinessSnapshot.windowStart,evidence:evidence.slice(-3),signals:[]};
+    const boundary=Boundaries.assess(state,lift,{asOf,knownAt:options.knownAt,retrospective,startDate:readinessSnapshot.windowStart});
+    if(boundary.blocked){base.reason=boundary.reason;base.signals=boundary.signals;base.nextExposure='No loading direction is proposed. Review the reported restrictions or data issue; this model does not establish that the existing plan is safe.';base.watchNext='Resolve the boundary with appropriate qualified review or corrected records before requesting a new decision.';return finish(base);}
     if(readiness.status!=='ready'){
       base.reason=readiness.reasons[0]||'Decision readiness requirements are not met.';
       base.nextExposure='Keep the current plan unchanged by this model until the missing readiness evidence is resolved.';

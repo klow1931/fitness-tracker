@@ -25,7 +25,7 @@ assert.equal(Context.interpret({...base,blockType:'peaking'}).phase,'peaking');
 assert.equal(Context.interpret({...base,blockType:'deload'}).phase,'deload');
 assert.equal(Context.interpret({...base,blockType:'testing'}).phase,'testing');
 assert.equal(Context.interpret({...base,blockType:'custom'}).phase,'general');
-const regular=decide();assert.equal(regular.version,5);assert.equal(regular.decision,'increase');
+const regular=decide();assert.equal(regular.version,6);assert.equal(regular.decision,'increase');
 assert.equal(regular.blockContext.phase,'strength');
 const testing=decide({blockType:'general',progressionIntent:'testing'});
 assert.equal(testing.blockContext.phase,'testing');
