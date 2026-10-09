@@ -49,7 +49,7 @@ function reviewWorkout(){
     const comparison=window.LoadnoteIntent.compare(workout);if(comparison)add('p',`Planned vs completed: ${comparison.completedSets}/${comparison.plannedSets} planned sets represented · ${comparison.exactRate}% unchanged${comparison.status!=='as-planned'&&comparison.hasExplanation?' · change explained':''}.`);
     if(comparison&&comparison.status!=='as-planned'&&!comparison.hasExplanation){
       add('p','Your recorded work differs from the plan, but no reason is recorded. You can save as-is; Decisions may withhold progression conclusions until you explain the change.');
-      const explain=add('button','Add a reason for the change');explain.type='button';explain.className='btn-secondary';explain.onclick=()=>{closeWorkoutReview();const input=document.getElementById('session-deviation-reason');for(let parent=input?.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;input?.scrollIntoView({block:'center'});input?.focus();};
+      const explain=add('button','Add a reason for the change');explain.type='button';explain.className='btn-secondary';explain.onclick=()=>{closeWorkoutReview();window.LoadnoteTrainingExecutionUI?.openOptions?.();const input=document.getElementById('session-deviation-reason');for(let parent=input?.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;input?.scrollIntoView({block:'center'});input?.focus();};
     }
   }
   if(workoutEdit)add('p','This replaces the saved session. The previous version remains available from History → Recent workout changes.');

@@ -4,14 +4,17 @@ test('new drafts remove old saved recaps and repeated headers use the draft date
  await page.evaluate(()=>{data.workouts=[{id:'old',date:'2026-09-01',exercises:[{name:'Bench Press',type:'strength',sets:[{weight:100,reps:5,rpe:8}]}]}];showTab('workouts');showSubTab('workouts','wo-log');showWorkoutRecap(data.workouts[0],[],[],false);});
  await expect(page.locator('#workout-recap')).toBeVisible();await page.evaluate(()=>duplicateWorkout('old'));
  await expect(page.locator('#workout-recap')).toBeHidden();await expect(page.locator('#workout-recap')).toBeEmpty();
- await page.locator('#wo-date').fill('2026-09-25');await expect(page.locator('#training-cockpit')).toContainText('Repeated workout');await expect(page.locator('#training-cockpit')).not.toContainText('Sep 1, 2026');
+ await page.locator('#training-cockpit').getByRole('button',{name:'Workout options',exact:true}).click();
+ await page.locator('#wo-date').fill('2026-09-25');await expect(page.locator('#training-cockpit')).toContainText('Repeated workout · '+await page.evaluate(()=>formatDate('2026-09-25')));await expect(page.locator('#training-cockpit')).not.toContainText('Repeated workout · '+await page.evaluate(()=>formatDate('2026-09-01')));
  await page.evaluate(()=>{showWorkoutRecap(data.workouts[0],[],[],false);clearWorkoutForm(true);});await expect(page.locator('#workout-recap')).toBeHidden();await expect(page.locator('#workout-recap')).toBeEmpty();
 });
-test('changed planned work offers a direct reason editor without silently choosing a reason',async({page})=>{
+for(const initiallyOpen of [false,true])test('changed planned work opens the reason editor without choosing a reason · options initially '+(initiallyOpen?'open':'closed'),async({page})=>{
  await page.evaluate(()=>{fillWorkoutForm([{name:'Bench Press',type:'strength',sets:[{weight:100,reps:5,rpe:8}]}],'',false,{source:{type:'repeated-workout',referenceId:'demo',label:'Old workout'}});showTab('workouts');showSubTab('workouts','wo-log');});
- await page.locator('.set-reps').fill('3');await page.evaluate(()=>reviewWorkout());
+ await page.locator('.set-reps').fill('3');
+ if(initiallyOpen)await page.locator('#training-cockpit').getByRole('button',{name:'Workout options',exact:true}).click();
+ await page.evaluate(()=>reviewWorkout());
  await expect(page.locator('#workout-review')).toContainText('Decisions may withhold progression');await page.getByRole('button',{name:'Add a reason for the change',exact:true}).click();
- await expect(page.locator('#workout-review')).not.toBeVisible();await expect(page.locator('#session-deviation-reason')).toBeVisible();await expect(page.locator('#session-deviation-reason')).toBeFocused();await expect(page.locator('#session-deviation-reason')).toHaveValue('none');
+ await expect(page.locator('#workout-review')).not.toBeVisible();await expect(page.locator('body')).toHaveClass(/training-execution-options-open/);await expect(page.locator('#session-deviation-reason')).toBeVisible();await expect(page.locator('#session-deviation-reason')).toBeFocused();await expect(page.locator('#session-deviation-reason')).toHaveValue('none');
 });
 test('saved phase plan leads to its schedule control without scheduling automatically',async({page})=>{
  const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'},saved=P.save(state,P.prepare(state,config,args),{confirmed:true},{...args,id:'saved-demo'});

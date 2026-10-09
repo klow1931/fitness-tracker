@@ -19,6 +19,8 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Demo cleanup handoff checks
+        run: npx playwright test tests/browser/demo-cleanup.spec.js
       - name: Athlete journey acceptance
         run: npx playwright test tests/browser/athlete-journey.spec.js tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js
       - uses: actions/upload-artifact@v4

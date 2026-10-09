@@ -92,18 +92,19 @@
   syncViewportSoon();
  }
  function queue(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;update();});}
- function toggleOptions(){
+ function toggleOptions({scroll=true}={}){
   if(!active)return;
   optionsOpen=!optionsOpen;
   document.body.classList.toggle('training-execution-options-open',optionsOpen);
   window.refreshTrainingCockpit?.();
   syncViewportSoon();
-  if(optionsOpen){
+  if(optionsOpen&&scroll){
    const target=document.querySelector('#workout-log-card .execution-secondary');
    requestAnimationFrame(()=>target?.scrollIntoView({block:'nearest',behavior:'smooth'}));
   }
  }
  function closeOptions(){if(!optionsOpen)return;optionsOpen=false;document.body.classList.remove('training-execution-options-open');window.refreshTrainingCockpit?.();syncViewportSoon();}
+ function openOptions(){if(active&&!optionsOpen)toggleOptions({scroll:false});}
  function init(){
   decorateSecondary();update();
   const card=document.getElementById('workout-log-card');
@@ -138,7 +139,7 @@
   window.addEventListener('resize',syncViewportSoon,{passive:true});
   window.visualViewport?.addEventListener('resize',syncViewportSoon,{passive:true});
  }
- window.LoadnoteTrainingExecutionUI={init,refresh:update,isActive:()=>active,optionsOpen:()=>optionsOpen,toggleOptions,closeOptions,rowSnapshot};
+ window.LoadnoteTrainingExecutionUI={init,refresh:update,isActive:()=>active,optionsOpen:()=>optionsOpen,toggleOptions,openOptions,closeOptions,rowSnapshot};
  window.refreshTrainingExecution=update;
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
