@@ -4,7 +4,7 @@
  'use strict';
  const SOURCES={resistance:{title:'ACSM resistance training position stand (2026)',url:'https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/'},hypertrophy:{title:'IUSCA hypertrophy position stand (2021)',url:'https://doi.org/10.47206/ijsc.v1i1.81'},power:{title:'NSCA weightlifting for sports performance (2023)',url:'https://pubmed.ncbi.nlm.nih.gov/36952649/'}};
  const clean=q=>String(q??'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().slice(0,500);
- const health=q=>/\b(pain|hurt|injur|torn|tear|diagnos|rehab|achilles|dizz|faint|numb|tingl|blackout|lightheaded)\w*\b|\b(light.headed|chest (pressure|tightness|discomfort)|short(ness)? of breath|(?:difficulty|trouble) breathing|can(?:not|'t) breathe)\b/i.test(String(q||'').replace(/[’‘]/g,"'"));
+ const health=q=>/\b(pain|hurt|injur|torn|tear|diagnos|rehab|achilles|dizz|faint|tingl|blackout|lightheaded)\w*\b|\b(numb(?:ness)?|light.headed|chest (pressure|tightness|discomfort)|short(ness)? of breath|(?:difficulty|trouble) breathing|can(?:not|'t) breathe)\b/i.test(String(q||'').replace(/[’‘]/g,"'"));
  function kind(q){
   q=String(q||'').replace(/[’‘]/g,"'");
   if(/\b(suicid\w*|kill myself|hurt myself|harm myself|end my life|don't want to live|do not want to live)\b/i.test(q))return 'urgent-support';

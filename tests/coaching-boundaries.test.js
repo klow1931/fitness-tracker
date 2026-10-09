@@ -33,5 +33,7 @@ assert.match(Coach.answer(state,'What should I do?',{asOf:opts.asOf,history:[{ro
 assert.match(Coach.answer(state,'ordinary words '.repeat(45)+'I don’t want to live',{asOf:opts.asOf}).text,/988/);
 assert.equal(Coach.answer(state,'I can’t breathe. Should I add weight?',{asOf:opts.asOf}).intent.topic,'health');
 assert.match(Coach.answer(state,'What about chest supported rows?',{asOf:opts.asOf})?.text||'',/./,'ordinary movement question is not symptom clearance');
+assert.equal(require('../src/product/coach-support').health('Explain my squat numbers'),false);
+assert.equal(require('../src/product/coach-support').health('There is numbness in my hand'),true);
 assert.equal(JSON.stringify(state),before);
 console.log('Coaching boundaries: effort, outliers, identities, restrictions, chronology, routing priority and immutability passed');
