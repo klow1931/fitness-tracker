@@ -25,6 +25,7 @@
   const q=clean(question);let type=kind(String(question||''));
   const last=history.slice(-8).filter(r=>r.role==='user').at(-1);
   const prior=last?kind(clean(last.content)):null;
+  if(!type&&prior==='urgent-support'&&/^(why\??|tell me more\.?|what should i do\??|how do i start\??)$/i.test(q))type='urgent-support';
   if(!type&&['motivation','setback'].includes(prior)&&/^(low energy|energy|tired|time|not enough time|consistency)[.!]*$/i.test(q))type='barrier';
   if(!type&&/^(why\??|tell me more\.?|what should i do\??|how do i start\??)$/i.test(q)&&last){const prior=kind(clean(last.content));if(['alone','setback','confidence','motivation'].includes(prior))type=prior;}
   if(!type||type==='health')return null;

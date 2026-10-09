@@ -25,6 +25,11 @@ for(const q of ['My hand is numb. Should I increase squat weight?','My fingers a
  const reply=Coach.answer(state,q,{asOf:opts.asOf});assert.equal(reply.intent.topic,'health',q);assert.equal(reply.readOnly,true);assert.match(reply.source,/^Shared coaching/);assert.match(reply.text,/cannot diagnose/);assert.equal(AI.eligible(q,reply),false);
 }
 const crisis=Coach.answer(state,'I want to kill myself. How is my squat progressing?',{asOf:opts.asOf});assert.match(crisis.text,/988/);assert.match(crisis.source,/^Shared coaching/);
+assert.equal(AI.eligible('I want to kill myself',crisis),false);
+assert.equal(AI.eligible('Encourage me',crisis),false);
+assert.equal(AI.eligible('I don’t want to live',null),false);
+assert.equal(AI.eligible('Why?',null,[{role:'user',content:'I want to kill myself'}]),false);
+assert.match(Coach.answer(state,'What should I do?',{asOf:opts.asOf,history:[{role:'user',content:'I want to kill myself'}]}).text,/988/);
 assert.match(Coach.answer(state,'ordinary words '.repeat(45)+'I don’t want to live',{asOf:opts.asOf}).text,/988/);
 assert.equal(Coach.answer(state,'I can’t breathe. Should I add weight?',{asOf:opts.asOf}).intent.topic,'health');
 assert.match(Coach.answer(state,'What about chest supported rows?',{asOf:opts.asOf})?.text||'',/./,'ordinary movement question is not symptom clearance');
