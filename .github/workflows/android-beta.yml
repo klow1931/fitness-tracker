@@ -1,0 +1,68 @@
+name: Loadnote Android beta
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-beta-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  beta-emulator:
+    name: Installable beta and offline emulator acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check:native
+      - name: Build and verify separate debug beta
+        run: npm run build:android:beta
+      - name: Enable KVM for emulator
+        run: |
+          sudo chown "$USER" /dev/kvm
+          sudo chmod 660 /dev/kvm
+      - name: Offline native athlete journey and lifecycle acceptance
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: ANDROID_SERIAL=emulator-5554 npm run test:android:emulator -- --disposable-beta
+      - name: Upload installable beta only after acceptance succeeds
+        uses: actions/upload-artifact@v4
+        with:
+          name: loadnote-android-beta-${{ github.run_number }}
+          path: |
+            build-android-beta/*.apk
+            build-android-beta/SHA256SUMS.txt
+            build-android-beta/build-report.json
+            build-android-emulator/acceptance.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload synthetic diagnostic evidence (no signing keys)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-beta-evidence-${{ github.run_number }}
+          path: |
+            build-android-beta/build.log
+            build-android-emulator/
+          if-no-files-found: warn
+          retention-days: 7

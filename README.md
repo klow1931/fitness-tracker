@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.20.1 · Development build.**
+**v3.21.0 · Development build.**
+
+Android-first beta: [Windows emulator installation and safe updates](docs/android-beta-windows.md). The **Loadnote Android beta** workflow publishes a separate debug-signed `.beta` APK only after offline emulator acceptance. Production release/iOS signing and physical-device acceptance remain separate gates. [Free-first monetization options](docs/monetization-options.md) are proposals only; no ads or billing SDK is installed.
 
 Home, Coach and Decisions share actionable setup steps, saved-session briefings and corrected weekly observations. Athlete intake guides missing setup rather than leaving a disabled control. Exercise discovery and session constraints connect existing reviewed tools. Android/Google Play is the first distribution priority; signed release and physical-device acceptance remain outstanding. See [v3.20 notes](docs/releases-v3.20.md) and the [athlete acceptance plan](docs/athlete-journey-acceptance.md).
 

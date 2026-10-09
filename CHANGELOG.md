@@ -1,3 +1,10 @@
+# v3.21.0 — Installable Android beta and emulator acceptance
+
+- Separate Loadnote Beta debug app (.beta sandbox), verified development signature and downloadable APK after emulator acceptance.
+- Offline native WebView intake, reviewed workout save, real filesystem-cache backup fingerprint, cancelled/confirmed import, activity recreation, force-stop and same-certificate update regressions.
+- Windows emulator installation and safe-update guide; explicit distinction between synthetic emulator evidence and physical keyboard, picker/share, accessibility and store approval.
+- Free-first monetization decision notes; no advertising SDK, tracking, billing or new online service added.
+
 # v3.20.1 — Bottom navigation recovery
 
 - Bottom navigation no longer disappears when browser chrome, rotation or zoom reduces the visual viewport without an active keyboard field.

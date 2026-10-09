@@ -1,0 +1,27 @@
+// Installable development artifact. Never uses or uploads production signing.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync,spawnSync}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),output=path.join(root,'build-android-beta'),sdk=process.env.ANDROID_HOME||process.env.ANDROID_SDK_ROOT;
+if(!sdk)throw Error('Android SDK required; use the Android beta GitHub workflow or Android Studio.');
+const android=path.join(root,'android'),apk=path.join(android,'app/build/outputs/apk/debug/app-debug.apk');
+const analyzer=path.join(sdk,'cmdline-tools/latest/bin/apkanalyzer'),signer=path.join(sdk,'build-tools/35.0.0/apksigner');
+for(const tool of [analyzer,signer])if(!fs.existsSync(tool))throw Error('Missing SDK tool '+path.basename(tool));
+fs.mkdirSync(output,{recursive:true});fs.rmSync(apk,{force:true});
+const java=spawnSync('java',['-version'],{encoding:'utf8'});
+if(java.status!==0||!/(?:version|openjdk) "?21[.\s"]/.test((java.stderr||'')+(java.stdout||'')))throw Error('JDK 21 required');
+const result=spawnSync('bash',['./gradlew',':app:assembleDebug',':app:assembleDebugAndroidTest','--no-daemon','--stacktrace'],{cwd:android,encoding:'utf8',maxBuffer:64*1024*1024,timeout:25*60*1000});
+const log=(result.stdout||'')+'\n'+(result.stderr||'');fs.writeFileSync(path.join(output,'build.log'),log);process.stdout.write(log);
+if(result.error||result.status!==0)throw result.error||Error('Android beta compilation failed');
+execFileSync('unzip',['-t',apk]);
+const manifest=execFileSync(analyzer,['manifest','print',apk],{encoding:'utf8'});
+const files=execFileSync('unzip',['-Z1',apk],{encoding:'utf8'}).trim().split('\n');
+const config=JSON.parse(execFileSync('unzip',['-p',apk,'assets/capacitor.config.json'],{encoding:'utf8'}));
+const dex=execFileSync('unzip',['-p',apk,'classes.dex'],{maxBuffer:64*1024*1024});
+const signature=spawnSync(signer,['verify','--print-certs',apk],{encoding:'utf8'});
+if(signature.error)throw signature.error;
+const report=require('./verify-android-bundle').verifyAndroidBundle({manifest,files,config,dexMagic:dex.subarray(0,4).toString('hex'),signatureVerified:signature.status===0,signatureOutput:(signature.stdout||'')+(signature.stderr||'')},{development:true});
+const filename='loadnote-'+require('../package.json').version+'-android-beta.apk';
+const sha256=crypto.createHash('sha256').update(fs.readFileSync(apk)).digest('hex');
+fs.copyFileSync(apk,path.join(output,filename));
+fs.writeFileSync(path.join(output,'build-report.json'),JSON.stringify({...report,filename,apkSha256:sha256,signingContinuity:'CI debug certificates are ephemeral; do not assume cross-run upgrades'},null,2));
+fs.writeFileSync(path.join(output,'SHA256SUMS.txt'),sha256+'  '+filename+'\n');
+console.log('Installable debug beta verified. Separate .beta sandbox; no production signing or store readiness.');

@@ -1,6 +1,6 @@
 {
   "name": "loadnote",
-  "version": "3.20.1",
+  "version": "3.21.0",
   "private": true,
   "description": "Loadnote — adaptive strength-training log",
   "scripts": {
@@ -16,7 +16,9 @@
     "native:android": "cap open android",
     "native:ios": "cap open ios",
     "build:ios:unsigned": "node scripts/build-ios-unsigned.js",
-    "build:android:unsigned": "node scripts/build-android-unsigned.js"
+    "build:android:unsigned": "node scripts/build-android-unsigned.js",
+    "build:android:beta": "node scripts/build-android-beta.js",
+    "test:android:emulator": "node scripts/test-android-emulator.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

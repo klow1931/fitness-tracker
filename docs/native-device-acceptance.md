@@ -2,6 +2,8 @@
 
 **Status: NOT RUN on physical devices.** Automated browser tests use a mocked native bridge; compilation jobs do not launch an app. Do not mark a row passed from those results. Use synthetic training for destructive/reinstall checks, retaining an external backup and the original production data on its source device.
 
+v3.21 adds a real packaged Android WebView/Filesystem emulator gate and a separate installable debug beta. See `build-android-emulator/acceptance.json` in successful beta artifacts for evidence. DOM-driven emulator intake/logging, cache JSON/reviewed import, activity recreation, force-stop and same-certificate install do **not** complete physical-device, actual soft-keyboard/touch, Android Back, external picker/share or TalkBack rows below. Compilation-only workflows still do not launch the app.
+
 Create a separate result record per platform: app version/build, commit, device model, OS version, tester, date, installation/signing channel, pass/fail/blocked, screenshot or log reference and issue link. Omit personal training content from shared evidence. Confirm approved developer identity and signing before installation; this release does not provision signing or distribute a build.
 
 | Test | Procedure | Pass evidence | Current result |
