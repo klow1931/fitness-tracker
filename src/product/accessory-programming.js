@@ -68,5 +68,11 @@
   return result;
  }
  function warnings(accessories){return accessories.length?['Accessories are athlete-selected proposals with explicit equipment and starting loads, not diagnosed weaknesses or individually validated doses.','Accessory time includes 3 minutes per movement plus 3 minutes per strength set or the entered conditioning duration. Main-lift work uses its existing time allowance.','Accessory loads/reps never increase automatically across weeks. Deload reduces accessory sets/conditioning time; meet peak, taper and event weeks omit accessories.','Accessory group totals are direct assigned-group counts, not complete muscle stimulus, fatigue or recovery estimates. Review overlap with primary/secondary work.']:[];}
- return {POLICY,GROUPS,PURPOSES,EQUIPMENT,LIBRARY,normalize,context,attach,exercises,minutes,workload,progression,warnings};
+ function explanation(exercise){
+  const text=exercise.progression||'',caps=(exercise.sets||[]).map(s=>s.targetRpe).filter(Number.isFinite),cap=caps.length?Math.min(...caps):null;
+  // Presentation only: frozen reviewed records retain their original fingerprint.
+  if(exercise.role==='accessory'&&cap!=null)return text.replace(/at or below RPE [0-9]+(?:\.[0-9]+)?/, 'at or below RPE '+cap);
+  return text;
+ }
+ return {POLICY,GROUPS,PURPOSES,EQUIPMENT,LIBRARY,normalize,context,attach,exercises,minutes,workload,progression,explanation,warnings};
 });

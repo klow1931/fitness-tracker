@@ -42,6 +42,7 @@ const id='phase:p:w1:d0',scheduled=S.create([],{date:'2026-10-06',name:'Reviewed
 const state={workouts:[],exerciseCatalog:[{id:source.exerciseId,name:source.name},{id:target.exerciseId,name:target.name}],scheduledSessions:scheduled,phasePrograms:[{id:'p',config:{accessories:[{exerciseId:'row'}]}}]};
 const before=JSON.stringify(state),args={confirmed:true,asOf:'2026-10-05',expectedRevisionAt:plan.capturedAt,now};
 const updated=A.applySchedule(state,id,trim,args);assert.equal(updated.scheduledSessions[0].revisions.length,2);assert.equal(JSON.stringify(state),before);
+assert.match(updated.scheduledSessions[0].revisions.at(-1).context.reason,/omitted Cable row/);assert.doesNotMatch(updated.scheduledSessions[0].revisions.at(-1).context.reason,/omitted row\./);
 assert.deepEqual(updated.phasePrograms,state.phasePrograms);assert.equal(S.list(updated.scheduledSessions)[0].prescription.plannedExercises.length,1);
 assert.throws(()=>A.applySchedule(state,id,trim,{...args,draftOpen:true}));assert.throws(()=>A.applySchedule(state,id,trim,{...args,asOf:'2026-10-07'}));assert.throws(()=>A.applySchedule(updated,id,trim,args));
 assert.throws(()=>A.applySchedule(state,id,A.timePreview(plan,{minutes:60}),args));

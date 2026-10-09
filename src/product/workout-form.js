@@ -285,6 +285,7 @@
         if (!confirm('Clear the workout form? Unsaved sets will be lost.')) return;
       }
       pendingProgramSession = null;
+      clearWorkoutRecap();
       resetSessionIntent();
       resetSessionEdit();
       stopRest();

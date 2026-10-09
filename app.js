@@ -63,7 +63,9 @@
     function updateOnboardingUI() {
       const card = document.getElementById('onboarding-card');
       if (!card) return;
-      card.classList.toggle('hidden', !!data.onboardingDismissed);
+      let essentialsComplete=false;
+      try{essentialsComplete=!!LoadnoteProgrammingProfile.current(data.programmingProfiles||[])&&(data.workouts||[]).some(w=>w.date<=today());}catch{}
+      card.classList.toggle('hidden', !!data.onboardingDismissed||essentialsComplete);
     }
 
     function dismissOnboarding() {
@@ -293,6 +295,7 @@
 
     let bwChart = null;
     function renderDashboard() {
+      updateOnboardingUI();
       window.renderSchedule?.();
       window.renderTodayTraining?.();
       window.LoadnoteTrainingHubUI?.render();

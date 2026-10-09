@@ -83,7 +83,7 @@
   let scheduled=null,timing=null;
   try{scheduled=typeof pendingScheduledSession!=='undefined'?pendingScheduledSession:null;timing=typeof pendingSessionTiming!=='undefined'?pendingSessionTiming:null;}catch{}
   let record=null;if(scheduled)try{record=window.LoadnoteSchedule?.list(data.scheduledSessions||[]).find(x=>x.id===scheduled.id)||null;}catch{}
-  const p=plan(),name=record?.name||p?.source?.label||document.getElementById('session-goal')?.value.trim()||'Workout';
+  const p=plan(),name=record?.name||(p?.source?.type==='repeated-workout'?'Repeated workout · '+formatDate(document.getElementById('wo-date').value):p?.source?.label)||document.getElementById('session-goal')?.value.trim()||'Workout';
   let program='';
   if(scheduled&&window.LoadnoteProgramLifecycle)try{
    const report=LoadnoteProgramLifecycle.inspect(data,{asOf:today(),draft:null,draftOpen:true});

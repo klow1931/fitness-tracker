@@ -53,6 +53,8 @@
       if(source)return {version:1,policy:POLICY,status:'meet-timeline',profile:summary,primaryAction:'meet',title:'Continue your meet-prep cycle',reason:'Your lift setup is already reviewed. Choose the event date next; Decisions calculates the available prep length and phase allocation automatically.',sourceId:source.id};
       return {version:1,policy:POLICY,status:'meet-setup',profile:summary,primaryAction:'phase-meet',title:'Build your meet-prep cycle',reason:'One guided path: confirm lift setup, then choose the event. Decisions calculates prep length, accumulation, strength, peak and taper from that timeline. Your profile event date is only a default.'};
     }
+    const reviewedPhase=phases.find(p=>!cycles.some(c=>c.sourceProgram?.id===p.id||c.config?.sourceProgramId===p.id));
+    if(reviewedPhase)return {version:1,policy:POLICY,status:'reviewed-phase',profile:summary,primaryAction:'review-phase',sourceId:reviewedPhase.id,title:'Your reviewed program is ready to schedule',reason:'Your saved targets remain unchanged. Review the plan and explicitly schedule it in Calendar when ready; saving alone does not schedule sessions.'};
     return {version:1,policy:POLICY,status:'phase',profile:summary,primaryAction:'phase',title:'Build your next training cycle',reason:'Use the main program designer for accumulation, strength and deload. The old 4-week builder is kept only as an alternate return/base tool.'};
   }
   return {POLICY,days,weekStartOnOrAfter,weeksToEvent,profileSummary,route};

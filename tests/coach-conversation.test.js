@@ -17,4 +17,13 @@ assert.match(C.answer(state,'What does RPE mean?',options).text,/Missing RPE is 
 assert.match(C.answer(state,'My Achilles hurts with pain',options).text,/cannot diagnose/);
 assert.equal(C.answer(state,'Who won the election?',options),null);
 assert.equal(JSON.stringify(state),original);
+const historyReply=C.answer(state,'How did my bench training change across my last three workouts?',options);
+assert.equal(historyReply.source,'Recorded workout history');assert.match(historyReply.text,/Last 3 recorded workouts/);assert.match(historyReply.text,/2026-09-07/);assert.match(historyReply.text,/lb/);assert.match(historyReply.text,/no next-session load change/);assert.equal(historyReply.readOnly,true);
+assert.equal(C.answer(future,'How did my bench training change across my last three workouts?',options).text,historyReply.text);
+assert.match(C.answer({...state,exerciseRoles:[]},'How did my bench training change across my last three workouts?',options).text,/Confirm one competition/);
+const effortHistory=[{role:'user',content:'I got fewer bench reps at the same weight today and RPE was higher. What should I consider?'}];
+for(const q of ['My recent bench lift evidence','My recent lift evidence']){const reply=C.answer(state,q,{...options,history:effortHistory});assert.equal(reply.intent.lift,'bench');assert.equal(reply.source,'Current corrected lift evidence');assert.match(reply.text,/Competition Bench/);}
+assert.match(C.answer(state,'My recent lift evidence',{...options,history:[...effortHistory,{role:'user',content:'Hello'}]}).text,/Which lift/);
+assert.equal(C.answer(state,'My arm feels numb after bench. Should I add weight next time?',options).intent.topic,'health');
+assert.equal(JSON.stringify(state),original);
 console.log('Local Coach conversation: mapping, bounded follow-ups, limits, units, future exclusion and immutability passed');

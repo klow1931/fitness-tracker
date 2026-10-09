@@ -9,11 +9,12 @@
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
   if(Support?.health(q))return 'health';
+  if(liftOf(q)&&!/\bapproved\b/i.test(q)&&/\b(last|recent|previous|history)\b/i.test(q)&&/\b(workouts?|sessions?|training)\b/i.test(q)&&/\b(compare|change\w*|how|history)\b/i.test(q))return 'history';
   if(/\b(training goal|training priorit|primary goal|secondary goal|practice schedule|sport schedule|conditioning|game days)\w*\b/i.test(q))return 'training-context';
   const domain=Knowledge?.classify(q);if(domain)return domain;
   if(/\b(accessor|biceps|triceps|upper back|quad|core)\w*\b/i.test(q))return 'accessories';
   if(/\b(training max|1rm|one.rep max|estimated capacity|benchmark)\b/i.test(q))return 'benchmarks';
-  if(/\b(progress|increase|add weight|plateau|stronger|trend|ready|readiness)\w*\b/i.test(q))return 'evidence';
+  if(/\b(progress|increase|add weight|plateau|stronger|trend|ready|readiness|evidence)\w*\b/i.test(q))return 'evidence';
   if(/\b(rpe|effort|failure)\b/i.test(q))return 'effort';
   if(/\b(program|phase|week|deload|taper|peak|meet)\w*\b/i.test(q))return 'program';
   if(/\b(why.*set|why.*load|why.*weight|last time|previous)\b/i.test(q))return 'session';
@@ -28,7 +29,8 @@
   const muscles=Object.entries(Knowledge?.MUSCLES||{}).filter(([k,v])=>new RegExp('\\b'+(k==='quadriceps'?'quad\\w*':v.toLowerCase())+'\\b','i').test(q)).map(([k])=>k);
   const muscleProgression=!explicitLift&&prior?.topic==='hypertrophy'&&/^(should i |do i |can i )?(add|increase) (sets|weight|load)\??$/i.test(q);
   const sportProgression=!explicitLift&&['athlete','weightlifting','training-context'].includes(prior?.topic)&&/^(should i |do i |can i )?(add|increase) (sets|weight|load)\??$/i.test(q);
-  return {question:q,lift:explicitLift||(follow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
+  const evidenceFollow=explicitTopic==='evidence'&&/\brecent (lift )?evidence\b/i.test(q)&&!explicitLift;
+  return {question:q,lift:explicitLift||(follow||evidenceFollow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
  function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now}={}){
   // Safety boundaries precede movement clarification, educational routing and AI.
@@ -38,6 +40,17 @@
   if(Support?.health(String(question||'')))return {text:'I cannot diagnose pain or decide that an injured area is safe to load from your log. Do not use this chat as clearance to continue training through symptoms. Describe the location, onset and what aggravates it to a qualified clinician. If symptoms are severe or you may be in immediate danger, contact local emergency services now. I will not prescribe injury rehabilitation or a substitute training dose.',source:'Shared coaching · capability limit',readOnly:true,evidence:[],intent:{topic:'health'},actions:[{kind:'intake',label:'Review athlete intake'}]};
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
+  // Recorded performance comparison is not an approved-program-change review.
+  if(intent.topic==='history'){
+   try{
+    const snapshot=Readiness.snapshot(state,{asOf,retrospective:true}),row=snapshot.lifts[intent.lift],mapped=row.relatedExercises.filter(e=>e.role==='competition');
+    if(mapped.length!==1)return {text:'Confirm one competition '+intent.lift+' mapping before comparing its recorded workouts.',source:'Recorded workout history',readOnly:true,evidence:[],intent};
+    const workouts=Readiness.workoutsAt(state,asOf,null,true).workouts.filter(w=>(w.exercises||[]).some(e=>e.exerciseId===mapped[0].exerciseId&&e.type!=='cardio'&&e.type!=='practice'&&e.trackBy!=='duration')).slice(-3);
+    const weight=kg=>Number.isFinite(kg)?Math.round(kg*(unit==='lb'?2.2046226218:1)*100)/100+' '+(unit==='lb'?'lb':'kg'):'unknown load';
+    const lines=workouts.map(w=>w.date+': '+w.exercises.filter(e=>e.exerciseId===mapped[0].exerciseId&&e.type!=='cardio'&&e.type!=='practice'&&e.trackBy!=='duration').flatMap(e=>(e.sets||[]).map(s=>(Number.isInteger(s.reps)&&s.reps>0?s.reps+' reps':'unknown reps')+' × '+weight(s.weight)+' · '+(Number.isFinite(s.rpe)&&s.rpe>=1&&s.rpe<=10?'RPE '+s.rpe:'RPE unknown'))).join(' / '));
+    return {text:row.competitionExercise+' — '+(lines.length?'Last '+lines.length+' recorded workouts as of '+asOf+'. '+lines.join('; ')+'. ':'No matching recorded workouts through '+asOf+'. ')+'This compares logged work, not a tested max or proof of strength change. Different reps or effort are not equivalent performance; no next-session load change is prescribed.',source:'Recorded workout history',readOnly:true,evidence:workouts,intent};
+   }catch{return {text:'I could not validate the recorded lift history. Review exercise mappings and data health before interpreting it; no change is proposed.',source:'Recorded workout history unavailable',readOnly:true,evidence:[],intent};}
+  }
   if(intent.topic!=='health'){
    const weekly=(typeof module==='object'&&module.exports?require('./weekly-coaching'):globalThis.LoadnoteWeeklyCoaching)?.answer(state,intent.follow?intent.referenceQuestion:q,{asOf,unit,now});if(weekly)return {...weekly,intent};
    const workout=(typeof module==='object'&&module.exports?require('./workout-brief'):globalThis.LoadnoteWorkoutBrief)?.answer(state,q,{asOf,unit,now});if(workout)return {...workout,intent};

@@ -95,7 +95,7 @@
   if(preview.kind==='replacement'&&[preview.source,preview.target].some(m=>!(state.exerciseCatalog||[]).some(e=>e.id===m.exerciseId&&e.name===m.name)))throw Error('Movement identity changed; review the current catalog mapping');
   if(preview.kind==='replacement'){const profile=typeof module==='object'&&module.exports?require('./programming-profile'):globalThis.LoadnoteProgrammingProfile;profile?.assessIntake(profile.current(state.programmingProfiles||[])?.context,[preview.target.exerciseId]);}
   const prescription=approve(session.prescription,preview,{confirmed,now});
-  record.revisions.push({recordedAt:now,context:{...clone(latest.context),prescription,reason:('Adaptive '+preview.kind+' review: '+(preview.kind==='time'?'omitted '+preview.omittedExerciseIds.join(', '):preview.source.name+' → '+preview.target.name)+'. '+preview.notice).slice(0,500)}});
+  record.revisions.push({recordedAt:now,context:{...clone(latest.context),prescription,reason:('Adaptive '+preview.kind+' review: '+(preview.kind==='time'?'omitted '+preview.omittedExerciseIds.map(id=>latest.context.prescription.plannedExercises.find(e=>e.exerciseId===id)?.name||'optional accessory').join(', '):preview.source.name+' → '+preview.target.name)+'. '+preview.notice).slice(0,500)}});
   return {...state,scheduledSessions:Schedule.validate(sessions)};
  }
  return {EQUIPMENT,preferences,movement,deviceProfile,alternatives,estimate,timePreview,replacementPreview,approve,optionalIds,applySchedule};

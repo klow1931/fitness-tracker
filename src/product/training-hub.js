@@ -27,7 +27,7 @@
   else if(weekly.status==='waiting')review={label:'Weekly review',detail:'Available after the program week ends '+weekly.through,available:false};
   else if(weekly.status==='unsupported')review={label:'Open program review',detail:'Use the dedicated '+(weekly.program.kind==='sport-program'?'sport':'hypertrophy')+' review.',available:true};
   else if(weekly.status==='ambiguous')review={label:'Choose a program to review',detail:'Overlapping programs are reviewed separately.',available:true};
-  else review={label:'Weekly review',detail:weekly.status==='invalid'?'Evidence needs review; no change is proposed.':'Schedule a supported program to connect planned and recorded work.',available:weekly.status==='invalid'};
+  else review={label:'Weekly review',detail:weekly.status==='invalid'?'Evidence needs review; no change is proposed.':hasPlan?'This program uses its dedicated review; inspect planned and recorded work in Calendar and training history. Automatic weekly changes are not supported for every program type.':'Schedule a supported program to connect planned and recorded work.',available:weekly.status==='invalid'};
   return {steps,primary,review,planner,lifecycle,weeklyStatus:weekly.status,started:logs.length>0,week:Week.inspect(state,{asOf,now})};
  }
  return {inspect};
