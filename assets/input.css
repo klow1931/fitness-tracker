@@ -1,3 +1,4 @@
+/* Historical input for the approved vendored Tailwind 3 baseline; no compiler runs during builds. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

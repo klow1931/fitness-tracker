@@ -13,11 +13,17 @@ Audit remediation release. Schema remains 32; existing kg storage, workout ident
 
 ## Server hardening
 
+Static routing now validates decoded segments and the resolved real path against the public allowlist. Encoded slash/backslash traversal and public-directory symlinks cannot expose backend, configuration or account files. Regression tests cover the reproduced backend-source leak and synthetic private-file/symlink targets.
+
 Logout records a session revocation durably before reporting success. Replaying its cookie or bearer token is rejected, including after restart. Invalid or corrupt revocation storage fails closed. The default revocation file is `<account-store-path>.revocations.json`; set `LOADNOTE_SESSION_REVOCATIONS_PATH` to override. Preserve this file across deploys and keep it writable only by the service account. This file adapter supports one process; replicated deployments require a transactional shared adapter for accounts, sync and revocations.
 
 Paid Coach and realtime voice setup share limits: 6 upstream calls/account/minute, 100/account/UTC day, 1,000 globally/UTC day, and 4 concurrent upstream calls. Override with positive integers `LOADNOTE_AI_REQUESTS_PER_MINUTE`, `LOADNOTE_AI_REQUESTS_PER_DAY`, `LOADNOTE_AI_GLOBAL_REQUESTS_PER_DAY`, `LOADNOTE_AI_MAX_CONCURRENT`. Invalid settings fail startup. Limits apply before upstream fetch, include provider failures and hold concurrency through response parsing. Unauthenticated development calls use socket IP, not untrusted forwarded headers. Limits are process-local and reset on restart; they are not a durable monetary budget. Use provider account spending limits and shared durable quotas for a public multi-instance service. Realtime session creation limits do not cap subsequent audio streaming spend.
 
 Baseline CSP blocks plugins, foreign base URLs, arbitrary script hosts and backend framing. It permits legacy inline handlers, selected CDN scripts, HTTPS/WSS connections for configured providers/model downloads, and WebAssembly compilation. It is intentionally not a strict XSS-proof CSP; eliminating inline handlers and pinning every optional external runtime is a separate migration. Public unexpected server failures no longer expose internal filesystem/error details.
+
+## Dependency and asset builds
+
+The npm audit found nine build-tool advisories, including an unpatched braces dependency in the Tailwind 3 compiler chain. That executable development chain is removed. `assets/tailwind-baseline.css` preserves the approved 3.4.17-generated utility CSS byte for byte under the included MIT license, verified by SHA-256 during `npm run build:assets`; current app layouts are unchanged. That command restores the baseline and copies locked Chart.js assets. Historical `assets/input.css` and `tailwind.config.js` are provenance, not executed build steps. Define future style additions in `styles.css` or `energy.css`. Replacing the utility baseline/compiler requires a separate browser/WebView compatibility and layout review. The remaining brace-expansion dependency is updated to its patched release. No npm audit finding is hidden with an exception or omitted-dev-only check.
 
 ## Android release preparation
 

@@ -2,7 +2,7 @@
   "name": "loadnote",
   "version": "3.22.0",
   "private": true,
-  "description": "Loadnote \u2014 adaptive strength-training log",
+  "description": "Loadnote — adaptive strength-training log",
   "scripts": {
     "start": "node backend/server.js",
     "check": "node scripts/check.js",
@@ -33,7 +33,6 @@
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
     "chart.js": "4.4.1",
-    "playwright": "1.62.1",
-    "tailwindcss": "3.4.17"
+    "playwright": "1.62.1"
   }
 }

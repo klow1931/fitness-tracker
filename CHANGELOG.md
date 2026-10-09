@@ -2,6 +2,8 @@
 
 - Use standard pound plates in imperial plate calculations; preserve kg training storage.
 - Compare nutrition imports by date, ignoring migration-only IDs, and count missing/duplicate identities without collapsing rows.
+- Canonicalize static-file routing and reject encoded traversal and symlink escapes before reading files.
+- Remove the vulnerable Tailwind 3 build chain while preserving its approved CSS output byte for byte; update the remaining vulnerable brace-expansion dependency.
 - Persist logout revocations across restarts; reject replayed cookie and bearer sessions and fail closed on corrupt revocation storage.
 - Bound paid AI setup calls per account/minute/day and globally, with shared concurrency limits, Retry-After responses and leases covering response parsing.
 - Escape legacy goal/program/advice text and pass imported IDs through data attributes; retain numeric and string identity compatibility.

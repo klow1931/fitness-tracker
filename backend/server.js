@@ -18,6 +18,7 @@ const {createFileAccountStore}=require('./account-store');
 const {createOidc}=require('./oidc');
 const {createSessionRevocations}=require('./session-revocations');
 const {createRequestLimits}=require('./request-limits');
+const {resolveStaticFile}=require('./static-files');
 const {createFileSyncStore}=require('./sync-store');
 const Sync=require('../src/product/sync-model');
 const CoachGateway=require('./coach-gateway');
@@ -144,10 +145,8 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   } finally {clearTimeout(timeout);lease.release();}
  }
  function staticFile(req,res,pathname){
-  const relative=pathname==='/'?'index.html':decodeURIComponent(pathname).replace(/^[/\\]+/,'');
-  if(!STATIC_ROOT_FILES.has(relative)&&!STATIC_PREFIXES.some(prefix=>relative.startsWith(prefix)))return send(req,res,404,{error:'Not found'});
-  const file=path.resolve(ROOT,relative),rel=path.relative(ROOT,file);if(rel.startsWith('..')||path.isAbsolute(rel))return send(req,res,404,{error:'Not found'});
-  if(!fs.existsSync(file)||!fs.statSync(file).isFile())return send(req,res,404,{error:'Not found'});
+  const file=resolveStaticFile(ROOT,pathname,{rootFiles:STATIC_ROOT_FILES,prefixes:STATIC_PREFIXES});
+  if(!file)return send(req,res,404,{error:'Not found'});
   const data=fs.readFileSync(file);res.writeHead(200,responseHeaders(req,{'Content-Type':contentType(file),'Cache-Control':file.endsWith('index.html')?'no-cache':'public, max-age=300'}));return res.end(data);
  }
 

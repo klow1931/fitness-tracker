@@ -17,7 +17,8 @@ function createSessionRevocations({filePath,now=Date.now,maxEntries=100000}){
   sessions[sid]=expiry;if(Object.keys(sessions).length>maxEntries)throw Error('Session revocation capacity reached');
   fs.mkdirSync(path.dirname(filePath),{recursive:true,mode:0o700});
   const temp=filePath+'.'+crypto.randomUUID()+'.tmp';let fd;
-  try{fd=fs.openSync(temp,'wx',0o600);fs.writeFileSync(fd,JSON.stringify({version:1,sessions}));fs.fsyncSync(fd);fs.closeSync(fd);fd=undefined;fs.renameSync(temp,filePath);const dir=fs.openSync(path.dirname(filePath),'r');try{fs.fsyncSync(dir);}finally{fs.closeSync(dir);}}
+  try{fd=fs.openSync(temp,'wx',0o600);fs.writeFileSync(fd,JSON.stringify({version:1,sessions}));fs.fsyncSync(fd);fs.closeSync(fd);fd=undefined;fs.renameSync(temp,filePath);// Windows does not expose directory fsync; the file was flushed before the atomic rename.
+   if(process.platform!=='win32'){const dir=fs.openSync(path.dirname(filePath),'r');try{fs.fsyncSync(dir);}finally{fs.closeSync(dir);}}}
   finally{if(fd!==undefined)fs.closeSync(fd);fs.rmSync(temp,{force:true});}
  }
  return {revoked,revoke};
