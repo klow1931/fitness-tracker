@@ -14,7 +14,9 @@ for(const initiallyOpen of [false,true])test('changed planned work opens the rea
  if(initiallyOpen)await page.locator('#training-cockpit').getByRole('button',{name:'Workout options',exact:true}).click();
  await page.evaluate(()=>reviewWorkout());
  await expect(page.locator('#workout-review')).toContainText('Decisions may withhold progression');await page.getByRole('button',{name:'Add a reason for the change',exact:true}).click();
- await expect(page.locator('#workout-review')).not.toBeVisible();await expect(page.locator('body')).toHaveClass(/training-execution-options-open/);await expect(page.locator('#session-deviation-reason')).toBeVisible();await expect(page.locator('#session-deviation-reason')).toBeFocused();await expect(page.locator('#session-deviation-reason')).toHaveValue('none');
+ await expect(page.locator('#workout-review')).not.toBeVisible();await expect(page.locator('body')).toHaveClass(/training-execution-options-open/);await expect(page.locator('#session-deviation-reason')).toBeVisible();await expect(page.locator('#session-deviation-reason')).toBeFocused();await expect(page.locator('#session-deviation-reason')).toHaveValue('');
+ expect(await page.evaluate(()=>readSessionIntentDraft().deviationReason)).toBe('none');
+ const plan=await page.evaluate(()=>JSON.stringify(pendingPrescription));await page.locator('#session-deviation-reason').selectOption('fatigue');expect(await page.evaluate(()=>readSessionIntentDraft().deviationReason)).toBe('fatigue');expect(await page.evaluate(()=>JSON.stringify(pendingPrescription))).toBe(plan);
 });
 test('saved phase plan leads to its schedule control without scheduling automatically',async({page})=>{
  const {state,config}=phaseFixture(),args={asOf:'2026-09-24',now:'2026-09-24T12:00:00.000Z'},saved=P.save(state,P.prepare(state,config,args),{confirmed:true},{...args,id:'saved-demo'});
