@@ -10,7 +10,7 @@ async function save(page,name='Bench Press',weight='100'){
 test('duplicate is a new draft and edit/delete revisions can be undone',async({page})=>{
  await save(page);const original=await page.evaluate(()=>data.workouts[0].id);await page.evaluate(()=>showSubTab('workouts','wo-history'));
  await page.locator(`[data-hist-id="${original}"] [data-workout-action="duplicate"]`).click();await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
- await page.locator('.set-rpe').fill('7');await review(page);await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>new Set(data.workouts.map(w=>w.id)).size)).toBe(2);
+ await page.locator('.set-rpe').fill('7');await page.locator('.set-done-check').check();await review(page);await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>new Set(data.workouts.map(w=>w.id)).size)).toBe(2);
  await page.evaluate(id=>editWorkout(id),original);await page.locator('.set-weight').fill('90');await review(page);await page.locator('#confirm-workout-save').click();
  await page.evaluate(()=>showSubTab('workouts','wo-history'));
  await expect(page.locator('#workout-history')).toContainText('Edited workout');await page.locator('#workout-history details:has([data-workout-action="undo-change"]) > summary').click();page.once('dialog',d=>d.accept());await page.locator('[data-workout-action="undo-change"]').first().click();await expect.poll(()=>page.evaluate(id=>data.workouts.find(w=>w.id===id)?.exercises[0]?.sets[0]?.weight,original)).toBe(100);
