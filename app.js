@@ -47,7 +47,7 @@
     }
 
     // ========== Tab Navigation ==========
-    function showTab(name) { navigateTab(name); if(name==='workouts')window.renderTrainingBlocks?.(); queueMicrotask(()=>window.refreshGymFloorUI?.()); }
+    function showTab(name) { navigateTab(name); if(name==='workouts')window.renderTrainingBlocks?.(); queueMicrotask(()=>{window.refreshGymFloorUI?.();window.LoadnoteBeginnerUI?.renderGuide();}); }
     function showSubTab(panel, sub) { navigateSubTab(panel, sub); queueMicrotask(()=>window.refreshGymFloorUI?.()); }
 
     function maybeAutoGymMode() {
@@ -65,7 +65,7 @@
       if (!card) return;
       let essentialsComplete=false;
       try{essentialsComplete=!!LoadnoteProgrammingProfile.current(data.programmingProfiles||[])&&(data.workouts||[]).some(w=>w.date<=today());}catch{}
-      card.classList.toggle('hidden', !!data.onboardingDismissed||essentialsComplete);
+      card.classList.toggle('hidden', !!data.onboardingDismissed||essentialsComplete||!!window.LoadnoteBeginnerUI?.selected());
     }
 
     function dismissOnboarding() {

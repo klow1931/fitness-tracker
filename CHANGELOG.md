@@ -1,3 +1,11 @@
+# v3.25.0 — Choose your start and simplify Home
+
+- Three first-run paths: guided training setup, an existing program, or an empty workout log. Manual logging requires neither a programming profile nor a one-rep max.
+- Optional device-local Simple view reduces secondary Home panels, with an explicit Full view escape and a Profile toggle. Presentation never changes training experience, maxes or prescriptions.
+- A skippable, replayable four-part workout guide explains actuals versus targets, unknown effort, completion, rest and review/save. Tips never modify workout fields or timers; only a successful new-workout save completes the guide.
+- Existing-program entry explains reusable templates versus completed workouts and retains advanced adoption tools.
+- Adds preference, failure, reload, narrow-screen and save-boundary regressions. No training-data schema migration.
+
 # v3.24.0 — Actual-work safeguards and smoother meet prep
 
 - Planned, repeated and template sessions save only strength sets or cardio explicitly marked complete; untouched targets stay out of actual training evidence. Partial logs preserve the full prescription for comparison. Free entry, template capture and saved-workout edits retain their respective behavior.

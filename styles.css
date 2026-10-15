@@ -1,4 +1,16 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+.beginner-simple-choice{display:flex;align-items:flex-start;gap:.6rem;margin:1rem 0;line-height:1.5}
+.beginner-simple-choice input{margin-top:.3rem;min-width:20px;min-height:20px}
+.beginner-guide{padding:1rem;border:1px solid #94a3b8;border-radius:.75rem;margin:1rem 0;line-height:1.65;overflow-wrap:anywhere}
+.beginner-guide h3{font-weight:700;margin-bottom:.5rem}
+.beginner-guide p{margin:.5rem 0}
+.beginner-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}
+.beginner-actions button,.beginner-guide button{min-height:44px}
+body.loadnote-simple-view #home-details,
+body.loadnote-simple-view #calm-home-secondary,
+body.loadnote-simple-view #home-empty,
+body.loadnote-simple-view #panel-dashboard [data-training-hub],
+body.loadnote-simple-view #training-blocks{display:none!important}
 .more-page { --measure-surface:#fff; --measure-line:#dbe4ef; --measure-muted:#64748b; display:grid; gap:1.25rem; color:#17233b; }
 .more-page.hidden { display:none; }
 .more-page .card { border:1px solid var(--measure-line); border-radius:1rem; padding:1.3rem; min-width:0; background:var(--measure-surface); box-shadow:none; }
