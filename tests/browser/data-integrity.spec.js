@@ -38,7 +38,7 @@ test('training data health surfaces current outliers without treating corrected 
   data=LoadnoteIntegrity.normalizeState(data);showTab('tools');renderDataIntegrityTools();
  });
  await page.locator('details:has(#training-data-health) > summary').click();
- await expect(page.locator('#training-data-health')).toContainText('Current training data and record links passed the integrity audit');
+ await expect(page.locator('#training-data-health')).toContainText('Current record structure and links passed the integrity audit');
  await expect(page.locator('#training-data-health')).toContainText('suspicious loads: 0');
  await expect(page.locator('#training-data-health')).toContainText('Historical suspicious loads: 1');
  await expect(page.locator('#training-data-health')).toContainText('Corrected revisions remain audit history');

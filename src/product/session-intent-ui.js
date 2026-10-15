@@ -10,11 +10,20 @@ function restoreSessionIntentDraft(value){
   pendingSessionTiming=window.LoadnoteIntent.provenance(value?.timing);
   const input=value||{};pendingScheduledSession=input.schedule?{...input.schedule}:null;pendingPrescription=input.prescription?window.LoadnoteIntent.prescription(input.prescription):null;
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||'';};
-  put('session-role',input.role==='unspecified'?'':input.role);put('session-goal',input.goal);put('session-deviation-reason',input.deviationReason==='none'?'':input.deviationReason);put('session-deviation-notes',input.deviationNotes);renderPrescriptionSummary();
+  put('session-role',input.role==='unspecified'?'':input.role);put('session-goal',input.goal);put('session-deviation-reason',input.deviationReason==='none'?'':input.deviationReason);put('session-deviation-notes',input.deviationNotes);if(pendingPrescription)ensurePlannedCompletionControls();
+  renderPrescriptionSummary();
+}
+function ensurePlannedCompletionControls(){
+  document.querySelectorAll('#exercise-rows .sets-container > div').forEach(set=>{
+    if(set.querySelector('.set-done-check'))return;
+    const check=document.createElement('input');check.type='checkbox';check.className='set-done-check';check.setAttribute('aria-label','Mark set done');check.title='Mark set done';
+    check.addEventListener('change',()=>set.classList.toggle('set-row-done',check.checked));set.insertBefore(check,set.firstChild);
+  });
 }
 function resetSessionIntent(){restoreSessionIntentDraft(null);}
 function setPrescriptionFromExercises(exercises,source,intent={}){
   pendingPrescription=window.LoadnoteIntent.createPrescription(exercises,source);
+  ensurePlannedCompletionControls();
   if(intent.role&&intent.role!=='unspecified')document.getElementById('session-role').value=intent.role;
   if(intent.goal)document.getElementById('session-goal').value=intent.goal;
   renderPrescriptionSummary();
@@ -38,7 +47,7 @@ function clearPlannedWork(){
 }
 function persistSessionTiming(plan,timing){
   const previousPlan=pendingPrescription,previousTiming=pendingSessionTiming;
-  try{pendingPrescription=plan;pendingSessionTiming=timing;const draft=captureLoggerDraft();LoadnoteIntent.context(draft.sessionIntent);localStorage.setItem(LOGGER_DRAFT_KEY,JSON.stringify(draft));return true;}
+  try{pendingPrescription=plan;pendingSessionTiming=timing;if(plan)ensurePlannedCompletionControls();const draft=captureLoggerDraft();LoadnoteIntent.context(draft.sessionIntent);localStorage.setItem(LOGGER_DRAFT_KEY,JSON.stringify(draft));return true;}
   catch(e){pendingPrescription=previousPlan;pendingSessionTiming=previousTiming;showToast('Could not save timing. Nothing was changed.','error');return false;}
 }
 function startWorkoutNow(){

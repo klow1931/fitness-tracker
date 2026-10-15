@@ -19,6 +19,14 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npx playwright install --with-deps chromium
+      - name: Audit completion and fresh meet-setup regressions
+        run: npx playwright test tests/browser/audit-regressions.spec.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-regression-demo
+          path: test-results/
+          retention-days: 7
       - name: Demo cleanup handoff checks
         run: npx playwright test tests/browser/demo-cleanup.spec.js
       - name: Athlete journey acceptance

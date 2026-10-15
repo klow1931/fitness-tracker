@@ -1,3 +1,12 @@
+# v3.24.0 — Actual-work safeguards and smoother meet prep
+
+- Planned, repeated and template sessions save only strength sets or cardio explicitly marked complete; untouched targets stay out of actual training evidence. Partial logs preserve the full prescription for comparison. Free entry, template capture and saved-workout edits retain their respective behavior.
+- Fresh athletes can create/select and explicitly confirm competition-lift identities directly from the program designer without fabricated workout history.
+- A saved meet cycle leads directly to its visible Schedule N workouts action. Previews clarify chosen training maxes, rounded percentages, peak timing and event-week training.
+- Early linked execution marks a future-start program active while retaining its original start date. Redundant Calendar buttons and mock-meet-only review wording are removed.
+- Integrity copy distinguishes structural checks from athlete-verified performance. Core analytics tests use an explicit clock with window-boundary coverage.
+- Adds focused model and browser regressions for actual-work saving and clean-profile setup.
+
 # v3.23.0 — Coaching boundaries and Android release rehearsal
 
 - Withhold lift directions for active intake restrictions, avoided competition movements, corrupt restriction data and matching invalid/suspicious lift records.

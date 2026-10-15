@@ -69,7 +69,7 @@ test('current workout rest and swap actions remain reachable without setup',asyn
 });
 test('finish shows a concise saved result, retains evidence and routes to the next session',async({page},testInfo)=>{
  await seed(page);await page.locator('#today-training [data-today-train]').click();
- await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7.5');
+ await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7.5');await page.locator('.set-done-check').first().check();await page.locator('.set-done-check').nth(1).check();
  await page.locator('[data-cockpit-review]').click();await page.getByRole('button',{name:'Save workout',exact:true}).click();
  const recap=page.locator('#workout-recap');await expect(recap).toBeVisible();
  await expect(recap.locator('.session-result-summary')).toContainText('2/2 planned sets represented');

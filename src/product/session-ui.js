@@ -36,7 +36,7 @@ function reviewWorkout(){
   const draft=captureLoggerDraft();
   if(!draft.date)return showToast('Please select a date','error');
   const workout=LoadnoteSession.fromDraft(draft,workoutEdit?.id || window.LoadnoteCore.createId());
-  if(!workout.exercises.length)return showToast('Add at least one strength set or cardio entry','error');
+  if(!workout.exercises.length)return showToast(draft.sessionIntent?.prescription&&!workoutEdit?'Mark at least one performed set or cardio entry complete. Untouched targets are not saved.':'Add at least one strength set or cardio entry','error');
   const duplicateMatches=window.LoadnoteHistoryReliability?.duplicateMatches?.(data.workouts||[],workout,{excludeId:workoutEdit?.id})||[];
   reviewedSession={draft:JSON.stringify(draft),workout,edit:workoutEdit?JSON.parse(JSON.stringify(workoutEdit)):null,program:pendingProgramSession?JSON.parse(JSON.stringify(pendingProgramSession)):null,duplicateIds:duplicateMatches.map(w=>String(w.id))};
   const content=document.getElementById('workout-review-content');content.replaceChildren();
@@ -64,7 +64,9 @@ function reviewWorkout(){
   if(duplicateMatches.length){const warning=add('p','Possible duplicate: '+duplicateMatches.length+' saved workout'+(duplicateMatches.length===1?' has':'s have')+' the same date and recorded content. Save only if this is intentionally a separate session.');warning.className='workout-duplicate-warning';}
   if(workout.sessionIntent&&(workout.sessionIntent.deviationReason!=='none'||workout.sessionIntent.deviationNotes)){const reason=window.LoadnoteIntent.DEVIATION_REASONS[workout.sessionIntent.deviationReason]||'Other';add('p','Plan change: '+reason+(workout.sessionIntent.deviationNotes?' · '+workout.sessionIntent.deviationNotes:''));}
   const unchecked=draft.rows.reduce((n,r)=>n+(r.sets || []).filter(s=>Number(s.reps || s.duration)>0 && !s.done).length,0);
-  add('p',unchecked?`${unchecked} entered sets are unchecked. They are included in this review and will be saved.`:'All entered sets shown above will be saved.');
+  const plannedActuals=!!draft.sessionIntent?.prescription&&!workoutEdit;
+  if(plannedActuals)add('p','Only sets and cardio marked complete are included as performed work. Unchecked targets are excluded.');
+  else add('p',unchecked?`${unchecked} manually entered or previously saved sets are unchecked. They are included in this review and will be saved.`:'All entered sets shown above will be saved.');
   const button=document.getElementById('confirm-workout-save');button.textContent=duplicateMatches.length?(workoutEdit?'Save duplicate change anyway':'Save duplicate anyway'):(workoutEdit?'Save changes':'Save workout');button.disabled=false;
   const dialog=document.getElementById('workout-review');if(!dialog.open)dialog.showModal();
 }

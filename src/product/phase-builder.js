@@ -1,12 +1,29 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'),require('./cycle-observability'),require('./accessory-programming'),require('./program-cancellation'));
-  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability,root.LoadnoteAccessories,root.LoadnoteProgramCancellation);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability,Accessories,Cancellation){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('../core/loadnote-core'),require('./programming-profile'),require('./decision-readiness'),require('./schedule'),require('./session-intent'),require('./goal-programming'),require('./block-objectives'),require('./starting-prescription'),require('./cycle-observability'),require('./accessory-programming'),require('./program-cancellation'),require('./data-integrity'));
+  else root.LoadnotePhaseBuilder=factory(root.LoadnoteCore,root.LoadnoteProgrammingProfile,root.LoadnoteReadiness,root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteGoalProgramming,root.LoadnoteBlockObjectives,root.LoadnoteStartingPrescription,root.LoadnoteCycleObservability,root.LoadnoteAccessories,root.LoadnoteProgramCancellation,root.LoadnoteIntegrity);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Core,Profile,Readiness,Schedule,Intent,GoalProgramming,BlockObjectives,StartingPrescription,Observability,Accessories,Cancellation,Integrity){
   'use strict';
   const LIFTS=['squat','bench','deadlift'],TYPES=['accumulation','strength','deload'],POLICY='phase-builder-v1';
   const clone=x=>JSON.parse(JSON.stringify(x));
   const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
   const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+  // Establish athlete-confirmed identities without inventing workout evidence.
+  function registerCompetitionLifts(input,names,{confirmed=false,now=new Date().toISOString()}={}){
+    if(!confirmed)throw Error('Confirm your three competition lifts before continuing.');
+    if(!iso(now))throw Error('Choose a valid mapping time.');
+    const state=Integrity.normalizeState(input),selected={},ids=new Set();
+    for(const lift of LIFTS){
+      const name=String(names?.[lift]||'').trim().replace(/\s+/g,' ');
+      if(!name||name.length>120)throw Error('Enter a competition '+lift+' exercise name (1–120 characters).');
+      let entry=Integrity.resolveExercise(state.exerciseCatalog,name);
+      if(!entry){let id=Integrity.stableExerciseId(name),n=1;while(state.exerciseCatalog.some(e=>e.id===id))id=Integrity.stableExerciseId(name)+'_'+n++;entry={id,name,aliases:[]};state.exerciseCatalog.push(entry);}
+      if(ids.has(entry.id))throw Error('Choose a different exercise identity for each competition lift.');
+      ids.add(entry.id);selected[lift]=entry;
+    }
+    for(const role of Readiness.list(state.exerciseRoles))if(role.role==='competition'&&selected[role.competitionLift]?.id!==role.exerciseId)state.exerciseRoles=Readiness.remove(state.exerciseRoles,role.exerciseId,{now});
+    for(const lift of LIFTS){const existing=Readiness.list(state.exerciseRoles).find(r=>r.exerciseId===selected[lift].id);if(existing?.role==='competition'&&existing.competitionLift===lift)continue;state.exerciseRoles=Readiness.upsert(state.exerciseRoles,{exerciseId:selected[lift].id,role:'competition',competitionLift:lift,notes:'Athlete confirmed in program setup.'},{now});}
+    return Integrity.normalizeState(state);
+  }
   function exercise(raw){if(!raw||typeof raw.exerciseId!=='string'||!raw.exerciseId||raw.exerciseId.length>160||typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>160||!Number.isFinite(raw.trainingMaxKg)||raw.trainingMaxKg<10||raw.trainingMaxKg>1000)throw Error('Every selected exercise needs an identity and explicit 10–1000 kg training max');return {exerciseId:raw.exerciseId,name:raw.name.trim(),trainingMaxKg:raw.trainingMaxKg};}
   function config(raw){
     if(!raw||raw.version!==1||typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>100||!Schedule.date(raw.startDate)||new Date(raw.startDate+'T12:00:00Z').getUTCDay()!==1)throw Error('Choose a name and Monday start date');
@@ -127,5 +144,5 @@
     let sessions=state.scheduledSessions||[];for(const s of record.sessions)sessions=Schedule.create(sessions,{name:record.config.name+' · '+s.name,date:s.date,role:s.phase==='deload'?'deload':'mixed',goal:record.config.name,prescription:Intent.createPrescription(s.exercises,{type:'program',referenceId:record.id,label:record.config.name+' · '+s.name},now)},{id:`phase:${record.id}:${s.key}`,now});
     record.scheduledAt=now;return {...state,phasePrograms:validate(records),scheduledSessions:sessions};
   }
-  return {POLICY,LIFTS,TYPES,config,build,prepare,validate,save,schedule};
+  return {POLICY,LIFTS,TYPES,registerCompetitionLifts,config,build,prepare,validate,save,schedule};
 });

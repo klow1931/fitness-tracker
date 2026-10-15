@@ -55,12 +55,16 @@ function updateLoggerSummary() {
 function loggerValidationFailure(input,message){showToast(message,'error');if(window.LoadnoteAccessibility)return window.LoadnoteAccessibility.reportError(input,message);input?.focus();return false;}
 function validateWorkoutForm() {
   window.LoadnoteAccessibility?.clearErrors();
+  const completedOnly=!!pendingPrescription&&!workoutEdit;
   for (const row of document.querySelectorAll('#exercise-rows > div')) {
     row.classList.remove('training-collapsed');
+    if(completedOnly&&row.dataset.type==='cardio'&&!row.querySelector('.cardio-done')?.checked)continue;
+    const eligible=input=>!completedOnly||!input.closest('.sets-container > div')||!!input.closest('.sets-container > div').querySelector('.set-done-check')?.checked;
     const name = row.querySelector('.ex-name');
-    const entered = [...row.querySelectorAll('input[type=number]')].some(i => i.value !== '' || i.validity.badInput);
+    const entered = [...row.querySelectorAll('input[type=number]')].some(i => eligible(i)&&(i.value !== '' || i.validity.badInput));
     if (entered && !name.value.trim()) return loggerValidationFailure(name,'Name every exercise with entered values.');
     for (const input of row.querySelectorAll('input[type=number]')) {
+      if(!eligible(input))continue;
       const isReps = input.classList.contains('set-reps');
       const isRpe = input.classList.contains('set-rpe');
       if (input.validity.badInput || (input.value !== '' && !validLoggerNumber(input.value, Number(input.min || 0), isRpe ? 10 : Infinity, isReps))) {
@@ -69,6 +73,7 @@ function validateWorkoutForm() {
     }
     for (const set of row.querySelectorAll('.sets-container > div')) {
       const measure = set.querySelector('.set-reps, .set-duration');
+      if(!eligible(measure))continue;
       if ([...set.querySelectorAll('input[type=number]')].some(i => i.value !== '') && !measure.value) {
         return loggerValidationFailure(measure,'Enter reps or hold seconds for each filled set.');
       }

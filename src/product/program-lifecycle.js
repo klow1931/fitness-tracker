@@ -53,9 +53,9 @@
    return !transitionFor(state,p);
  }
  function select(state,asOf){
-   const all=programs(state),active=all.filter(p=>p.startDate<=asOf&&p.endDate>=asOf);
+   const all=programs(state),active=all.filter(p=>p.endDate>=asOf&&(p.startDate<=asOf||scopedRows(state,p,asOf).some(r=>r.state==='completed'&&r.date<=asOf)));
    if(active.length>1)return {status:'ambiguous',program:null,candidates:active,all};
-   if(active.length===1)return {status:'selected',program:active[0],selection:'active',all};
+   if(active.length===1)return {status:'selected',program:active[0],selection:'active',startedEarly:active[0].startDate>asOf,all};
    const ended=all.filter(p=>p.endDate<asOf).sort((a,b)=>b.endDate.localeCompare(a.endDate)||b.startDate.localeCompare(a.startDate));
    const closure=ended.find(p=>needsClosure(state,p));
    if(closure)return {status:'selected',program:closure,selection:'closure',all};
@@ -138,10 +138,10 @@
    else if(transition){
      let handoff=null;try{handoff=Handoff.inspect(state,{asOf,draftOpen:false});}catch(e){handoff={ready:false,status:'blocked',summary:e.message,blockers:[e.message]};}
      nextAction=handoff?.ready?action('review-next-program','Review next program','The transition baseline is frozen and the next-block handoff is ready for athlete review.',{handoff}):action('review-handoff','Resolve next-block handoff','The program is complete, but the next reviewed block still has handoff items to resolve.',{handoff});
-   }else if(next)nextAction=action(chosen.selection==='upcoming'?'program-upcoming':'next-session',chosen.selection==='upcoming'?'Program starts '+p.startDate:'Next session '+next.date,(chosen.selection==='upcoming'?'The reviewed program is scheduled and waiting to begin.':next.name),{scheduleId:next.id,date:next.date});
+   }else if(next)nextAction=action(chosen.selection==='upcoming'?'program-upcoming':'next-session',chosen.selection==='upcoming'?'Program starts '+p.startDate:'Next session '+next.date,(chosen.selection==='upcoming'?'The reviewed program is scheduled and waiting to begin.':chosen.startedEarly?'Started early · '+counts.completed+'/'+counts.planned+' sessions logged. Original start '+p.startDate+'.':next.name),{scheduleId:next.id,date:next.date});
    else if(p.kind==='meet-cycle'&&asOf<p.eventDate)nextAction=action('wait-event','Next: '+(p.eventType==='competition'?(p.eventName||'competition meet'):'mock meet')+' '+p.eventDate,'All scheduled training before the event is resolved. No attempt loads are inferred.');
    else nextAction=action('keep-plan','Keep the reviewed plan','No review or session needs action right now.');
-   return {version:1,asOf,status:chosen.selection==='upcoming'?'upcoming':asOf>p.endDate?'completed':'active',selection:chosen.selection,
+   return {version:1,asOf,status:chosen.selection==='upcoming'?'upcoming':asOf>p.endDate?'completed':'active',selection:chosen.selection,startedEarly:!!chosen.startedEarly,
      program:{kind:p.kind,id:p.id,name:p.name,startDate:p.startDate,endDate:p.endDate,totalWeeks:p.totalWeeks,eventType:p.eventType||null,eventName:p.eventName||null,eventDate:p.eventDate||null},
      progress:prog,schedule:{...counts,next:next?{id:next.id,date:next.date,name:next.name}:null,unconfirmed:unconfirmed.map(x=>({id:x.id,date:x.date,name:x.name}))},
      transition:transition?{id:transition.id,asOf:transition.asOf,programType:transition.programType||'phase-program'}:null,missedReviews:copy(missedReviews),nextAction,notes:['The lifecycle controller selects the next workflow step; it never applies a training change by itself.','Weekly/phase adjustments still require the existing evidence checks and explicit athlete approval.','A review blocks the next step only while its future-only adjustment window is still open and the reviewed period is fully resolved. Missed historical review windows remain visible but do not trap later training.','Unconfirmed past sessions block review routing instead of being silently treated as skipped.']};
