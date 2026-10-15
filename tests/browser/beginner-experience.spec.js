@@ -9,7 +9,7 @@ test('three paths, opt-in Simple view and Full view survive reload without chang
  await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
  await expect(page.locator('[data-beginner-entry]')).toHaveCount(3);
  await page.locator('#beginner-simple-choice').check();await page.locator('[data-beginner-entry=log]').click();
- await expect(page.locator('#workout-log-card')).toBeVisible();await expect(page.locator('#beginner-workout-guide')).toBeVisible();
+ await expect(page.locator('#workout-log-card')).toBeVisible();await expect(page.locator('#beginner-workout-guide')).toBeInViewport();
  await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
  await expect(page.locator('#onboarding-card')).toBeHidden();await expect(page.locator('#home-details')).toBeHidden();
