@@ -3,10 +3,10 @@ test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-10-15T16:00:00Z')});await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
 });
 test('untouched planned sets never save; a partial completion survives reload and saves only actual work',async({page},info)=>{
- await page.evaluate(()=>{
+ await page.evaluate(async()=>{
   const plan=LoadnoteIntent.createPrescription([{name:'Competition Squat',type:'strength',sets:Array.from({length:6},()=>({weight:115,reps:5,targetRpe:7}))}],{type:'manual',label:'Audit squat day'});
   data.scheduledSessions=LoadnoteSchedule.create([],{name:'Audit squat day',date:today(),role:'volume',prescription:plan},{id:'audit-day'});
-  showTab('dashboard');renderDashboard();
+  await persistNow(data);showTab('dashboard');renderDashboard();
  });
  await page.locator('#today-training [data-today-train]').click();
  await page.locator('[data-cockpit-review]').click();await expect(page.locator('#workout-review')).not.toBeVisible();await expect(page.locator('#toast-host')).toContainText('Untouched targets are not saved');
