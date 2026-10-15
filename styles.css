@@ -1,4 +1,9 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+#onboarding-card{min-width:0;overflow-wrap:anywhere}
+#onboarding-card > .flex:first-child{flex-wrap:wrap}
+#onboarding-card > .flex:first-child > div{flex:1 1 12rem;min-width:0}
+#onboarding-card .onboard-tip,#onboarding-card .onboard-tip > span{min-width:0}
+#onboarding-account{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .beginner-simple-choice{display:flex;align-items:flex-start;gap:.6rem;margin:1rem 0;line-height:1.5}
 .beginner-simple-choice input{margin-top:.3rem;min-width:20px;min-height:20px}
 .beginner-guide{padding:1rem;border:1px solid #94a3b8;border-radius:.75rem;margin:1rem 0;line-height:1.65;overflow-wrap:anywhere}
