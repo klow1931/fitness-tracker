@@ -57,7 +57,7 @@ test('athlete-approved cycle schedules separate Calendar revisions and keeps his
  await expect.poll(()=>page.evaluate(()=>data.scheduledSessions.length)).toBe(planned);
  expect(await page.evaluate(()=>data.scheduledSessions.every(r=>r.id.startsWith('meet:')))).toBe(true);
  await expect(page.locator('#decision-action-center')).toContainText(/mock-meet cycle/i);
- await expect(page.locator('#decision-action-center')).toContainText('Upcoming');
+ await expect(page.locator('#decision-action-center .program-status-path [aria-current=step]')).toHaveText('Scheduled');
  await expect(page.locator('#decision-action-center')).toContainText('Next ');
  await expect(page.locator('#programming-workspace')).toContainText('already scheduled');
  await expect(page.locator('[data-cycle-current]')).toHaveCount(1);

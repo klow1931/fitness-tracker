@@ -284,6 +284,7 @@
       if ((hasData || loggerHasContent()) && !force) {
         if (!confirm('Clear the workout form? Unsaved sets will be lost.')) return;
       }
+      window.LoadnoteEditUndoUI?.clear('logger');
       pendingProgramSession = null;
       clearWorkoutRecap();
       resetSessionIntent();

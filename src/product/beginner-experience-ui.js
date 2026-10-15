@@ -21,7 +21,7 @@
   if(!change({entry,view:simple?'simple':'full'}))return;
   if(entry==='log'){window.openFastStartLogger?.({compact:true});renderGuide();return;}
   if(entry==='help'){
-   window.openProgrammingProfile?.({notice:'Start with your goal, available days and equipment. You can leave unknown experience as unknown. Review any suggested program before scheduling it.',onSaved:()=>window.LoadnoteTrainingHubUI?.plan?.()});return;
+   window.openProgrammingProfile?.({guided:true,notice:'Start with your goal, available days and equipment. You can leave unknown experience as unknown. Review any suggested program before scheduling it.',onSaved:()=>window.LoadnoteTrainingHubUI?.plan?.()});return;
   }
   window.showTab?.('workouts');window.showSubTab?.('workouts','wo-templates');
   document.getElementById('beginner-existing-program')?.focus();

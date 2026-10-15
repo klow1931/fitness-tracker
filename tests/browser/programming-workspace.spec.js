@@ -31,6 +31,7 @@ test('program designer accepts a Sunday intent and aligns the actual program wee
   const dialog=page.locator('#phase-dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('Program designer');
+  await dialog.locator('[data-wizard-toggle]').click();
   await page.locator('#phase-start').fill('2026-10-11');
   for(const [i,lift] of ['squat','bench','deadlift'].entries()){
     await page.locator('.phase-lift > summary').nth(i).click();
@@ -56,6 +57,7 @@ test('meet profile uses one guided meet-prep path and treats profile event date 
   await expect(page.locator('#phase-dialog')).toContainText('STEP 1 OF 2');
   await expect(page.locator('#phase-dialog')).toContainText('Next, choose your meet date');
   await expect(page.locator('#phase-accumulation')).not.toBeVisible();
+  await page.locator('#phase-dialog [data-wizard-action=next]').click();
   await expect(page.locator('#phase-squat-tm')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });

@@ -4,7 +4,7 @@ function removeWorkoutSet(button){
   if(!set)return false;
   const entered=[...set.querySelectorAll('input[type=number]')].some(input=>input.value!=='')||!!set.querySelector('.set-done-check')?.checked;
   if(entered&&!confirm('Remove this entered set?'))return false;
-  set.remove();
+  if(window.LoadnoteEditUndoUI)LoadnoteEditUndoUI.removed(set,'Set removed. You can undo this removal until the workout is cleared, replaced or saved.');else set.remove();
   saveLoggerDraft();
   updateLoggerSummary();
   window.refreshLoggerQuickEntry?.();
@@ -16,7 +16,7 @@ function removeWorkoutExercise(button){
   if(!row)return false;
   const entered=!!row.querySelector('.ex-name')?.value.trim()||[...row.querySelectorAll('input[type=number],.ex-note')].some(input=>input.value!=='')||!!row.querySelector('.cardio-done:checked,.set-done-check:checked');
   if(entered&&!confirm('Remove this exercise and its entered work?'))return false;
-  row.remove();
+  if(window.LoadnoteEditUndoUI)LoadnoteEditUndoUI.removed(row,'Exercise removed. Undo restores its entered sets, effort and completion.');else row.remove();
   saveLoggerDraft();
   updateLoggerSummary();
   window.refreshGymFloorUI?.();

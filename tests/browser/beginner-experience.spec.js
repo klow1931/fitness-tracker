@@ -26,6 +26,7 @@ test('existing-program path offers manual entry without requiring profile or max
 test('guided setup keeps unknown experience and opens planning without creating a program',async({page})=>{
  await page.locator('[data-beginner-entry=help]').click();await expect(page.locator('#programming-profile-dialog')).toBeVisible();
  await expect(page.locator('#profile-experience')).toHaveValue('unknown');
+ for(let step=0;step<3;step++)await page.locator('#programming-profile-dialog [data-wizard-action=next]').click();
  await page.locator('#programming-profile-dialog button[type=submit]').click();
  await expect(page.locator('#programming-workspace')).toBeVisible();
  expect(await page.evaluate(()=>LoadnoteProgrammingProfile.current(data.programmingProfiles).context.experience)).toBe('unknown');
