@@ -10,7 +10,7 @@ test('new drafts remove old saved recaps and repeated headers use the draft date
 });
 for(const initiallyOpen of [false,true])test('changed planned work opens the reason editor without choosing a reason · options initially '+(initiallyOpen?'open':'closed'),async({page})=>{
  await page.evaluate(()=>{fillWorkoutForm([{name:'Bench Press',type:'strength',sets:[{weight:100,reps:5,rpe:8}]}],'',false,{source:{type:'repeated-workout',referenceId:'demo',label:'Old workout'}});showTab('workouts');showSubTab('workouts','wo-log');});
- await page.locator('.set-reps').fill('3');
+ await page.locator('.set-reps').fill('3');await page.locator('.set-done-check').check();
  if(initiallyOpen)await page.locator('#training-cockpit').getByRole('button',{name:'Workout options',exact:true}).click();
  await page.evaluate(()=>reviewWorkout());
  await expect(page.locator('#workout-review')).toContainText('Decisions may withhold progression');await page.getByRole('button',{name:'Add a reason for the change',exact:true}).click();

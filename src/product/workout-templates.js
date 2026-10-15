@@ -17,14 +17,14 @@
             duration: ex.duration,
             distance: ex.distance,
             distanceUnit: ex.distanceUnit || 'km',
-            avgHr: ex.avgHr
+            avgHr: ex.avgHr, cardioDone: preserveRpe
           });
         } else {
           addExerciseRow({
             name: ex.name,
             type: 'strength',
             trackBy: ex.trackBy === 'duration' || (ex.sets || []).some(s => s.duration > 0 && !(s.reps > 0)) ? 'duration' : 'reps',
-            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: preserveRpe ? s.rpe : '', showCompletion: !!intentOptions.restore?.schedule }))
+            sets: (ex.sets || []).map(s => ({ reps: s.reps, duration: s.duration, weight: s.weight, rpe: preserveRpe ? s.rpe : '', done: preserveRpe, showCompletion: !!intentOptions.source || !!intentOptions.restore?.prescription }))
           });
         }
       });

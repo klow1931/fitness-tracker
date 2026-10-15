@@ -38,7 +38,7 @@ const workouts = [
   { date: '2026-08-10', exercises: [{ name: 'Bench Press', sets: [{ reps: 5, weight: 90, rpe: 8 }] }] },
   { date: '2026-09-01', exercises: [{ name: 'Bench Press', sets: [{ reps: 5, weight: 100, rpe: 8 }] }] }
 ];
-const trend = Analytics.exerciseTrend(workouts, 'Bench Press', 60);
+const trend = Analytics.exerciseTrend(workouts, 'Bench Press', 60, '2026-09-15T12:00:00.000Z');
 assert.equal(trend.sessions, 2);
 assert.ok(trend.change.percent > 0);
 assert.equal(Analytics.plateauSignal(workouts, 'Bench Press').status, 'insufficient-data');

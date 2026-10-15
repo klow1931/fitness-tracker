@@ -12,13 +12,13 @@
     return d.toISOString().slice(0, 10);
   }
 
-  function recentWorkouts(workouts, days) {
-    const cutoff = dateDaysAgo(days);
+  function recentWorkouts(workouts, days, asOf) {
+    const cutoff = dateDaysAgo(days, asOf);
     return (workouts || []).filter(w => w.date >= cutoff);
   }
 
-  function exerciseTrend(workouts, exerciseName, days) {
-    const history = Core.exerciseHistory(recentWorkouts(workouts, days || 56), exerciseName);
+  function exerciseTrend(workouts, exerciseName, days, asOf) {
+    const history = Core.exerciseHistory(recentWorkouts(workouts, days || 56, asOf), exerciseName);
     if (!history.length) return null;
     const first = history[0].estimated1RM;
     const last = history[history.length - 1].estimated1RM;

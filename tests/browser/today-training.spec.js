@@ -69,7 +69,7 @@ test('scheduled session must be rescheduled to today before it can start',async(
 });
 test('Home reports scheduled training as logged after the linked workout is saved',async({page})=>{
  await addToday(page,'complete-me');await page.getByRole('button',{name:'Start workout',exact:true}).click();
- await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7');
+ await page.locator('.set-rpe').first().fill('7');await page.locator('.set-rpe').nth(1).fill('7');await page.locator('.set-done-check').first().check();await page.locator('.set-done-check').nth(1).check();
  await page.locator('#training-cockpit [data-cockpit-review]').click();
  // Hold the actual write so the previously timing-dependent CI failure is
  // exercised deterministically, without sleeps or a larger assertion timeout.
@@ -128,7 +128,7 @@ test('saving a shortened scheduled workout closes the loop to the next session',
  await page.getByRole('button',{name:'Start workout',exact:true}).click();
  await openOptions(page);
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:/Remove set$/}).last().click();
- await page.locator('.set-rpe').fill('8');
+ await page.locator('.set-rpe').fill('8');await page.locator('.set-done-check').check();
  await openOptions(page);
  await page.locator('#session-intent > summary').click();
  await expect(page.locator('#session-deviation-reason')).toBeVisible();

@@ -10,11 +10,20 @@ function restoreSessionIntentDraft(value){
   pendingSessionTiming=window.LoadnoteIntent.provenance(value?.timing);
   const input=value||{};pendingScheduledSession=input.schedule?{...input.schedule}:null;pendingPrescription=input.prescription?window.LoadnoteIntent.prescription(input.prescription):null;
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||'';};
-  put('session-role',input.role==='unspecified'?'':input.role);put('session-goal',input.goal);put('session-deviation-reason',input.deviationReason==='none'?'':input.deviationReason);put('session-deviation-notes',input.deviationNotes);renderPrescriptionSummary();
+  put('session-role',input.role==='unspecified'?'':input.role);put('session-goal',input.goal);put('session-deviation-reason',input.deviationReason==='none'?'':input.deviationReason);put('session-deviation-notes',input.deviationNotes);if(pendingPrescription)ensurePlannedCompletionControls();
+  renderPrescriptionSummary();
+}
+function ensurePlannedCompletionControls(){
+  document.querySelectorAll('#exercise-rows .sets-container > div').forEach(set=>{
+    if(set.querySelector('.set-done-check'))return;
+    const check=document.createElement('input');check.type='checkbox';check.className='set-done-check';check.setAttribute('aria-label','Mark set done');check.title='Mark set done';
+    check.addEventListener('change',()=>set.classList.toggle('set-row-done',check.checked));set.insertBefore(check,set.firstChild);
+  });
 }
 function resetSessionIntent(){restoreSessionIntentDraft(null);}
 function setPrescriptionFromExercises(exercises,source,intent={}){
   pendingPrescription=window.LoadnoteIntent.createPrescription(exercises,source);
+  ensurePlannedCompletionControls();
   if(intent.role&&intent.role!=='unspecified')document.getElementById('session-role').value=intent.role;
   if(intent.goal)document.getElementById('session-goal').value=intent.goal;
   renderPrescriptionSummary();
@@ -38,7 +47,7 @@ function clearPlannedWork(){
 }
 function persistSessionTiming(plan,timing){
   const previousPlan=pendingPrescription,previousTiming=pendingSessionTiming;
-  try{pendingPrescription=plan;pendingSessionTiming=timing;const draft=captureLoggerDraft();LoadnoteIntent.context(draft.sessionIntent);localStorage.setItem(LOGGER_DRAFT_KEY,JSON.stringify(draft));return true;}
+  try{pendingPrescription=plan;pendingSessionTiming=timing;if(plan)ensurePlannedCompletionControls();const draft=captureLoggerDraft();LoadnoteIntent.context(draft.sessionIntent);localStorage.setItem(LOGGER_DRAFT_KEY,JSON.stringify(draft));return true;}
   catch(e){pendingPrescription=previousPlan;pendingSessionTiming=previousTiming;showToast('Could not save timing. Nothing was changed.','error');return false;}
 }
 function startWorkoutNow(){
@@ -55,7 +64,7 @@ function renderPrescriptionSummary(){
   if(!pendingPrescription){el.innerHTML='<p><b>No planned-work snapshot.</b> Completed work will still save normally.</p>';document.getElementById('clear-planned-work').hidden=true;return;}
   const exercises=pendingPrescription.plannedExercises||[],sets=exercises.reduce((n,exercise)=>n+(exercise.type==='cardio'?1:(exercise.sets||[]).length),0);
   const detail=exercises.map(exercise=>{if(exercise.type==='cardio')return `<li>${escapeHtml(exercise.name)} · ${exercise.duration||0} min${exercise.distance?` · ${exercise.distance} ${escapeHtml(exercise.distanceUnit)}`:''}</li>`;const values=(exercise.sets||[]).map(set=>{const measure=exercise.trackBy==='duration'?`${set.duration}s`:`${set.minReps!=null?set.minReps+'–'+set.maxReps:set.reps} reps`,target=set.targetRpe?` @ target RPE ${set.targetRpe}`:'';return `${measure} × ${toDisplay(set.weight||0)} ${unitLabel()}${target}`;});return `<li>${escapeHtml(exercise.name)} · ${escapeHtml(values.join(' / ')+(exercise.loadConvention?' · '+(window.LoadnoteHypertrophyBuilder?.CONVENTIONS[exercise.loadConvention]||exercise.loadConvention):'')+(exercise.restSeconds?' · '+exercise.restSeconds+'s rest allowance':''))}</li>`;}).join('');
-  el.innerHTML=`<p><b>${escapeHtml(prescriptionSourceLabel(pendingPrescription))}</b></p><p>${exercises.length} planned exercises · ${sets} planned sets/targets. This snapshot stays separate from completed work.</p><ul>${detail}</ul>`;
+  el.innerHTML=`<p><b>${escapeHtml(prescriptionSourceLabel(pendingPrescription))}</b></p><p>${exercises.length} planned exercises · ${sets} planned sets/targets. This snapshot stays separate from completed work.</p>${workoutEdit?'':'<p class="more-hint">Mark performed sets and cardio complete. Unchecked targets will not be saved as training.</p>'}<ul>${detail}</ul>`;
   document.getElementById('clear-planned-work').hidden=false;
   if(pendingSessionTiming?.revisions.length){const history=document.createElement('details');history.innerHTML='<summary>Plan changes · original retained</summary>'+pendingSessionTiming.revisions.map(r=>'<p>'+escapeHtml(r.recordedAt+' · '+(r.plan?LoadnoteIntent.planTiming(r.plan,document.getElementById('wo-date').value,pendingSessionTiming):'Plan removed'))+'</p>'+(r.plan?'<p>'+escapeHtml(r.plan.plannedExercises.map(e=>e.name+': '+(e.sets||[]).map(s=>toDisplay(s.weight)+' '+unitLabel()+' × '+(s.reps||s.duration)).join(' / ')).join('; '))+'</p>':'')).join('');el.append(history);}
 }

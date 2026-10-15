@@ -7,7 +7,7 @@
   report=null;
   const cycles=LoadnoteCycleReview.validate(data).filter(c=>c.scheduledAt&&c.config.startDate<=today()&&c.config.meetDate>=today()&&c.weekly.some(w=>w.week<c.config.weeks&&w.endDate<=today()&&!(c.weeklyReviews||[]).some(r=>r.week===w.week)));
   const cycle=(desiredCycleId?cycles.find(c=>c.id===desiredCycleId):null)||cycles.at(-1);
-  if(!cycle){host.innerHTML='<p class="cycle-review-hint">No completed mock-meet cycle week is awaiting review. Your scheduled workout targets remain unchanged.</p>';return;}
+  if(!cycle){host.innerHTML='<p class="cycle-review-hint">No completed meet-cycle week is awaiting review. Your scheduled workout targets remain unchanged.</p>';return;}
   const available=cycle.weekly.filter(w=>w.week<cycle.config.weeks&&w.endDate<=today()&&!(cycle.weeklyReviews||[]).some(r=>r.week===w.week));
   host.innerHTML='<details class="more-details cycle-review-panel"><summary>Completed-week reviews · '+available.length+' awaiting review</summary><p>Compare your logged work with its original schedule. Keeping the plan is the default; only supported next-week changes can be approved.</p>'+
   '<label>Completed week<select class="input" id="cycle-review-week">'+available.map(w=>'<option value="'+w.week+'" '+(Number(desiredWeek)===w.week?'selected':'')+'>Week '+w.week+' · '+esc(w.phase)+' · ended '+esc(w.endDate)+'</option>').join('')+'</select></label>'+

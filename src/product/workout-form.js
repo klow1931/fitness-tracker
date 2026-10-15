@@ -5,7 +5,7 @@
       document.querySelectorAll('#exercise-rows > div').forEach(row => {
         row.querySelectorAll('.sets-container > div').forEach(setRow => {
           let check = setRow.querySelector('.set-done-check');
-          if (data.checklistMode) {
+          if (data.checklistMode || pendingPrescription) {
             if (!check) {
               check = document.createElement('input');
               check.type = 'checkbox';
@@ -43,7 +43,7 @@
               <input type="text" class="input ex-name" list="exercise-list" value="${escapeHtml(ex.name || '')}" placeholder="e.g. Running, Cycling" />
             </div>
             <span class="text-xs text-indigo-600 font-medium mb-2">Cardio</span>
-            <label class="cardio-completion-label"><input type="checkbox" class="cardio-done" /> Cardio complete</label>
+            <label class="cardio-completion-label"><input type="checkbox" class="cardio-done" ${ex.cardioDone ? 'checked' : ''} /> Cardio complete</label>
             <button data-workout-action="remove-exercise" class="btn-danger">Remove</button>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -218,7 +218,7 @@
       const row = document.createElement('div');
       row.className = 'logger-set flex gap-2 items-center flex-wrap';
       const displayWeight = set.weight !== '' && set.weight != null ? toDisplay(set.weight) : '';
-      const checkHtml = (data.checklistMode || set.showCompletion)
+      const checkHtml = (data.checklistMode || set.showCompletion || pendingPrescription)
         ? `<input type="checkbox" class="set-done-check" aria-label="Mark set done" title="Mark set done" ${set.done ? 'checked' : ''} />`
         : '';
       // Infer mode from parent exercise row if not passed

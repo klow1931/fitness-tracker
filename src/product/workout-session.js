@@ -23,14 +23,18 @@
   function fromDraft(draft,id,options={}){
     const factor=draft.unit==='lb'?1/2.2046226218:1;
     const exercises=[];
+    // A loaded prescription is a target, not proof of performed work. Edits
+    // already contain saved actuals; template capture intentionally retains targets.
+    const completedOnly=!!draft.sessionIntent?.prescription && !draft.edit && !options.template;
     for(const row of draft.rows){
       const name=String(row.name || '').trim();if(!name)continue;
       if(row.type==='cardio'){
+        if(completedOnly && !row.cardioDone)continue;
         const duration=Number(row.duration)||0,distance=Number(row.distance)||0;
         if(options.template || duration>0 || distance>0){const e={name,type:'cardio',duration,distance,distanceUnit:row.distanceUnit || 'km',sets:[]};if(Number(row.avgHr)>0)e.avgHr=Number(row.avgHr);exercises.push(e);}
       }else{
         const trackBy=row.trackBy==='duration'?'duration':'reps',measure=trackBy==='duration'?'duration':'reps';
-        const sets=(row.sets || []).filter(s=>Number(s[measure])>0).map(s=>{
+        const sets=(row.sets || []).filter(s=>Number(s[measure])>0 && (!completedOnly || s.done===true)).map(s=>{
           const weight=(Number(s.weight)||0)*factor;
           const set={[measure]:Number(s[measure]),weight:options.template && draft.unit!=='lb'?weight:Math.round(weight*100)/100};
           if(!options.template && s.rpe!=='' && Number(s.rpe)>=1 && Number(s.rpe)<=10)set.rpe=Number(s.rpe);
