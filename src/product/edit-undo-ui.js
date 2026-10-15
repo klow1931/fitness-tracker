@@ -10,8 +10,8 @@
   const button=document.createElement('button');button.type='button';button.className='btn-secondary';button.textContent='Undo';button.dataset.undoAction=scope;
   const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='btn-secondary';dismiss.textContent='Dismiss';
   const status=document.createElement('p');status.setAttribute('role','status');
-  bar.append(text,button,dismiss,status);host.prepend(bar);entries.set(scope,{bar});
-  button.onclick=async()=>{if(button.disabled)return;button.disabled=true;dismiss.disabled=true;try{await undo();clear(scope);window.showToast?.('Change undone','success');}catch(error){status.textContent=error.message;button.disabled=false;dismiss.disabled=false;}};
+  const entry={bar};bar.append(text,button,dismiss,status);host.prepend(bar);entries.set(scope,entry);
+  button.onclick=async()=>{if(button.disabled)return;button.disabled=true;dismiss.disabled=true;try{await undo();if(entries.get(scope)===entry)clear(scope);window.showToast?.('Change undone','success');}catch(error){status.textContent=error.message;button.disabled=false;dismiss.disabled=false;}};
   dismiss.onclick=()=>{clear(scope);host.querySelector('input,select,button')?.focus();};
   button.focus();
  }

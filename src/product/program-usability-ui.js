@@ -18,7 +18,7 @@
   const target=typeof field==='string'?form.querySelector(field):field;if(!target)return;
   form._programWizard?.reveal(target);
   for(let p=target.parentElement;p&&p!==form;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;
-  const note=document.createElement('p');note.dataset.fieldError='';note.className='program-field-error';note.id=(target.id||'program-field')+'-error';note.textContent=message;
+  const note=document.createElement('p');note.dataset.fieldError='';note.className='program-field-error';note.id=(target.id||(form.closest('[id]')?.id||'program-form')+'-field')+'-error';note.textContent=message;
   (target.closest('label')||target).after(note);target.setAttribute('aria-invalid','true');target.dataset.uxInvalid=note.id;
   target.setAttribute('aria-describedby',[target.getAttribute('aria-describedby'),note.id].filter(Boolean).join(' '));target.focus();
  }
