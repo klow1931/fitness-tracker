@@ -23,6 +23,14 @@ test('existing-program path offers manual entry without requiring profile or max
  expect(await page.evaluate(()=>data.programmingProfiles.length)).toBe(0);
  await expect(page.locator('.set-rpe').first()).toHaveValue('');
 });
+test('guided setup keeps unknown experience and opens planning without creating a program',async({page})=>{
+ await page.locator('[data-beginner-entry=help]').click();await expect(page.locator('#programming-profile-dialog')).toBeVisible();
+ await expect(page.locator('#profile-experience')).toHaveValue('unknown');
+ await page.locator('#programming-profile-dialog button[type=submit]').click();
+ await expect(page.locator('#programming-workspace')).toBeVisible();
+ expect(await page.evaluate(()=>LoadnoteProgrammingProfile.current(data.programmingProfiles).context.experience)).toBe('unknown');
+ expect(await page.evaluate(()=>data.scheduledSessions.length+data.workouts.length+data.programs.length)).toBe(0);
+});
 test('guide next, hide and replay never enter or complete work; narrow screen stays usable',async({page})=>{
  await page.locator('[data-beginner-entry=log]').click();const guide=page.locator('#beginner-workout-guide');
  const before=await page.evaluate(()=>{const d=captureLoggerDraft();delete d.updatedAt;return d;});
