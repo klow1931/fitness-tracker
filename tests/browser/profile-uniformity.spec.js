@@ -12,11 +12,12 @@ test('preferences stay uniform at phone widths and larger text; toggles preserve
    await page.evaluate(d=>{data.dark=d;document.body.classList.toggle('dark',d);renderProfileHub();},dark);
    const bounds=await page.locator('#profile-preferences').evaluate(host=>{
     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,height:r.height,width:r.width};};
-    return [...host.querySelectorAll('.profile-preference-row')].map(row=>({row:rect(row),controls:rect(row.lastElementChild),buttons:[...row.querySelectorAll('button')].map(rect)}));
+    return [...host.querySelectorAll('.profile-preference-row')].map(row=>({units:!!row.querySelector('[data-profile-unit]'),row:rect(row),controls:rect(row.lastElementChild),buttons:[...row.querySelectorAll('button')].map(rect)}));
    });
    for(const row of bounds){expect(Math.abs(row.controls.width-row.row.width)).toBeLessThan(1);for(const b of row.buttons){expect(b.width).toBeGreaterThanOrEqual(44);expect(b.height).toBeGreaterThanOrEqual(43.99);expect(b.right).toBeLessThanOrEqual(width);}}
-   expect(Math.abs(bounds[0].buttons[0].top-bounds[0].buttons[1].top)).toBeLessThan(1);
-   expect(Math.abs(bounds[0].buttons[0].width-bounds[0].buttons[1].width)).toBeLessThan(1);
+   const unitRow=bounds.find(row=>row.units);expect(unitRow.buttons).toHaveLength(2);
+   expect(Math.abs(unitRow.buttons[0].top-unitRow.buttons[1].top)).toBeLessThan(1);
+   expect(Math.abs(unitRow.buttons[0].width-unitRow.buttons[1].width)).toBeLessThan(1);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
  }

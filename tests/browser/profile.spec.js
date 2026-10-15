@@ -10,7 +10,10 @@ test.beforeEach(async({page})=>{
 test('v2.60 onboarding leads into reusable training setup and Profile stays compact',async({page})=>{
  await expect(page.locator('#onboarding-card')).toBeVisible();
  await expect(page.locator('#onboarding-card')).toContainText('Set up Loadnote');
- await page.getByRole('button',{name:/Set up your training/}).click();
+ await page.getByRole('button',{name:/Help me get started/}).click();
+ await expect(page.locator('#programming-profile-dialog')).toBeVisible();
+ await page.locator('#programming-profile-dialog').getByRole('button',{name:'Close',exact:true}).click();
+ await page.evaluate(()=>showTab('profile'));
  await expect(page.locator('#panel-profile')).toBeVisible();
  await expect(page.locator('#profile-training-setup')).toContainText('Training setup not completed');
 

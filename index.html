@@ -90,28 +90,31 @@
       <div class="flex items-start justify-between gap-3 mb-2">
         <div>
           <h2 class="font-semibold">Set up Loadnote</h2>
-          <p class="text-xs text-slate-500">Start with the essentials. You can change everything later.</p>
+          <p class="text-xs text-slate-500">Choose where to start. No account or one-rep max needed to log a workout.</p>
         </div>
         <button onclick="dismissOnboarding()" class="btn-secondary text-xs py-1 px-2">Dismiss</button>
       </div>
       <div class="grid sm:grid-cols-3 gap-2 text-sm">
-        <button type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-training-setup')?.scrollIntoView({behavior:'smooth'}); }, 50)">
+        <button type="button" class="onboard-tip" data-beginner-entry="help">
           <span class="onboard-num">1</span>
-          <span><b>Set up your training</b><br><span class="text-slate-500 text-xs">Goal, availability and equipment</span></span>
+          <span><b>Help me get started</b><br><span class="text-slate-500 text-xs">Choose a goal, schedule and equipment, then review a plan</span></span>
         </button>
-        <button type="button" class="onboard-tip" onclick="showTab('workouts')">
+        <button type="button" class="onboard-tip" data-beginner-entry="program">
           <span class="onboard-num">2</span>
-          <span><b>Train</b><br><span class="text-slate-500 text-xs">Log sets, reps, load and RPE</span></span>
+          <span><b>I already have a program</b><br><span class="text-slate-500 text-xs">Use templates or log your own sessions</span></span>
         </button>
-        <button id="onboarding-account" type="button" class="onboard-tip" onclick="showTab('profile'); setTimeout(function(){ document.getElementById('profile-account-card')?.scrollIntoView({behavior:'smooth'}); }, 50)">
+        <button type="button" class="onboard-tip" data-beginner-entry="log">
           <span class="onboard-num">3</span>
-          <span><b>Account is optional</b><br><span class="text-slate-500 text-xs">Sign in when you want backup and sync</span></span>
+          <span><b>Just log a workout</b><br><span class="text-slate-500 text-xs">Start an empty log with step-by-step tips</span></span>
         </button>
       </div>
+      <label class="beginner-simple-choice"><input type="checkbox" id="beginner-simple-choice"> Use Simple view — fewer Home panels, with all tools still available</label>
+      <button id="onboarding-account" type="button" class="btn-secondary" onclick="showTab('profile'); document.getElementById('profile-account-card')?.scrollIntoView({block:'start'})"><b>Account is optional</b><span class="text-slate-500"> · backup and sync</span></button>
     </div>
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
+      <div id="simple-view-banner" class="card" hidden><p>Simple view keeps Home focused on your next workout. It does not change your program.</p><button type="button" class="btn-secondary" id="simple-show-all">Show all features · Full view</button></div>
       <div id="today-training" class="card"></div>
       <section class="card training-hub" data-training-hub="full" aria-label="Training journey"></section>
       <div id="program-lifecycle-home" class="card program-lifecycle-card hidden"></div>
@@ -316,7 +319,7 @@
       <div class="sub-panel" data-panel="workouts" data-sub="wo-log">
       <div class="card" id="workout-log-card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 class="font-semibold" id="workout-mode-title">Your workout</h2>
+          <h2 class="font-semibold" id="workout-mode-title" tabindex="-1">Your workout</h2>
           <div class="flex flex-wrap gap-2 items-center">
             <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
               <input type="checkbox" id="gym-checklist-toggle" data-workout-change="checklist" />
@@ -329,6 +332,7 @@
           </div>
         </div>
         <section id="training-cockpit" class="training-cockpit" aria-label="Current workout" hidden></section>
+        <section id="beginner-workout-guide" class="beginner-guide" aria-label="Workout logging guide" hidden></section>
         <p id="logger-validation-error" class="logger-validation-error" role="alert" hidden></p>
         <div id="workout-edit-banner" class="session-edit-banner" hidden>
           <span>Editing a saved workout. Changes are saved only after review.</span>
@@ -454,6 +458,11 @@
       </div><!-- /wo-history -->
 
       <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-templates">
+      <section class="card" id="beginner-existing-program" tabindex="-1" aria-labelledby="beginner-existing-title">
+        <h2 id="beginner-existing-title" class="font-semibold">Bring your own program</h2>
+        <p>Keep following your existing plan. Log one session, or enter its exercises and sets and save it as a reusable template. Saving a template does not log a completed workout. You do not need training maxes for manual logging.</p>
+        <div class="beginner-actions"><button type="button" class="btn-primary" onclick="openFastStartLogger({compact:false})">Enter my session</button><button type="button" class="btn-secondary" onclick="LoadnoteTrainingHubUI.plan(); document.getElementById('programming-tools-panel').open=true; document.getElementById('program-adoption-panel').open=true; document.getElementById('program-adoption-panel').scrollIntoView({block:'start'})">Advanced: adopt a saved program</button></div>
+      </section>
       <div class="card">
         <h2 class="font-semibold mb-3">Saved Templates</h2>
         <p class="text-xs text-slate-500 mb-3">Save a logged session as a template from the Log tab, then reuse it here.</p>
@@ -1399,7 +1408,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.24.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.25.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2155,6 +2164,8 @@
   <script src="src/product/exercise-explanation.js" defer></script>
   <script src="src/product/coach-conversation.js" defer></script>
   <script src="src/product/plate-calculator.js" defer></script>
+  <script src="src/product/beginner-experience.js" defer></script>
+  <script src="src/product/beginner-experience-ui.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

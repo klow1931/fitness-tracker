@@ -56,7 +56,8 @@ test('enlarged short-screen logger keeps actual set entry and completion hit tar
  await page.locator('.quick-set-entry:visible [data-quick-rpe="7"]').click();
  await expect(page.locator('.set-done-check').nth(1)).toBeChecked();
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduled:data.scheduledSessions}))).toBe(before);
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1&&el.getBoundingClientRect().width>0).slice(0,12).map(el=>({tag:el.tagName,id:el.id,class:el.className,right:el.getBoundingClientRect().right}))}));
+ expect(layout.scrollWidth,JSON.stringify(layout)).toBeLessThanOrEqual(layout.width+1);
  await page.screenshot({path:info.outputPath('short-screen-logger.png')});
  await page.reload();await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});
  await expect(page.locator('.set-rpe').first()).toHaveValue('8');await expect(page.locator('.set-rpe').nth(1)).toHaveValue('7');

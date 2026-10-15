@@ -59,7 +59,7 @@
  function openFastStartLogger({compact=true}={}){
   ensureFastStartUI();closeLaunchMode();document.body.classList.toggle('train-fast-start-active',!!compact);document.body.classList.remove('train-fast-options-open');
   showTab('workouts');showSubTab('workouts','wo-log');window.refreshTrainingCockpit?.();
-  requestAnimationFrame(()=>{ensureFastStartUI();const cockpit=document.getElementById('training-cockpit'),first=document.querySelector('#exercise-rows > div');(cockpit&&!cockpit.hidden?cockpit:first||document.getElementById('workout-mode-title'))?.scrollIntoView({block:'start'});});
+  requestAnimationFrame(()=>{ensureFastStartUI();window.LoadnoteBeginnerUI?.renderGuide();const guide=document.getElementById('beginner-workout-guide'),cockpit=document.getElementById('training-cockpit'),first=document.querySelector('#exercise-rows > div');(guide&&!guide.hidden?guide:cockpit&&!cockpit.hidden?cockpit:first||document.getElementById('workout-mode-title'))?.scrollIntoView({block:'start'});});
  }
  function leaveFastStart(destination){closeLaunchMode();document.body.classList.remove('train-fast-start-active','train-fast-options-open');destination();}
  function goTrain(){openFastStartLogger({compact:true});}

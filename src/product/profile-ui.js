@@ -40,6 +40,7 @@
     '</section>'+
     '<section class="card profile-card" id="profile-preferences">'+
      '<p class="eyebrow">PREFERENCES</p><h2>How Loadnote feels</h2>'+
+     (window.LoadnoteBeginnerUI?.preferencesHTML()||'')+
      '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Display units only. Saved loads stay unchanged.</p></div><div class="profile-inline-actions" role="group" aria-label="Weight display"><button type="button" class="btn-secondary" data-profile-unit="kg" aria-label="Kilograms">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb" aria-label="Pounds">lb</button></div></div>'+
      '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger workout controls.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode" aria-label="Gym mode" aria-pressed="'+Boolean(data.gymMode)+'">'+(data.gymMode?'On':'Off')+'</button></div>'+
      '<div class="profile-preference-row"><div><b>Appearance</b><p class="more-hint">Choose light or dark.</p></div><button type="button" class="btn-secondary" id="profile-theme" aria-label="Dark appearance" aria-pressed="'+Boolean(data.dark)+'">'+(data.dark?'Dark':'Light')+'</button></div>'+
@@ -69,6 +70,7 @@
   host.querySelector('#profile-theme')?.addEventListener('click',()=>{toggleDark();render();});
   host.querySelectorAll('[data-profile-tab]').forEach(button=>button.addEventListener('click',()=>showTab(button.dataset.profileTab)));
   window.renderAccountStatus?.();
+  window.LoadnoteBeginnerUI?.bindPreferences(host);
  }
  window.renderProfileHub=render;
 })();

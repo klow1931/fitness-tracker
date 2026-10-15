@@ -102,6 +102,7 @@ async function commitReviewedWorkout(){
   const recapPRs=editing?[]:next.prs.filter(p=>p.sourceWorkoutId===savedWorkout.id&&!data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase()&&estimated1RM(old.weight,old.reps)>=p.estimated1RM));
   const newBest=!editing && next.prs.some(p=>p.sourceWorkoutId===reviewedSession.workout.id && !data.prs.some(old=>old.exercise.toLowerCase()===p.exercise.toLowerCase() && estimated1RM(old.weight,old.reps)>=p.estimated1RM));
   data=next;
+  window.LoadnoteBeginnerUI?.saved({editing:!!reviewedSession.edit});
   lockSessionSaving(false);closeWorkoutReview();clearWorkoutForm(true);saveLoggerDraft();
   // Persistence may finish after another surface has rendered the open draft.
   // Refresh only after committed data and cleared draft describe the same state.
