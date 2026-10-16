@@ -4,13 +4,13 @@ test.beforeEach(async({page})=>{
  await page.evaluate(async state=>{data=normalizeDataShape({...data,...state});await persistNow(data);invalidateViews();window.planningOnlineCalls=0;LoadnoteCoachClient.ensureSignedIn=async()=>{window.planningOnlineCalls++;return true;};showTab('coach');showSubTab('coach','co-chat');window.planningOnlineCalls=0;},phaseFixture().state);
 });
 async function ask(page,q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();return page.locator('#chat-messages .assistant').last();}
-async function daily(page){
+async function daily(page,{expectedTitle='Draft your daily workout'}={}){
  await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
  const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last();
  // Real touch events exercise mobile WebKit more accurately than synthetic mouse clicks.
  if(await page.evaluate(()=>navigator.maxTouchPoints>0))await action.tap();else await action.click();
  const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
- await expect(d.locator('#offline-plan-title')).toHaveText('Draft your daily workout',{timeout:15000});
+ await expect(d.locator('#offline-plan-title')).toHaveText(expectedTitle,{timeout:15000});
  return d;
 }
 async function review(page,d){for(const field of await d.locator('[data-value=load]').all())await field.fill('12');await d.locator('#offline-workout-confirm').check();await d.locator('button[type=submit]').click();await expect(d.locator('#offline-workout-preview')).toContainText('Review planned work');}
@@ -63,7 +63,7 @@ test('fresh review cannot replace an unfinished logger or silently use changed d
 });
 test('an existing Calendar plan is reviewed through the existing adaptation controller',async({page})=>{
  await page.evaluate(()=>{const plan=LoadnoteIntent.createPrescription([{name:'Bench',type:'strength',sets:[{weight:100,reps:5,targetRpe:7}]}],{type:'manual'});data.scheduledSessions=LoadnoteSchedule.create([],{name:'Existing bench',date:today(),prescription:plan},{id:'existing'});});
- const before=await page.evaluate(()=>JSON.stringify(data.scheduledSessions));const d=await daily(page);await expect(d).toContainText('Existing bench');await d.locator('#offline-review-scheduled').click();
+ const before=await page.evaluate(()=>JSON.stringify(data.scheduledSessions));const d=await daily(page,{expectedTitle:'You already have planned training'});await expect(d).toContainText('Existing bench');await d.locator('#offline-review-scheduled').click();
  await expect(page.locator('#adaptive-minutes')).toHaveValue('30');expect(await page.evaluate(()=>JSON.stringify(data.scheduledSessions))).toBe(before);
 });
 test('unsupported duration is clarified instead of silently changing the program',async({page})=>{
