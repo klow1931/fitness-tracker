@@ -4,11 +4,14 @@ test.beforeEach(async({page})=>{
  await page.evaluate(async state=>{data=normalizeDataShape({...data,...state});await persistNow(data);invalidateViews();window.planningOnlineCalls=0;LoadnoteCoachClient.ensureSignedIn=async()=>{window.planningOnlineCalls++;return true;};showTab('coach');showSubTab('coach','co-chat');window.planningOnlineCalls=0;},phaseFixture().state);
 });
 async function ask(page,q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();return page.locator('#chat-messages .assistant').last();}
+// Mobile WebKit's navigator.maxTouchPoints can report zero despite a touch-enabled
+// Playwright context. Use the project's input capability, not that browser value.
+async function activateAction(action){if(test.info().project.name.startsWith('mobile'))await action.tap();else await action.click();}
 async function daily(page,{expectedTitle='Draft your daily workout'}={}){
  await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
  const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last();
  // Real touch events exercise mobile WebKit more accurately than synthetic mouse clicks.
- if(await page.evaluate(()=>navigator.maxTouchPoints>0))await action.tap();else await action.click();
+ await activateAction(action);
  const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
  await expect(d.locator('#offline-plan-title')).toHaveText(expectedTitle,{timeout:15000});
  return d;
@@ -35,11 +38,11 @@ test('offline conversation collects requirements over turns without a training w
  await ask(page,'Build a program');for(const q of ['Strength','12 weeks','Four days per week','45 minutes','Full gym'])await ask(page,q);
  await expect(page.locator('#chat-messages .assistant').last()).toContainText('12 weeks');await expect(page.locator('#chat-messages .assistant').last()).toContainText('4 days/week');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);expect(await page.evaluate(()=>window.planningOnlineCalls)).toBe(0);
- await page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}).last().click();await expect(page.locator('#offline-plan-dialog')).toBeVisible();
+ await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}).last());await expect(page.locator('#offline-plan-dialog')).toBeVisible();
 });
 test('chat request generates an exact 12-week editable strength preview, preserving explicit max review',async({page})=>{
  await ask(page,'Create a 12-week powerlifting program four days per week, 60 minutes, full gym and bench priority');
- await page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}).click();await page.locator('#offline-program-continue').click();
+ await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}));await page.locator('#offline-program-continue').click();
  const d=page.locator('#phase-dialog');await expect(d).toBeVisible();await d.getByRole('button',{name:'Show all fields',exact:true}).click();
  await expect(d.locator('#phase-accumulation')).toHaveValue('5');await expect(d.locator('#phase-strength')).toHaveValue('6');await expect(d.locator('[data-phase-day]:checked')).toHaveCount(4);
  for(const [i,lift] of ['squat','bench','deadlift'].entries()){await d.locator('.phase-lift > summary').nth(i).click();await expect(d.locator('#phase-'+lift+'-tm')).toHaveValue('');await d.locator('#phase-'+lift+'-tm').fill(String([160,120,220][i]));}
@@ -74,7 +77,7 @@ test('muscle-growth request carries weeks, days and matching identities without 
   data.athleteGoals=LoadnoteGoals.upsert([],{name:'Grow muscle',sport:'Resistance training',equipment:'Dumbbells',availableDays:[0,2,4],sessionMinutes:60,trainingContext:{primary:'hypertrophy',secondary:[],season:'off-season',scheduleKnown:true,practiceDays:[],competitionDays:[]}});
   for(const [id,name,primary] of [['dbpress','Dumbbell Bench Press','chest'],['dbrow','Dumbbell Row','upper-back'],['split','Split Squat','quadriceps']])data.exerciseCatalog.push({id,name,muscles:{confirmed:true,mode:'resistance',primary:[primary],secondary:[]}});
  });
- await ask(page,'Create a six-week muscle-growth program three days per week 60 minutes dumbbells');await page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}).click();
+ await ask(page,'Create a six-week muscle-growth program three days per week 60 minutes dumbbells');await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}));
  await page.locator('[data-offline-day][value="1"]').uncheck();await page.locator('[data-offline-day][value="4"]').check();await page.locator('#offline-program-continue').click();
  const d=page.locator('#hyp-dialog');await expect(d).toBeVisible();
  await expect(d.locator('#hyp-weeks')).toHaveValue('6');await expect(d.locator('[data-hyp-day]:checked')).toHaveCount(3);await expect(d.locator('[data-hyp-slot]')).toHaveCount(9);
@@ -91,7 +94,7 @@ test('clearing the shared conversation removes the unfinished planning request',
  const reply=await ask(page,'12 weeks');await expect(reply).not.toContainText('strength program request');await expect(page.locator('#chat-messages').getByRole('button',{name:'Review program request'})).toHaveCount(0);
 });
 test('a new user reviews setup explicitly; workout preview fits a narrow phone',async({page},info)=>{
- await page.evaluate(()=>data.programmingProfiles=[]);await ask(page,'Create a 12-week strength program four days per week 45 minutes full gym');await page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}).click();
+ await page.evaluate(()=>data.programmingProfiles=[]);await ask(page,'Create a 12-week strength program four days per week 45 minutes full gym');await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}));
  await expect(page.locator('#programming-profile-dialog')).toBeVisible();expect(await page.evaluate(()=>data.programmingProfiles.length)).toBe(0);await page.locator('#profile-close').click();
  await page.evaluate(state=>{data.programmingProfiles=state.programmingProfiles;},phaseFixture().state);const d=await daily(page);await page.setViewportSize({width:320,height:740});await page.evaluate(()=>document.documentElement.style.fontSize='20px');
  await review(page,d);expect(await d.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);await page.screenshot({path:info.outputPath('offline-workout-review.png')});
@@ -104,7 +107,7 @@ test('equipment correction across chat turns does not reuse unavailable gear',as
  await expect(withdrawn).toContainText('What equipment can you use');
  await expect(withdrawn.getByRole('button',{name:'Draft my workout'})).toHaveCount(0);
  await ask(page,'Dumbbells instead');
- await page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last().click();
+ await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last());
  const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
  await expect(d.locator('[data-offline-movement=dumbbell_bench]')).toHaveCount(1);
  expect(await d.locator('[data-offline-movement]').evaluateAll(rows=>rows.every(row=>!row.textContent.includes('Barbell')))).toBe(true);
@@ -129,7 +132,7 @@ test('slow device preference reads show immediate feedback, then a reviewed draf
  });
  await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
  const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last();
- if(await page.evaluate(()=>navigator.maxTouchPoints>0))await action.tap();else await action.click();
+ await activateAction(action);
  const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
  await expect(d.locator('[role=status]')).toContainText('Reading saved training preferences');
  await expect(d.locator('[data-value=load]')).toHaveCount(0);
@@ -143,7 +146,7 @@ test('unavailable device preferences cannot produce a workout dose',async({page}
  await page.evaluate(()=>{window.LoadnoteAdaptiveSessionUI.readProfile=async()=>{throw Error('Device preferences unavailable');};});
  await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
  const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last();
- if(await page.evaluate(()=>navigator.maxTouchPoints>0))await action.tap();else await action.click();
+ await activateAction(action);
  const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
  await expect(d.locator('#offline-plan-title')).toHaveText('Review training preferences');
  await expect(d.locator('[data-value=load]')).toHaveCount(0);
