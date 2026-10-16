@@ -79,14 +79,27 @@
     }
 
     function toggleDark() {
-      data.dark = !data.dark;
-      saveData(data);
-      applyDark();
+      if (window.LoadnoteAppearance) {
+        // The header switch selects an explicit opposite; System mode remains a Profile choice.
+        const next=document.body.classList.contains('dark')?'light':'dark';
+        try { window.LoadnoteAppearance.set({mode:next},{legacyDark:!!data.dark}); }
+        catch(error) { showToast(error.message,'error'); return; }
+        applyDark();
+        if (!document.getElementById('panel-profile')?.classList.contains('hidden'))window.renderProfileHub?.();
+      } else {
+        data.dark = !data.dark;
+        saveData(data);
+        applyDark();
+      }
     }
     function applyDark() {
-      document.body.classList.toggle('dark', !!data.dark);
+      // Match the existing chart theme flags without changing workout data on theme clicks.
+      const appearance=window.LoadnoteAppearance?.apply(!!data.dark);
+      const effective=appearance?appearance.dark:!!data.dark;
+      data.dark=effective;
+      document.body.classList.toggle('dark',effective);
       const btn = document.getElementById('dark-toggle');
-      if (btn) btn.textContent = data.dark ? '☀️' : '🌙';
+      if (btn) btn.textContent = effective ? '☀️' : '🌙';
       // Refresh charts so axis/tooltip colors match theme
       try {
         if (document.getElementById('progressChart')) renderProgressChart();
@@ -2670,6 +2683,7 @@ async function initApp() {
       updateUnitToggle();
       updateMeasureUnitUI();
       applyDark();
+      window.LoadnoteAppearance?.listen(()=>{applyDark();});
       maybeAutoGymMode();
       applyGymMode();
       updateOnboardingUI();

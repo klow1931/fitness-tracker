@@ -5,6 +5,12 @@ assert.equal(new Set(ids).size,ids.length,'Duplicate HTML IDs');
 for(const id of ['panel-dashboard','panel-workouts','panel-calendar','panel-prs','panel-coach','panel-profile','panel-tools','exercise-rows','wo-date','wo-notes','logger-draft-status','app-version'])assert(ids.includes(id),'Missing '+id);
 const scripts=[...html.matchAll(/<script src="([^":]+)"/g)].map(m=>m[1]);
 const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+assert(html.includes('href="appearance.css"'),'Missing shared appearance stylesheet');
+assert(sw.includes("'./appearance.css'"),'Appearance stylesheet must work offline');
+assert(html.indexOf('src/product/appearance.js')<html.indexOf('src/product/profile-ui.js'),'Appearance must load before Profile');
+assert(html.indexOf('src/product/appearance-ui.js')<html.indexOf('src/product/profile-ui.js'),'Appearance UI must load before Profile');
+assert(fs.readFileSync(path.join(root,'scripts/sync-www.js'),'utf8').includes("'appearance.css'"),'Native bundle needs appearance stylesheet');
+assert(fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8').includes('appearance.css'),'Pages bundle needs appearance stylesheet');
 for(const script of scripts){assert(fs.existsSync(path.join(root,script)),script);assert(sw.includes("'./"+script+"'"),'Not cached: '+script);}
 assert(scripts.indexOf('src/product/draft-model.js')<scripts.indexOf('src/product/workout-logger.js'));
 for(const dependency of ['session-intent','schedule','phase-builder','meet-cycle','programming-profile','athlete-intake','coach-support'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/accessory-review.js'),'Accessory review must load after '+dependency);

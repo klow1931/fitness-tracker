@@ -43,7 +43,7 @@
      (window.LoadnoteBeginnerUI?.preferencesHTML()||'')+
      '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Display units only. Saved loads stay unchanged.</p></div><div class="profile-inline-actions" role="group" aria-label="Weight display"><button type="button" class="btn-secondary" data-profile-unit="kg" aria-label="Kilograms">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb" aria-label="Pounds">lb</button></div></div>'+
      '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger workout controls.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode" aria-label="Gym mode" aria-pressed="'+Boolean(data.gymMode)+'">'+(data.gymMode?'On':'Off')+'</button></div>'+
-     '<div class="profile-preference-row"><div><b>Appearance</b><p class="more-hint">Choose light or dark.</p></div><button type="button" class="btn-secondary" id="profile-theme" aria-label="Dark appearance" aria-pressed="'+Boolean(data.dark)+'">'+(data.dark?'Dark':'Light')+'</button></div>'+
+     (window.LoadnoteAppearanceUI?.markup()||'')+
     '</section>'+
     '<section class="card profile-card profile-secondary" id="profile-more">'+
      '<p class="eyebrow">MORE FEATURES</p><h2>More tools</h2>'+
@@ -67,7 +67,7 @@
    button.addEventListener('click',()=>{setUnit(button.dataset.profileUnit);render();});
   });
   host.querySelector('#profile-gym-mode')?.addEventListener('click',()=>{toggleGymMode();render();});
-  host.querySelector('#profile-theme')?.addEventListener('click',()=>{toggleDark();render();});
+  window.LoadnoteAppearanceUI?.bind(host,()=>applyDark());
   host.querySelectorAll('[data-profile-tab]').forEach(button=>button.addEventListener('click',()=>showTab(button.dataset.profileTab)));
   window.renderAccountStatus?.();
   window.LoadnoteBeginnerUI?.bindPreferences(host);
