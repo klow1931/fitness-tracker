@@ -33,6 +33,8 @@ assert.equal(a.intent.movement,'Chest-supported Row');
 assert.doesNotMatch(a.text,/9999/);
 const lat=Tool.answer(state,'What about lat pulldown?',{...opts,history:h});
 assert.equal(lat.intent.movement,'Lat Pulldown');
+const shifted=Tool.answer(state,'What about last time?',{...opts,history:[...h,{role:'user',content:'What about lat pulldown?'},{role:'assistant',content:lat.text}]});
+assert.equal(shifted.intent.movement,'Lat Pulldown','Multiple follow-ups keep the latest named exercise');
 assert.match(lat.text,/99\.2 lb/);
 assert.equal(Tool.answer(state,'What about last time?',opts),null);
 assert.equal(Tool.answer(state,'What about last time?',{...opts,history:[...h,{role:'user',content:'Hello'}]}),null);
