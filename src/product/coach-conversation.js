@@ -38,6 +38,7 @@
   const safetyKind=Support?.kind(String(question||''));
   if(safetyKind==='urgent-support')return Support.answer(question,{history,live});
   if(Support?.health(String(question||'')))return {text:'I cannot diagnose pain or decide that an injured area is safe to load from your log. Do not use this chat as clearance to continue training through symptoms. Describe the location, onset and what aggravates it to a qualified clinician. If symptoms are severe or you may be in immediate danger, contact local emergency services now. I will not prescribe injury rehabilitation or a substitute training dose.',source:'Shared coaching · capability limit',readOnly:true,evidence:[],intent:{topic:'health'},actions:[{kind:'intake',label:'Review athlete intake'}]};
+  const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   // Recorded performance comparison is not an approved-program-change review.

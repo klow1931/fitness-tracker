@@ -827,6 +827,10 @@ body.dark .coach-follow-up{border-color:#475569}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .smart-coach-actions button{font-size:14px;line-height:1.35;padding:9px 12px;min-height:44px}
 .cc-msg .smart-coach-actions button{font-size:12px;line-height:1.4;padding:7px 9px;min-height:44px}
+.cc-messages > .cc-msg,#chat-messages > .cc-msg{flex:0 0 auto}
+/* Chat actions stack vertically; the shared row layout's 140px basis must
+   not become a button height or shift the nested scroller during focus. */
+@media(max-width:640px){.cc-msg .smart-coach-actions .btn-secondary{flex:0 0 auto}}
 
 /* v3.5 — consistent stacked disclosures and compact program actions.
    Support both direct b/small children and the existing span wrapper. */
@@ -935,3 +939,11 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
  #decision-action-center .smart-coach-actions{grid-template-columns:minmax(0,1fr)}
  #decision-action-center .smart-coach-actions>button{font-size:.9rem;padding:.8rem;min-height:48px}
 }
+
+.offline-plan-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin:1rem 0}
+#offline-plan-dialog{width:min(640px,calc(100% - 24px));padding:1.25rem;box-sizing:border-box}
+#offline-plan-dialog fieldset{min-width:0;border:1px solid var(--line);border-radius:12px;padding:.8rem;margin:1rem 0}
+#offline-plan-dialog h2,#offline-plan-dialog h3{font-weight:700;margin:.75rem 0}
+#offline-plan-dialog p{line-height:1.5;margin:.75rem 0}
+#offline-plan-dialog button{min-height:48px;white-space:normal;margin:.4rem 0;max-width:100%}
+@media(max-width:640px){.offline-plan-actions{display:grid;grid-template-columns:minmax(0,1fr)}#offline-plan-dialog input{min-width:0}}

@@ -1,7 +1,7 @@
 /* Original educational summaries with explicit provenance. No book text or model weights. */
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./athlete-intake'),require('./program-edit'));else root.LoadnoteCoachingLibrary=factory(root.LoadnoteProgrammingProfile,root.LoadnoteAthleteIntake,root.LoadnoteProgramEdit);})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Intake,Edits){
  'use strict';
- const VERSION='coaching-library-v1',REVIEWED='2026-10-06',copy=x=>JSON.parse(JSON.stringify(x));
+ const VERSION='coaching-library-v2',REVIEWED='2026-10-06',copy=x=>JSON.parse(JSON.stringify(x));
  const SOURCES={
   essentials:{title:'Essentials of Strength Training and Conditioning · fifth edition',author:'NSCA; editors G. Gregory Haff and N. Travis Triplett',url:'https://www.nsca.com/certification/cscs/essentials-of-strength-training-and-conditioning-5th-edition/',kind:'Book reference',coverage:'Publisher description verified; full textbook not imported.'},
   methods:{title:'Westside Barbell Book of Methods',author:'Louie Simmons',url:'https://www.westside-barbell.com/collections/books/products/westside-barbell-book-of-methods',kind:'Book reference',coverage:'Book reference verified; guidance uses the public Westside articles below, not a full-text import.'},
@@ -22,8 +22,11 @@
  ];
  function catalog(){return {version:VERSION,reviewedOn:REVIEWED,sources:copy(SOURCES),cards:copy(CARDS),notice:'Original summaries of the linked sources. A book listing is further reading, not evidence that the entire book was imported or a model was trained on it.'};}
  const clean=q=>String(q||'').toLowerCase().replace(/[’]/g,"'").replace(/[-–]/g,' ').replace(/\s+/g,' ').trim().slice(0,500);
+ // Small offline concept expansion, not embeddings or model retraining.
+ const CONCEPTS=[[/\b(plateau|stuck|not getting stronger|stalled)\b/i,'workload fatigue weak point'],[/\b(get bigger|getting bigger|gain size|grow muscle|muscle gain)\b/i,'hypertrophy muscle growth'],[/\b(dup|vary reps|varying reps|organize my training)\b/i,'periodization undulating phase'],[/\b(exhausted|worn out|too tired|burned out)\b/i,'fatigue recovery workload'],[/\b(speed work|move the bar fast|explosive lifting)\b/i,'dynamic effort'],[/\b(extra exercises|assistance work|supporting exercises)\b/i,'accessories repeated effort']];
+ function concepts(question){const q=String(question||'');return q+' '+CONCEPTS.filter(([re])=>re.test(q)).map(([,terms])=>terms).join(' ');}
  function retrieve(question,{limit=3}={}){
-  const q=clean(question);if(!q)return [];
+  const original=clean(question);if(!original)return [];const q=clean(concepts(original));
   return CARDS.map((c,index)=>({c,index,score:c.tags.reduce((s,t)=>s+(new RegExp('(?:^|\\W)'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:$|\\W)','i').test(q)?t.split(' ').length+(t===c.tags[0]?2:0):0),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,Math.max(1,Math.min(3,limit))).map(x=>copy(x.c));
  }
  const follow=q=>/^(why\??|how so\??|tell me more\.?|explain (that|more)\.?|how (would|does) (that|this) (apply|work)( for me)?\??)$/i.test(q);
@@ -41,7 +44,7 @@
  }
  function answer(state,question,{asOf,history=[]}={}){
   if(/\b(what|which|show|list)\b.*\b(books|sources|references|knowledge base)\b/i.test(question))return {text:'The coaching library lists NSCA Essentials (fifth edition) and Louie Simmons’ Book of Methods as further reading. Original summaries use public NSCA material, Westside articles and a hypertrophy position stand. Full book text has not been imported and model weights have not been trained on either book.',source:'Shared coaching · referenced knowledge',readOnly:true,evidence:[],citations:Object.entries(SOURCES).map(([id,s])=>({id,...copy(s)})),actions:[{kind:'library',label:'Explore coaching references'}]};
-  const q=query(question,history),cards=retrieve(q);if(!cards.length||!/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q))return null;
+  const q=query(question,history),cards=retrieve(q);if(!cards.length||!/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|why.*(?:stuck|plateau)|get bigger|getting bigger|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q))return null;
   // Existing personal evidence, medical and action handlers retain priority.
   if(/\b(pain|hurt|injur\w*|rehab|tendinitis|tendinopathy|diagnos\w*|intake|edit|remove|swap|cancel|progress|training max|my.*(?:sets|load|workout)|why (?:this|my) (?:set|load))\b/i.test(q))return null;
   const selected=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(q)?cards:cards.slice(0,2),ids=[...new Set(selected.flatMap(c=>c.sources))];

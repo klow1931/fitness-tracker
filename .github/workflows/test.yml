@@ -153,7 +153,7 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps webkit
-      - run: npx playwright test tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js tests/browser/guided-programming-ux.spec.js tests/browser/coach-action-navigation.spec.js tests/browser/calendar-day-actions.spec.js tests/browser/iphone-interface.spec.js --project=mobile-webkit
+      - run: npx playwright test tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js tests/browser/guided-programming-ux.spec.js tests/browser/coach-action-navigation.spec.js tests/browser/calendar-day-actions.spec.js tests/browser/iphone-interface.spec.js tests/browser/offline-planning.spec.js --project=mobile-webkit
         env:
           LOADNOTE_WEBKIT: '1'
       - uses: actions/upload-artifact@v4
