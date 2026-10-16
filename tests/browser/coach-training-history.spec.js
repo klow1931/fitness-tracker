@@ -25,7 +25,7 @@ test('offline Coach reviews named accessory work and resolves follow-up without 
  await page.locator('#coach-companion-launcher').click();
  const first=await ask(page,'How did my chest supported row change over my last workouts?');
  await expect(first).toContainText('Chest-supported Row');
- await expect(first).toContainText('132.3 lb').catch(()=>{});
+ await expect(first).toContainText('60 kg');
  await expect(first).toContainText('RPE 8');
  await expect(first).not.toContainText('999');
  await expect(first).toContainText('No training load was changed');
