@@ -1,0 +1,43 @@
+/* v3.30 — restrained, accessible user-selectable color accents.
+   Success, danger, error and training-status semantics deliberately remain independent. */
+.btn-primary { background:var(--brand); color:#fff; }
+.btn-primary:hover { background:var(--brand-deep); }
+:is(button,a,input,select,textarea,summary):focus-visible {outline:3px solid var(--theme-focus,var(--brand));outline-offset:3px}
+.mobile-nav-btn.nav-active { color:var(--brand); background:var(--theme-soft); }
+body.dark .mobile-nav-btn.nav-active { color:var(--theme-dark-accent); background:var(--theme-dark-soft); }
+.section-tab.active,.tab-btn.active {color:var(--brand);}
+body.dark .section-tab.active,body.dark .tab-btn.active {color:var(--theme-dark-accent);}
+#logger-draft-status {color:var(--brand);}
+.app-loader-icon,.mobile-nav-btn.nav-active .mobile-nav-icon {background-color:var(--brand);}
+body.dark .mobile-nav-btn.nav-active .mobile-nav-icon {background-color:var(--theme-dark-accent);}
+.profile-appearance {border-top:1px solid var(--line);padding-top:.75rem;margin-top:.5rem;}
+.profile-appearance > summary {min-height:48px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.75rem;list-style:none;}
+.profile-appearance > summary::-webkit-details-marker {display:none;}
+.profile-appearance > summary::after {content:'⌄';color:var(--muted);font-size:1.2rem;flex:0 0 auto;}
+.profile-appearance[open] > summary::after {transform:rotate(180deg);}
+.profile-appearance > summary b {display:block;font-weight:700;}
+.profile-appearance > summary small {color:var(--muted);display:block;font-size:.8rem;margin-top:.15rem;}
+.profile-appearance-body {display:grid;gap:1rem;padding:.75rem 0 .25rem;min-width:0;}
+.profile-appearance fieldset {min-width:0;border:0;padding:0;margin:0;}
+.profile-appearance legend {font-size:.88rem;font-weight:700;margin-bottom:.6rem;}
+.appearance-palette {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;}
+.appearance-swatch {min-width:0;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:.8rem;cursor:pointer;padding:.5rem .25rem;font-size:.78rem;}
+.appearance-swatch-color {width:27px;height:27px;border-radius:50%;border:1px solid #0002;}
+.appearance-swatch[aria-pressed="true"] {border-color:var(--brand);box-shadow:0 0 0 1px var(--brand);}
+.appearance-swatch[aria-pressed="true"]::after {content:'Selected';font-size:.65rem;color:var(--muted);}
+.appearance-custom-row {display:flex!important;flex-direction:row!important;justify-content:space-between;align-items:center;gap:1rem;margin:0!important;min-height:52px;}
+.appearance-custom-row > span {min-width:0;display:grid;gap:.2rem;font-size:.85rem;}
+.appearance-custom-row small {font-size:.73rem;color:var(--muted);}
+#appearance-custom-color {width:54px;min-width:54px;height:48px;border:1px solid var(--line);border-radius:.55rem;padding:.2rem;background:var(--surface);cursor:pointer;}
+.appearance-mode {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem;}
+.appearance-mode button {min-width:0;min-height:44px;margin:0;padding:.5rem .3rem;font-size:.82rem;border:1px solid var(--line);}
+.appearance-mode button[aria-pressed="true"] {background:var(--brand);color:#fff;border-color:var(--brand);font-weight:700;}
+.appearance-preview {border:1px solid var(--line);background:var(--theme-soft);border-radius:.9rem;padding:.85rem;color:#17233b;min-width:0;}
+body.dark .appearance-preview {background:var(--theme-dark-soft);color:var(--ink);}
+.appearance-preview-label {font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;opacity:.8;}
+.appearance-preview>div {display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;padding:.75rem;background:var(--surface);border-radius:.6rem;color:var(--ink);margin-top:.5rem;}
+.appearance-preview-action {background:var(--brand);color:#fff;padding:.6rem .75rem;min-height:44px;border-radius:.5rem;display:inline-flex;align-items:center;font-weight:700;font-size:.78rem;}
+.appearance-actions {display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;min-width:0;}
+.appearance-actions button {min-height:44px;margin:0;}
+#appearance-status {font-size:.78rem;color:var(--muted);overflow-wrap:anywhere;}
+@media(max-width:380px){.appearance-palette{grid-template-columns:repeat(2,minmax(0,1fr))}.appearance-mode{gap:.25rem}.appearance-mode button{font-size:.76rem;padding:.45rem .15rem}}
