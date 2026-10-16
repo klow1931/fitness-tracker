@@ -47,8 +47,7 @@
   if(!row)return null;
   const competing=(state.exerciseCatalog||[]).filter(e=>e.id!=null&&String(e.id)!==String(row.id)&&normalize(e.name)===normalize(row.name));
   if(competing.length)return {clarification:'Multiple saved exercises share the name '+row.name+'. Review their names in Exercises before comparing recorded work.',name:null};
-  // Preserve the established powerlifting lift-specific evidence and mapping rules.
-  if((state.exerciseRoles||[]).some(e=>String(e.exerciseId)===String(row.id)&&e.role==='competition'&&e.competitionLift))return null;
+  // Preserve the established powerlifting lift-specific evidence and mapping rules,\n  // even if an athlete has not completed competition-lift mapping yet.\n  if(/^competition\s/i.test(row.name)||(state.exerciseRoles||[]).some(e=>String(e.exerciseId)===String(row.id)&&e.role==='competition'&&e.competitionLift))return null;
   return {exerciseId:String(row.id),name:row.name,aliases:[row.name,...(row.aliases||[])],follow:continuation};
  }
  const done=set=>set&&!set.skipped&&!set.warmup&&set.type!=='warmup'&&set.done!==false&&set.completed!==false;
