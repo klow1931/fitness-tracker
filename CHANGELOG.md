@@ -1,3 +1,7 @@
+# v3.32.0 — Optional local AI model choice
+
+Added an explicit inspect-before-download flow for optional WebGPU Coach models. The runtime catalog is filtered by GPU estimate and required features. Users can preview compatible model IDs and GPU memory estimates, select a verified option, then separately approve the model weights download and built-in explanation checks. No new dependency on a model, no unapproved changes to workouts, no data migration. See docs/releases-v3.32.md.
+
 # v3.31.0 — Offline Coach training evidence and saved preferences
 
 Add focused, read-only training tools so Offline Coach can compare recent saved sets for named exercises beyond competition lifts and answer questions about explicitly saved athlete goals, schedule, equipment and movement choices. Session-only follow-ups revalidate current records; unknown RPE, set completion and ambiguous identities remain explicit. Optional local model cannot overwrite those factual answers. No schema migration, progression-dose change or fabricated autonomous training. See docs/releases-v3.31.md.

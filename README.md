@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.31.0 · Development build.**
+**v3.32.0 · Development build.**
+
+Optional local Coach model preview and explicit GPU-compatible choice: [v3.32 release notes](docs/releases-v3.32.md).
 
 Offline Coach evidence and preference recall: [v3.31 release notes](docs/releases-v3.31.md). Appearance colors and display modes: [v3.30 release notes](docs/releases-v3.30.md). Training quality and coach corrections: [v3.29 release notes](docs/releases-v3.29.md). Offline conversational planning: [v3.28 release notes](docs/releases-v3.28.md). iPhone interface cleanup: [v3.27.1 release notes](docs/releases-v3.27.1.md). Calendar day shortcuts: [v3.27 release notes](docs/releases-v3.27.md). Previous Coach action fix: [v3.26.1 release notes](docs/releases-v3.26.1.md). Guided programming and reversible edits: [v3.26 release notes](docs/releases-v3.26.md). Previous beginner experience: [v3.25 release notes](docs/releases-v3.25.md). Engineering checks do not replace independent coaching review, owner signing or physical-device acceptance.
 
