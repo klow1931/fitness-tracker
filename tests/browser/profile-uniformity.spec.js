@@ -25,8 +25,13 @@ test('preferences stay uniform at phone widths and larger text; toggles preserve
  await page.getByRole('button',{name:'Kilograms',exact:true}).click();await expect(page.locator('[data-profile-unit="kg"]')).toHaveAttribute('aria-pressed','true');
  await page.getByRole('button',{name:'Pounds',exact:true}).click();await expect(page.locator('[data-profile-unit="lb"]')).toHaveAttribute('aria-pressed','true');
  const gym=await page.locator('#profile-gym-mode').getAttribute('aria-pressed');await page.getByRole('button',{name:'Gym mode',exact:true}).click();await expect(page.locator('#profile-gym-mode')).toHaveAttribute('aria-pressed',gym==='true'?'false':'true');
- await page.getByRole('button',{name:'Dark appearance',exact:true}).click();await expect(page.locator('#profile-theme')).toHaveAttribute('aria-pressed','false');
- await page.getByRole('button',{name:'Dark appearance',exact:true}).click();await expect(page.locator('#profile-theme')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#profile-appearance > summary').click();
+ await page.locator('[data-appearance-mode="light"]').click();
+ await expect(page.locator('[data-appearance-mode="light"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('body')).not.toHaveClass(/dark/);
+ await page.locator('[data-appearance-mode="dark"]').click();
+ await expect(page.locator('[data-appearance-mode="dark"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('body')).toHaveClass(/dark/);
  expect(await saved()).toBe(before);
  await page.locator('#profile-preferences').scrollIntoViewIfNeeded();await page.evaluate(()=>document.activeElement?.blur());await page.screenshot({path:info.outputPath('uniform-preferences-mobile.png')});
  const alpha=await page.locator('#mobile-nav').evaluate(nav=>getComputedStyle(nav).backgroundColor);expect(alpha).not.toMatch(/rgba\([^)]*,\s*0\./);
