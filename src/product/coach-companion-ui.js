@@ -118,7 +118,14 @@
   const full=document.getElementById('chat-messages');if(full){row.fullView=row.cloneNode(true);full.append(row.fullView);full.scrollTop=full.scrollHeight;}
   return row;
  }
- function attachReply(message,reply){for(const host of [message,message?.fullView]){window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);}}
+ function attachReply(message,reply){
+  for(const host of [message,message?.fullView]){
+   window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);
+   // Include appended actions in the final scroll. Otherwise WebKit can move
+   // a clipped button while focusing it between the press and release.
+   if(host?.parentElement)host.parentElement.scrollTop=host.parentElement.scrollHeight;
+  }
+ }
  function quickButtons(context){
   const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');

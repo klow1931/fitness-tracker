@@ -6,6 +6,12 @@ test.beforeEach(async({page})=>{
 async function ask(page,q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();return page.locator('#chat-messages .assistant').last();}
 async function daily(page){await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');await page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last().click();return page.locator('#offline-plan-dialog');}
 async function review(page,d){for(const field of await d.locator('[data-value=load]').all())await field.fill('12');await d.locator('#offline-workout-confirm').check();await d.locator('button[type=submit]').click();await expect(d.locator('#offline-workout-preview')).toContainText('Review planned work');}
+test('complete replies scroll the appended action into the chat viewport before the first tap',async({page})=>{
+ await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
+ const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true});
+ expect(await action.evaluate(button=>{const host=document.getElementById('chat-messages'),a=button.getBoundingClientRect(),h=host.getBoundingClientRect();return a.top>=h.top&&a.bottom<=h.bottom;})).toBe(true);
+ await action.click();await expect(page.locator('#offline-plan-dialog')).toBeVisible();
+});
 test('offline conversation collects requirements over turns without a training write or online call',async({page,context})=>{
  const before=await page.evaluate(()=>JSON.stringify(data));await context.setOffline(true);
  await ask(page,'Build a program');for(const q of ['Strength','12 weeks','Four days per week','45 minutes','Full gym'])await ask(page,q);
