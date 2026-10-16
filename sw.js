@@ -1,6 +1,7 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.26.1';
+const CACHE = 'loadnote-v3.27.0';
 const ASSETS = [
+  './src/product/calendar-day-actions-ui.js',
   './src/product/program-usability.js',
   './src/product/program-usability-ui.js',
   './src/product/edit-undo-ui.js',

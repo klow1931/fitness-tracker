@@ -18,7 +18,9 @@
 
     // ========== Helpers ==========
     function today() {
-      const now = new Date();
+      return localDateKey(new Date());
+    }
+    function localDateKey(now) {
       return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     }
 
@@ -734,7 +736,7 @@
       for (let i = 0; i < 42; i++) {
         const d = new Date(start);
         d.setDate(start.getDate() + i);
-        const iso = d.toISOString().slice(0, 10);
+        const iso = localDateKey(d);
         const inMonth = d.getMonth() === month;
         const info = byDate[iso];
         const planned = plannedByDate[iso];
@@ -771,6 +773,7 @@
       calSelectedDate = iso;
       renderCalendar();
       showCalDayDetail(iso);
+      window.LoadnoteCalendarDayActionsUI.open(iso);
     }
 
     function showCalDayDetail(iso) {
@@ -811,9 +814,8 @@
 
     function logWorkoutOnSelectedDay() {
       if (!calSelectedDate) return alert('Select a day first');
-      showTab('workouts'); showSubTab('workouts','wo-log');
-      const el = document.getElementById('wo-date');
-      if (el) el.value = calSelectedDate;
+      if(calSelectedDate>today())return window.LoadnoteCalendarDayActionsUI.open(calSelectedDate);
+      window.LoadnoteCalendarDayActionsUI.openLogger(calSelectedDate);
     }
 
     function markRestDay() {

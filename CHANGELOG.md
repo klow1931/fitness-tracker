@@ -1,3 +1,7 @@
+# v3.27.0 — Calendar day shortcuts
+
+Tap a day to log a past workout, schedule a new workout, or add past nutrition with the date already selected. Existing drafts and planned-session links are protected; day details remain available. Calendar cells use local date keys.
+
 # v3.26.1 — Coach action navigation fixes
 
 Plan, check-in, review and proposal shortcuts reveal and focus their destinations without tab scroll restoration overriding them. Check-in can open today’s form from historical evidence. Today’s date follows the device’s local calendar. No schema migration or automatic training changes.
