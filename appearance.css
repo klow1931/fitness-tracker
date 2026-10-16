@@ -2,6 +2,10 @@
    Success, danger, error and training-status semantics deliberately remain independent. */
 .btn-primary { background:var(--brand); color:#fff; }
 .btn-primary:hover { background:var(--brand-deep); }
+/* The Home call to action has a legacy higher-specificity teal override. */
+#athlete-home-command .btn-primary { background:var(--brand); color:#fff; }
+#athlete-home-command .btn-primary:hover { background:var(--brand-deep); }
+
 :is(button,a,input,select,textarea,summary):focus-visible {outline:3px solid var(--theme-focus,var(--brand));outline-offset:3px}
 .mobile-nav-btn.nav-active { color:var(--brand); background:var(--theme-soft); }
 body.dark .mobile-nav-btn.nav-active { color:var(--theme-dark-accent); background:var(--theme-dark-soft); }
