@@ -14,6 +14,9 @@
  function answer(state,question,{asOf,history=[]}={}){
   const q=clean(question);
   if(!q||Support.health(String(question||'')))return null;
+  // Dedicated movement-reference and sport-goal tools take precedence.
+  // Saved Profile equipment is not the equipment needed for an exercise.
+  if(/\bequipment\s+(?:for|needed for|used for)\b/i.test(q)||/\b(?:review|analyse|analyze|compare|evaluate)\b.*\b(?:sport|training)\s+goal\b/i.test(q))return null;
   let requested=contextQuestion(q);
   if(!requested&&follow(q)){
    for(const turn of (Array.isArray(history)?history:[]).slice(-8).reverse()){
