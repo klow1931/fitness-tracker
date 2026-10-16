@@ -1,3 +1,7 @@
+# v3.29.0 — Training quality and Coach correction guards
+
+Correct unavailable equipment across offline Coach turns; block strength draft routing without barbell access; invalidate reviewed daily drafts when exercise-role evidence or saved workouts change. Add training-loop tests for reviewed targets versus actual performance, partial set completion, RPE unknowns and kg/lb conversion. No data-schema, programming-dose or model change. See docs/releases-v3.29.md.
+
 # v3.28.0 — Offline conversational planning
 
 Coach gathers program/workout requirements over turns, prefills reviewed program designers and drafts daily planned targets with explicit fresh loads. Equipment, confirmed exclusions, stale context and existing draft guards remain enforced. Concept-based reference retrieval understands more paraphrases. No new internet research or model-download behavior.

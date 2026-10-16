@@ -10,7 +10,7 @@
  function parse(question,previous=null){
   const q=normalize(question),start=/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q);
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
-  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|barbell|bodyweight|gym|bench|squat|deadlift|linear|wave|undulating)\b/.test(q));
+  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating)\b/.test(q));
   if(!start&&!follow)return null;
   const r=start?{version:1,kind:/\b(workout|session)\b/.test(q)&&!/\b(program|routine|\d+\s*week)\b/.test(q)?'daily':'program',goal:null,weeks:null,frequency:null,minutes:null,equipment:[],focus:null,priority:null,periodization:null,excluded:[],tomorrow:false}:copy(previous);
   if(/\b(powerlifting|strength|get stronger|stronger)\b/.test(q))r.goal='strength';
@@ -18,10 +18,20 @@
   const n=pattern=>{const m=q.match(pattern);return m?Number(m[1]):null;};
   const weeks=n(/\b(\d+)\s*weeks?\b/),frequency=n(/\b(\d+)\s*(?:days?|times?)(?:\s*(?:a|per|each)\s*week)?\b/)??n(/\b(\d+)\s*x\s*(?:per|a|\/)?\s*week\b/),minutes=n(/\b(\d+)\s*(?:minutes?|mins?)\b/)??(n(/\b(\d+)\s*hours?\b/)!=null?n(/\b(\d+)\s*hours?\b/)*60:/\bhalf an hour\b/.test(q)?30:null);
   if(weeks!==null)r.weeks=weeks;if(frequency!==null)r.frequency=frequency;if(minutes!==null)r.minutes=minutes;
-  const equipment=[];for(const key of Object.keys(Ref.EQUIPMENT)){const name=key==='dumbbells'?'(?:dumbbells?|dbs?)':key==='bodyweight'?'body\\s*weight':key==='pullup'?'pull\\s*up bar':['barbell','cable','machine'].includes(key)?key+'s?':key;if(new RegExp('\\b'+name+'\\b').test(q)&&!new RegExp('(?:no|without|avoid|don.t have|do not have)\\s+(?:a\\s+|any\\s+)?'+name+'\\b').test(q))equipment.push(key);}
+  // Negative equipment corrects even an earlier chat selection.
+  const equipment=[],unavailable=[];
+  const equipmentNoun='(?:barbells?|dumbbells?|dbs?|cables?|machines?|body\\s*weight|pull\\s*up bar|cardio(?: equipment)?)';
+  for(const key of Object.keys(Ref.EQUIPMENT)){
+    const name=key==='dumbbells'?'(?:dumbbells?|dbs?)':key==='bodyweight'?'body\\s*weight':key==='pullup'?'pull\\s*up bar':['barbell','cable','machine'].includes(key)?key+'s?':key;
+    const negative=new RegExp('\\b(?:no|without|avoid|don.t have|do not have|not using|cannot use|can.t use)\\s+(?:(?:a|any)\\s+)?(?:'+equipmentNoun+'\\s*(?:,|and|or)\\s*(?:(?:a|any)\\s+)?){0,4}'+name+'\\b').test(q)
+      ||(['cable','machine'].includes(key)&&/\b(?:no|without)\s+(?:a\s+|any\s+)?cable\s+machines?\b/.test(q));
+    if(negative)unavailable.push(key);
+    else if(new RegExp('\\b'+name+'\\b').test(q))equipment.push(key);
+  }
   if(/\bfull gym\b/.test(q))equipment.push('barbell','dumbbells','cable','machine','bodyweight');
   if(equipment.length)r.equipment=[...new Set(equipment)];
   if(/\bno (equipment|weights)\b/.test(q))r.equipment=['bodyweight'];
+  r.equipment=r.equipment.filter(key=>!unavailable.includes(key));
   if(/\bupper body\b/.test(q))r.focus='upper';else if(/\blower body|leg workout\b/.test(q))r.focus='lower';else if(/\bfull body\b/.test(q))r.focus='full';
   else if(/\bbench (?:workout|session)\b/.test(q))r.focus='upper';
   if(/\b(bench|pressing|press)\b/.test(q)&&/\b(priority|prioritize|focus|extra|improve|stuck)\b/.test(q))r.priority='bench';
@@ -42,6 +52,7 @@
   if(r.styleUnclear)out.push('Which loading style do you mean: daily undulating, weekly undulating, or waves?');
   if(r.unsupportedDomain||r.meet)out.push('Use the dedicated reviewed sport or meet planner for this request. This chat draft path does not substitute general resistance work for technical practice or meet peaking.');
   if(r.dateUnsupported)out.push('Daily chat drafts currently support today or tomorrow. Use Calendar for another date; I will not silently change it.');
+  if(r.kind==='program'&&r.goal==='strength'&&r.equipment.length&&!r.equipment.includes('barbell'))out.push('The standalone strength designer needs barbell access, plus separately confirmed rack, bench and plates. Choose available equipment or use the reviewed muscle-growth planner; no equipment is assumed.');
   if(r.kind==='program'&&!r.goal)out.push('Should this be a strength/powerlifting program or a muscle-growth program?');
   if(r.kind==='program'&&r.weeks==null)out.push('How many weeks should the program last?');
   if(r.kind==='program'&&r.frequency==null)out.push('How many training days per week do you want? Availability alone does not set frequency.');
