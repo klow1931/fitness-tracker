@@ -1,3 +1,7 @@
+# v3.26.1 — Coach action navigation fixes
+
+Plan, check-in, review and proposal shortcuts reveal and focus their destinations without tab scroll restoration overriding them. Check-in can open today’s form from historical evidence. Today’s date follows the device’s local calendar. No schema migration or automatic training changes.
+
 # v3.26.0 — Guided programming, clearer reviews and reversible edits
 
 - Guided goal/schedule/equipment/review screens preserve answers on Back; the primary strength/meet planner uses guided steps with an all-fields escape. Hypertrophy and sport builders also offer guided steps.

@@ -2,7 +2,7 @@
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function report(){return LoadnoteTrainingHub.inspect(data,{asOf:today(),draft:readLoggerDraft(),sportDraft:!!window.LoadnoteSportPlannerUI?.hasDraft?.()});}
- function plan(){showTab('coach');showSubTab('coach','co-programs');window.renderProgrammingWorkspace?.();const host=document.getElementById('programming-workspace');host?.scrollIntoView({block:'start'});const button=host?.querySelector('#programming-workspace-primary');button?.focus({preventScroll:true});}
+ function plan(){showTab('coach');showSubTab('coach','co-programs');window.renderProgrammingWorkspace?.();revealNavigationTarget('programming-workspace','#programming-workspace-primary');}
  function weekMarkup(w){
   if(w.status!=='ready')return '<p role="alert">'+esc(w.notice)+'</p><button type="button" class="btn-secondary" data-hub-calendar>Review Calendar</button>';
   const c=w.counts,b=w.brief;
