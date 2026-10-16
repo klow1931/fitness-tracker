@@ -51,3 +51,15 @@ test('offline history rejects cross-topic references and uses latest corrected s
  await full('What about last time?');
  await expect(page.locator('#chat-messages .cc-msg').last()).not.toContainText('Chest-supported Row');
 });
+
+test('verified offline training facts do not call online Coach even with a signed-in client',async({page})=>{
+ await page.evaluate(()=>{
+  window.v331OnlineCalls=0;
+  LoadnoteCoachClient.ensureSignedIn=async()=>{window.v331OnlineCalls++;return true;};
+  LoadnoteCoachClient.ask=async()=>{window.v331OnlineCalls++;throw Error('This factual answer must stay local');};
+ });
+ await page.locator('#coach-companion-launcher').click();
+ await ask(page,'Show my chest supported row history');
+ await ask(page,'What do you know about my training?');
+ expect(await page.evaluate(()=>window.v331OnlineCalls)).toBe(0);
+});
