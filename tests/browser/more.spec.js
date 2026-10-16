@@ -13,11 +13,11 @@ async function openProgressExplore(page){
 test('Calendar month controls and keyboard day selection',async({page})=>{
  await page.evaluate(()=>showTab('calendar'));
  await expect(page.locator('#calendar-grid button')).toHaveCount(42);
- const old=await page.locator('#cal-month-label').textContent();await page.getByRole('button',{name:'Next month',exact:true}).click();
+ const old=await page.locator('#cal-month-label').textContent();await page.getByRole('button',{name:'Previous month',exact:true}).click();
  expect(await page.locator('#cal-month-label').textContent()).not.toBe(old);
  await page.locator('#calendar-grid button').nth(10).focus();await page.keyboard.press('Enter');
  await expect(page.locator('#calendar-grid button[aria-pressed="true"]')).toHaveCount(1);
- await page.getByRole('button',{name:'Log workout this day'}).click();await expect(page.locator('#exercise-rows')).toBeVisible();
+ await page.locator('[data-calendar-action=workout]').click();await expect(page.locator('#exercise-rows')).toBeVisible();
 });
 test('PR entry and record cards remain usable',async({page})=>{
  await openProgressExplore(page);
