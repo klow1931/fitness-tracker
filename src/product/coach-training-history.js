@@ -24,9 +24,12 @@
    if(item.role!=='user')continue;
    const q=clean(item.content);
    if(Support.health(q))return null;
+   const rows=matches(state,q);
+   // A named follow-up updates the referent; an unnamed one inherits it.
+   if(follow(q)&&rows.length===1)return rows[0];
    if(follow(q))continue;
    if(!historyQuestion(q))return null;
-   const rows=matches(state,q);return rows.length===1?rows[0]:null;
+   return rows.length===1?rows[0]:null;
   }
   return null;
  }
