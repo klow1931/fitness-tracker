@@ -1,3 +1,7 @@
+# v3.33.0 — Explainable strength recommendations
+
+Added an evidence-backed **Why this recommendation?** detail for squat, bench and deadlift decisions, including the actual recent recorded exposures, estimated-capacity trend, RPE changes, and policy thresholds. Offline Coach now answers explicit lift-direction questions using the same deterministic engine, without changing training or inventing a new prescription. Added node/browser tests and release metadata. See docs/releases-v3.33.md.
+
 # v3.32.0 — Optional local AI model choice
 
 Added an explicit inspect-before-download flow for optional WebGPU Coach models. The runtime catalog is filtered by GPU estimate and required features. Users can preview compatible model IDs and GPU memory estimates, select a verified option, then separately approve the model weights download and built-in explanation checks. No new dependency on a model, no unapproved changes to workouts, no data migration. See docs/releases-v3.32.md.
