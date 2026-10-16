@@ -1,4 +1,25 @@
 /* Fitness Tracker — custom styles (pure CSS; works with Tailwind CDN utilities in HTML) */
+.program-wizard-header,.program-wizard-actions,.edit-undo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem;margin:.8rem 0;min-width:0}
+.program-wizard-progress{flex:1 1 14rem;font-weight:700}
+.program-wizard-step{min-width:0;overflow-wrap:anywhere;margin:1rem 0}
+.program-wizard-step[hidden],.program-wizard-actions[hidden]{display:none!important}
+.program-wizard-step h3{font-size:1.05rem;font-weight:750;margin:.6rem 0}
+.program-wizard-step fieldset{min-width:0}
+.program-wizard-header button,.program-wizard-actions button,.edit-undo-bar button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.program-selected-summary,.program-overview{padding:1rem;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;margin:.8rem 0;overflow-wrap:anywhere;min-width:0}
+.program-selected-summary dt,.program-overview dt,.program-term-help dt{font-weight:700;margin-top:.65rem}
+.program-selected-summary dd,.program-overview dd,.program-term-help dd{margin:0 0 .5rem}
+.program-overview ul{padding-left:1.2rem;list-style:disc}
+.program-status-path{display:flex;flex-wrap:wrap;gap:.4rem;margin:.75rem 0;padding:0;list-style:none}
+.program-status-path li{padding:.3rem .55rem;border:1px solid var(--line,#cbd5e1);border-radius:.4rem;font-size:.78rem;overflow-wrap:anywhere}
+.program-status-path [aria-current=step]{border-color:var(--brand,#4f46e5);font-weight:800;text-decoration:underline;text-underline-offset:.2rem}
+.program-field-error{color:#b91c1c;font-weight:600;overflow-wrap:anywhere;margin:.3rem 0 .7rem}
+body.dark .program-field-error{color:#fca5a5}
+[data-ux-invalid]{outline:2px solid #b91c1c;outline-offset:2px}
+.program-term-help{margin:.6rem 0;min-width:0;overflow-wrap:anywhere}
+.program-term-help summary{min-height:44px;padding:.5rem 0;cursor:pointer;font-weight:600}
+.edit-undo-bar{padding:.75rem;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;overflow-wrap:anywhere}
+.edit-undo-bar>p{flex:1 1 100%;margin:0}
 #onboarding-card{min-width:0;overflow-wrap:anywhere}
 #onboarding-card > .flex:first-child{flex-wrap:wrap}
 #onboarding-card > .flex:first-child > div{flex:1 1 12rem;min-width:0}

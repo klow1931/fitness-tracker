@@ -1,3 +1,13 @@
+# v3.26.0 — Guided programming, clearer reviews and reversible edits
+
+- Guided goal/schedule/equipment/review screens preserve answers on Back; the primary strength/meet planner uses guided steps with an all-fields escape. Hypertrophy and sport builders also offer guided steps.
+- Plain-language phase names, an expandable training glossary, training-max help beside the inputs and selected-settings summaries explain existing rules without inventing missing loads or effort.
+- Program previews answer when/how long/what first/how training changes/what confirmation does. Suggested settings and their evidence share one expandable review section; normal quality gates and separate scheduling approvals remain intact.
+- Shared Draft → Reviewed → Scheduled → In progress → Finished indicators cover previews, saved plans and lifecycle cards. Cancelled plans stay explicit; sparse or unresolved work is not silently marked finished.
+- Field-level errors reveal the relevant step, open advanced details, preserve entries and focus the problem field. Guided steps check training-day counts and explicit maxes before continuing.
+- One Undo action per surface restores removed logger sets/exercises and unsaved builder movement slots. Calendar Undo appends an audit revision, preserves unrelated data, refuses stale/linked-work changes and keeps failed saves retryable.
+- No schema migration or new medical/programming authority. Native/web version metadata and offline asset lists stay aligned.
+
 # v3.25.0 — Choose your start and simplify Home
 
 - Three first-run paths: guided training setup, an existing program, or an empty workout log. Manual logging requires neither a programming profile nor a one-rep max.

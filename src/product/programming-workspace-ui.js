@@ -25,11 +25,11 @@
         case 'review-sport': window.LoadnoteSportPlannerUI?.show?.(route.sourceId);break;
         case 'hypertrophy': window.LoadnoteGuidedPlanUI?.open?.('hypertrophy');break;
         case 'review-hypertrophy': window.LoadnoteHypertrophyBuilderUI?.show?.(route.sourceId);break;
-        case 'profile': window.openProgrammingProfile?.();break;
+        case 'profile': window.openProgrammingProfile?.({guided:true});break;
         case 'quick': window.LoadnoteProgramBuilderUI?.open?.();break;
-        case 'phase': window.LoadnotePhaseBuilderUI?.open?.();break;
+        case 'phase': window.LoadnotePhaseBuilderUI?.open?.(null,{guided:true});break;
         case 'review-phase': panel('programming-tools-panel');panel('phase-builder-panel');window.LoadnotePhaseBuilderUI?.show?.(route.sourceId);break;
-        case 'phase-meet': window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;
+        case 'phase-meet': window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true,guided:true});break;
         case 'meet': {const source=phaseSource(route.sourceId);if(source)window.LoadnoteMeetCycleUI?.open?.(source);else window.LoadnotePhaseBuilderUI?.open?.(null,{continueToMeet:true});break;}
         case 'view-reviewed-cycle': panel('programming-tools-panel');panel('phase-builder-panel');setTimeout(()=>document.getElementById('meet-cycle')?.scrollIntoView({behavior:'smooth',block:'start'}),50);break;
         case 'view-current': window.renderProgramLifecycle?.();window.renderTodayTraining?.();document.getElementById('decision-action-center')?.scrollIntoView({behavior:'smooth',block:'start'});break;

@@ -1,6 +1,9 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.25.0';
+const CACHE = 'loadnote-v3.26.0';
 const ASSETS = [
+  './src/product/program-usability.js',
+  './src/product/program-usability-ui.js',
+  './src/product/edit-undo-ui.js',
   './src/product/beginner-experience.js',
   './src/product/beginner-experience-ui.js',
   './privacy.html', './support.html', './delete-account.html', './src/product/plate-calculator.js', './src/product/decision-boundaries.js',
