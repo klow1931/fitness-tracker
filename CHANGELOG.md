@@ -1,3 +1,7 @@
+# v3.27.1 — iPhone interface cleanup
+
+Separate mobile actions, simplify empty schedule summaries, improve scheduling dialog spacing and safe areas, and remove Why from the empty Training plan card.
+
 # v3.27.0 — Calendar day shortcuts
 
 Tap a day to log a past workout, schedule a new workout, or add past nutrition with the date already selected. Existing drafts and planned-session links are protected; day details remain available. Calendar cells use local date keys.
