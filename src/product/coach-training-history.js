@@ -68,7 +68,7 @@
     if(!done(set)){excluded++;continue;}
     const n=Number(set.reps),reps=set.reps!==null&&set.reps!==''&&Number.isInteger(n)&&n>0?n:null;
     const weight=formatWeight(set.weight,unit),rpe=Number(set.rpe),effort=set.rpe!=null&&set.rpe!==''&&Number.isFinite(rpe)&&rpe>=1&&rpe<=10?rpe:null;
-    if(reps===null&&weight==='load not recorded'){unmarked++;continue;}
+    if(reps===null&&weight==='load not recorded'){excluded++;continue;}
     if(set.done===true||set.completed===true)confirmed++;else unmarked++;
     sets.push({reps,weight,rpe:effort});
    }
