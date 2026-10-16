@@ -38,7 +38,7 @@ test('system appearance follows live OS changes and reset restores original look
 });
 test('custom color stays legible on a narrow phone without horizontal overflow',async({page})=>{
  await page.setViewportSize({width:320,height:740});
- await page.locator('#appearance-custom-color').fill('#ffff00');
+ await page.locator('#appearance-custom-color').evaluate(el=>{el.value='#ffff00';el.dispatchEvent(new Event('change',{bubbles:true}));});
  await expect(page.locator('body')).not.toHaveClass(/dark/);
  const outcome=await page.evaluate(()=>{
   const button=document.querySelector('.appearance-preview-action');
