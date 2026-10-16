@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.28.0 · Development build.**
+**v3.29.0 · Development build.**
 
-Offline conversational planning: [v3.28 release notes](docs/releases-v3.28.md). iPhone interface cleanup: [v3.27.1 release notes](docs/releases-v3.27.1.md). Calendar day shortcuts: [v3.27 release notes](docs/releases-v3.27.md). Previous Coach action fix: [v3.26.1 release notes](docs/releases-v3.26.1.md). Guided programming and reversible edits: [v3.26 release notes](docs/releases-v3.26.md). Previous beginner experience: [v3.25 release notes](docs/releases-v3.25.md). Engineering checks do not replace independent coaching review, owner signing or physical-device acceptance.
+Training quality and coach corrections: [v3.29 release notes](docs/releases-v3.29.md). Offline conversational planning: [v3.28 release notes](docs/releases-v3.28.md). iPhone interface cleanup: [v3.27.1 release notes](docs/releases-v3.27.1.md). Calendar day shortcuts: [v3.27 release notes](docs/releases-v3.27.md). Previous Coach action fix: [v3.26.1 release notes](docs/releases-v3.26.1.md). Guided programming and reversible edits: [v3.26 release notes](docs/releases-v3.26.md). Previous beginner experience: [v3.25 release notes](docs/releases-v3.25.md). Engineering checks do not replace independent coaching review, owner signing or physical-device acceptance.
 
 Android-first beta: [Windows emulator installation and safe updates](docs/android-beta-windows.md). The **Loadnote Android beta** workflow publishes a separate debug-signed `.beta` APK only after offline emulator acceptance. Production release/iOS signing and physical-device acceptance remain separate gates. [Free-first monetization options](docs/monetization-options.md) are proposals only; no ads or billing SDK is installed.
 
