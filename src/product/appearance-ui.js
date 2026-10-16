@@ -15,7 +15,7 @@
    '<input id="appearance-custom-color" type="color" aria-label="Custom accent color" value="'+(p.customColor||'#4f46e5')+'"></label>'+
    '<fieldset><legend>Display mode</legend><div class="appearance-mode" role="group" aria-label="Display mode">'+
    ['light','dark','system'].map(mode=>'<button type="button" class="btn-secondary" data-appearance-mode="'+mode+'" aria-pressed="false">'+(mode==='system'?'System':mode==='dark'?'Dark':'Light')+'</button>').join('')+'</div></fieldset>'+
-   '<div class="appearance-preview" aria-label="Theme preview"><span class="appearance-preview-label">Preview</span><div><b>Today's workout</b><span class="appearance-preview-action">Start workout</span></div></div>'+
+   '<div class="appearance-preview" aria-label="Theme preview"><span class="appearance-preview-label">Preview</span><div><b>Today’s workout</b><span class="appearance-preview-action">Start workout</span></div></div>'+
    '<div class="appearance-actions"><button type="button" class="btn-secondary" id="appearance-reset">Reset to default</button><span id="appearance-status" role="status" aria-live="polite"></span></div>'+
    '</div></details>';
  }
