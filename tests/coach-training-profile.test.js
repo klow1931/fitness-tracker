@@ -23,6 +23,8 @@ for(const q of ['What is my squat training max?','How was my workout yesterday?'
 const missing=Tool.answer({...state,programmingProfiles:[]},'What do you know about my training?',opts);
 assert.match(missing.text,/not completed a saved training setup/);
 assert.doesNotMatch(missing.text,/intermediate|barbell/);
+assert.equal(Tool.answer(state,'What equipment for Lat Pulldown?',opts),null,'Movement-equipment guidance stays with the exercise tool');
+assert.equal(Tool.answer(state,'Review my training goal Basketball season',opts),null,'Sport goal review stays with sport-training');
 assert.equal(Conversation.answer(state,'What equipment did I say I have?',opts).source,'Saved training preferences');
 assert.equal(JSON.stringify(state),before);
 console.log('v3.31 saved athlete context: explicit preferences, bounded follow-ups, privacy, missing setup and non-interference passed');
