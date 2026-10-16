@@ -1,3 +1,7 @@
+# v3.31.0 — Offline Coach training evidence and saved preferences
+
+Add focused, read-only training tools so Offline Coach can compare recent saved sets for named exercises beyond competition lifts and answer questions about explicitly saved athlete goals, schedule, equipment and movement choices. Session-only follow-ups revalidate current records; unknown RPE, set completion and ambiguous identities remain explicit. Optional local model cannot overwrite those factual answers. No schema migration, progression-dose change or fabricated autonomous training. See docs/releases-v3.31.md.
+
 # v3.30.0 — Personal appearance preferences
 
 Six accent presets, accessible custom colors, device-local Light/Dark/System mode, a compact Profile picker, instant preview and Reset to default. Existing header switch, charts and navigation follow the active appearance. CSS is packaged for offline web and native shells; no training schema or dose changes. See docs/releases-v3.30.md.
