@@ -64,6 +64,13 @@ test('v2.61 does not guess when two scheduled programs overlap today',async({pag
  const lifecycle=page.locator('#program-lifecycle-home');
  await expect(lifecycle).toContainText('Review overlapping programs');
  await expect(lifecycle).toContainText('Loadnote will not guess');
+ await expect(lifecycle.locator('.program-lifecycle-warning')).toBeVisible();
+ await expect(lifecycle.locator('summary')).toHaveCount(0);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');});
+ const coach=page.locator('#decision-action-center .program-lifecycle-empty');
+ await expect(coach.locator('.program-lifecycle-warning')).toBeVisible();
+ await expect(coach).toContainText('Loadnote will not guess');
+ await expect(coach.locator('summary')).toHaveCount(0);
 });
 
 test('v2.61 active program card remains compact on mobile',async({page})=>{

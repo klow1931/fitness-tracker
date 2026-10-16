@@ -43,7 +43,8 @@
  function card(r,{compact=false}={}){
    if(!r)return '';
    if(!r.program){
-     return '<div class="program-lifecycle-empty"><p class="eyebrow">TRAINING PLAN</p><h3>'+esc(r.nextAction?.label||'No active program')+'</h3><button type="button" class="btn-primary" data-lifecycle-action>'+esc(actionLabel(r.nextAction?.kind))+'</button></div>';
+     const warning=r.status==='ambiguous'?'<p class="program-lifecycle-warning" role="status">'+esc(r.nextAction?.detail||'')+'</p>':'';
+     return '<div class="program-lifecycle-empty"><p class="eyebrow">TRAINING PLAN</p><h3>'+esc(r.nextAction?.label||'No active program')+'</h3>'+warning+'<button type="button" class="btn-primary" data-lifecycle-action>'+esc(actionLabel(r.nextAction?.kind))+'</button></div>';
    }
    const kind=r.program.kind==='sport-program'?'Sport development program':r.program.kind==='hypertrophy-program'?'Hypertrophy program':r.program.kind==='meet-cycle'?(r.program.eventType==='competition'?'Competition cycle':'Mock-meet cycle'):'Phase program';
    const missed=(r.missedReviews||[]).length?'<p class="program-lifecycle-history-note">'+r.missedReviews.length+' earlier review window'+(r.missedReviews.length===1?' passed':'s passed')+' without a saved review. Past prescriptions stay unchanged; this does not block current training.</p>':'';

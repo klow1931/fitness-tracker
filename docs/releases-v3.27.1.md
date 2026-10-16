@@ -5,5 +5,6 @@
 - Scheduling dialogs have spaced buttons, clearer typography and shorter introductory text, with safe-area-aware height limits.
 - Mobile header padding respects the device safe area.
 - Remove the Why disclosure from the empty Training plan card.
+- Keep overlapping-program warnings visible as plain text on Home and Coach; Loadnote still does not guess which program to use.
 
 No training-data or schema changes.
