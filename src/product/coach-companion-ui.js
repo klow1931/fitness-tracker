@@ -105,7 +105,7 @@
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
   document.body.appendChild(panel);
-  append('I’m here throughout Loadnote. During a workout I can read your current set, answer questions from your training context, and control the rest timer.','assistant');
+  append('I can help draft a program or daily workout offline, explain your training, and control the rest timer. Drafts need your review; chat does not save or complete training.','assistant');
   refresh();
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();close();}});
@@ -120,7 +120,7 @@
  }
  function attachReply(message,reply){for(const host of [message,message?.fullView]){window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);}}
  function quickButtons(context){
-  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['How did this week go?','Explain my next workout','What should I focus on next?'];
+  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }
@@ -183,7 +183,7 @@
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
-  if(localMode){
+  if(localMode&&!local?.planning){
    const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
    const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
    const generated=await ai.respond(text,{context,history,cards,canonical:local});
@@ -197,7 +197,7 @@
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   const message=append(reply,'assistant',local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion'));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   const message=append(reply,'assistant',local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion'));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
@@ -206,7 +206,7 @@
    history.push({role:'user',content:text},{role:'assistant',content:reply});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }catch(error){
    let reply=offline;try{if(!reply&&typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
-   reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
  }
  function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}

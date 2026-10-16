@@ -1,3 +1,7 @@
+# v3.28.0 — Offline conversational planning
+
+Coach gathers program/workout requirements over turns, prefills reviewed program designers and drafts daily planned targets with explicit fresh loads. Equipment, confirmed exclusions, stale context and existing draft guards remain enforced. Concept-based reference retrieval understands more paraphrases. No new internet research or model-download behavior.
+
 # v3.27.1 — iPhone interface cleanup
 
 Separate mobile actions, simplify empty schedule summaries, improve scheduling dialog spacing and safe areas, and remove Why from the empty Training plan card.

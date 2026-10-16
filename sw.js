@@ -1,6 +1,8 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.27.1';
+const CACHE = 'loadnote-v3.28.0';
 const ASSETS = [
+  './src/product/offline-planner.js',
+  './src/product/offline-planner-ui.js',
   './src/product/calendar-day-actions-ui.js',
   './src/product/program-usability.js',
   './src/product/program-usability-ui.js',
