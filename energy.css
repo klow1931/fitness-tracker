@@ -827,6 +827,10 @@ body.dark .coach-follow-up{border-color:#475569}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .smart-coach-actions button{font-size:14px;line-height:1.35;padding:9px 12px;min-height:44px}
 .cc-msg .smart-coach-actions button{font-size:12px;line-height:1.4;padding:7px 9px;min-height:44px}
+.cc-messages > .cc-msg,#chat-messages > .cc-msg{flex:0 0 auto}
+/* Chat actions stack vertically; the shared row layout's 140px basis must
+   not become a button height or shift the nested scroller during focus. */
+@media(max-width:640px){.cc-msg .smart-coach-actions .btn-secondary{flex:0 0 auto}}
 
 /* v3.5 — consistent stacked disclosures and compact program actions.
    Support both direct b/small children and the existing span wrapper. */
