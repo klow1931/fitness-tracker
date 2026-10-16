@@ -210,6 +210,7 @@ const ASSETS = [
   './src/product/decision-readiness.js',
   './src/product/block-decision-context.js',
   './src/product/decision-engine.js',
+  './src/product/decision-explanation.js',
   './src/product/decision-backtest.js',
   './src/product/decision-feedback.js',
   './src/product/decision-performance.js',
