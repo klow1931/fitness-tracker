@@ -41,6 +41,10 @@
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
+  // A bounded read-only tool handles named, non-competition exercise history.
+  // Fresh corrected workout records, never chat assertions, supply the evidence.
+  const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,question,{asOf,unit,history});
+  if(exerciseHistory)return exerciseHistory;
   // Recorded performance comparison is not an approved-program-change review.
   if(intent.topic==='history'){
    try{
