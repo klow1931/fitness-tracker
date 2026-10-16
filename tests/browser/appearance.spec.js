@@ -19,7 +19,11 @@ test('preset themes and light/dark mode persist without rewriting workout histor
  await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
  await expect(page.locator('body')).toHaveClass(/dark/);
  expect(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--brand').trim())).toBe('#0369a1');
- await page.locator('#dark-toggle').click();
+ // The legacy header switch is deliberately hidden in the streamlined shell.
+ // Use the visible Profile control rather than bypassing the intended navigation.
+ await page.evaluate(()=>showTab('profile'));
+ await page.locator('#profile-appearance > summary').click();
+ await page.locator('[data-appearance-mode="light"]').click();
  await expect(page.locator('body')).not.toHaveClass(/dark/);
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote-appearance-v1')));
  expect(saved.mode).toBe('light');
