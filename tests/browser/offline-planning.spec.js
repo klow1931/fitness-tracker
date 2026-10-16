@@ -88,3 +88,25 @@ test('a new user reviews setup explicitly; workout preview fits a narrow phone',
  await page.evaluate(state=>{data.programmingProfiles=state.programmingProfiles;},phaseFixture().state);const d=await daily(page);await page.setViewportSize({width:320,height:740});await page.evaluate(()=>document.documentElement.style.fontSize='20px');
  await review(page,d);expect(await d.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);await page.screenshot({path:info.outputPath('offline-workout-review.png')});
 });
+
+test('equipment correction across chat turns does not reuse unavailable gear',async({page,context})=>{
+ const original=await page.evaluate(()=>JSON.stringify(data));await context.setOffline(true);
+ await ask(page,'Create an upper body workout today for 30 minutes with a barbell');
+ const withdrawn=await ask(page,'No barbell');
+ await expect(withdrawn).toContainText('What equipment can you use');
+ await expect(withdrawn.getByRole('button',{name:'Draft my workout'})).toHaveCount(0);
+ await ask(page,'Dumbbells instead');
+ await page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true}).last().click();
+ const d=page.locator('#offline-plan-dialog');await expect(d).toBeVisible();
+ await expect(d.locator('[data-offline-movement=dumbbell_bench]')).toHaveCount(1);
+ expect(await d.locator('[data-offline-movement]').evaluateAll(rows=>rows.every(row=>!row.textContent.includes('Barbell')))).toBe(true);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(original);
+ expect(await page.evaluate(()=>window.planningOnlineCalls)).toBe(0);
+});
+test('updated exercise role invalidates a reviewed daily draft before it can load',async({page})=>{
+ const d=await daily(page);await review(page,d);await d.locator('#offline-load-confirm').check();
+ await page.evaluate(()=>{data.exerciseRoles[0].revisions.at(-1).context.notes='Updated movement role review';});
+ await d.locator('#offline-load-workout').click();
+ await expect(d.locator('#offline-plan-error')).toContainText('context changed');
+ expect(await page.evaluate(()=>pendingPrescription)).toBe(null);
+});

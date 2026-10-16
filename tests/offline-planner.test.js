@@ -31,4 +31,19 @@ assert(!P.candidates(s,P.parse('Create a full body workout 30 minutes dumbbells,
 assert(Library.retrieve('Why am I stuck on bench?').some(c=>['workload','accessory-priorities'].includes(c.id)));
 assert(Library.retrieve('How can I get bigger?').some(c=>c.id==='hypertrophy'));assert(Library.retrieve('Explain DUP').some(c=>c.id==='phase-purpose'));
 assert.equal(C.answer(s,'Create a 12-week strength program 3 days 60 minutes full gym',{asOf:'2026-10-16'}).source,'Shared coaching · offline planning');
+
+const equipmentRequest=P.parse('Create an upper body workout today for 30 minutes with a barbell');
+const withdrawn=P.parse('No barbell',equipmentRequest);
+assert.deepEqual(withdrawn.equipment,[],'Negative-only follow-up removes prior equipment');
+assert(P.gaps(withdrawn,s).some(v=>/What equipment/.test(v)),'Missing equipment requires clarification');
+assert.deepEqual(P.parse('Dumbbells instead',withdrawn).equipment,['dumbbells'],'Next turn replaces unavailable gear');
+assert.deepEqual(P.parse('No barbell or dumbbells',P.parse('Create a full body workout 45 minutes full gym')).equipment.sort(),['bodyweight','cable','machine']);
+assert.deepEqual(P.parse('No cable machines',P.parse('Create a full body workout 45 minutes full gym')).equipment.sort(),['barbell','bodyweight','dumbbells']);
+const notAvailable=P.parse('Create a 12-week strength program 4 days 60 minutes full gym without a barbell');
+assert(!notAvailable.equipment.includes('barbell'));
+assert(P.gaps(notAvailable,s).some(v=>/needs barbell access/.test(v)));
+const prior=P.answer(s,'Create a 12-week strength program 4 days 60 minutes full gym');
+const corrected=P.answer(s,'No barbell',{history:[{role:'assistant',content:prior.text,planning:prior.planning}]});
+assert(corrected&&!corrected.actions.some(a=>a.kind==='offline-plan'),'Unsupported equipment cannot reach a strength draft');
+
 console.log('Offline planning: multi-turn requests, supported bounds, equipment, exclusions, explicit doses, safety, immutable previews and concept retrieval passed');
