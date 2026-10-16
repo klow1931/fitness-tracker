@@ -19,3 +19,28 @@ test('opted-in local explanations retain canonical guidance and medical question
  const before=await page.evaluate(()=>JSON.stringify(data));await page.locator('#coach-companion-launcher').click();await ask(page,'Explain dynamic effort');await expect(page.locator('#cc-messages .assistant').last()).toContainText('Local AI explanation (experimental');await expect(page.locator('#cc-messages .assistant').last()).toContainText('Reviewed guidance:');expect(await page.evaluate(()=>modelRequests)).toBe(3);
  await ask(page,'My Achilles hurts with pain');await expect(page.locator('#cc-messages .assistant').last()).toContainText('cannot');expect(await page.evaluate(()=>modelRequests)).toBe(3);expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
+
+test('local model inspection exposes compatible choices without downloading weights or changing training',async({page})=>{
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ await page.evaluate(()=>{
+  window.v332Inspections=0;window.v332Downloads=0;window.v332Selection=null;
+  const ai=window.LoadnoteLocalCoachAI;
+  ai.listModels=async()=>{window.v332Inspections++;return [{id:'Small-Instruct',estimatedGpuMB:560},{id:'Medium-Instruct',estimatedGpuMB:1190}];};
+  ai.enable=async o=>{window.v332Downloads++;window.v332Selection=o.modelId;return {...ai.snapshot(),status:'ready',model:o.modelId,memoryMB:1190};};
+  LoadnoteCoachingLibraryUI.open({localAI:true});
+ });
+ const d=page.locator('#coaching-library-dialog');
+ await expect(d.locator('#local-ai-model')).toBeDisabled();
+ await expect(d.locator('#local-ai-model-note')).toContainText('No model list inspected');
+ await d.locator('#local-ai-check').click();
+ await expect(d.locator('#local-ai-model')).toBeEnabled();
+ await expect(d.locator('#local-ai-model option')).toHaveCount(3);
+ await expect(d.locator('#local-ai-model-note')).toContainText('2 compatible instruction model');
+ expect(await page.evaluate(()=>window.v332Downloads)).toBe(0);
+ await d.locator('#local-ai-model').selectOption('Medium-Instruct');
+ await d.locator('#local-ai-consent').check();
+ await d.locator('#local-ai-enable').click();
+ expect(await page.evaluate(()=>window.v332Selection)).toBe('Medium-Instruct');
+ expect(await page.evaluate(()=>window.v332Downloads)).toBe(1);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});

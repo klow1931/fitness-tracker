@@ -19,6 +19,7 @@ assert(scripts.indexOf('src/product/decision-readiness.js')<scripts.indexOf('src
 assert(scripts.indexOf('src/product/coach-training-history.js')<scripts.indexOf('src/product/coach-conversation.js'));
 assert(scripts.indexOf('src/product/programming-profile.js')<scripts.indexOf('src/product/coach-training-profile.js'));
 assert(scripts.indexOf('src/product/coach-training-profile.js')<scripts.indexOf('src/product/coach-conversation.js'));
+assert(scripts.indexOf('src/product/local-coach-models.js')<scripts.indexOf('src/product/local-coach-ai.js'),'Model compatibility policy must load first');
 for(const dependency of ['accessory-review','coach-support','session-intent','schedule'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/accessory-follow-up.js'),'Accessory follow-up must load after '+dependency);
 assert(scripts.indexOf('src/product/accessory-follow-up.js')<scripts.indexOf('src/product/coach-conversation.js'));
 const version=JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version;
