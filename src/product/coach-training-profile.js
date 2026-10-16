@@ -7,7 +7,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Support){
  'use strict';
  const clean=q=>String(q||'').trim().replace(/\s+/g,' ').slice(0,500);
- const contextQuestion=q=>/\b(what|which|show|tell|know|remember|remind|saved|recorded|have|do i have)\b.*\b(my|about me|about my|for me|i (have|saved))\b.*\b(training|setup|goal|equipment|days|schedule|preferences|exclusions|availability|sessions?|time|exercise)\b|\b(my|athlete) (profile|training setup|preferences)\b|\b(what equipment|which equipment|my available days|my training goal)\b/i.test(q);
+ const contextQuestion=q=>/\b(what|which|show|tell|know|remember|remind)\b.*\b(my|about my|for me)\b.*\b(training setup|training preferences|goal|equipment|available days|training days|schedule|preferences|exclusions|session time|preferred exercises|avoided exercises)\b|\b(my|athlete) (profile|training setup|preferences)\b|\b(what equipment|which equipment|my available days|my training goal|what.*know about my training)\b/i.test(q);
  const specific=q=>/\b(equipment|available days|schedule|session time|session length|goals?|training setup|preferences|exclusions|avoided exercises|preferred exercises)\b/i.test(q);
  const follow=q=>/^(and|what about) (my |the )?(equipment|goals?|schedule|training days|available days|exclusions|preferred exercises|session time)\??$/i.test(q);
  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
