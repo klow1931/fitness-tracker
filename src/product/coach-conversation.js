@@ -41,6 +41,9 @@
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
+  // Saved athlete preferences can be recalled without inventing cross-session memories.
+  const trainingProfile=(typeof module==='object'&&module.exports?require('./coach-training-profile'):globalThis.LoadnoteCoachTrainingProfile)?.answer(state,question,{asOf,history});
+  if(trainingProfile)return trainingProfile;
   // Recorded performance comparison is not an approved-program-change review.
   if(intent.topic==='history'){
    try{
@@ -61,6 +64,10 @@
    if(accessory)return {...accessory,intent};
    const exercise=(typeof module==='object'&&module.exports?require('./exercise-explanation'):globalThis.LoadnoteExerciseExplanation)?.answer(state,q,{history,live,intelligence});
    if(exercise)return {...exercise,intent};
+   // Lower-priority read-only history: never supersedes accessory/plan reviews
+   // or exercise-specific guidance, which may have approved target context.
+   const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,question,{asOf,unit,history});
+   if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
   const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced)return referenced;
