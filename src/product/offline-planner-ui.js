@@ -10,7 +10,12 @@
   const missing=A().gaps(r,data);if(missing.length){showToast(missing[0],'info');return;}
   const d=modal(),p=LoadnoteProgrammingProfile.current(data.programmingProfiles||[])?.context;
   if(!p){setup(r);return;}
-  if(r.kind==='daily'){daily(d,r,p,ticket);return;}
+  if(r.kind==='daily'){
+   // Show a real, accessible loading state before the asynchronous device read.
+   // A slow or unavailable storage backend must not make the action seem unresponsive.
+   d.innerHTML='<h2 id="offline-plan-title">Preparing your daily workout</h2><p role="status">Reading saved training preferences…</p>';
+   d.showModal();daily(d,r,p,ticket);return;
+  }
   const blocked=p.availableDays.length<r.frequency||r.minutes>p.sessionMinutes;
   d.innerHTML='<h2 id="offline-plan-title">Review your program request</h2><p>'+esc(A().summary(r))+'</p><p>These settings came from your request, not an inferred training dose. Exact loads and movement suitability still need review in the designer.</p>'+(blocked?'<p role="status">The request exceeds your saved available days or session time. Edit setup or ask Coach for a different request; nothing is silently changed.</p>':'')+'<fieldset><legend>Choose '+r.frequency+' days within your saved availability</legend>'+p.availableDays.map((n,i)=>'<label><input type="checkbox" data-offline-day value="'+n+'" '+(i<r.frequency?'checked':'')+'> '+dayNames[n]+'</label>').join('')+'</fieldset><p>Equipment requested: '+esc(r.equipment.join(', '))+'. Confirm the actual setup in the next review. New requests do not clear exclusions or override current intake restrictions.</p><p id="offline-plan-error" role="alert"></p><div class="offline-plan-actions"><button type="button" class="btn-primary" id="offline-program-continue" '+(blocked?'disabled':'')+'>Continue to program draft</button><button type="button" class="btn-secondary" id="offline-edit-setup">Edit training setup</button><button type="button" class="btn-secondary" id="offline-plan-close">Close</button></div>';
   d.querySelector('#offline-edit-setup').onclick=()=>{d.close();setup(r);};d.querySelector('#offline-plan-close').onclick=()=>d.close();
@@ -26,13 +31,13 @@
   }catch(e){d.querySelector('#offline-plan-error').textContent=e.message;}};d.showModal();
  }
  async function daily(d,r,p,ticket){
-  let device;try{device=await window.LoadnoteAdaptiveSessionUI.readProfile();}catch(e){d.innerHTML='<h2 id="offline-plan-title">Review training preferences</h2><p>Device preferences could not be validated. Review them before creating another dose.</p><button type="button" class="btn-secondary">Close</button>';d.querySelector('button').onclick=()=>d.close();d.showModal();return;}
+  let device;try{device=await window.LoadnoteAdaptiveSessionUI.readProfile();}catch(e){d.innerHTML='<h2 id="offline-plan-title">Review training preferences</h2><p>Device preferences could not be validated. Review them before creating another dose.</p><button type="button" class="btn-secondary">Close</button>';d.querySelector('button').onclick=()=>d.close();if(!d.open)d.showModal();return;}
   if(ticket!==generation)return;
   const day=new Date(today()+'T12:00:00Z');if(r.tomorrow)day.setUTCDate(day.getUTCDate()+1);const date=day.toISOString().slice(0,10);
   const scheduled=LoadnoteSchedule.list(data.scheduledSessions||[]).filter(s=>s.date===date&&s.status==='scheduled'&&!(data.workouts||[]).some(w=>w.sessionIntent?.schedule?.id===s.id));
   if(scheduled.length){
    d.innerHTML='<h2 id="offline-plan-title">You already have planned training</h2><p>'+esc(date+' · '+scheduled.map(s=>s.name).join(', '))+'</p><p>Review or adapt the existing plan first. A separate draft will not replace, complete or cancel any Calendar workout.</p><div class="offline-plan-actions"><button type="button" class="btn-primary" id="offline-review-scheduled">Review existing planned session</button><button type="button" class="btn-secondary" id="offline-separate">Draft a separate, unlinked workout</button><button type="button" class="btn-secondary" id="offline-plan-close">Close</button></div>';
-   d.querySelector('#offline-review-scheduled').onclick=()=>{d.close();window.LoadnoteAdaptiveSessionUI.open({requestedMinutes:r.minutes});};d.querySelector('#offline-separate').onclick=()=>standalone(d,r,date,device);d.querySelector('#offline-plan-close').onclick=()=>d.close();d.showModal();return;
+   d.querySelector('#offline-review-scheduled').onclick=()=>{d.close();window.LoadnoteAdaptiveSessionUI.open({requestedMinutes:r.minutes});};d.querySelector('#offline-separate').onclick=()=>standalone(d,r,date,device);d.querySelector('#offline-plan-close').onclick=()=>d.close();if(!d.open)d.showModal();return;
   }
   standalone(d,r,date,device);
  }
