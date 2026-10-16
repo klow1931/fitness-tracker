@@ -36,6 +36,16 @@ function restoreViewPosition(panel) {
     window.scrollTo({top:nav.scroll[key] || 0,behavior:'instant'});
   });
 }
+// An explicit destination takes precedence over a queued tab scroll restore.
+function revealNavigationTarget(id,focusSelector) {
+  const target=document.getElementById(id);if(!target)return false;
+  cancelAnimationFrame(LoadnoteNavigation.frame);
+  for(let el=target;el;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;
+  const focus=focusSelector?target.querySelector(focusSelector):target;
+  if(focus){if(!focus.matches('button,input,select,textarea,a[href],summary,[tabindex]'))focus.tabIndex=-1;focus.focus({preventScroll:true});}
+  target.scrollIntoView({behavior:'instant',block:'start'});
+  return true;
+}
 function navigateTab(name) {
   const nav=LoadnoteNavigation,section=document.getElementById('panel-'+name);
   if(!section)return;
@@ -122,7 +132,7 @@ function initCalmNavigation(){
     const legacy=[...coach.querySelectorAll('.card')].filter(card=>{const title=card.querySelector('h2')?.textContent.trim()||'';return title==='Legacy generator selection'||title==='Legacy program library';});
     if(legacy.length){const details=document.createElement('details');details.className='card calm-advanced-programming';details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);}
   }
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v3.26.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v3.26.1 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});

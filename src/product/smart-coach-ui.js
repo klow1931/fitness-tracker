@@ -24,7 +24,10 @@
   if(a.kind==='wave'){window.LoadnotePhaseBuilderUI?.open?.(null,{periodization:'wave'});return;}
   if(a.kind==='lifecycle'){window.LoadnoteProgramLifecycleUI?.route?.(window.LoadnoteProgramLifecycleUI.currentReport());return;}
   const target=a.kind==='programming'?'programming-workspace':a.kind==='proposals'?'coaching-proposals':a.kind==='check-in'?'coaching-week-form':'shared-coaching-review';
-  const el=document.getElementById(target);if(el){for(let p=el;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;el.scrollIntoView({behavior:'smooth',block:'start'});}
+  // A historical evidence review has no editable check-in. Open today's form
+  // only when needed, preserving an existing unsaved current check-in.
+  if(a.kind==='check-in'&&!document.getElementById(target))window.renderCoachingReview?.();
+  revealNavigationTarget(target,a.kind==='programming'?'#programming-workspace-primary':a.kind==='check-in'?'#coaching-sleep':a.kind==='proposals'?':scope > summary':null);
  }
  function attach(host,reply,ask=null){if(!host||!reply?.actions?.length&&!reply?.followUps?.length)return;const group=document.createElement('div');group.className='smart-coach-actions';
   for(const a of (reply.actions||[]).filter(a=>KINDS.has(a.kind)).slice(0,4)){const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=a.label;b.addEventListener('click',()=>route(a));group.append(b);}
