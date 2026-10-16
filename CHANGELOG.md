@@ -1,3 +1,7 @@
+# v3.30.0 — Personal appearance preferences
+
+Six accent presets, accessible custom colors, device-local Light/Dark/System mode, a compact Profile picker, instant preview and Reset to default. Existing header switch, charts and navigation follow the active appearance. CSS is packaged for offline web and native shells; no training schema or dose changes. See docs/releases-v3.30.md.
+
 # v3.29.0 — Training quality and Coach correction guards
 
 Correct unavailable equipment across offline Coach turns; block strength draft routing without barbell access; invalidate reviewed daily drafts when exercise-role evidence or saved workouts change. Add training-loop tests for reviewed targets versus actual performance, partial set completion, RPE unknowns and kg/lb conversion. No data-schema, programming-dose or model change. See docs/releases-v3.29.md.
