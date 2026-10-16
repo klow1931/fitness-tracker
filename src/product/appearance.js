@@ -90,5 +90,5 @@
   }
   return {KEY,PALETTES,current,set,reset,isDark,apply,listen,contrast,accessible,normalize,tokens};
  }
- return create();
+ return Object.assign(create(),{create});
 });
