@@ -44,10 +44,6 @@
   // Saved athlete preferences can be recalled without inventing cross-session memories.
   const trainingProfile=(typeof module==='object'&&module.exports?require('./coach-training-profile'):globalThis.LoadnoteCoachTrainingProfile)?.answer(state,question,{asOf,history});
   if(trainingProfile)return trainingProfile;
-  // A bounded read-only tool handles named, non-competition exercise history.
-  // Fresh corrected workout records, never chat assertions, supply the evidence.
-  const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,question,{asOf,unit,history});
-  if(exerciseHistory)return exerciseHistory;
   // Recorded performance comparison is not an approved-program-change review.
   if(intent.topic==='history'){
    try{
@@ -68,6 +64,10 @@
    if(accessory)return {...accessory,intent};
    const exercise=(typeof module==='object'&&module.exports?require('./exercise-explanation'):globalThis.LoadnoteExerciseExplanation)?.answer(state,q,{history,live,intelligence});
    if(exercise)return {...exercise,intent};
+   // Lower-priority read-only history: never supersedes accessory/plan reviews
+   // or exercise-specific guidance, which may have approved target context.
+   const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,question,{asOf,unit,history});
+   if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
   const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced)return referenced;
