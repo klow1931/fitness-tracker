@@ -29,6 +29,8 @@
   return nameKey(exercise?.name)===nameKey(marker?.name);
  }
  function setEvidence(set,date,workoutId){
+  // An explicitly skipped, warm-up or unfinished set is not comparable work.
+  if(set?.skipped===true||set?.warmup===true||set?.type==='warmup'||set?.done===false||set?.completed===false)return null;
   const weight=finite(set?.weight),reps=Number(set?.reps);
   if(!(weight>0&&Number.isInteger(reps)&&reps>0))return null;
   const capacity=Core.capacityEvidence(weight,reps,set?.rpe);
@@ -105,13 +107,13 @@
    const seen=new Set();
    for(const exercise of workout.exercises||[]){
     if(!strength(exercise)||exercise.trackBy==='duration')continue;
-    const usable=(exercise.sets||[]).some(s=>finite(s?.weight)>0&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);if(!usable)continue;
+    const usable=(exercise.sets||[]).some(s=>!s?.skipped&&!s?.warmup&&s?.type!=='warmup'&&s?.done!==false&&s?.completed!==false&&finite(s?.weight)>0&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);if(!usable)continue;
     const key=exercise.exerciseId?'id:'+exercise.exerciseId:'name:'+nameKey(exercise.name);if(seen.has(key))continue;seen.add(key);
     const row=rows.get(key)||{key,exerciseId:exercise.exerciseId||null,name:exercise.name||'Strength exercise',label:exercise.name||'Strength exercise',source:'exercise',lift:null,sessions:0,lastDate:''};
     row.sessions++;if(workout.date>row.lastDate){row.lastDate=workout.date;row.name=exercise.name||row.name;row.label=row.name;}rows.set(key,row);
    }
   }
-  const roles=Readiness.list(state?.exerciseRoles||[]),competition=new Map();
+  const roles=Readiness.list(state?.exerciseRoles||[],asOf+'T23:59:59.999Z'),competition=new Map();
   for(const role of roles)if(role.role==='competition'&&role.competitionLift)competition.set(role.exerciseId,role.competitionLift);
   return [...rows.values()].map(row=>row.exerciseId&&competition.has(row.exerciseId)?{...row,lift:competition.get(row.exerciseId),source:'competition'}:row)
    .sort((a,b)=>b.sessions-a.sessions||b.lastDate.localeCompare(a.lastDate)||a.name.localeCompare(b.name));

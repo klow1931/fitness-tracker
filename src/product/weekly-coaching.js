@@ -63,8 +63,12 @@
    const target=e=>e.sets.length+' sets · '+e.sets.map(s=>weight(s.weight)+' × '+s.reps+' · cap '+s.targetRpe).join(' / ');
    return {text:rows.length?rows.slice(0,3).map(row=>row.name+' ('+row.date+'): '+row.label+'. Previous '+target(row.before)+'; approved '+target(row.approved)+'. Recorded '+(row.actual?.sets?.map(s=>weight(s?.weight)+' × '+(s?.reps??'unknown')+' · RPE '+(s?.rpe??'unknown')).join(' / ')||'no unique linked performance')+'. '+row.comparedSets+'/'+row.plannedSets+' sets with comparable effort. '+(row.gaps[0]||Follow.NOTICE)).join('\n\n'):'No approved primary-lift changes are saved for that review yet.',source:'Shared coaching · primary-lift follow-up',readOnly:true,evidence:[r],actions:[{kind:'primary-follow-up',label:'See primary-lift follow-ups'}]};
   }
-  if(!/\b(weekly program review|how did (this|my|last) week go|review (my |this |last )?week|what should i do next week)\b/i.test(q))return null;
-  const r=review(state,options);return {text:summary(r),source:'Shared coaching · weekly review',readOnly:true,evidence:[r],actions:[{kind:'weekly-coaching',label:'See weekly review'}],followUps:['Why?']};
+  const insightsQuestion=/\b(what stood out (this|last) week|weekly coaching insights|weekly observations)\b/i.test(q);
+  if(!insightsQuestion&&!/\b(weekly program review|how did (this|my|last) week go|review (my |this |last )?week|what should i do next week)\b/i.test(q))return null;
+  const r=review(state,options);
+  const insights=(typeof module==='object'&&module.exports?require('./weekly-coaching-insights'):globalThis.LoadnoteWeeklyCoachingInsights)?.inspect(r);
+  const intro=insightsQuestion&&insights?.status==='ready'?insights.items.map(i=>i.label+': '+i.text).join('\n\n')+'\n\n':'';
+  return {text:intro+summary(r),source:'Shared coaching · weekly review',readOnly:true,evidence:[r],actions:[{kind:'weekly-coaching',label:'See weekly review'}],followUps:['Why?']};
  }
 
  return {inspect,review,summary,answer,NOTICE};

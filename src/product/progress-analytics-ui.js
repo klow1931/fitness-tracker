@@ -66,8 +66,10 @@
   return '<section class="progress-story-summary-section" data-progress-summary="changes"><div class="progress-story-section-head"><div><p class="eyebrow">Recent changes</p><h3>What did Loadnote change?</h3><p>Accepted programming decisions from stored review history—not inferred causality.</p></div></div>'+body+'</section>';
  }
  function summaryHtml(report){
+  const highlights=window.LoadnoteProgressHighlights?.inspect(report);
+  const highlightHtml=highlights?'<section class="progress3-highlights" aria-label="Last 28 days at a glance">'+highlights.metrics.map(m=>'<article><span>'+esc(m.label)+'</span><strong>'+esc(m.value)+'</strong><small>'+esc(m.detail)+'</small></article>').join('')+'</section><p class="more-hint progress3-coverage">'+esc(highlights.consistency.label)+' · '+esc(highlights.direction.label)+'</p>':'';
   return '<div class="progress-story-head"><div><p class="eyebrow">YOUR PROGRESS</p><h2>What your training is doing.</h2><p>Strength, consistency, milestones and recent programming changes from evidence you actually logged.</p></div><label>Story window<select class="input" data-progress-window><option value="8">8 weeks</option><option value="12">12 weeks</option><option value="24">24 weeks</option></select></label></div>'+
-   '<div class="progress-story-overview" data-progress-story-summary>'+strengthStoryHtml(report)+consistencyStoryHtml(report)+milestoneHtml(report)+changesStoryHtml(report)+'</div>'+
+   highlightHtml+'<div class="progress-story-overview" data-progress-story-summary>'+strengthStoryHtml(report)+consistencyStoryHtml(report)+milestoneHtml(report)+changesStoryHtml(report)+'</div>'+
    '<details class="progress-story-method"><summary>How to read these stories</summary><p class="more-hint">'+esc(report.summary?.note||'Progress stays descriptive and evidence-backed.')+'</p></details>';
  }
  function reviewMarkersHtml(story){
