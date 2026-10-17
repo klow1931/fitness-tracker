@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.43 · Development build.**
+**v3.48 · Development build.**
 
-Phase 3 progress insights, context-aware offline Coach and weekly coaching: [v3.43 release notes](docs/releases-v3.43.md).
+Phase 4 offline Coach reasoning, source-grounded knowledge, conversational planning and local-model evaluation: [v3.48 release notes](docs/releases-v3.48.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
