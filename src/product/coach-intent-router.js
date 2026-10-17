@@ -8,7 +8,7 @@
  'use strict';
  const clean=q=>String(q??'').replace(/\s+/g,' ').trim().slice(0,500);
  const lift=q=>/\b(bench(?: press)?|pressing)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\bsquat(?:ting)?\b/i.test(q)?'squat':null;
- const plan=q=>/\b(build|create|write|make|design|generate|draft)\b.*\b(program|plan|routine|workout|session)\b|\b(workout|session) for (today|tomorrow)\b/i.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|program|workout|routine)\b/i.test(q)&&!/\b(explain|understand|what|why|how)\b/i.test(q);
+ const plan=q=>!/\b(cancel|delete|stop|remove|reschedule)\b/i.test(q)&&(/\b(build|create|write|make|design|generate|draft)\b.*\b(program|plan|routine|workout|session)\b|\b(workout|session) for (today|tomorrow)\b/i.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/i.test(q));
  const topic=q=>/\b(progress|stall|plateau)\b|\bhow (?:is|has|did) (?:my )?training\b/i.test(q)?'progress':/\b(weekly|this week|last week)\b/i.test(q)?'weekly':/\b(phase|periodization|mesocycle)\b/i.test(q)?'program':/\b(rpe|effort)\b/i.test(q)?'effort':/\b(gear|equipment|available days|training setup)\b/i.test(q)?'profile':null;
  const follow=q=>/^(why|how so|explain that|tell me more|what about (it|that)|and (the|my) (bench|squat|deadlift)|why is (it|that) (?:stalled|harder)|what changed\??)\??$/i.test(q);
  function classify(question,history=[]){
