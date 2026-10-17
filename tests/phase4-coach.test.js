@@ -54,6 +54,7 @@ const withFuture={...state,workouts:[...state.workouts,{id:'future',date:'2027-0
 assert.deepEqual(Recap.inspect(withFuture,{asOf}),recap,'future entries must never influence a retrospective recap');
 assert.equal(Local.eligible('Why has my bench stalled?',{source:'Offline Coach · corrected training trends',readOnly:true,evidence:[recap]}),false);
 assert.equal(Local.eligible('Summarize my training',{source:'Offline Coach · training recap',readOnly:true,evidence:[recap]}),false);
+assert.equal(Local.eligible('How can you help?',{source:'Offline Coach · available capabilities',readOnly:true}),false);
 assert.equal(Local.eligible('Help me stay consistent',{planning:draft.planning}),false);
 assert.equal(Local.eligible('Help me stay consistent',{source:'Shared coaching · suggestions',actions:[{kind:'offline-plan'}]}),false);
 assert.equal(Local.eligible('Help me stay consistent',{source:'Generic encouragement'}),true);
