@@ -50,7 +50,11 @@
  }
  function answer(state,question,{asOf,history=[]}={}){
   if(/\b(what|which|show|list)\b.*\b(books|sources|references|knowledge base)\b/i.test(question))return {text:'The coaching library lists NSCA Essentials (fifth edition) and Louie Simmons’ Book of Methods as further reading. Original summaries use public NSCA material, Westside articles and a hypertrophy position stand. Full book text has not been imported and model weights have not been trained on either book.',source:'Shared coaching · referenced knowledge',readOnly:true,evidence:[],citations:Object.entries(SOURCES).map(([id,s])=>({id,...copy(s)})),actions:[{kind:'library',label:'Explore coaching references'}]};
-  const q=query(question,history),cards=retrieve(q);if(!cards.length||!/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|why.*(?:stuck|plateau|deload|taper|vary)|get bigger|getting bigger|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q))return null;
+  const q=query(question,history);
+  // Existing RPE/effort definitions must remain canonical. A broad knowledge
+  // card is not an alternative calculation of logged or prescribed effort.
+  if(/\b(?:what (?:is|does)|define|how (?:do|should) i (?:record|log))\b.{0,55}\b(?:rpe|rir|rate of perceived exertion)\b/i.test(q))return null;
+  const cards=retrieve(q);if(!cards.length||!/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|why.*(?:stuck|plateau|deload|taper|vary)|get bigger|getting bigger|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q))return null;
   // Existing personal evidence, medical and action handlers retain priority.
   if(/\b(pain|hurt|injur\w*|rehab|tendinitis|tendinopathy|diagnos\w*|intake|edit|remove|swap|cancel|progress|training max|my.*(?:sets|load|workout)|why (?:this|my) (?:set|load))\b/i.test(q))return null;
   const selected=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(q)?cards:cards.slice(0,2),ids=[...new Set(selected.flatMap(c=>c.sources))];
