@@ -113,7 +113,7 @@
     row.sessions++;if(workout.date>row.lastDate){row.lastDate=workout.date;row.name=exercise.name||row.name;row.label=row.name;}rows.set(key,row);
    }
   }
-  const roles=Readiness.list(state?.exerciseRoles||[]),competition=new Map();
+  const roles=Readiness.list(state?.exerciseRoles||[],asOf+'T23:59:59.999Z'),competition=new Map();
   for(const role of roles)if(role.role==='competition'&&role.competitionLift)competition.set(role.exerciseId,role.competitionLift);
   return [...rows.values()].map(row=>row.exerciseId&&competition.has(row.exerciseId)?{...row,lift:competition.get(row.exerciseId),source:'competition'}:row)
    .sort((a,b)=>b.sessions-a.sessions||b.lastDate.localeCompare(a.lastDate)||a.name.localeCompare(b.name));
