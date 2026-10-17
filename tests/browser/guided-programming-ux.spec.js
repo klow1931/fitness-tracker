@@ -24,6 +24,12 @@ test('guided profile preserves answers, points to missing days and survives a fa
 test('guided phase setup reviews one explicit proposal and separates Reviewed from Scheduled',async({page})=>{
  await seed(page);await page.locator('#programming-workspace-primary').click();const d=page.locator('#phase-dialog');
  await expect(d.locator('.program-wizard-progress')).toContainText('Step 1 of 3');
+ await expect(d.locator('#phase-guided-advanced')).toHaveCount(1);
+ await expect(d.locator('#phase-guided-advanced')).not.toHaveAttribute('open');
+ await expect(d.locator('#phase-periodization')).toHaveValue('auto');
+ await expect(d.locator('#phase-style-reason')).toContainText('setup suggestion');
+ await expect(d.locator('#phase-squat-tm')).toHaveValue('');
+ await expect(d.locator('#phase-guided-advanced #phase-accumulation')).toHaveAttribute('type','number');
  for(const day of [1])await d.locator('[data-phase-day][value="'+day+'"]').uncheck();await d.locator('[data-phase-day][value="4"]').check();
  await next(d);await next(d);await expect(d.locator('#phase-squat-tm')).toBeFocused();await expect(d.locator('#phase-squat-tm')).toHaveValue('');
  for(const [lift,value] of [['squat','160'],['bench','120'],['deadlift','220']])await d.locator('#phase-'+lift+'-tm').fill(value);

@@ -1,3 +1,11 @@
+# v3.40 — Phase 2: Simpler Programming, Explainable Adaptation, Full-Cycle Tests
+
+- Strength guided mode now keeps essential schedule, explicit training maxes and final review in the foreground; advanced style, increments, duration and naming are disclosed only when requested.
+- Profile-derived deterministic loading-style suggestion (linear or daily undulating) is labeled as a suggestion, never a guessed training dose. Wave and weekly-undulating choices remain available.
+- Review of completed training phases shows **What changed? Why? What evidence was used?** for each lift. Actual completed sessions, matched reps/loads/RPE and capacity evidence determine whether an adjustment can be offered; nothing applies without explicit approval.
+- Extended meet simulations through 24 weeks, checked data-loss/fail-closed constraints, and added browser and unit regressions.
+- Version and offline assets updated without schema migrations; previous stored programs and workout history remain compatible.
+
 # v3.37 — Phase 1: Gym Floor, Recovery and Today's Workout
 
 - Automatic progression to the next unfinished set across exercise boundaries, without an extra confirmation. Rest still keeps the keyboard closed and actual RPE remains optional.
