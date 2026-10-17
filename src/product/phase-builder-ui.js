@@ -54,7 +54,7 @@
     dialog.querySelector('#phase-periodization').value=continueToMeet?'auto':(!guided&&periodization==='auto'?'linear':periodization);
     const styleHint=dialog.querySelector('#phase-periodization').closest('label').nextElementSibling;
     styleHint.id='phase-style-hint';
-    const stylePolicy=()=>window.LoadnoteProgramSetupPolicy?.recommend(profile.context,{days:[...dialog.querySelectorAll('[data-phase-day]:checked')].map(el=>Number(el.value)),meet:continueToMeet})||{style:'linear',reason:'A straightforward loading style is the default. Confirm all details before saving.'};
+    const stylePolicy=()=>window.LoadnoteProgramSetupPolicy?.recommend(profile.context,{days:[...dialog.querySelectorAll('[data-phase-day]:checked')].map(el=>Number(el.value)),meet:continueToMeet,hasLightExposure:[...dialog.querySelectorAll('[data-phase-slot]')].some(el=>el.value.startsWith('light:'))})||{style:'linear',reason:'A straightforward loading style is the default. Confirm all details before saving.'};
     const resolveStyle=()=>{const choice=dialog.querySelector('#phase-periodization').value;return choice==='auto'?stylePolicy().style:choice;};
     const styleLabels={linear:'Linear loading',wave:'Three-week wave loading',undulating:'Daily-undulating loading','weekly-undulating':'Weekly-undulating loading'};
     const stepCadence={linear:'week',undulating:'week',wave:'three-week wave','weekly-undulating':'two-week pair'};
