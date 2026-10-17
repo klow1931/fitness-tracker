@@ -17,9 +17,11 @@
   function workoutsIn(state,range){
     return (state?.workouts||[]).filter(w=>Schedule.date(w?.date)&&w.date>=range.from&&w.date<=range.to);
   }
+  const comparableSet=s=>s&&!s.skipped&&!s.warmup&&s.type!=='warmup'&&s.done!==false&&s.completed!==false;
   function trainingSummary(workouts){
     let strengthSets=0,rpeSets=0;
     for(const workout of workouts)for(const exercise of workout.exercises||[])if(strengthExercise(exercise))for(const set of exercise.sets||[]){
+      if(!comparableSet(set))continue;
       const reps=Number(set?.reps),weight=Number(set?.weight);
       if(!(Number.isInteger(reps)&&reps>0&&Number.isFinite(weight)&&weight>=0))continue;
       strengthSets++;
@@ -50,7 +52,7 @@
       const seen=new Set();
       for(const exercise of workout.exercises||[]){
         if(!strengthExercise(exercise))continue;
-        const hasWork=(exercise.sets||[]).some(s=>Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);
+        const hasWork=(exercise.sets||[]).some(s=>comparableSet(s)&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);
         if(!hasWork)continue;
         const key=exercise.exerciseId?'id:'+exercise.exerciseId:'name:'+nameKey(exercise.name);
         if(!key||seen.has(key))continue;seen.add(key);
@@ -68,6 +70,7 @@
   function markerSummary(workouts,marker){
     const sessions=new Set(),capacityByDay=new Map();let bestLoad=null,bestCapacity=null,sets=0;
     for(const workout of workouts)for(const exercise of workout.exercises||[])if(matches(exercise,marker))for(const set of exercise.sets||[]){
+      if(!comparableSet(set))continue;
       const weight=Number(set?.weight),reps=Number(set?.reps);
       if(!(Number.isFinite(weight)&&weight>0&&Number.isInteger(reps)&&reps>0))continue;
       sessions.add(String(workout.id));sets++;
