@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.37 · Development build.**
+**v3.40 · Development build.**
 
-Phase 1 training-flow, workout-recovery and Today's Workout improvements: [v3.37 release notes](docs/releases-v3.37.md).
+Phase 2 guided programming, explainable adaptation reviews and full-cycle validation: [v3.40 release notes](docs/releases-v3.40.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
