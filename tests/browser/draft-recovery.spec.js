@@ -29,3 +29,20 @@ test('corrupt primary draft recovers entered load, reps, RPE and completion afte
  await expect(page.locator('#today-training')).toContainText('Training logged');
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].weight)).toBe(100);
 });
+
+test('closing and reopening mid-session restores the latest entered training without the network',async({page,context})=>{
+ await page.locator('.ex-name').fill('Competition Sumo Deadlift');
+ await page.locator('.set-weight').first().fill('185');
+ await page.locator('.set-reps').first().fill('3');
+ await page.locator('.set-rpe').first().fill('7.5');
+ await expect.poll(()=>page.evaluate(()=>readLoggerDraft()?.rows?.[0]?.sets?.[0]?.weight)).toBe('185');
+ await page.close(); // Simulates a terminated web session, not merely a same-page refresh.
+ const reopened=await context.newPage();
+ await reopened.goto('/');
+ await reopened.evaluate(()=>showTab('workouts'));
+ await expect(reopened.locator('.ex-name')).toHaveValue('Competition Sumo Deadlift');
+ await expect(reopened.locator('.set-weight').first()).toHaveValue('185');
+ await expect(reopened.locator('.set-reps').first()).toHaveValue('3');
+ await expect(reopened.locator('.set-rpe').first()).toHaveValue('7.5');
+ expect(await reopened.evaluate(()=>data.workouts.length)).toBe(0,'draft recovery must not fabricate saved history');
+});
