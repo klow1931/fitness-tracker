@@ -108,8 +108,8 @@
   }else if(active){
    title=active.name;subtitle=lifecycleGate?lifecycle.nextAction.label:(active.goal||'Today’s scheduled workout is ready.');badge=lifecycleGate?'Review first':'Ready';primaryAction=lifecycleGate?'review':'start';primaryLabel=lifecycleGate?lifecycle.nextAction.label:'Start workout';
    preview=exercisePreview(active);
-  }else if(report.completed){
-   title='Training logged';subtitle='Today’s scheduled training is complete. Start another session only if you intend to train again.';badge='Complete';primaryAction='empty';primaryLabel='Start another workout';
+  }else if(report.completed||report.loggedToday){
+   title='Training logged';subtitle=report.completed?'Today’s scheduled training is complete. Start another session only if you intend to train again.':'Your workout is saved for today. You can train again or review your history.';badge='Complete';primaryAction='empty';primaryLabel='Start another workout';
   }else{
    title='What are you training today?';subtitle='Nothing is scheduled today. Start simple, repeat something familiar, or choose a saved template.';badge='Open training';primaryAction='empty';primaryLabel='Start empty workout';
   }
@@ -139,8 +139,9 @@
    const adaptationHtml=window.LoadnoteAdaptationExplanationUI?.render(adaptation)||'';
    const viewWorkout=belongs&&window.LoadnoteProgramWorkoutViewerUI?'<button type="button" class="btn-secondary" data-today-view-workout>View workout</button>':'';
    host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>'+esc(lifecycleGate?lifecycle.nextAction.label:sessionMeta||'Scheduled training')+'</p></div><span class="badge">'+(lifecycleGate?'Review first':'Ready')+'</span></div>'+focusLine(active)+'<p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'. Targets are planned; log what you do.</p>'+adaptationHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" '+(lifecycleGate?'data-today-lifecycle':'data-today-train="'+esc(active.id)+'"')+'>'+esc(lifecycleGate?lifecycle.nextAction.label:'Start workout')+'</button>'+viewWorkout+'<button type="button" class="btn-secondary" data-today-calendar>Calendar</button></div>'+exercisePreview(active);
-  }else if(report.completed){
-   host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+report.completed+' scheduled session'+(report.completed===1?' is':'s are')+' complete today.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
+  }else if(report.completed||report.loggedToday){
+   const count=report.loggedToday||report.completed;
+   host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+count+' workout'+(count===1?'':'s')+' saved today.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Start another workout</button><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
   }else{
    host.innerHTML='<p class="eyebrow">Today</p><h2>No workout scheduled</h2><p>Train freely or use Calendar to schedule a reviewed plan.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Log workout</button><button type="button" class="btn-secondary" data-today-calendar>Open calendar</button></div>';
   }
