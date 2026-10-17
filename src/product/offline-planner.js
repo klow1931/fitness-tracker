@@ -72,7 +72,7 @@
   const last=history.at(-1),previous=last?.role==='assistant'?last.planning:null;
   const r=parse(question,previous);if(!r)return null;
   const missing=gaps(r,state),text=summary(r)+'. '+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');
-  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:missing.length?[missing[0]]:[],actions:missing.length?(r.unsupportedDomain||r.meet?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
+  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:[],actions:missing.length?(r.unsupportedDomain||r.meet?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
  }
  function candidates(state,r,{excludedExerciseIds=[],requireMapped=false}={}){
   const p=profile(state),preferred=new Set(p?.preferredExerciseIds||[]),excluded=new Set([...(p?.avoidedExerciseIds||[]),...excludedExerciseIds]),roleRows=Roles.list(state.exerciseRoles||[]);
