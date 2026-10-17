@@ -25,6 +25,7 @@ button.events.click.fn({detail:0});
 assert.equal(opened,2,'keyboard activation must remain available');
 button.events.touchstart.fn({touches:[touch(2,10,10)]});
 button.events.touchmove.fn({changedTouches:[touch(2,100,100)]});
+button.events.touchend.fn({changedTouches:[touch(2,100,100)],preventDefault(){throw Error('drag not cancelled');}});
 assert.equal(gesture(touch(3,10,10),touch(3,100,100)).prevented,false);
 assert.equal(opened,2,'scroll/drag release must not open a review');
 button.events.touchstart.fn({touches:[touch(4,10,10)]});
