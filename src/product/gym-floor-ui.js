@@ -55,7 +55,7 @@
   const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy),same=currentSetPayload(priorSet,trackBy);
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
   const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0);
-  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
+  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[previous?.date,label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
   if(host._gymSignature===signature){host.hidden=!(label||canCopySame);return;}
   host._gymSignature=signature;
   if(!label&&!canCopySame){host.hidden=true;host.replaceChildren();return;}
