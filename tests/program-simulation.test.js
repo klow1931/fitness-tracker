@@ -24,7 +24,9 @@ const cases=[
   {weeks:8,fiveDay:false,advanced:false,sparse:false,unit:'kg',eventType:'mock'},
   {weeks:12,fiveDay:true,advanced:true,sparse:false,unit:'kg',eventType:'competition'},
   {weeks:16,fiveDay:false,advanced:false,sparse:true,unit:'lb',eventType:'mock'},
-  {weeks:20,fiveDay:true,advanced:true,sparse:true,unit:'lb',eventType:'mock'}
+  {weeks:20,fiveDay:true,advanced:true,sparse:true,unit:'lb',eventType:'mock'},
+  {weeks:24,fiveDay:true,advanced:true,sparse:false,unit:'lb',eventType:'competition'},
+  {weeks:24,fiveDay:false,advanced:false,sparse:true,unit:'kg',eventType:'mock'}
 ];
 for(const [i,test] of cases.entries()){
   const {state,source,config}=sourceFor({...test,id:'sim-'+i}),day=test.eventType==='competition'?2:5,meetDate=finalDate(config.startDate,test.weeks,day);
@@ -40,4 +42,18 @@ for(const [i,test] of cases.entries()){
   assert(proposal.sessions.every(s=>s.date<meetDate));
   assert.equal(Gate.validate(gate,proposal).inputFingerprint,gate.inputFingerprint);
 }
-console.log('v2.67 8/12/16/20-week, 3/5-day, sparse-history, advanced, kg/lb and mock/competition simulations passed');
+console.log('v3.40 8/12/16/20/24-week, 3/5-day, sparse-history, advanced, kg/lb and mock/competition simulations passed');
+// Fail-closed checks: missing equipment, unconfirmed intensity and athlete
+// availability cannot be converted into a plausible-looking program.
+{
+  const {state,config}=sourceFor({id:'validation-baseline'});
+  const unavailable=structuredClone(state);
+  unavailable.programmingProfiles=unavailable.programmingProfiles.map(p=>({...p,context:{...p.context,equipment:['barbell','plates','bench']}}));
+  assert.throws(()=>Phase.prepare(unavailable,config,args),/equipment|requires|rack/i);
+  const partial=structuredClone(config);partial.lifts.squat.trainingMaxKg=null;
+  assert.throws(()=>Phase.prepare(state,partial,args),/training max|Invalid|must/i);
+  const day=structuredClone(config);day.days=[0,1,6];
+  assert.throws(()=>Phase.prepare(state,day,args),/availability|day|exposure/i);
+  const unsupported={...sourceFor({id:'too-short'}).source};
+  assert.throws(()=>Meet.prepare(state,unsupported,{version:1,weeks:6,peakWeeks:2,taperWeeks:1,meetDate:finalDate(config.startDate,6),eventType:'mock'},args),/weeks|supported|cycle/i);
+}
