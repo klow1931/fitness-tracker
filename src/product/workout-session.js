@@ -19,8 +19,11 @@
     if(!query&&!identity)return null;
     // Saved list ordering and date ordering may differ after imports or corrections.
     const candidates=(Array.isArray(workouts)?workouts:[]).map((w,index)=>({w,index}))
-      .filter(({w})=>w&&typeof w.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(w.date)&&(!asOf||w.date<=asOf)&&(excludeId==null||!same(w.id,excludeId)))
-      .sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
+      .filter(({w})=>w&&typeof w.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(w.date)&&(!asOf||w.date<=asOf)&&(excludeId==null||!same(w.id,excludeId)));
+    // The legacy helper's callers expect source-order iteration (e.g. merged
+    // exercise-alias provenance). Only date-scoped "last session" lookups
+    // request newest-first chronology.
+    if(asOf)candidates.sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
     const available=candidates.flatMap(({w})=>(w.exercises||[]).filter(e=>eligible(e,w)).map(exercise=>({date:w.date,exercise})));
     const exactName=e=>query&&key(e?.name)===query;
     if(identity){
