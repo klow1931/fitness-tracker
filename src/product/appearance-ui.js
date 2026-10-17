@@ -5,7 +5,7 @@
  const palettes=[['indigo','Indigo'],['ocean','Ocean'],['emerald','Emerald'],['crimson','Crimson'],['amber','Amber'],['slate','Slate']];
  function markup(){
   const p=A()?.current()||{mode:'light',palette:'indigo',customColor:null};
-  return '<details id="profile-appearance" class="profile-appearance"><summary><b>Appearance</b><small>Color theme and light / dark display</small></summary>'+
+  return '<details id="profile-appearance" class="profile-appearance"><summary><span class="appearance-summary-copy"><b>Appearance</b><small>Color theme and light / dark display</small></span></summary>'+
    '<div class="profile-appearance-body">'+
    '<p class="more-hint">Choose how Loadnote looks on this device. Workout history and training data do not change.</p>'+
    '<fieldset><legend>Color theme</legend><div class="appearance-palette" role="group" aria-label="Color theme">'+

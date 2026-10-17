@@ -12,14 +12,16 @@ body.dark .mobile-nav-btn.nav-active { color:var(--theme-dark-accent); backgroun
 .section-tab.active,.tab-btn.active {color:var(--brand);}
 body.dark .section-tab.active,body.dark .tab-btn.active {color:var(--theme-dark-accent);}
 #logger-draft-status {color:var(--brand);}
-.app-loader-icon,.mobile-nav-btn.nav-active .mobile-nav-icon {background-color:var(--brand);}
-body.dark .mobile-nav-btn.nav-active .mobile-nav-icon {background-color:var(--theme-dark-accent);}
+.app-loader-icon {background-color:var(--brand);}
+/* SVG navigation uses currentColor strokes, not a solid icon mask. */
+.mobile-nav-icon,body.dark .mobile-nav-icon {background-color:transparent;}
 .profile-appearance {border-top:1px solid var(--line);padding-top:.75rem;margin-top:.5rem;}
 .profile-appearance > summary {min-height:48px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.75rem;list-style:none;}
 .profile-appearance > summary::-webkit-details-marker {display:none;}
 .profile-appearance > summary::after {content:'⌄';color:var(--muted);font-size:1.2rem;flex:0 0 auto;}
 .profile-appearance[open] > summary::after {transform:rotate(180deg);}
-.profile-appearance > summary b {display:block;font-weight:700;}
+.appearance-summary-copy {min-width:0;flex:1 1 auto;}
+.profile-appearance > summary b {display:block;font-weight:700;white-space:nowrap;overflow-wrap:normal;word-break:normal;}
 .profile-appearance > summary small {color:var(--muted);display:block;font-size:.8rem;margin-top:.15rem;}
 .profile-appearance-body {display:grid;gap:1rem;padding:.75rem 0 .25rem;min-width:0;}
 .profile-appearance fieldset {min-width:0;border:0;padding:0;margin:0;}

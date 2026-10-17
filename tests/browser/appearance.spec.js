@@ -55,3 +55,27 @@ test('custom color stays legible on a narrow phone without horizontal overflow',
  expect(outcome.boxOverflow).toBe(false);
  await expect(page.locator('#appearance-status')).toContainText('saved');
 });
+test('active bottom navigation keeps outlined icons in every theme and display mode',async({page},info)=>{
+ test.setTimeout(90000); // 60 real tab changes across all preset/mode combinations.
+ await page.setViewportSize({width:390,height:844});
+ const before=await page.evaluate(()=>JSON.stringify(data.workouts));
+ for(const mode of ['light','dark'])for(const palette of ['indigo','ocean','emerald','crimson','amber','slate']){
+  await page.evaluate(({mode,palette})=>{LoadnoteAppearance.set({mode,palette});applyDark();},{mode,palette});
+  for(const tab of ['dashboard','workouts','prs','coach','profile']){
+   const button=page.locator('#mobile-nav [data-tab="'+tab+'"]');await button.click();await expect(button).toHaveAttribute('aria-pressed','true');
+   const icon=await button.locator('.mobile-nav-icon').evaluate(el=>{const svg=el.querySelector('svg'),s=getComputedStyle(svg);return {background:getComputedStyle(el).backgroundColor,fill:s.fill,stroke:s.stroke,color:getComputedStyle(el.closest('button')).color};});
+   expect(icon.background).toBe('rgba(0, 0, 0, 0)');expect(icon.fill).toBe('none');expect(icon.stroke).toBe(icon.color);
+  }
+ }
+ expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
+ await page.screenshot({path:info.outputPath('active-navigation-icons.png')});
+});
+test('Appearance title stays on one line while its description fits enlarged phone text',async({page},info)=>{
+ for(const width of [320,390]){
+  await page.setViewportSize({width,height:844});await page.evaluate(()=>document.documentElement.style.fontSize='20px');
+  const summary=page.locator('#profile-appearance > summary');await summary.scrollIntoViewIfNeeded();
+  const layout=await summary.evaluate(el=>{const b=el.querySelector('b'),small=el.querySelector('small'),range=document.createRange();range.selectNodeContents(b);const title=b.getBoundingClientRect(),description=small.getBoundingClientRect();return {lines:range.getClientRects().length,stacked:description.top>=title.bottom,overflow:el.scrollWidth>el.clientWidth+1,pageOverflow:document.documentElement.scrollWidth>innerWidth+1};});
+  expect(layout.lines).toBe(1);expect(layout.stacked).toBe(true);expect(layout.overflow).toBe(false);expect(layout.pageOverflow).toBe(false);
+ }
+ await page.screenshot({path:info.outputPath('appearance-enlarged-text.png')});
+});
