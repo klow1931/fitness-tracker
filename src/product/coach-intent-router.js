@@ -25,7 +25,7 @@
   return {kind:topic(q)||'general',question:q,lift:lift(q),reason:'Resolve this turn against current stored training evidence.'};
  }
  function capabilities(){
-  return {text:'Offline, I can explain your saved training, compare actual logged sets and RPE, review the next planned workout, examine completed weeks and help you draft a workout or program for athlete approval. Ask, for example, “How did my bench go?”, “Explain next week’s workout” or “Draft a 3-day strength program”. I do not diagnose injuries, invent missing loads or change future sessions without the reviewed Decisions workflow.',
+  return {text:'Offline, I can explain your saved training, compare recorded sets and RPE, review the next planned workout, examine completed weeks and help you draft a workout or program for athlete approval. Ask, for example, “How did my bench go?”, “Explain next week’s workout” or “Draft a 3-day strength program”. I do not diagnose injuries, invent missing loads or change future sessions without the reviewed Decisions workflow.',
    source:'Offline Coach · available capabilities',readOnly:true,evidence:[],followUps:['Explain my next workout','How did this week go?','Build a strength program']};
  }
  return {classify,capabilities};
