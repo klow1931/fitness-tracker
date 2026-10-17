@@ -105,7 +105,7 @@ test('v2.74 cockpit pairs today target with last performance and adjusts display
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
-test('v2.74 finishing an exercise pauses at a lightweight next-exercise transition',async({page})=>{
+test('v3.35 completion advances to the next unfinished exercise without a prompt',async({page})=>{
  await page.evaluate(()=>{
   data.unit='kg';updateUnitToggle();
   const first=document.querySelector('#exercise-rows > div');
@@ -118,14 +118,11 @@ test('v2.74 finishing an exercise pauses at a lightweight next-exercise transiti
  const first=page.locator('#exercise-rows > div').first(),second=page.locator('#exercise-rows > div').nth(1);
  await first.locator('.set-rpe').fill('8');
  await first.locator('.set-rpe').press('Enter');
- const transition=page.locator('#training-cockpit [data-cockpit-transition]');
- await expect(transition).toBeVisible();
- await expect(transition).toContainText('Bench Press complete');
- await expect(transition).toContainText('Up next: Chest-Supported Row');
- await expect(second.locator('.set-rpe')).not.toBeFocused();
- await transition.getByRole('button',{name:'Start next exercise'}).click();
- await expect.poll(()=>page.evaluate(()=>document.activeElement?.classList.contains('set-rpe'))).toBe(true);
- await expect(transition).toHaveCount(0);
+ await expect(page.locator('#training-cockpit [data-cockpit-transition]')).toHaveCount(0);
+ await expect(second.locator('.logger-active-set')).toHaveCount(1);
+ await expect(page.locator('#training-cockpit')).toContainText('Chest-Supported Row');
+ await expect(first.locator('.set-done-check')).toBeChecked();
+ await expect(second.locator('.set-rpe')).not.toBeFocused(); // active rest holds the keyboard closed
 });
 
 test('v2.62 mobile dock follows the draft, rest timer and navigation without losing work',async({page})=>{
