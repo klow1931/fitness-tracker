@@ -246,17 +246,10 @@
   if(scheduledRefresh)return;scheduledRefresh=true;requestAnimationFrame(()=>{scheduledRefresh=false;render();});
  }
  function onSetComplete(fromSet,nextSet){
-  if(!fromSet||!nextSet)return false;
-  const fromRow=fromSet.closest('#exercise-rows > div'),toRow=nextSet.closest('#exercise-rows > div'),all=rows(),fromIndex=all.indexOf(fromRow),toIndex=all.indexOf(toRow);
-  if(fromRow===toRow||!H()?.transition(fromIndex,toIndex))return false;
-  transitionState={
-   from:fromRow.querySelector('.ex-name')?.value.trim()||'Exercise',
-   to:toRow.querySelector('.ex-name')?.value.trim()||'Exercise',
-   setCount:setRows(toRow).length,
-   nextSet
-  };
-  render();document.getElementById('training-cockpit')?.scrollIntoView({block:'nearest',behavior:'smooth'});
-  return true;
+  // Quick-entry handles the next unfinished set across exercise boundaries.
+  // An active rest timer still keeps the numeric keyboard closed.
+  transitionState=null;
+  return false;
  }
  function init(){
   ensure();queueRefresh();
