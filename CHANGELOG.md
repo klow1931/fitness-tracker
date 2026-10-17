@@ -1,3 +1,11 @@
+# v3.43 — Phase 3: Progress and Coach
+
+- Clear 28-day workout, working-set and RPE-coverage highlights beside existing lift trends, milestones, and accepted program decisions.
+- Offline Coach answers "Why has my bench/squat/deadlift stalled?" using existing RPE-aware training evidence, flags sparse history and avoids unsupported plateau diagnoses or automatic changes.
+- Weekly reviews and Coach responses now highlight exact saved-target matches, above-cap RPE observations, missing evidence and the next Decisions review route.
+- Skipped, unfinished and warm-up sets are excluded from descriptive strength evidence; unit conversions remain at display boundaries.
+- Added unit and browser regression coverage and updated offline cache assets. No stored training history or program schema changes.
+
 # v3.40 — Phase 2: Simpler Programming, Explainable Adaptation, Full-Cycle Tests
 
 - Strength guided mode now keeps essential schedule, explicit training maxes and final review in the foreground; advanced style, increments, duration and naming are disclosed only when requested.
