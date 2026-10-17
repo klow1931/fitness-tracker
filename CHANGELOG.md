@@ -1,3 +1,13 @@
+# v3.48 — Phase 4: Offline Coach intelligence
+
+- Added bounded intent routing and a truthful guide to existing offline coaching capabilities.
+- Expanded source-grounded strength training explanations (frequency, specificity, deload/taper, workout evidence and training goals) without claiming full source books were imported.
+- Improved conversational draft recognition while continuing to use reviewed strength/hypertrophy and daily-workout planners with explicit athlete approval.
+- Introduced evidence-based personal training recaps from corrected Progress history, with unknown and future evidence correctly excluded.
+- Preserved deterministic offline Coach answers for signed-in users without replacing them with online responses. Experimental local-model output cannot override canonical evidence or a reviewed planning action.
+- Added privacy-safe validated on-device reply counters and latency and expanded unit/browser regression tests.
+- No storage schema or existing workout history changes; optional on-device text models remain experimental and opt-in.
+
 # v3.43 — Phase 3: Progress and Coach
 
 - Clear 28-day workout, working-set and RPE-coverage highlights beside existing lift trends, milestones, and accepted program decisions.
