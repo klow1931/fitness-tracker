@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.34.1 · Development build.**
+**v3.37 · Development build.**
 
-Mobile navigation and Appearance layout fixes: [v3.34.1 release notes](docs/releases-v3.34.1.md).
+Phase 1 training-flow, workout-recovery and Today's Workout improvements: [v3.37 release notes](docs/releases-v3.37.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
