@@ -3,7 +3,12 @@ test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{await page.clock.install({time:new Date('2026-10-18T22:00:00Z')});await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});showTab('coach');showSubTab('coach','co-programs');renderPhaseReview();},fixture());await page.locator('#phase-review-panel > summary').click();});
 async function review(page){await page.locator('#phase-review-program').selectOption('ph');for(const k of ['sleep','fatigue','soreness'])await page.locator(`[data-phase-check="${k}"]`).selectOption('usual');await page.locator('[data-phase-check="discomfort"]').selectOption('none');await page.locator('#phase-review-generate').click();await expect(page.locator('#phase-review-report')).toContainText('reduce-load');await page.locator('[data-phase-choice="squat"]').selectOption('reduce-load');}
 test('phase approval preserves originals, exports review history and survives offline reload',async({page,context})=>{
- await review(page);const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,originals:data.scheduledSessions.map(s=>s.revisions[0])}));
+ await review(page);
+ await expect(page.locator('#phase2-evidence-explanation')).toContainText('What changed? Why? What evidence was used?');
+ await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Proposed change');
+ await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Why?');
+ await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Evidence used');
+ const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,originals:data.scheduledSessions.map(s=>s.revisions[0])}));
  await page.locator('#phase-review-apply').click();await expect(page.locator('#phase-review-error')).toContainText('Confirm');await page.locator('#phase-review-confirm').check();await page.locator('#phase-review-apply').click();await expect.poll(()=>page.evaluate(()=>data.phaseReviews.length)).toBe(1);
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,originals:data.scheduledSessions.map(s=>s.revisions[0])}))).toBe(before);expect(await page.evaluate(()=>data.scheduledSessions.filter(s=>s.revisions.length===2).length)).toBe(6);
  expect(await page.evaluate(()=>JSON.stringify(normalizeDataShape(JSON.parse(JSON.stringify(data))).phaseReviews)===JSON.stringify(data.phaseReviews))).toBe(true);
