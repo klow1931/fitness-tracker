@@ -198,7 +198,7 @@
   }else if(local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};}
   const offline=local?.text||Core()?.offlineReply(live,text);
   const source=String(local?.source||'');
-  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Saved training preferences');
+  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
   const client=authoritative||localMode?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
