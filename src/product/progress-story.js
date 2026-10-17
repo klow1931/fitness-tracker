@@ -107,7 +107,7 @@
    const seen=new Set();
    for(const exercise of workout.exercises||[]){
     if(!strength(exercise)||exercise.trackBy==='duration')continue;
-    const usable=(exercise.sets||[]).some(s=>finite(s?.weight)>0&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);if(!usable)continue;
+    const usable=(exercise.sets||[]).some(s=>!s?.skipped&&!s?.warmup&&s?.type!=='warmup'&&s?.done!==false&&s?.completed!==false&&finite(s?.weight)>0&&Number.isInteger(Number(s?.reps))&&Number(s.reps)>0);if(!usable)continue;
     const key=exercise.exerciseId?'id:'+exercise.exerciseId:'name:'+nameKey(exercise.name);if(seen.has(key))continue;seen.add(key);
     const row=rows.get(key)||{key,exerciseId:exercise.exerciseId||null,name:exercise.name||'Strength exercise',label:exercise.name||'Strength exercise',source:'exercise',lift:null,sessions:0,lastDate:''};
     row.sessions++;if(workout.date>row.lastDate){row.lastDate=workout.date;row.name=exercise.name||row.name;row.label=row.name;}rows.set(key,row);
