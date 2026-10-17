@@ -43,7 +43,7 @@ const sparse={...base,workouts:[workout('first','2026-07-10',100,null),workout('
 answer=Trend.answer(sparse,'My bench progress has plateaued',{asOf});
 assert.match(answer.text,/not enough comparable RPE-aware evidence/i);
 assert.equal(answer.evidence[0].status,'insufficient');
-assert.equal(Highlights.inspect(Progress.analyze(sparse,{asOf})).metrics[2].value,'—');
+assert.equal(Highlights.inspect(Progress.analyze(sparse,{asOf})).metrics[2].value,'0%','logged sets with unknown RPE mean zero coverage, not zero effort');
 // No future evidence and no explicitly skipped/incomplete/warm-up sets in Progress.
 const flagged=structuredClone(base);
 flagged.workouts[3].exercises[0].sets.push({weight:300,reps:5,rpe:8,skipped:true});
