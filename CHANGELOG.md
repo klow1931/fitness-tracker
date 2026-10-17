@@ -1,3 +1,7 @@
+# v3.34.1 — Mobile appearance fixes
+
+Keep active bottom-navigation SVG icons outlined instead of painting solid squares in every color theme and display mode. Stack the Appearance heading and description so the heading stays intact on narrow phones and enlarged text. Add regression checks across all five tabs, six presets, light/dark mode, touch targets and narrow Profile layouts. No training-data or Coach-policy changes. See docs/releases-v3.34.1.md.
+
 # v3.34.0 — Reliable last-session logging
 
 Hardened previous-set performance lookup across workout logger, gym-floor quick entry and training cockpit. Historical fills now validate exercise identity, reject ambiguous catalog matches, use only workout history up to the selected date, and exclude the workout currently being edited. Legacy name-only history remains accessible as a safe fallback. Last-set context shows the originating workout date; the + Jump shortcut no longer applies a jump to unloaded/bodyweight sets. No migration or changes to approved plan prescriptions. Added unit/browser regression tests. See docs/releases-v3.34.md.

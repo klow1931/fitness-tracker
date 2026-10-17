@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.34.0 · Development build.**
+**v3.34.1 · Development build.**
+
+Mobile navigation and Appearance layout fixes: [v3.34.1 release notes](docs/releases-v3.34.1.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
