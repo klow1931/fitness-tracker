@@ -14,7 +14,8 @@ test('draft failure stays visible in execution mode and retry checkpoints latest
  await page.locator('.set-weight').fill('105');
  await expect(page.locator('#logger-draft-failure')).toBeVisible();
  await expect(page.locator('#logger-draft-failure')).toContainText('excludes unfinished sets');
- expect(await page.evaluate(()=>readLoggerDraft().rows[0].sets[0].weight)).toBe('100');
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote-workout-draft-v1')).rows[0].sets[0].weight)).toBe('100');
+ expect(await page.evaluate(()=>readLoggerDraft().rows[0].sets[0].weight)).toBe('105');
  await page.evaluate(()=>{Storage.prototype.setItem=window.originalDraftSet;});
  // Exercise the original warning; the cockpit shortcut has separate coverage.
  await page.locator('#logger-draft-failure').getByRole('button',{name:'Retry draft save',exact:true}).click();
@@ -49,7 +50,7 @@ test('failed reviewed commit retries exactly once and survives restart',async({p
 });
 test('legacy draft survives current release without rewriting its training values',async({page})=>{
  // Seed on the new document, after the outgoing page's pagehide checkpoint.
- await page.addInitScript(()=>localStorage.setItem('loadnote-workout-draft-v1',JSON.stringify({version:1,date:'2026-09-25',notes:'Legacy draft',unit:'kg',program:null,rows:[{type:'strength',trackBy:'reps',setCount:1,fields:[{value:'Competition Squat'},{value:'Keep cue'},{value:'5'},{value:'140'},{value:'7'}]}]})));
+ await page.addInitScript(()=>{localStorage.removeItem('loadnote-workout-draft-v1-recovery');localStorage.setItem('loadnote-workout-draft-v1',JSON.stringify({version:1,date:'2026-09-25',notes:'Legacy draft',unit:'kg',program:null,rows:[{type:'strength',trackBy:'reps',setCount:1,fields:[{value:'Competition Squat'},{value:'Keep cue'},{value:'5'},{value:'140'},{value:'7'}]}]}));});
  await page.reload();await expect(page.locator('.ex-name')).toHaveValue('Competition Squat');
  await expect(page.locator('.set-weight')).toHaveValue('140');await expect(page.locator('.set-rpe')).toHaveValue('7');
  expect(await page.evaluate(()=>captureLoggerDraft().notes)).toBe('Legacy draft');
