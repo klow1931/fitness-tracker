@@ -146,8 +146,11 @@
 
     function getLastExercisePerformance(name) {
       if (!name) return null;
-      const exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id;
-      const found = LoadnoteSession.findPerformance(data.workouts, name, ex => ex.type !== 'cardio' && ex.sets?.length,exerciseId);
+      const identity=LoadnoteSession.catalogIdentity(data.exerciseCatalog,name);
+      if(identity.ambiguous)return null; // Do not fill an exercise with an uncertain identity.
+      let editId=null;try{editId=workoutEdit?.id||null;}catch{}
+      const day=document.getElementById('wo-date')?.value;
+      const found=LoadnoteSession.findPerformance(data.workouts,name,ex=>ex.type!=='cardio'&&ex.sets?.length,identity.exerciseId,{asOf:day,excludeId:editId});
       if (!found) return null;
       return {date:found.date, trackBy:found.exercise.trackBy, sets:found.exercise.sets.map(s => ({reps:s.reps,duration:s.duration,weight:s.weight,rpe:s.rpe}))};
     }
@@ -190,7 +193,7 @@
         addSetToContainer(setsContainer, {
           reps: s.reps,
           duration: s.duration,
-          weight: (s.weight || 0) + jump,
+          weight: Number(s.weight)>0 ? Number(s.weight)+jump : (Number(s.weight)===0?0:''),
           rpe: ''
         }, trackBy);
       });

@@ -15,7 +15,9 @@
   if(!row||row.dataset.type==='cardio')return null;
   const name=row.querySelector('.ex-name')?.value.trim(),date=document.getElementById('wo-date')?.value;
   if(!name||!date||!window.LoadnoteSession)return null;
-  let exerciseId=null;try{exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id||null;}catch{}
+  const identity=window.LoadnoteSession.catalogIdentity(data.exerciseCatalog,name);
+  if(identity.ambiguous)return null;
+  const exerciseId=identity.exerciseId;
   let editId=null;try{editId=typeof workoutEdit!=='undefined'?workoutEdit?.id:null;}catch{}
   try{return LoadnoteSession.previous(data.workouts||[],name,date,editId,row.dataset.type,row.dataset.trackBy,exerciseId);}catch{return null;}
  }
@@ -53,12 +55,12 @@
   const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy),same=currentSetPayload(priorSet,trackBy);
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
   const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0);
-  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
+  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[previous?.date,label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
   if(host._gymSignature===signature){host.hidden=!(label||canCopySame);return;}
   host._gymSignature=signature;
   if(!label&&!canCopySame){host.hidden=true;host.replaceChildren();return;}
   host.hidden=false;
-  host.innerHTML=(label?'<span>Last: '+esc(label)+'</span>':'<span>Quick fill</span>')+
+  host.innerHTML=(label?'<span>Last '+esc(previous.date)+': '+esc(label)+'</span>':'<span>Quick fill</span>')+
     '<div class="gym-set-history-actions">'+
     (canCopySame?'<button type="button" class="gym-copy-prior" data-gym-copy-prior>Same as set '+index+'</button>':'')+
     (canUseLast?'<button type="button" class="gym-use-last" data-gym-use-last>Use last session</button>':'')+

@@ -192,3 +192,52 @@ test('v2.62 an in-progress workout still saves when the network disappears',asyn
  expect(await page.evaluate(()=>localStorage.getItem('loadnote-workout-draft-v1'))).toBeNull();
  await context.setOffline(false);
 });
+
+test('v3.34 last-set quick entry prioritizes exercise ID, date and edit safety',async({page})=>{
+ await page.evaluate(()=>{
+  data.unit='kg';updateUnitToggle();
+  data.exerciseCatalog.push({id:'v34-press',name:'V34 Press',aliases:[]},{id:'v34-row',name:'V34 Row',aliases:[]});
+  data.workouts=[
+   {id:'newer-wrong-id',date:'2026-09-28',exercises:[{exerciseId:'v34-row',name:'V34 Press',type:'strength',trackBy:'reps',sets:[{weight:150,reps:8,rpe:9}]}]},
+   {id:'correct-id',date:'2026-09-20',exercises:[{exerciseId:'v34-press',name:'V34 Press',type:'strength',trackBy:'reps',sets:[{weight:100,reps:5,rpe:8}]}]},
+   {id:'future-correct',date:'2026-10-20',exercises:[{exerciseId:'v34-press',name:'V34 Press',type:'strength',trackBy:'reps',sets:[{weight:250,reps:3,rpe:9}]}]}
+  ];
+  document.getElementById('wo-date').value='2026-10-01';
+  const name=document.querySelector('.ex-name');name.value='V34 Press';name.dispatchEvent(new Event('input',{bubbles:true}));refreshGymFloorUI();
+ });
+ const history=page.locator('.logger-set').first().locator('.gym-set-history');
+ await expect(history).toContainText('2026-09-20');
+ await expect(history).toContainText('100 kg');
+ await expect(history).not.toContainText('150 kg');
+ await expect(history).not.toContainText('250 kg');
+ await history.getByRole('button',{name:'Use last session'}).click();
+ await expect(page.locator('.logger-set').first().locator('.set-weight')).toHaveValue('100');
+ await expect(page.locator('.logger-set').first().locator('.set-reps')).toHaveValue('5');
+ await expect(page.locator('.logger-set').first().locator('.set-rpe')).toHaveValue('');
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(3);
+});
+
+test('v3.34 last weights excludes later sessions and + Jump leaves unloaded holds unweighted',async({page})=>{
+ await page.evaluate(()=>{
+  data.unit='kg';updateUnitToggle();
+  data.exerciseCatalog.push({id:'v34-hold',name:'V34 Hold',aliases:[]});
+  data.workouts=[
+   {id:'v34-future-hold',date:'2026-10-05',exercises:[{exerciseId:'v34-hold',name:'V34 Hold',type:'strength',trackBy:'duration',sets:[{weight:50,duration:30}]}]},
+   {id:'v34-past-hold',date:'2026-09-20',exercises:[{exerciseId:'v34-hold',name:'V34 Hold',type:'strength',trackBy:'duration',sets:[{weight:0,duration:20}]}]}
+  ];
+  document.getElementById('wo-date').value='2026-10-01';
+  const name=document.querySelector('.ex-name');name.value='V34 Hold';
+  name.dispatchEvent(new Event('input',{bubbles:true}));
+  fillLastWeights(document.querySelector('[data-workout-action="jump-weights"]'),true,false);
+ });
+ await expect(page.locator('.set-weight').first()).toHaveValue('0');
+ await expect(page.locator('.set-duration').first()).toHaveValue('20');
+ await expect(page.locator('.set-rpe').first()).toHaveValue('');
+ await page.evaluate(()=>{
+  data.exerciseCatalog.push({id:'v34-other',name:'Other Hold',aliases:['V34 Hold']});
+  document.querySelector('.set-weight').value='';
+  document.querySelector('.set-duration').value='';
+  fillLastWeights(document.querySelector('[data-workout-action="last-weights"]'),false,true);
+ });
+ await expect(page.locator('.set-weight').first()).toHaveValue('');
+});

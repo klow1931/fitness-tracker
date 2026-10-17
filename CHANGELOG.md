@@ -1,3 +1,7 @@
+# v3.34.0 — Reliable last-session logging
+
+Hardened previous-set performance lookup across workout logger, gym-floor quick entry and training cockpit. Historical fills now validate exercise identity, reject ambiguous catalog matches, use only workout history up to the selected date, and exclude the workout currently being edited. Legacy name-only history remains accessible as a safe fallback. Last-set context shows the originating workout date; the + Jump shortcut no longer applies a jump to unloaded/bodyweight sets. No migration or changes to approved plan prescriptions. Added unit/browser regression tests. See docs/releases-v3.34.md.
+
 # v3.33.0 — Explainable strength recommendations
 
 Added an evidence-backed **Why this recommendation?** detail for squat, bench and deadlift decisions, including the actual recent recorded exposures, estimated-capacity trend, RPE changes, and policy thresholds. Offline Coach now answers explicit lift-direction questions using the same deterministic engine, without changing training or inventing a new prescription. Added node/browser tests and release metadata. See docs/releases-v3.33.md.

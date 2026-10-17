@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.33.0 · Development build.**
+**v3.34.0 · Development build.**
+
+Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
 Explainable training decisions: [v3.33 release notes](docs/releases-v3.33.md).
 
