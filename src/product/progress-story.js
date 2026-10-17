@@ -29,6 +29,8 @@
   return nameKey(exercise?.name)===nameKey(marker?.name);
  }
  function setEvidence(set,date,workoutId){
+  // An explicitly skipped, warm-up or unfinished set is not comparable work.
+  if(set?.skipped===true||set?.warmup===true||set?.type==='warmup'||set?.done===false||set?.completed===false)return null;
   const weight=finite(set?.weight),reps=Number(set?.reps);
   if(!(weight>0&&Number.isInteger(reps)&&reps>0))return null;
   const capacity=Core.capacityEvidence(weight,reps,set?.rpe);
