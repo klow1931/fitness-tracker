@@ -134,9 +134,12 @@ test('v2.62 mobile dock follows the draft, rest timer and navigation without los
  await expect(dock).toContainText('Bench Press · Set 1');
  await expect(page.locator('#mobile-nav [data-tab="workouts"]')).toHaveClass(/workout-draft-active/);
  await dock.locator('[data-gym-rest]').click();
- await page.getByRole('button',{name:'1m',exact:true}).click();
- await expect(dock.locator('#rest-timer-sticky')).toContainText('60s');
- await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('60s');
+ await expect(dock.locator('#rest-timer-sticky')).toContainText('90s');
+ await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('90s');
+ await dock.locator('[data-gym-rest]').click();
+ await expect(dock.locator('#rest-timer-sticky')).toContainText('paused');
+ await dock.locator('[data-gym-rest]').click();
+ await expect(dock.locator('#rest-timer-sticky')).not.toContainText('paused');
  await page.evaluate(()=>showTab('dashboard'));
  await expect(dock).toBeHidden();
  await page.evaluate(()=>showTab('workouts'));
