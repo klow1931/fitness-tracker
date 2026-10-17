@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.32.0 · Development build.**
+**v3.33.0 · Development build.**
+
+Explainable training decisions: [v3.33 release notes](docs/releases-v3.33.md).
 
 Optional local Coach model preview and explicit GPU-compatible choice: [v3.32 release notes](docs/releases-v3.32.md).
 

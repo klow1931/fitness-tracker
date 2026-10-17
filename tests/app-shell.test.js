@@ -16,6 +16,9 @@ assert(scripts.indexOf('src/product/draft-model.js')<scripts.indexOf('src/produc
 for(const dependency of ['session-intent','schedule','phase-builder','meet-cycle','programming-profile','athlete-intake','coach-support'])assert(scripts.indexOf('src/product/'+dependency+'.js')<scripts.indexOf('src/product/accessory-review.js'),'Accessory review must load after '+dependency);
 assert(scripts.indexOf('src/product/accessory-review.js')<scripts.indexOf('src/product/coach-conversation.js'));
 assert(scripts.indexOf('src/product/decision-readiness.js')<scripts.indexOf('src/product/coach-training-history.js'));
+assert(scripts.indexOf('src/product/decision-engine.js')<scripts.indexOf('src/product/decision-explanation.js'));
+assert(scripts.indexOf('src/product/decision-explanation.js')<scripts.indexOf('src/product/coach-conversation.js'));
+
 assert(scripts.indexOf('src/product/coach-training-history.js')<scripts.indexOf('src/product/coach-conversation.js'));
 assert(scripts.indexOf('src/product/programming-profile.js')<scripts.indexOf('src/product/coach-training-profile.js'));
 assert(scripts.indexOf('src/product/coach-training-profile.js')<scripts.indexOf('src/product/coach-conversation.js'));

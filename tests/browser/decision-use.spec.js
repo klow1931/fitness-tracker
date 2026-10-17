@@ -10,3 +10,23 @@ test('evidence checklist routes to existing mappings and weekly review works off
  const box=await page.locator('#weekly-decision-review').boundingBox();expect(box.x+box.width).toBeLessThanOrEqual(page.viewportSize().width+1);
  await page.locator('.decision-date-tools > summary').click();await page.locator('#readiness-date').fill('2026-01-01');await page.locator('#readiness-date').dispatchEvent('change');await expect(page.locator('[data-evidence-target]')).toHaveCount(0);await expect(page.locator('#weekly-decision-review')).toContainText('2026-01-01');
 });
+
+test('lift reasoning is inspectable and Coach answers why without proposing an unsaved change',async({page})=>{
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');});
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ const lift=page.locator('[data-decision-lift="bench"]');
+ await lift.locator('summary.decision-lift-summary').click();
+ const why=lift.locator('.decision-rule-explanation');
+ await expect(why).toBeAttached();
+ await why.locator('summary').click();
+ await expect(why).toContainText('Insufficient evidence');
+ await expect(why).toContainText('No validated recent capacity evidence');
+ await expect(why).toContainText('has not changed the next workout');
+ await page.evaluate(()=>{showSubTab('coach','co-chat');});
+ await page.locator('#chat-input').fill('Why is my bench on hold?');
+ await page.locator('#chat-send-btn').click();
+ await expect(page.locator('#chat-messages .assistant').last()).toContainText('Bench — Insufficient evidence');
+ await expect(page.locator('#chat-messages .assistant').last()).toContainText('has not changed the next workout');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
