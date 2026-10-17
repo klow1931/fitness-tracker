@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.40 · Development build.**
+**v3.43 · Development build.**
 
-Phase 2 guided programming, explainable adaptation reviews and full-cycle validation: [v3.40 release notes](docs/releases-v3.40.md).
+Phase 3 progress insights, context-aware offline Coach and weekly coaching: [v3.43 release notes](docs/releases-v3.43.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
