@@ -43,8 +43,8 @@
  function marker(row){
   if(!row)return null;
   const name=row.querySelector('.ex-name')?.value.trim()||'';
-  let exerciseId=null;try{exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id||null;}catch{}
-  return {exerciseId,name,trackBy:row.dataset.trackBy==='duration'?'duration':'reps'};
+  const identity=window.LoadnoteSession?.catalogIdentity(data.exerciseCatalog,name)||{exerciseId:null,ambiguous:false};
+  return {exerciseId:identity.exerciseId,name,ambiguous:identity.ambiguous,trackBy:row.dataset.trackBy==='duration'?'duration':'reps'};
  }
  function plan(){
   try{return typeof pendingPrescription!=='undefined'?pendingPrescription:null;}catch{return null;}
@@ -56,7 +56,7 @@
  function previous(ctx){
   if(!ctx?.row||ctx.row.dataset.type==='cardio')return null;
   const mark=marker(ctx.row),day=document.getElementById('wo-date')?.value;
-  if(!mark?.name||!day||!window.LoadnoteSession)return null;
+  if(!mark?.name||!day||mark.ambiguous||!window.LoadnoteSession)return null;
   let editId=null;try{editId=typeof workoutEdit!=='undefined'?workoutEdit?.id:null;}catch{}
   try{
    const found=LoadnoteSession.previous(data.workouts||[],mark.name,day,editId,'strength',mark.trackBy,mark.exerciseId);
