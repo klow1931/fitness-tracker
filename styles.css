@@ -2047,3 +2047,11 @@ body.dark .weekly-target{border-color:#475569}
 /* Calendar day entry choices stay easy to tap at phone widths. */
 .calendar-day-actions{display:grid;gap:.75rem;margin:1rem 0}
 .calendar-day-actions button{width:100%;min-height:48px;white-space:normal;text-align:left}
+
+/* Phase 1 — one primary in-workout Finish action and comfortable RPE taps. */
+@media(max-width:768px){
+ body.training-execution-active .gym-floor-dock .gym-floor-finish{display:none}
+ body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto}
+ #workout-log-card .quick-rpe-chip{min-height:44px;min-width:48px}
+ #workout-log-card .quick-done-no-rpe{min-height:44px}
+}
