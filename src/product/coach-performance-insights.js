@@ -27,7 +27,11 @@
  }
  function answer(state,question,{asOf,unit='kg',history=[]}={}){
   if(!focus(String(question||'')))return null;
-  const lift=liftOf(question)||[...history].reverse().filter(h=>h.role==='user').map(h=>liftOf(h.content||'')).find(Boolean);
+  // Follow a named lift only when the *immediately preceding user question*
+  // is the referent. A changed topic clears session-only context.
+  const lastUser=(Array.isArray(history)?history:[]).filter(h=>h.role==='user').at(-1);
+  const pronoun=/\b(it|that|same lift|this lift)\b/i.test(question);
+  const lift=liftOf(question)||(pronoun&&lastUser?liftOf(lastUser.content||''):null);
   if(!lift)return {text:'Which lift appears stalled—squat, bench or deadlift? I can check the saved RPE-aware training trend without diagnosing a cause or adding weight.',source:'Offline Coach · training trends',readOnly:true,evidence:[],followUps:['Why is my bench progress stalled?']};
   let report;try{report=inspect(state,{asOf,lift,unit});}catch{return {text:'I could not validate the saved training trend. Check the recorded exercises and dates first; no programming change was made.',source:'Offline Coach · training trends unavailable',readOnly:true,evidence:[]};}
   if(report.status==='unmapped')return {text:report.reason,source:'Offline Coach · training trends',readOnly:true,evidence:[report]};
