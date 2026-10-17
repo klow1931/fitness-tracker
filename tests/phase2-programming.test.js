@@ -15,6 +15,7 @@ const returning=Setup.recommend({experience:'advanced',consistency:'returning',a
 assert.equal(returning.style,'linear','recent adherence takes precedence over nominal experience');
 const limited=Setup.recommend({experience:'advanced',consistency:'consistent',availableDays:[0,4]});
 assert.equal(limited.style,'linear');
+assert.equal(Setup.recommend({experience:'advanced',consistency:'consistent',availableDays:[0,2,4]},{hasLightExposure:false}).style,'linear');
 const invalid=Setup.recommend({experience:'advanced',consistency:'consistent',availableDays:[0,2,4]},{days:[0,2,6]});
 assert.equal(invalid.status,'needs-review');
 assert.match(invalid.reason,/availability/);
