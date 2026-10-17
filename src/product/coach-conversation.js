@@ -41,6 +41,10 @@
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
+  // Phase 3: explain apparent plateaus from the same read-only Progress trends.
+  // Safety and confirmed movement references have already been checked.
+  const trendReply=(typeof module==='object'&&module.exports?require('./coach-performance-insights'):globalThis.LoadnoteCoachPerformanceInsights)?.answer(state,q,{asOf,unit,history});
+  if(trendReply)return {...trendReply,intent:{...intent,...(trendReply.intent||{})}};
   // Explicit 'why this lift direction?' questions get fresh deterministic evidence,
   // not a new recommendation or an LLM-generated explanation.
   const explainedDecision=(typeof module==='object'&&module.exports?require('./decision-explanation'):globalThis.LoadnoteDecisionExplanation)?.answer(state,question,{asOf,unit});
