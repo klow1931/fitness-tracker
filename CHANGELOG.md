@@ -1,3 +1,11 @@
+# v3.37 — Phase 1: Gym Floor, Recovery and Today's Workout
+
+- Automatic progression to the next unfinished set across exercise boundaries, without an extra confirmation. Rest still keeps the keyboard closed and actual RPE remains optional.
+- Larger mobile RPE tap targets and one primary in-workout Finish/Review action. Existing review, previous performance, unit conversion and rest controls are reused.
+- Redundant local draft checkpoints survive corrupt/interrupted primary writes. Both drafts clear after a successfully committed workout; the original stored history schema remains intact.
+- Home and Train recognize manually logged workouts today. Unrelated unfinished workouts remain higher priority than starting scheduled training.
+- New recovery unit and browser tests, offline cache assets, version, and release docs.
+
 # v3.34.1 — Mobile appearance fixes
 
 Keep active bottom-navigation SVG icons outlined instead of painting solid squares in every color theme and display mode. Stack the Appearance heading and description so the heading stays intact on narrow phones and enlarged text. Add regression checks across all five tabs, six presets, light/dark mode, touch targets and narrow Profile layouts. No training-data or Coach-policy changes. See docs/releases-v3.34.1.md.
