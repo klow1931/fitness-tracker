@@ -9,6 +9,9 @@ const {fixture}=require('./fixtures/program-review');
 const state=fixture(),asOf='2026-09-24',before=JSON.stringify(state);
 const examples=[
  ['Build a 12-week strength program','draft'],
+ ['Can you cancel my program?','general'],
+ ['I want to delete my workout','general'],
+ ['Could you reschedule my workout?','general'],
  ['Could you help me plan a workout?','draft'],
  ['How can you help me?','capabilities'],
  ['What can the offline coach do?','capabilities'],
@@ -32,6 +35,8 @@ const draft=Planner.answer(state,'Could you help me build a 12-week strength pro
 assert.equal(draft.planning.weeks,12);assert.equal(draft.planning.frequency,3);
 assert.equal(draft.actions[0].kind,'offline-plan','only a review button may proceed to the current builder');
 assert.equal(Planner.answer(state,'Can you explain my workout?'),null,'explanations must not become draft requests');
+assert.equal(Planner.answer(state,'I want to cancel my program'),null,'existing program management must not create another plan');
+assert.equal(Planner.answer(state,'Could you reschedule my workout?'),null,'rescheduling belongs in Calendar');
 for(const [query,expected] of [
  ['Why deload?', 'deload-purpose'],
  ['How often should I train?', 'training-frequency'],
