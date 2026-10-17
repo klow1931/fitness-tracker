@@ -26,7 +26,7 @@
   let host=set.querySelector('.quick-set-entry');if(host)return host;
   host=document.createElement('div');host.className='quick-set-entry';host.hidden=true;
   const chips=H().RPE_VALUES.map(v=>'<button type="button" class="quick-rpe-chip" data-quick-rpe="'+v+'">'+v+'</button>').join('');
-  host.innerHTML='<span class="quick-set-label">Finish set · RPE</span><div class="quick-rpe-chips">'+chips+'</div><button type="button" class="quick-done-no-rpe" data-quick-done>Done without RPE</button>';
+  host.innerHTML='<span class="quick-set-label">Log set · tap RPE</span><div class="quick-rpe-chips">'+chips+'</div><button type="button" class="quick-done-no-rpe" data-quick-done>Done without RPE</button>';
   set.appendChild(host);return host;
  }
  function setState(set,active){

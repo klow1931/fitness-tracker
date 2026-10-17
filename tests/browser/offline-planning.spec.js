@@ -42,7 +42,7 @@ test('offline conversation collects requirements over turns without a training w
 });
 test('chat request generates an exact 12-week editable strength preview, preserving explicit max review',async({page})=>{
  await ask(page,'Create a 12-week powerlifting program four days per week, 60 minutes, full gym and bench priority');
- await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}));await page.locator('#offline-program-continue').click();
+ await activateAction(page.locator('#chat-messages').getByRole('button',{name:'Review program request',exact:true}));await expect(page.locator('#offline-plan-dialog')).toBeVisible();await expect(page.locator('#offline-plan-dialog [data-offline-day]:checked')).toHaveCount(4);await page.locator('#offline-program-continue').click();
  const d=page.locator('#phase-dialog');await expect(d).toBeVisible();await d.getByRole('button',{name:'Show all fields',exact:true}).click();
  await expect(d.locator('#phase-accumulation')).toHaveValue('5');await expect(d.locator('#phase-strength')).toHaveValue('6');await expect(d.locator('[data-phase-day]:checked')).toHaveCount(4);
  for(const [i,lift] of ['squat','bench','deadlift'].entries()){await d.locator('.phase-lift > summary').nth(i).click();await expect(d.locator('#phase-'+lift+'-tm')).toHaveValue('');await d.locator('#phase-'+lift+'-tm').fill(String([160,120,220][i]));}

@@ -60,7 +60,7 @@
   let editId=null;try{editId=typeof workoutEdit!=='undefined'?workoutEdit?.id:null;}catch{}
   try{
    const found=LoadnoteSession.previous(data.workouts||[],mark.name,day,editId,'strength',mark.trackBy,mark.exerciseId);
-   return found?.exercise?.sets?.[ctx.setIndex]||null;
+   const set=found?.exercise?.sets?.[ctx.setIndex];return set?{...set,date:found.date}:null;
   }catch{return null;}
  }
  function weightText(kg){
@@ -208,7 +208,7 @@
   const progress=counts.total?counts.done+'/'+counts.total+' sets':'';
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
-  const previousLine=ctx.set?'<div><span>Last</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
+  const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
     (prior?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
@@ -246,17 +246,10 @@
   if(scheduledRefresh)return;scheduledRefresh=true;requestAnimationFrame(()=>{scheduledRefresh=false;render();});
  }
  function onSetComplete(fromSet,nextSet){
-  if(!fromSet||!nextSet)return false;
-  const fromRow=fromSet.closest('#exercise-rows > div'),toRow=nextSet.closest('#exercise-rows > div'),all=rows(),fromIndex=all.indexOf(fromRow),toIndex=all.indexOf(toRow);
-  if(fromRow===toRow||!H()?.transition(fromIndex,toIndex))return false;
-  transitionState={
-   from:fromRow.querySelector('.ex-name')?.value.trim()||'Exercise',
-   to:toRow.querySelector('.ex-name')?.value.trim()||'Exercise',
-   setCount:setRows(toRow).length,
-   nextSet
-  };
-  render();document.getElementById('training-cockpit')?.scrollIntoView({block:'nearest',behavior:'smooth'});
-  return true;
+  // Quick-entry handles the next unfinished set across exercise boundaries.
+  // An active rest timer still keeps the numeric keyboard closed.
+  transitionState=null;
+  return false;
  }
  function init(){
   ensure();queueRefresh();

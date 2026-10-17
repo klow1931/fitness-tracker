@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict');
+const Recovery=require('../src/product/draft-recovery');
+const Draft=require('../src/product/draft-model');
+const key='loadnote-workout-draft-v1';
+function storage(){
+ const map=new Map();
+ return {map,getItem:k=>map.get(k)||null,setItem(k,v){map.set(k,v);},removeItem(k){map.delete(k);}};
+}
+const sample=(weight,updatedAt=1)=>({version:3,date:'2026-10-17',notes:'',unit:'lb',updatedAt,rows:[{type:'strength',name:'Competition Bench Press',sets:[{weight,reps:'5',rpe:'8',done:true,showCompletion:true}]}]});
+const s=storage();
+assert.equal(Recovery.read(s,key,Draft.normalize),null);
+assert.deepEqual(Recovery.write(s,key,sample('225')), {saved:true,redundant:true});
+assert.equal(Recovery.read(s,key,Draft.normalize).rows[0].sets[0].weight,'225');
+s.map.set(key,'{"incomplete":');
+assert.equal(Recovery.read(s,key,Draft.normalize).rows[0].sets[0].weight,'225','corrupt primary recovers completed sets, lb unit and RPE');
+s.map.set(key,JSON.stringify(sample('225',1)));
+s.map.set(key+'-recovery',JSON.stringify(sample('230',2)));
+assert.equal(Recovery.read(s,key,Draft.normalize).rows[0].sets[0].weight,'230','newer backup survives a failed primary write');
+s.map.set(key,JSON.stringify(sample('235',3)));
+assert.equal(Recovery.read(s,key,Draft.normalize).rows[0].sets[0].weight,'235','newest primary wins');
+assert.equal(Recovery.clear(s,key),true);
+assert.equal(Recovery.read(s,key,Draft.normalize),null,'committed workout must never resurrect');
+const failed=storage();
+failed.setItem=function(k,v){if(k===key)throw Error('quota');this.map.set(k,v);};
+assert.deepEqual(Recovery.write(failed,key,sample('240')), {saved:false,redundant:true});
+assert.equal(Recovery.read(failed,key,Draft.normalize).rows[0].sets[0].weight,'240','backup recoverable despite primary failure and retry warning');
+const legacy=storage();
+legacy.map.set(key,JSON.stringify(sample('200')));
+assert.equal(Recovery.read(legacy,key,Draft.normalize).rows[0].sets[0].weight,'200','older one-copy drafts remain compatible');
+console.log('phase 1 dual-checkpoint draft recovery, interruption, compatibility and clear guards passed');

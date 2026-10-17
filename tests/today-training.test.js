@@ -37,3 +37,12 @@ report=Today.inspect(state,{day:'2026-09-28',draft:{rows:[],sessionIntent:{}}});
 assert.equal(report.openDraft,false);
 assert.equal(report.summary,'Today’s scheduled workout is ready');
 console.log('today training state, unrelated/other-date draft priority and immutable recovery guards passed');
+
+const manual={workouts:[{id:'manual',date:'2026-09-28',exercises:[{name:'Squat',sets:[{reps:3,weight:100}]}]}],scheduledSessions:[]};
+report=Today.inspect(manual,{day:'2026-09-28'});
+assert.equal(report.loggedToday,1);
+assert.equal(report.active,null);
+assert.equal(report.summary,'Training logged today');
+report=Today.inspect(manual,{day:'2026-09-29'});
+assert.equal(report.loggedToday,0);
+assert.equal(report.summary,'No workout is scheduled today');

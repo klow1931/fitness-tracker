@@ -1,10 +1,11 @@
 /* v1.2: recoverable workout drafts and logger validation. History stays in the existing schema. */
 const LOGGER_DRAFT_KEY = 'loadnote-workout-draft-v1';
+let lastLoggerDraftStamp=0;
 function validLoggerNumber(value, min, max = Infinity, integer = false) {
   return value !== '' && Number.isFinite(Number(value)) && Number(value) >= min && Number(value) <= max && (!integer || Number.isInteger(Number(value)));
 }
 function readLoggerDraft() {
-  try { return LoadnoteDraft.normalize(JSON.parse(localStorage.getItem(LOGGER_DRAFT_KEY))); } catch (_) { return null; }
+  return LoadnoteDraftRecovery.read(localStorage,LOGGER_DRAFT_KEY,LoadnoteDraft.normalize);
 }
 function loggerHasContent() {
   return !!pendingPrescription || !!pendingSessionTiming || [...document.querySelectorAll('#exercise-rows input:not([type=checkbox]), #wo-notes, #session-intent input, #session-intent select')].some(i => i.value !== '');
@@ -12,7 +13,7 @@ function loggerHasContent() {
 function captureLoggerDraft() {
   const value = (row, selector) => row.querySelector(selector)?.value || '';
   return { version: 3, date: document.getElementById('wo-date').value, notes: document.getElementById('wo-notes').value,
-    unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, sessionIntent: readSessionIntentDraft(), updatedAt: Date.now(),
+    unit: currentUnit(), program: pendingProgramSession, edit: workoutEdit, sessionIntent: readSessionIntentDraft(), updatedAt: (lastLoggerDraftStamp=Math.max(Date.now(),lastLoggerDraftStamp+1)),
     rows: [...document.querySelectorAll('#exercise-rows > div')].map(row => ({
       type: row.dataset.type, trackBy: row.dataset.trackBy,cardioDone:!!row.querySelector('.cardio-done')?.checked,
       name:value(row,'.ex-name'),note:value(row,'.ex-note'),duration:value(row,'.cardio-duration'),distance:value(row,'.cardio-distance'),distanceUnit:value(row,'.cardio-distance-unit'),avgHr:value(row,'.cardio-hr'),
@@ -25,9 +26,16 @@ function saveLoggerDraft() {
   if(loggerHasContent())window.clearWorkoutRecap?.();
   let saved=false;
   try {
-    if (loggerHasContent()) { localStorage.setItem(LOGGER_DRAFT_KEY, JSON.stringify(captureLoggerDraft())); status.textContent = 'Draft saved on this device'; }
-    else { localStorage.removeItem(LOGGER_DRAFT_KEY); status.textContent = 'Draft saves on this device as you train.'; }
-    saved=true;
+    if (loggerHasContent()) {
+      const result=LoadnoteDraftRecovery.write(localStorage,LOGGER_DRAFT_KEY,captureLoggerDraft());
+      saved=result.saved;
+      status.textContent=saved
+        ? (result.redundant?'Draft saved on this device':'Draft saved on this device · recovery copy unavailable')
+        : 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.';
+    } else {
+      saved=LoadnoteDraftRecovery.clear(localStorage,LOGGER_DRAFT_KEY);
+      status.textContent=saved?'Draft saves on this device as you train.':'Draft could not be cleared. Retry before closing.';
+    }
   } catch (_) { status.textContent = 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.'; }
   const failure=document.getElementById('logger-draft-failure');
   if(failure)failure.hidden=saved;
@@ -86,6 +94,7 @@ function validateWorkoutForm() {
 }
 function initWorkoutLogger() {
   const draft = readLoggerDraft();
+  lastLoggerDraftStamp=Math.max(lastLoggerDraftStamp,Number(draft?.updatedAt)||0);
   const container = document.getElementById('exercise-rows');
   if (!container) return;
   if (draft) {

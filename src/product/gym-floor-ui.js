@@ -109,9 +109,12 @@
   document.body.appendChild(host);
   host.querySelector('[data-gym-current]').onclick=()=>{const set=document.querySelector('#exercise-rows .logger-active-set')||firstUnfinishedSet();set?.scrollIntoView({block:'center',behavior:'smooth'});};
   host.querySelector('[data-gym-rest]').onclick=()=>{
-   if(window.LoadnoteRestTimer?.snapshot?.().active){document.getElementById('training-cockpit')?.scrollIntoView({block:'nearest',behavior:'smooth'});return;}
-   if(window.LoadnoteTrainingExecutionUI?.isActive?.()&&!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())window.LoadnoteTrainingExecutionUI.toggleOptions();
-   requestAnimationFrame(()=>document.querySelector('.training-rest-controls')?.scrollIntoView({block:'center',behavior:'smooth'}));
+   // One tap starts 90 seconds; subsequent taps pause/resume the countdown.
+   // Preset alternatives and +30s stay available in the existing cockpit.
+   const timer=window.LoadnoteRestTimer,state=timer?.snapshot?.();
+   if(state?.active)timer.pause?.();
+   else timer?.start?.(90);
+   updateDock();
   };
   host.querySelector('[data-gym-finish]').onclick=()=>reviewWorkout();
   return host;
@@ -142,6 +145,8 @@
   const progressLabel=host.querySelector('[data-gym-progress]');
   if(progressLabel)progressLabel.textContent=progress?.totalSets?progress.doneSets+'/'+progress.totalSets+' sets · '+progress.doneExercises+'/'+progress.totalExercises+' exercises':'';
   const finish=host.querySelector('[data-gym-finish]');if(finish)finish.textContent=progress?.complete?'Review':'Finish';
+  const rest=host.querySelector('[data-gym-rest]'),restState=window.LoadnoteRestTimer?.snapshot?.();
+  if(rest)rest.setAttribute('aria-label',restState?.active?(restState.paused?'Resume rest':'Pause rest'):'Start 90-second rest timer');
   const train=document.querySelector('#mobile-nav [data-tab="workouts"]');
   train?.classList.toggle('workout-draft-active',hasDraft);
   if(train)train.setAttribute('aria-label',hasDraft?'Train — workout draft saved':'Train');

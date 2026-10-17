@@ -1,0 +1,36 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function node(){
+ return {style:{},children:[],events:{},append(child){this.children.push(child);},addEventListener(type,fn,options){this.events[type]={fn,options};}};
+}
+const document={createElement:()=>node(),querySelector:()=>null};
+let opened=0,closed=0;
+const window={LoadnoteOfflinePlannerUI:{open:()=>opened++},LoadnoteCoachCompanionUI:{close:()=>closed++}};
+vm.runInNewContext(fs.readFileSync(require.resolve('../src/product/smart-coach-ui'),'utf8'),{window,document});
+const host=node();
+window.LoadnoteSmartCoachUI.attach(host,{actions:[{kind:'offline-plan',label:'Draft my workout',request:{kind:'daily'}}]});
+const button=host.children[0].children[0];
+assert.equal(button.style.touchAction,'manipulation');
+assert.equal(button.events.touchend.options.passive,false,'must be allowed to suppress a WebKit compatibility click');
+const touch=(id,x,y)=>({identifier:id,clientX:x,clientY:y});
+const gesture=(start,end)=>{
+ button.events.touchstart.fn({touches:[start]});
+ const event={changedTouches:[end],prevented:false,preventDefault(){this.prevented=true;}};
+ button.events.touchend.fn(event);return event;
+};
+assert.equal(gesture(touch(1,100,100),touch(1,100,100)).prevented,true);
+assert.equal(opened,1,'one stationary touch must activate Coach review');
+button.events.click.fn({detail:1});
+assert.equal(opened,1,'compatibility click must not duplicate review');
+button.events.click.fn({detail:0});
+assert.equal(opened,2,'keyboard activation must remain available');
+button.events.touchstart.fn({touches:[touch(2,10,10)]});
+button.events.touchmove.fn({changedTouches:[touch(2,100,100)]});
+button.events.touchend.fn({changedTouches:[touch(2,100,100)],preventDefault(){throw Error('drag not cancelled');}});
+assert.equal(gesture(touch(3,10,10),touch(3,100,100)).prevented,false);
+assert.equal(opened,2,'scroll/drag release must not open a review');
+button.events.touchstart.fn({touches:[touch(4,10,10)]});
+button.events.touchcancel.fn();
+button.events.touchend.fn({changedTouches:[touch(4,10,10)],preventDefault(){throw Error('cancelled event');}});
+assert.equal(opened,2,'cancelled touch must not open a review');
+assert.equal(closed,2,'each activation closes the companion before routing');
+console.log('Coach WebKit touchend ghost-click suppression, scroll cancellation and keyboard activation passed');
