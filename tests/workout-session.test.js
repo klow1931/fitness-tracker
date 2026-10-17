@@ -21,3 +21,28 @@ assert.equal(S.previous([original],'Bench','2026-09-06',null),null);
 assert.equal(S.previous([original],'Bench','2026-09-08','uuid'),null);
 assert.equal(S.previous([original],'Bench','2026-09-08',null,'strength','duration'),null);
 console.log('Session edits, provenance, comparisons, and unit tests passed');
+
+const named=(id,date,exerciseId,name,weight)=>({id,date,exercises:[{exerciseId,name,type:'strength',trackBy:'reps',sets:[{weight,reps:5,rpe:8}]}]});
+const history=[
+ named('other-newer','2026-10-05','other','Bench Press',150),
+ named('actual-older','2026-09-27','bench','Bench Press',100),
+ named('future','2026-11-01','bench','Bench Press',500),
+ named('legacy','2026-09-22',null,'Bench Press',95)
+];
+let prior=S.previous(history,'Bench Press','2026-10-06',null,'strength','reps','bench');
+assert.equal(prior.exercise.sets[0].weight,100,'A newer different exercise ID must not supersede the correct identity');
+prior=S.previous(history,'Bench Press','2026-11-03',null,'strength','reps','bench');
+assert.equal(prior.exercise.sets[0].weight,500,'Known identity can use a future workout only once its date has passed');
+prior=S.previous(history,'Bench Press','2026-09-25',null,'strength','reps','bench');
+assert.equal(prior.exercise.sets[0].weight,95,'Name-only legacy rows are a compatibility fallback');
+prior=S.previous(history,'Competition Bench','2026-10-06',null,'strength','reps','bench');
+assert.equal(prior.exercise.name,'Bench Press','Renamed exercise retains exact stable ID');
+assert.equal(S.previous(history,'Bench Press','2026-10-06','actual-older','strength','reps','bench').exercise.sets[0].weight,95,'Editing excludes the edited workout');
+assert.equal(S.previous(history,'Bench Press','2026-09-20',null,'strength','reps','bench'),null);
+assert.equal(S.findPerformance(history,'Bench Press',()=>true,null,{asOf:'2026-10-06'}),null,'Multiple IDs under one label cannot be guessed');
+const shuffled=[named('old','2026-01-01','bench','Bench Press',10),named('later','2026-04-01','bench','Bench Press',20),named('middle','2026-03-01','bench','Bench Press',15)];
+assert.equal(S.findPerformance(shuffled,'Bench Press',()=>true,'bench',{asOf:'2026-03-15'}).exercise.sets[0].weight,15,'Unsorted imported records must be ordered by date');
+assert.deepEqual(S.catalogIdentity([{id:'b',name:'Competition Bench',aliases:['Bench Press']}],' bench press '),{exerciseId:'b',ambiguous:false});
+assert.deepEqual(S.catalogIdentity([{id:'b',name:'Bench Press'},{id:'b2',name:'Special Bench',aliases:['Bench Press']}],'Bench Press'),{exerciseId:null,ambiguous:true});
+assert.equal(S.findPerformance([named('other','2026-09-01','other','Bench Press',222)],'Bench Press',()=>true,'bench'),null,'Never borrow an explicitly different exercise');
+console.log('v3.34 previous-performance identity, catalog ambiguity, future cutoff, rename, legacy fallback, edit exclusion and imports passed');
