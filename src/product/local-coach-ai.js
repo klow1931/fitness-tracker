@@ -22,9 +22,9 @@
   return text.trim();
  }
  function create({loadRuntime=()=>import(RUNTIME),gpu=()=>globalThis.navigator?.gpu,clock=()=>Date.now(),timeoutMs=30000}={}){
-  let engine=null,busy=false,generation=0,preview=null,runtimeCache=null,state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};
+  let engine=null,busy=false,generation=0,preview=null,runtimeCache=null,state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false,completedReplies:0,lastReplyMs:null};
   const snapshot=()=>JSON.parse(JSON.stringify(state));
-  async function disable(){generation++;const old=engine;engine=null;preview=null;runtimeCache=null;state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false};if(old){await old.interruptGenerate?.();await old.unload();}return snapshot();}
+  async function disable(){generation++;const old=engine;engine=null;preview=null;runtimeCache=null;state={status:'off',model:null,memoryMB:null,progress:'',evaluation:null,conversationConsent:false,completedReplies:0,lastReplyMs:null};if(old){await old.interruptGenerate?.();await old.unload();}return snapshot();}
   function setConversationConsent({confirmed=false}={}){if(confirmed&&state.status!=='ready')throw Error('Enable and test the local model first');const changed=state.conversationConsent!==(confirmed===true);if(changed)generation++;state.conversationConsent=confirmed===true;if(confirmed&&changed)try{globalThis.LoadnoteCoachVoiceUI?.stop();}catch{}return snapshot();}
   async function discover(){
    if(!gpu())throw Error('This browser does not expose WebGPU. Referenced local coaching remains available.');
@@ -82,9 +82,13 @@
    const payload={question:String(question).slice(0,500),training:context,history:history.slice(-6).filter(r=>['user','assistant'].includes(r.role)&&!sensitive(r.content)).map(r=>({role:r.role,content:String(r.content).slice(0,350)})),summaries:cards.slice(0,2).map(c=>({title:c.title,summary:c.summary,application:c.application})),canonicalGuidance:String(canonical?.text||'').slice(0,1800)};
    if(JSON.stringify(payload).length>12000)return null;
    let timer;try{
+    const replyStart=clock();
     const request=active.chat.completions.create({messages:[{role:'system',content:CONVERSATION_POLICY},{role:'user',content:JSON.stringify(payload)}],temperature:0.3,max_tokens:200,response_format:{type:'json_object'}});
     const reply=await Promise.race([request,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Local reply timed out')),timeoutMs);})]);
-    return ticket===generation&&state.conversationConsent?acceptable(reply.choices?.[0]?.message?.content||''):null;
+    if(ticket!==generation||!state.conversationConsent)return null;
+    const validated=acceptable(reply.choices?.[0]?.message?.content||'');
+    if(validated){state.completedReplies++;state.lastReplyMs=Math.max(0,clock()-replyStart);}
+    return validated;
    }catch(e){
     if(e.message==='Local reply timed out'&&ticket===generation){generation++;engine=null;state.status='unavailable';state.progress='Local reply timed out; built-in coaching remains available.';try{Promise.resolve(active.interruptGenerate?.()).catch(()=>{});Promise.resolve(active.unload()).catch(()=>{});}catch{}}
     return null;
