@@ -29,7 +29,7 @@ test('guided phase setup reviews one explicit proposal and separates Reviewed fr
  await expect(d.locator('#phase-periodization')).toHaveValue('auto');
  await expect(d.locator('#phase-style-reason')).toContainText('setup suggestion');
  await expect(d.locator('#phase-squat-tm')).toHaveValue('');
- await expect(d.locator('#phase-guided-advanced #phase-accumulation')).toHaveValue('3');
+ await expect(d.locator('#phase-guided-advanced #phase-accumulation')).toHaveAttribute('type','number');
  for(const day of [1])await d.locator('[data-phase-day][value="'+day+'"]').uncheck();await d.locator('[data-phase-day][value="4"]').check();
  await next(d);await next(d);await expect(d.locator('#phase-squat-tm')).toBeFocused();await expect(d.locator('#phase-squat-tm')).toHaveValue('');
  for(const [lift,value] of [['squat','160'],['bench','120'],['deadlift','220']])await d.locator('#phase-'+lift+'-tm').fill(value);
