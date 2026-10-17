@@ -42,6 +42,9 @@ assert.equal(routed.source,'Offline Coach · corrected training trends','convers
 assert.equal(routed.intent.lift,'bench');
 const future={...base,workouts:[...base.workouts,workout('future','2026-10-04',200)]};
 assert.equal(Trend.answer(future,'Why has my bench stalled?',{asOf,unit:'kg'}).text,Trend.answer(base,'Why has my bench stalled?',{asOf,unit:'kg'}).text,'future logs cannot rewrite past answers');
+const rolesAfterCutoff=Readiness.replace([],[{exerciseId:'b',role:'competition',competitionLift:'bench'}],{now:'2026-10-03T00:00:00.000Z',createId:()=> 'future-role'});
+const mappedLater={...base,exerciseRoles:rolesAfterCutoff};
+assert.equal(Trend.answer(mappedLater,'Why has my bench stalled?',{asOf}).evidence[0].status,'unmapped','future exercise roles cannot retroactively authorize an analysis');
 const sparse={...base,workouts:[workout('first','2026-07-10',100,null),workout('last','2026-09-21',105,null)]};
 answer=Trend.answer(sparse,'My bench progress has plateaued',{asOf});
 assert.match(answer.text,/not enough comparable RPE-aware evidence/i);
