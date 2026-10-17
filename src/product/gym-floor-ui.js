@@ -60,7 +60,7 @@
   host._gymSignature=signature;
   if(!label&&!canCopySame){host.hidden=true;host.replaceChildren();return;}
   host.hidden=false;
-  host.innerHTML=(label?'<span>Last: '+esc(label)+'</span>':'<span>Quick fill</span>')+
+  host.innerHTML=(label?'<span>Last '+esc(previous.date)+': '+esc(label)+'</span>':'<span>Quick fill</span>')+
     '<div class="gym-set-history-actions">'+
     (canCopySame?'<button type="button" class="gym-copy-prior" data-gym-copy-prior>Same as set '+index+'</button>':'')+
     (canUseLast?'<button type="button" class="gym-use-last" data-gym-use-last>Use last session</button>':'')+
