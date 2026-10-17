@@ -2055,3 +2055,12 @@ body.dark .weekly-target{border-color:#475569}
  #workout-log-card .quick-rpe-chip{min-height:44px;min-width:48px}
  #workout-log-card .quick-done-no-rpe{min-height:44px}
 }
+
+/* Phase 3: compact Progress facts without competing with training controls. */
+.progress3-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin:.85rem 0}
+.progress3-highlights article{min-width:0;border:1px solid var(--line,#d5dbe3);border-radius:.75rem;padding:.75rem;background:var(--card,#fff);display:flex;flex-direction:column;gap:.3rem;overflow-wrap:anywhere}
+.progress3-highlights span{font-size:.8rem;opacity:.85}
+.progress3-highlights strong{font-size:1.45rem;line-height:1.2;font-variant-numeric:tabular-nums}
+.progress3-highlights small{font-size:.75rem;line-height:1.35;opacity:.8}
+.progress3-coverage{margin-bottom:.85rem}
+@media(max-width:430px){.progress3-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}.progress3-highlights article:last-child{grid-column:span 2}}
