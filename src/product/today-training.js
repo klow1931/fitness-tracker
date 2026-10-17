@@ -9,6 +9,7 @@
   if(!Schedule.date(day))throw Error('Choose a valid training date');
   const current=Schedule.list(state?.scheduledSessions||[]).filter(s=>s.date===day);
   const workouts=state?.workouts||[],draftScheduleId=draft?.sessionIntent?.schedule?.id||null;
+  const loggedToday=workouts.filter(w=>w?.date===day&&Array.isArray(w.exercises)&&w.exercises.length>0).length;
   const sessions=current.map(s=>{
     const linked=workouts.filter(w=>w?.sessionIntent?.schedule?.id===s.id);
     const status=linked.length===1?'completed':linked.length>1?'ambiguous':s.status;
@@ -23,8 +24,8 @@
   const completed=sessions.filter(s=>s.status==='completed').length;
   // A scheduled draft from another day is still recoverable work, not a
   // license to replace it with today's scheduled session.
-  return {version:1,day,sessions,active,openDraft,unlinkedDraft:openDraft&&!sessions.some(s=>s.draftOpen),completed,
-    summary:active?.draftOpen?'Workout in progress':openDraft?'Unfinished workout ready to resume':active?'Today’s scheduled workout is ready':completed?'Today’s scheduled training is logged':'No workout is scheduled today'};
+  return {version:1,day,sessions,active,openDraft,unlinkedDraft:openDraft&&!sessions.some(s=>s.draftOpen),completed,loggedToday,
+    summary:active?.draftOpen?'Workout in progress':openDraft?'Unfinished workout ready to resume':active?'Today’s scheduled workout is ready':completed?'Today’s scheduled training is logged':loggedToday?'Training logged today':'No workout is scheduled today'};
  }
  return {inspect};
 });
