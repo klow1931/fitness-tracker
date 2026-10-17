@@ -15,7 +15,9 @@
   if(!row||row.dataset.type==='cardio')return null;
   const name=row.querySelector('.ex-name')?.value.trim(),date=document.getElementById('wo-date')?.value;
   if(!name||!date||!window.LoadnoteSession)return null;
-  let exerciseId=null;try{exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id||null;}catch{}
+  const identity=window.LoadnoteSession.catalogIdentity(data.exerciseCatalog,name);
+  if(identity.ambiguous)return null;
+  const exerciseId=identity.exerciseId;
   let editId=null;try{editId=typeof workoutEdit!=='undefined'?workoutEdit?.id:null;}catch{}
   try{return LoadnoteSession.previous(data.workouts||[],name,date,editId,row.dataset.type,row.dataset.trackBy,exerciseId);}catch{return null;}
  }
