@@ -36,7 +36,7 @@
   }
   function markerCandidates(state,through){
     const catalog=new Map((state?.exerciseCatalog||[]).map(e=>[e.id,e]));
-    const roles=Readiness.list(state?.exerciseRoles||[]);
+    const roles=Readiness.list(state?.exerciseRoles||[],through+'T23:59:59.999Z');
     const explicit=[];
     for(const lift of LIFTS){
       const mapped=roles.filter(r=>r.role==='competition'&&r.competitionLift===lift);
