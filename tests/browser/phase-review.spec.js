@@ -5,7 +5,7 @@ async function review(page){await page.locator('#phase-review-program').selectOp
 test('phase approval preserves originals, exports review history and survives offline reload',async({page,context})=>{
  await review(page);
  await expect(page.locator('#phase2-evidence-explanation')).toContainText('What changed? Why? What evidence was used?');
- await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Proposed change');
+ await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('about 5%');
  await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Why?');
  await expect(page.locator('[data-phase2-explanation="squat"]')).toContainText('Evidence used');
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,programs:data.phasePrograms,originals:data.scheduledSessions.map(s=>s.revisions[0])}));
