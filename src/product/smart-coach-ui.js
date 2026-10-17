@@ -33,27 +33,36 @@
  function attach(host,reply,ask=null){if(!host||!reply?.actions?.length&&!reply?.followUps?.length)return;const group=document.createElement('div');group.className='smart-coach-actions';
   for(const a of (reply.actions||[]).filter(a=>KINDS.has(a.kind)).slice(0,4)){
     const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=a.label;
-    // iOS WebKit can consume the synthesized click when an action sits inside
-    // a freshly scrolled chat pane. A stationary touch pointer release is
-    // another reliable activation path. Retain click for mouse and keyboard.
-    let press=null,lastTouchRelease=-Infinity;
+    // Open the review only after a completed touch gesture. WebKit may
+    // otherwise synthesize a click *after* pointerup, landing through the
+    // newly opened dialog on a checkbox or Close button.
+    // Cancelling the touchend default suppresses that compatibility click.
+    let touchStart=null,lastHandledTouch=-Infinity;
     b.style.touchAction='manipulation';
-    b.addEventListener('pointerdown',event=>{
-      press=event.pointerType==='touch'?{id:event.pointerId,x:event.clientX,y:event.clientY}:null;
-    });
-    b.addEventListener('pointercancel',()=>{press=null;});
-    b.addEventListener('pointerup',event=>{
-      if(!press||event.pointerType!=='touch'||event.pointerId!==press.id)return;
-      const steady=Math.hypot(event.clientX-press.x,event.clientY-press.y)<16;
-      press=null;
+    b.addEventListener('touchstart',event=>{
+      const touch=event.touches?.[0];
+      touchStart=touch?{id:touch.identifier,x:touch.clientX,y:touch.clientY}:null;
+    },{passive:true});
+    b.addEventListener('touchcancel',()=>{touchStart=null;});
+    b.addEventListener('touchmove',event=>{
+      if(!touchStart)return;
+      const touch=[...event.changedTouches].find(t=>t.identifier===touchStart.id);
+      if(touch&&Math.hypot(touch.clientX-touchStart.x,touch.clientY-touchStart.y)>=16)touchStart=null;
+    },{passive:true});
+    b.addEventListener('touchend',event=>{
+      if(!touchStart)return;
+      const touch=[...event.changedTouches].find(t=>t.identifier===touchStart.id);
+      const steady=touch&&Math.hypot(touch.clientX-touchStart.x,touch.clientY-touchStart.y)<16;
+      touchStart=null;
       if(!steady)return;
-      lastTouchRelease=event.timeStamp;
+      event.preventDefault();
+      lastHandledTouch=Date.now();
       route(a);
-    });
+    },{passive:false});
     b.addEventListener('click',event=>{
-      // The browser may still dispatch a click for the same touch gesture.
-      // Never launch/close a review dialog twice for one athlete tap.
-      if(event.detail!==0&&event.timeStamp-lastTouchRelease>=0&&event.timeStamp-lastTouchRelease<900)return;
+      // Click remains native for keyboard, accessibility and mouse activation.
+      // Some engines may emit a compatibility click despite preventDefault.
+      if(event.detail!==0&&Date.now()-lastHandledTouch<1000)return;
       route(a);
     });
     group.append(b);
