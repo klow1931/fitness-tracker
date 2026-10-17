@@ -7,18 +7,36 @@
   const same=(a,b)=>String(a)===String(b);
   const clone=value=>JSON.parse(JSON.stringify(value));
   function comparable(value){const copy=clone(value);for(const exercise of copy?.exercises||[])delete exercise.exerciseId;for(const exercise of copy?.sessionIntent?.prescription?.plannedExercises||[])delete exercise.exerciseId;return JSON.stringify(copy);}
-  function findPerformance(workouts,name,eligible=()=>true,exerciseId){
-    const ids=new Set(exerciseId?[exerciseId]:[]);for(const w of workouts||[])for(const exercise of w.exercises||[])if(key(exercise.name)===key(name)&&exercise.exerciseId)ids.add(exercise.exerciseId);
-    for(const w of workouts || [])for(const exercise of w.exercises || []){
-      if((key(exercise.name)===key(name)||(exercise.exerciseId&&ids.has(exercise.exerciseId))) && eligible(exercise,w))return {date:w.date,exercise};
-    }
-    return null;
+  // User-facing historical fills must never silently cross confirmed exercise IDs.
+  // Legacy name-only records remain usable only when no ID-backed performance exists.
+  function catalogIdentity(catalog,name){
+    const query=key(name),ids=new Set();
+    for(const entry of catalog||[])if([entry?.name,...(entry?.aliases||[])].some(label=>key(label)===query)&&entry?.id)ids.add(String(entry.id));
+    return {exerciseId:ids.size===1?[...ids][0]:null,ambiguous:ids.size>1};
   }
-  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps',exerciseId) {
-    const candidates=(workouts || []).map((w,index)=>({w,index})).filter(({w})=>!same(w.id,excludeId) && w.date<=date)
+  function findPerformance(workouts,name,eligible=()=>true,exerciseId,{asOf=null,excludeId=null}={}){
+    const query=key(name),identity=exerciseId==null?null:String(exerciseId);
+    if(!query&&!identity)return null;
+    // Saved list ordering and date ordering may differ after imports or corrections.
+    const candidates=(Array.isArray(workouts)?workouts:[]).map((w,index)=>({w,index}))
+      .filter(({w})=>w&&typeof w.date==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(w.date)&&(!asOf||w.date<=asOf)&&(excludeId==null||!same(w.id,excludeId)))
       .sort((a,b)=>b.w.date.localeCompare(a.w.date)||b.index-a.index);
-    return findPerformance(candidates.map(c=>c.w),name,e=>(e.type || 'strength')===type &&
-      (type==='cardio' || (e.trackBy || ((e.sets || []).some(s=>s.duration>0 && !(s.reps>0))?'duration':'reps'))===trackBy),exerciseId);
+    const available=candidates.flatMap(({w})=>(w.exercises||[]).filter(e=>eligible(e,w)).map(exercise=>({date:w.date,exercise})));
+    const exactName=e=>query&&key(e?.name)===query;
+    if(identity){
+      const known=available.find(x=>x.exercise.exerciseId!=null&&same(x.exercise.exerciseId,identity));
+      if(known)return known;
+      // Do not borrow from an explicitly different ID, even if labels match.
+      return available.find(x=>x.exercise.exerciseId==null&&exactName(x.exercise))||null;
+    }
+    const named=available.filter(x=>exactName(x.exercise)),ids=new Set(named.map(x=>x.exercise.exerciseId).filter(x=>x!=null).map(String));
+    if(ids.size>1)return null; // Unresolved identity: do not offer a possibly wrong previous load.
+    return named[0]||null;
+  }
+  function previous(workouts,name,date,excludeId,type='strength',trackBy='reps',exerciseId){
+    return findPerformance(workouts,name,e=>(e.type||'strength')===type&&
+      (type==='cardio'||(e.trackBy||((e.sets||[]).some(s=>s.duration>0&&!(s.reps>0))?'duration':'reps'))===trackBy),
+      exerciseId,{asOf:date,excludeId});
   }
   function fromDraft(draft,id,options={}){
     const factor=draft.unit==='lb'?1/2.2046226218:1;
@@ -99,5 +117,5 @@
     if(Integrity)next.workoutRevisions=Integrity.appendWorkoutRevision(next.workoutRevisions,before,null,{now,id:createId()});
     let result=Integrity?Integrity.normalizeState(next):next;result.prs=reconcilePRs(result.prs,result.workouts,estimate,createId);return Integrity?Integrity.normalizeState(result):result;
   }
-  return {previous,findPerformance,fromDraft,apply,reconcilePRs,remove};
+  return {previous,findPerformance,catalogIdentity,fromDraft,apply,reconcilePRs,remove};
 });
