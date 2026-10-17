@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 function node(){
- return {style:{},children:[],events:{},append(child){this.children.push(child);},addEventListener(type,fn){this.events[type]=fn;}};
+ return {style:{},children:[],events:{},append(child){this.children.push(child);},addEventListener(type,fn,options){this.events[type]={fn,options};}};
 }
 const document={createElement:()=>node(),querySelector:()=>null};
 let opened=0,closed=0;
@@ -10,24 +10,26 @@ const host=node();
 window.LoadnoteSmartCoachUI.attach(host,{actions:[{kind:'offline-plan',label:'Draft my workout',request:{kind:'daily'}}]});
 const button=host.children[0].children[0];
 assert.equal(button.style.touchAction,'manipulation');
-const gesture=(id,x,y,time)=>{
- button.events.pointerdown({pointerType:'touch',pointerId:id,clientX:x,clientY:y});
- button.events.pointerup({pointerType:'touch',pointerId:id,clientX:x,clientY:y,timeStamp:time});
+assert.equal(button.events.touchend.options.passive,false,'must be allowed to suppress a WebKit compatibility click');
+const touch=(id,x,y)=>({identifier:id,clientX:x,clientY:y});
+const gesture=(start,end)=>{
+ button.events.touchstart.fn({touches:[start]});
+ const event={changedTouches:[end],prevented:false,preventDefault(){this.prevented=true;}};
+ button.events.touchend.fn(event);return event;
 };
-gesture(1,100,100,200);
+assert.equal(gesture(touch(1,100,100),touch(1,100,100)).prevented,true);
 assert.equal(opened,1,'one stationary touch must activate Coach review');
-button.events.click({detail:1,timeStamp:209});
-assert.equal(opened,1,'synthetic touch click must not duplicate review');
-button.events.click({detail:0,timeStamp:211});
+button.events.click.fn({detail:1});
+assert.equal(opened,1,'compatibility click must not duplicate review');
+button.events.click.fn({detail:0});
 assert.equal(opened,2,'keyboard activation must remain available');
-button.events.click({detail:1,timeStamp:3200});
-assert.equal(opened,3,'subsequent mouse click should still activate');
-button.events.pointerdown({pointerType:'touch',pointerId:2,clientX:10,clientY:10});
-button.events.pointerup({pointerType:'touch',pointerId:2,clientX:100,clientY:100,timeStamp:3300});
-assert.equal(opened,3,'scroll/drag release must not open a review');
-button.events.pointerdown({pointerType:'touch',pointerId:3,clientX:10,clientY:10});
-button.events.pointercancel();
-button.events.pointerup({pointerType:'touch',pointerId:3,clientX:10,clientY:10,timeStamp:3400});
-assert.equal(opened,3,'cancelled touch must not open a review');
-assert.equal(closed,3,'each activation closes the companion before routing');
-console.log('Coach touch/keyboard activation and synthesized-click deduplication passed');
+button.events.touchstart.fn({touches:[touch(2,10,10)]});
+button.events.touchmove.fn({changedTouches:[touch(2,100,100)]});
+assert.equal(gesture(touch(3,10,10),touch(3,100,100)).prevented,false);
+assert.equal(opened,2,'scroll/drag release must not open a review');
+button.events.touchstart.fn({touches:[touch(4,10,10)]});
+button.events.touchcancel.fn();
+button.events.touchend.fn({changedTouches:[touch(4,10,10)],preventDefault(){throw Error('cancelled event');}});
+assert.equal(opened,2,'cancelled touch must not open a review');
+assert.equal(closed,2,'each activation closes the companion before routing');
+console.log('Coach WebKit touchend ghost-click suppression, scroll cancellation and keyboard activation passed');
