@@ -60,7 +60,7 @@
   let editId=null;try{editId=typeof workoutEdit!=='undefined'?workoutEdit?.id:null;}catch{}
   try{
    const found=LoadnoteSession.previous(data.workouts||[],mark.name,day,editId,'strength',mark.trackBy,mark.exerciseId);
-   return found?.exercise?.sets?.[ctx.setIndex]||null;
+   const set=found?.exercise?.sets?.[ctx.setIndex];return set?{...set,date:found.date}:null;
   }catch{return null;}
  }
  function weightText(kg){
@@ -208,7 +208,7 @@
   const progress=counts.total?counts.done+'/'+counts.total+' sets':'';
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
-  const previousLine=ctx.set?'<div><span>Last</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
+  const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
     (prior?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
