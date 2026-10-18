@@ -98,26 +98,14 @@
         req.onerror = () => reject(req.error);
       }));
     }
-    const deviceFallbackKey = key => DEVICE_RECORD_PREFIX + key;
-    async function getDeviceRecord(key) {
-      try { return await idbRecordGet(key); }
-      catch (_) {
-        try { return JSON.parse(localStorage.getItem(deviceFallbackKey(key)) || 'null'); }
-        catch { return null; }
-      }
-    }
-    async function setDeviceRecord(key,value) {
-      try {
-        await idbRecordSet(key,value);
-        try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
-      } catch (_) {
-        localStorage.setItem(deviceFallbackKey(key), JSON.stringify(value));
-      }
-    }
-    async function removeDeviceRecord(key) {
-      try { await idbRecordRemove(key); } catch (_) {}
-      try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
-    }
+    const deviceRecords=window.LoadnoteDeviceRecords;
+    if(!deviceRecords)throw Error('Device record safety module is unavailable');
+    const deviceIo={
+      idbGet:idbRecordGet,idbSet:idbRecordSet,idbRemove:idbRecordRemove,local:localStorage
+    };
+    async function getDeviceRecord(key){return deviceRecords.get(key,deviceIo);}
+    async function setDeviceRecord(key,value){return deviceRecords.set(key,value,deviceIo);}
+    async function removeDeviceRecord(key){return deviceRecords.remove(key,deviceIo);}
 
     function loadFromLocalStorage() {
       try {
