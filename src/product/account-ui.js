@@ -35,7 +35,7 @@
     bindRetry(target,accountId);return;
    }
    if(result.applyRequired){
-    await stateStore().applySyncedState(result.state,{label:'Before account sync',expectedProjectFingerprint:result.expectedLocalFingerprint});
+    await stateStore().applySyncedState(result.state,{label:'Before account sync',expectedProjectFingerprint:result.expectedLocalFingerprint,expectedAccountId:accountId});
    }
    await coordinator().acknowledge(accountId,result.base);
    const changes=[];
