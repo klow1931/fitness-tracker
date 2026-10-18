@@ -98,17 +98,21 @@
         req.onerror = () => reject(req.error);
       }));
     }
-    const deviceRecords=window.LoadnoteDeviceRecords;
-    if(!deviceRecords)throw Error('Device record safety module is unavailable');
-    // Only resolve browser storage when an operation actually needs it.
-    // Script-order/SSR tests load this module without a localStorage global.
+    // Browser script order and standalone storage tests may evaluate this file
+    // without device dependencies. Require them only for an actual sync-base
+    // operation, and fail closed if anything is unavailable at that time.
+    function deviceRecords(){
+      const records=window.LoadnoteDeviceRecords;
+      if(!records)throw Error('Device record safety module is unavailable');
+      return records;
+    }
     const deviceIo=()=>({
       idbGet:idbRecordGet,idbSet:idbRecordSet,idbRemove:idbRecordRemove,
       local:typeof localStorage==='undefined'?null:localStorage
     });
-    async function getDeviceRecord(key){return deviceRecords.get(key,deviceIo());}
-    async function setDeviceRecord(key,value){return deviceRecords.set(key,value,deviceIo());}
-    async function removeDeviceRecord(key){return deviceRecords.remove(key,deviceIo());}
+    async function getDeviceRecord(key){return deviceRecords().get(key,deviceIo());}
+    async function setDeviceRecord(key,value){return deviceRecords().set(key,value,deviceIo());}
+    async function removeDeviceRecord(key){return deviceRecords().remove(key,deviceIo());}
 
     function loadFromLocalStorage() {
       try {
