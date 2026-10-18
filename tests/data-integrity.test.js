@@ -24,6 +24,14 @@ state=Integrity.undoWorkoutRevision(state,'delete-revision',{now:'2026-09-02T00:
 
 const preview=Integrity.previewImport({workouts:[{id:'1',x:1},{id:'2'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'accept'}],nutrition:[{id:'n1',date:'2026-09-01'}],bodyweight:[{id:'bw1',date:'2026-09-01',weight:90}]},{workouts:[{id:'1',x:2},{id:'3'}],trainingBlocks:[],templates:[],decisionEvents:[{id:'d1',response:'modify'},{id:'d2',response:'ignore'}],nutrition:[{id:'n2',date:'2026-09-02'}],bodyweight:[]});
 assert.deepEqual(preview.workouts,{before:2,after:2,added:1,changed:1,removed:1});assert.deepEqual(preview.decisionEvents,{before:1,after:2,added:1,changed:1,removed:0});assert.deepEqual(preview.nutrition,{before:1,after:1,added:1,changed:0,removed:1});assert.deepEqual(preview.bodyweight,{before:1,after:0,added:0,changed:0,removed:1});
+// Synthetic schema-22 lb backup structure. Never embed real athlete exports in CI.
+const oldBackup={schemaVersion:22,releaseVersion:'2.18.0',unit:'lb',measureUnit:'in',workouts:[{id:'legacy-w',date:'2026-09-20',exercises:[{name:'Bench Press',sets:[{weight:102.5,reps:5,rpe:8},{weight:97.5,reps:6}]}]}],workoutRevisions:[{id:'legacy-rev',workoutId:'legacy-w',action:'edit',recordedAt:'2026-09-21T12:00:00.000Z',before:null,after:null}],prs:[{id:'legacy-pr',exercise:'Bench Press',weight:102.5}]};
+const upgraded=Integrity.normalizeState(Core.normalizeState(oldBackup));const preservation=Integrity.auditImportPreservation(oldBackup,upgraded);
+assert.equal(preservation.status,'pass');assert.equal(preservation.sourceSchema,22);assert.equal(preservation.targetSchema,32);assert.equal(preservation.unit,'lb');
+assert.deepEqual(preservation.counts.workouts,{before:1,after:1});assert.equal(Integrity.auditImportPreservation(oldBackup,{...upgraded,workouts:[]}).status,'blocking');
+const changedSet=structuredClone(upgraded);changedSet.workouts[0].exercises[0].sets[0].weight=103;
+assert(Integrity.auditImportPreservation(oldBackup,changedSet).issues.some(s=>s.includes('weight changed')));
+assert(Integrity.auditImportPreservation(oldBackup,{...upgraded,unit:'kg'}).issues.some(s=>s.includes('display unit changed')));
 const outlierWorkout={id:'outlier',date:'2026-09-14',exercises:[{name:'Competition Bench Press',exerciseId:'bench',type:'strength',sets:[{weight:132.45,reps:1,rpe:8},{weight:119.75,reps:2,rpe:7},{weight:114.76,reps:2,rpe:6.5},{weight:114.76,reps:2,rpe:6.5},{weight:109.77,reps:3,rpe:6},{weight:1016.95,reps:3,rpe:6}]}]};
 const correctedWorkout=JSON.parse(JSON.stringify(outlierWorkout));correctedWorkout.exercises[0].sets[5].weight=109.77;
 const dirtyAudit=Integrity.auditTrainingData({workouts:[outlierWorkout],workoutRevisions:[]});

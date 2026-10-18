@@ -40,7 +40,7 @@
   const lift=liftOf(question)||(pronoun&&lastUser?liftOf(lastUser.content||''):null);
   if(!lift)return {text:'Which lift appears stalled—squat, bench or deadlift? I can check the saved RPE-aware training trend without diagnosing a cause or adding weight.',source:'Offline Coach · training trends',readOnly:true,evidence:[],followUps:['Why is my bench progress stalled?']};
   let report;try{report=inspect(state,{asOf,lift,unit});}catch{return {text:'I could not validate the saved training trend. Check the recorded exercises and dates first; no programming change was made.',source:'Offline Coach · training trends unavailable',readOnly:true,evidence:[]};}
-  if(report.status==='unmapped')return {text:report.reason,source:'Offline Coach · training trends',readOnly:true,evidence:[report]};
+  if(report.status==='unmapped')return {text:report.reason,source:'Offline Coach · training trends',readOnly:true,evidence:[report],actions:[{kind:'mappings',label:'Review exercise mappings'}]};
   const fmt=n=>Math.round(n*(unit==='lb'?2.2046226218:1)*10)/10+' '+(unit==='lb'?'lb':'kg');
   const outcome=report.status==='higher'?'The recent demonstrated-capacity evidence is higher, so a plateau is not established.':
    report.status==='lower'?'Recent demonstrated-capacity evidence is lower. That observation alone cannot identify why.':
@@ -55,7 +55,7 @@
   const next='Keep logging actual sets and RPE; review comparable training in Progress and any adjustment in Decisions.';
   return {text:report.name+': '+outcome+' '+comparison+' First comparison window: '+report.baselineDays+' capacity days; most recent: '+report.recentDays+'. '+observed+' '+needed+' '+report.explanation+missing+' '+report.notice+' You can review the exact lift history in Progress and the next scheduled targets in Decisions.',
    clarity:{happened:report.name+': '+report.recentSessions+' training days and '+report.recentSets+' eligible working sets in the last 28 days. '+observed,meaning:outcome+' '+needed,next},
-   source:'Offline Coach · corrected training trends',readOnly:true,evidence:[report],intent:{topic:'training-trend',lift},followUps:['Review my weekly training','Explain my next workout']};
+   source:'Offline Coach · corrected training trends',readOnly:true,evidence:[report],intent:{topic:'training-trend',lift},actions:[{kind:'progress',label:'Review exact lift history'}],followUps:['Review my weekly training','Explain my next workout']};
  }
  return {focus,inspect,answer};
 });
