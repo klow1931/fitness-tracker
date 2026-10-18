@@ -59,13 +59,31 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   if(!latest||latest.revision!==doc.revision||doc.current.revision!==doc.revision||latest.packageFingerprint!==doc.current.packageFingerprint||latest.manifestFingerprint!==doc.current.manifestFingerprint||latest.committedAt!==doc.updatedAt)throw Error('Stored remote training revision history is inconsistent');
   return doc;
  }
+ function syncDirectory(){
+  // File rename is atomic on the supported single-host filesystem, but
+  // crash durability also requires flushing the containing directory.
+  let handle;
+  try{handle=fs.openSync(root,'r');fs.fsyncSync(handle);}
+  finally{if(handle!==undefined)fs.closeSync(handle);}
+ }
  function write(accountId,doc){
   const file=fileFor(accountId);
-  fs.mkdirSync(root,{recursive:true});
-  const temp=file+'.'+process.pid+'.tmp';
-  fs.writeFileSync(temp,JSON.stringify(doc,null,2)+'\n',{encoding:'utf8',mode:0o600});
-  fs.renameSync(temp,file);
-  try{fs.chmodSync(file,0o600);}catch{}
+  fs.mkdirSync(root,{recursive:true,mode:0o700});
+  const temp=file+'.'+process.pid+'.'+crypto.randomBytes(6).toString('hex')+'.tmp';
+  let handle;
+  try{
+   handle=fs.openSync(temp,'wx',0o600);
+   fs.writeFileSync(handle,JSON.stringify(doc,null,2)+'\n',{encoding:'utf8'});
+   fs.fsyncSync(handle);
+   fs.closeSync(handle);handle=undefined;
+   fs.renameSync(temp,file);
+   fs.chmodSync(file,0o600);
+   syncDirectory();
+  }catch(error){
+   try{if(handle!==undefined)fs.closeSync(handle);}catch{}
+   try{fs.unlinkSync(temp);}catch{}
+   throw error;
+  }
  }
  function status(accountId){
   const doc=read(accountId);
@@ -108,6 +126,7 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   const id=clean(accountId),file=fileFor(id);
   if(!fs.existsSync(file))return {deleted:false};
   fs.unlinkSync(file);
+  syncDirectory();
   return {deleted:true};
  }
  function inspect(accountId){const doc=read(accountId);return clone(doc);}
