@@ -241,7 +241,10 @@
     window.LoadnoteDeviceStorage = { get:getDeviceRecord, set:setDeviceRecord, remove:removeDeviceRecord };
     window.LoadnoteStateStore = {
       current: () => data,
-      async applySyncedState(incoming,{label='Before account sync'}={}) {
+      async applySyncedState(incoming,{label='Before account sync',expectedProjectFingerprint=null}={}) {
+        const fingerprint=()=>window.LoadnoteSyncCoordinator?.projectFingerprint?.(data)||null;
+        if(expectedProjectFingerprint!==null&&fingerprint()!==expectedProjectFingerprint)
+          throw Error('Local training changed before the sync could be applied. Review the latest version.');
         const previous=data;
         const normalized=normalizeDataShape(incoming);
         const relationships=window.LoadnoteIntegrity?.auditRelationships?.(normalized);
@@ -251,6 +254,12 @@
           : normalized;
         clearTimeout(saveTimer);
         await persistNow(next);
+        // If a workout changed while IndexedDB was committing, restore the
+        // newer in-memory training immediately; never publish a stale overlay.
+        if(expectedProjectFingerprint!==null&&fingerprint()!==expectedProjectFingerprint){
+          await persistNow(data);
+          throw Error('Local training changed while sync was saving. It was restored; review the latest versions before retrying.');
+        }
         data=next;
         if(typeof applyDark==='function')applyDark();
         if(typeof updateUnitToggle==='function')updateUnitToggle();
