@@ -3,7 +3,12 @@
  */
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
-function syncDir(dir){const fd=fs.openSync(dir,'r');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}}
+function syncDir(dir){
+ // Windows Node does not reliably support opening directories for fsync.
+ // File contents are still flushed; full crash-durability claims target POSIX hosts.
+ if(process.platform==='win32')return;
+ const fd=fs.openSync(dir,'r');try{fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
+}
 function replace(file,body){
  const dir=path.dirname(file);
  fs.mkdirSync(dir,{recursive:true,mode:0o700});
@@ -14,7 +19,7 @@ function replace(file,body){
   fs.writeFileSync(fd,body,{encoding:'utf8'});
   fs.fsyncSync(fd);fs.closeSync(fd);fd=undefined;
   fs.renameSync(tmp,file);
-  fs.chmodSync(file,0o600);
+  try{fs.chmodSync(file,0o600);}catch(error){if(process.platform!=='win32')throw error;}
   syncDir(dir);
  }catch(error){
   if(fd!==undefined)try{fs.closeSync(fd);}catch{}
