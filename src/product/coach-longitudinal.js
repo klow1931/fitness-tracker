@@ -14,7 +14,7 @@
   journey:/\b(where am i in (?:my |the )?(?:training |current )?(?:program|cycle|block)|what phase am i in|how far (?:am i|along) in my (?:training )?(?:program|cycle)|what comes after (?:this|my) (?:training )?(?:phase|block)|where is my training heading)\b/i,
   outcomes:/\b(what (?:have we|has loadnote) learned from (?:my |our )?(?:program|training|adaptation|progression) changes|how (?:have|did) my (?:program|training|adaptation) changes work|have my (?:past )?adjustments helped|what worked from (?:past|previous) (?:program|training) changes)\b/i,
   memory:/\b(what do you remember about my training|what (?:have you|has loadnote) saved about my training preferences|which (?:exercise|training) preferences (?:have i|are) saved|what are my saved coaching preferences)\b/i,
-  next:/\b(should (?:we|i|my coach) (?:adapt|change|modify|adjust) (?:my |the )?next workout|how (?:will|should) (?:my |the )?next workout adapt|what changes are proposed for (?:my |the )?next (?:workout|session)|what does (?:my|the) last workout mean for (?:my|the) next|what is the next reviewed coaching action)\b/i
+  next:/\b(should (?:we|i|my coach) (?:adapt|change|modify|adjust) (?:my |the )?next workout|should (?:my|the) next workout (?:adapt|change)|how (?:will|should) (?:my |the )?next workout adapt|what changes are proposed for (?:my |the )?next (?:workout|session)|what does (?:my|the) last workout mean for (?:my|the) next|what is the next reviewed coaching action)\b/i
  };
  function intent(question){
   const q=clean(question);return Object.entries(types).find(([,rule])=>rule.test(q))?.[0]||null;
