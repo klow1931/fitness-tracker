@@ -25,9 +25,13 @@
   const equipment=q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(?:my\s+)?equipment\s+(?:to|as)\s+(.+?)[.!?]?$/i)
    ||q.match(/^(?:please\s+)?use\s+(.+?)\s+as\s+my\s+equipment[.!?]?$/i);
   if(equipment){
-   const found=[],rest=equipment[1].replace(/\b(barbell|plates|rack|bench)\b/gi,word=>{found.push(word.toLowerCase());return '';}).replace(/\b(suitable|squat)\b/gi,'');
-   if(found.length&&new Set(found).size===found.length&&/^[\s,&]*(?:and[\s,&]*)*$/i.test(rest))
-    return {kind:'profile-fields',changes:{equipment:found.sort()},baseRevisionId:record.id};
+   const names={barbell:'barbell',barbells:'barbell',plates:'plates',rack:'rack','squat rack':'rack',bench:'bench',dumbbell:'dumbbells',dumbbells:'dumbbells',dbs:'dumbbells',cable:'cable',cables:'cable',machine:'machine',machines:'machine',bodyweight:'bodyweight','body weight':'bodyweight','pull up bar':'pullup','pull-up bar':'pullup',cardio:'cardio'};
+   const pieces=equipment[1].replace(/[.!?]+$/,'').toLowerCase().split(/\s*(?:,|&|\band\b)\s*/).map(x=>x.trim()).filter(Boolean);
+   const found=pieces.map(x=>names[x]);
+   if(found.length&&found.every(Boolean)&&new Set(found).size===found.length){
+    const primary=found.filter(e=>Object.hasOwn(Profile.EQUIPMENT,e)).sort(),accessory=found.filter(e=>!Object.hasOwn(Profile.EQUIPMENT,e)).sort();
+    return {kind:'profile-fields',changes:{equipment:primary,accessoryEquipment:accessory},baseRevisionId:record.id};
+   }
    return null;
   }
   const minutes=q.match(/^(?:please\s+)?(?:set|change|make)\s+(?:my\s+)?(?:session time|session length|time per session)\s+to\s+(\d{2,3})\s+minutes?[.!?]?$/i);
@@ -42,13 +46,14 @@
   let saved=null;try{saved=Profile.current(state.programmingProfiles||[],asOf?asOf+'T23:59:59.999Z':undefined);}catch{/* The existing explicit setup-query error route below explains invalid saved data. */}
   const proposed=dayProposal(q,saved)||fieldProposal(q,saved);
   if(proposed){const change=proposed.kind==='training-days'?{key:'availableDays',old:saved.context.availableDays,value:proposed.availableDays,label:'training days',format:rows=>rows.map(i=>days[i]).join(', ')}:
-   proposed.changes.equipment?{key:'equipment',old:saved.context.equipment,value:proposed.changes.equipment,label:'equipment',format:rows=>rows.join(', ')}:
+   Object.hasOwn(proposed.changes,'equipment')?{key:'equipment',old:[...saved.context.equipment,...(saved.context.accessoryEquipment||[])],value:[...proposed.changes.equipment,...proposed.changes.accessoryEquipment],label:'equipment',format:rows=>rows.join(', ')||'none'}:
    Object.hasOwn(proposed.changes,'sessionMinutes')?{key:'sessionMinutes',old:saved.context.sessionMinutes,value:proposed.changes.sessionMinutes,label:'session time',format:n=>n+' minutes'}:
    {key:'priorities',old:saved.context.priorities,value:proposed.changes.priorities,label:'training priority',format:s=>s||'none'};
    return {text:'Review requested '+change.label+': '+change.format(change.value)+'. Current saved '+change.label+': '+change.format(change.old)+'. Nothing has changed. Open the review card and explicitly save the revised training setup if it is correct. Existing scheduled workouts stay unchanged.',source:'Saved training preferences · proposed change',readOnly:true,evidence:[{field:change.key,before:change.old,proposed:change.value}],intent:{topic:'training-preferences'},actions:[{kind:'profile-review',label:'Review '+change.label+' before saving',proposal:proposed}]};}
   // Dedicated movement-reference and sport-goal tools take precedence.
   // Saved Profile equipment is not the equipment needed for an exercise.
   if(/\bequipment\s+(?:for|needed for|used for)\b/i.test(q)||/\b(?:review|analyse|analyze|compare|evaluate)\b.*\b(?:sport|training)\s+goal\b/i.test(q))return null;
+  if(/^(?:please\s+)?(?:use|set|change|make)\s+(?:my\s+)?(?:equipment|session time|session length|time per session|training priority|training priorities|training days|available days)\s+(?:to|as)\b/i.test(q))return {text:saved?'I could not safely interpret that preference request. For equipment, list exact items such as dumbbells, bench, barbell, plates or rack joined by "and" or commas. For session time, use 30–240 minutes. For training days, name distinct weekdays. Nothing was changed.':'Save a training setup in Profile first, then ask Coach for an explicit reviewed preference change. Nothing was changed.',source:'Saved training preferences · clarification',readOnly:true,evidence:[],intent:{topic:'training-preferences'},actions:[]};
   let requested=contextQuestion(q);
   if(!requested&&follow(q)){
    for(const turn of (Array.isArray(history)?history:[]).slice(-8).reverse()){

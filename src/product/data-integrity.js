@@ -202,33 +202,46 @@
    prs:diff(current?.prs,incoming?.prs),nutrition:diff(current?.nutrition,incoming?.nutrition,{byDate:true}),bodyweight:diff(current?.bodyweight,incoming?.bodyweight),measurements:diff(current?.measurements,incoming?.measurements),progressPhotos:diff(current?.progressPhotos,incoming?.progressPhotos),restDays:diff(current?.restDays,incoming?.restDays)
   };
  }
- // Read-only preflight for legacy JSON imports. Validate the recorded facts that
- // schema migration must not silently change; extra derived identities are OK.
+ // Read-only preflight for JSON imports. Compare every *original* recorded field
+ // in preserved collections. Defaults and derived exercise identities may be
+ // added during migration, but the values supplied in the backup must survive.
  function auditImportPreservation(source,target){
-  const issues=[],counts={};
-  for(const key of ['workouts','workoutRevisions','prs','scheduledSessions']){
-   const before=Array.isArray(source?.[key])?source[key]:[],after=Array.isArray(target?.[key])?target[key]:[];
-   counts[key]={before:before.length,after:after.length};
-   if(before.length!==after.length)issues.push(key+': record count changed during migration');
-   const identities=rows=>rows.map(row=>row?.id==null?null:String(row.id)).filter(Boolean).sort();
-   if(before.every(row=>row?.id!=null)&&JSON.stringify(identities(before))!==JSON.stringify(identities(after)))issues.push(key+': record identities changed during migration');
-  }
-  for(const key of ['unit','measureUnit'])if(source?.[key]!==undefined&&source[key]!==target?.[key])issues.push(key+': original display unit changed');
-  const incoming=Array.isArray(source?.workouts)?source.workouts:[],current=Array.isArray(target?.workouts)?target.workouts:[];
-  for(let i=0;i<incoming.length;i++){
-   const old=incoming[i],record=old?.id!=null?current.find(w=>String(w?.id)===String(old.id)):current[i];
-   if(!old||!record){issues.push('Workout '+(i+1)+': original record unavailable');continue;}
-   if(old.date!==undefined&&old.date!==record.date)issues.push('Workout '+(i+1)+': recorded date changed');
-   const a=old.exercises||[],b=record.exercises||[];
-   if(a.length!==b.length){issues.push('Workout '+(i+1)+': exercise count changed');continue;}
-   for(let j=0;j<a.length;j++){
-    const sets=a[j]?.sets||[],restored=b[j]?.sets||[];
-    if(sets.length!==restored.length){issues.push('Workout '+(i+1)+', exercise '+(j+1)+': set count changed');continue;}
-    for(let k=0;k<sets.length;k++)for(const field of ['weight','reps','rpe','duration','completed','loadConvention'])
-     if(Object.hasOwn(sets[k]||{},field)&&JSON.stringify(sets[k][field])!==JSON.stringify(restored[k]?.[field]))issues.push('Workout '+(i+1)+', exercise '+(j+1)+', set '+(k+1)+': '+field+' changed');
+  const issues=[],counts={},compared=[];
+  const issue=(path,detail)=>issues.push(path+': '+detail);
+  const walk=(before,after,path)=>{
+   if(Array.isArray(before)){
+    if(!Array.isArray(after)){issue(path,'original list missing');return;}
+    // Migration can derive catalog entries and can sort known aliases; it must
+    // not delete or rewrite any original entry or alias.
+    const additive=path==='exerciseCatalog'||path.endsWith('.aliases');
+    if(additive?after.length<before.length:after.length!==before.length)issue(path,'record count changed during migration');
+    if(path.endsWith('.aliases')&&before.every(x=>typeof x==='string')){
+     for(const item of before)if(!after.includes(item))issue(path,'original alias missing');return;
+    }
+    const keyed=before.length>0&&before.every(row=>row&&typeof row==='object'&&!Array.isArray(row)&&row.id!=null);
+    const lookup=keyed?new Map(after.filter(row=>row&&row.id!=null).map(row=>[String(row.id),row])):null;
+    if(lookup&&lookup.size!==after.filter(row=>row&&row.id!=null).length)issue(path,'duplicate record identities after migration');
+    before.forEach((row,i)=>{const found=lookup?lookup.get(String(row.id)):after[i];walk(row,found,path+'['+(row?.id??i)+']');});return;
    }
+   if(before&&typeof before==='object'){
+    if(!after||typeof after!=='object'||Array.isArray(after)){issue(path,'original record missing');return;}
+    for(const key of Object.keys(before)){
+     if(!Object.hasOwn(after,key)){issue(path+'.'+key,'original field missing');continue;}
+     walk(before[key],after[key],path+'.'+key);
+    }
+    return;
+   }
+   if(!Object.is(before,after))issue(path,'recorded value changed');
+  };
+  const collections=[...new Set([...BACKUP_COLLECTIONS,'prs','nutrition','bodyweight','measurements','goals','programs','foodLibrary','restDays','progressPhotos','formReviews','recoverySnapshots'])];
+  for(const key of collections){
+   const before=Array.isArray(source?.[key])?source[key]:[],after=Array.isArray(target?.[key])?target[key]:[];
+   if(['workouts','workoutRevisions','prs','scheduledSessions'].includes(key))counts[key]={before:before.length,after:after.length};
+   if(before.length){compared.push(key);walk(before,after,key);}
+   else if(after.length&&key!=='exerciseCatalog')issue(key,'new records appeared during migration');
   }
-  return {version:1,status:issues.length?'blocking':'pass',sourceSchema:Number(source?.schemaVersion)||null,targetSchema:Number(target?.schemaVersion)||null,unit:target?.unit||null,counts,issues:issues.slice(0,20),issueCount:issues.length,notes:'Checks recorded identities, dated work, set values, unit selection, revisions and PR counts. This is a migration preflight, not a substitute for testing a restored backup on a separate device.'};
+  for(const key of ['unit','measureUnit'])if(source?.[key]!==undefined&&source[key]!==target?.[key])issue(key,'original display unit changed');
+  return {version:2,status:issues.length?'blocking':'pass',sourceSchema:Number(source?.schemaVersion)||null,targetSchema:Number(target?.schemaVersion)||null,unit:target?.unit||null,counts,comparedCollections:compared,issues:issues.slice(0,20),issueCount:issues.length,notes:'Compares every supplied field in workout exercises/sets, PR values, revision payloads, schedules and other preserved collections. New derived defaults and catalog entries are permitted. This preflight does not replace device restore testing.'};
  }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid recovery snapshot time.');const next=clone(target)||{},payload=clone(source)||{};delete payload.recoverySnapshots;

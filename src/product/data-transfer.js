@@ -43,7 +43,7 @@
         :relationships.warnings?relationships.warnings+' revision-history warning(s); current workout/Calendar relationships remain usable.':'Workout, Calendar, and planned-work references passed relationship checks.';
       const migrated=migration.status==='pass';
       const migrationDetail='Schema '+(migration.sourceSchema??'unknown')+' → '+(migration.targetSchema??'unknown')+' · '+migration.counts.workouts.after+' workouts · '+migration.counts.workoutRevisions.after+' workout revisions · '+migration.counts.prs.after+' PRs · '+(migration.unit||'unknown')+' display.'+
-        (migrated?' Original workout identities, dates, set values, record counts and display-unit selection passed preservation checks.':' '+migration.issueCount+' preservation issue(s): '+migration.issues.join('; ')+'. Import is blocked until the source data can be reviewed.');
+        (migrated?' Original workout and exercise identities, names, logged sets, PR values, revision contents, Calendar entries, other saved records and display-unit selection passed preservation checks.':' '+migration.issueCount+' preservation issue(s): '+migration.issues.join('; ')+'. Import is blocked until the source data can be reviewed.');
       const rows=[
         ['Workouts',preview.workouts],['Calendar sessions',preview.scheduledSessions],['Workout revisions',preview.workoutRevisions],
         ['Training blocks',preview.trainingBlocks],['Meet cycles',preview.meetCycles],['Athlete goals',preview.athleteGoals],
@@ -73,9 +73,10 @@
       reader.onload = () => {
         const previousState = data;
         try {
-          const parsed = JSON.parse(reader.result);
+          const original = JSON.parse(reader.result);
+          const parsed = JSON.parse(JSON.stringify(original));
           if (!parsed.workouts && !parsed.nutrition) throw new Error('Invalid file');
-          const backup=LoadnoteIntegrity.verifyBackupManifest(parsed);
+          const backup=LoadnoteIntegrity.verifyBackupManifest(original);
           if(backup.status==='invalid')throw new Error('Backup integrity check failed: '+backup.reason);
           delete parsed._loadnoteBackup;
           parsed.scheduledSessions=LoadnoteSchedule.validate(parsed.scheduledSessions??[]);
@@ -91,7 +92,7 @@
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
-          const incoming=normalizeDataShape(parsed),migration=LoadnoteIntegrity.auditImportPreservation(parsed,incoming),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming);
+          const incoming=normalizeDataShape(parsed),migration=LoadnoteIntegrity.auditImportPreservation(original,incoming),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming);
           showImportReview(file.name,backup,preview,reliability,incoming,previousState,migration);
         } catch (e) {
           data = previousState;ev.target.value='';alert('Import failed: ' + e.message);

@@ -16,6 +16,10 @@ assert(P.gaps(P.parse('Create a 20-week strength program 3 days 60 minutes full 
 const longRequest=P.answer(s,'Create a 20-week powerlifting meet prep program 3 days per week 60 minutes full gym');
 assert.equal(P.gaps(longRequest.planning,s).length,0,'Long explicit meet prep uses reviewed meet path');
 assert.equal(longRequest.planning.weeks,20);assert.equal(longRequest.actions[0].kind,'offline-plan');assert.equal(longRequest.planning.meet,true);
+const everydayMeet=C.answer(s,'Create a 20-week meet prep three days per week 60 minutes full gym',{asOf:'2026-10-18'});
+assert.equal(everydayMeet.actions[0].kind,'offline-plan','Direct meet prep must start planning, not explain a generic program');
+assert.equal(everydayMeet.planning.weeks,20);assert.equal(everydayMeet.planning.frequency,3);assert.equal(everydayMeet.planning.minutes,60);
+assert.equal(everydayMeet.planning.goal,'strength');assert.equal(everydayMeet.planning.meet,true);
 const unclassified=P.answer(s,'Create a 20-week strength program 3 days per week 60 minutes full gym');
 const clarified=P.answer(s,'Make it meet prep',{history:[{role:'assistant',content:unclassified.text,planning:unclassified.planning}]});
 assert.equal(clarified.planning.weeks,20);assert.equal(clarified.planning.meet,true);assert.equal(clarified.planning.frequency,3);

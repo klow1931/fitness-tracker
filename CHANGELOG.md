@@ -1,3 +1,12 @@
+# v3.61.0 — Coach Intent, Deep Restore & First-Workout Guidance
+
+- Route ordinary direct equipment requests (including mixed dumbbell/bench access) to a reviewable Profile proposal, not movement explanations; reject ambiguous gear with a clear clarification rather than guessing.
+- Recognize plain-language meet-prep requests without the words “program” or “plan”; preserve requested weeks, days, minutes and equipment through the existing unsaved, athlete-reviewed planning workflow.
+- Deepen restore migration preflight to compare every original field in preserved workouts, exercise identities/names, PRs, revisions, Calendar records, templates and other stored collections; allow newly derived defaults but block altered original values.
+- Offer an optional four-step daily-workout guide: movement choice, individually selected starting weights, plain-language RPE/rest explanations, and final review. No guessed load, automatic completion or unapproved scheduling.
+- Add explicit device/athlete sign-off evidence templates, scope-limited pilot criteria, and regression checks for the reported phrase and preservation failures.
+- v3.61.0 / native build 33405; schema 32 and canonical internal kg unchanged. CI is not physical-device, signing, hosting or athlete acceptance.
+
 # v3.60.0 — Unified Athlete Confidence & Meet-Prep Experience
 
 - Combine legacy-backup recovery confidence, direct Coach actions and an end-to-end meet timeline into one update built on v3.59.

@@ -30,7 +30,17 @@ const upgraded=Integrity.normalizeState(Core.normalizeState(oldBackup));const pr
 assert.equal(preservation.status,'pass');assert.equal(preservation.sourceSchema,22);assert.equal(preservation.targetSchema,32);assert.equal(preservation.unit,'lb');
 assert.deepEqual(preservation.counts.workouts,{before:1,after:1});assert.equal(Integrity.auditImportPreservation(oldBackup,{...upgraded,workouts:[]}).status,'blocking');
 const changedSet=structuredClone(upgraded);changedSet.workouts[0].exercises[0].sets[0].weight=103;
-assert(Integrity.auditImportPreservation(oldBackup,changedSet).issues.some(s=>s.includes('weight changed')));
+assert(Integrity.auditImportPreservation(oldBackup,changedSet).issues.some(s=>s.includes('.weight: recorded value changed')));
+for(const [change,match] of [
+ [s=>{s.workouts[0].exercises[0].name='Different movement';},'.name: recorded value changed'],
+ [s=>{s.prs[0].weight=103;},'prs[legacy-pr].weight: recorded value changed'],
+ [s=>{s.workoutRevisions[0].action='delete';},'workoutRevisions[legacy-rev].action: recorded value changed'],
+ [s=>{s.workouts[0].exercises[0].sets[0].reps=4;},'.reps: recorded value changed']
+ ]){const edited=structuredClone(upgraded);change(edited);const result=Integrity.auditImportPreservation(oldBackup,edited);assert.equal(result.status,'blocking');assert(result.issues.some(x=>x.includes(match)),JSON.stringify(result.issues));}
+const otherHistory={...oldBackup,templates:[{id:'template-1',name:'Day A',exercises:[{name:'Squat',sets:[{weight:60,reps:5}]}]}],scheduledSessions:[{id:'session-1',date:'2026-09-22',name:'Day A'}]};
+const otherMigrated=Integrity.normalizeState(Core.normalizeState(otherHistory));assert.equal(Integrity.auditImportPreservation(otherHistory,otherMigrated).status,'pass');
+otherMigrated.templates[0].exercises[0].name='Changed';otherMigrated.scheduledSessions[0].date='2026-09-23';
+assert.equal(Integrity.auditImportPreservation(otherHistory,otherMigrated).status,'blocking','Same-count supplemental records must retain contents');
 assert(Integrity.auditImportPreservation(oldBackup,{...upgraded,unit:'kg'}).issues.some(s=>s.includes('display unit changed')));
 const outlierWorkout={id:'outlier',date:'2026-09-14',exercises:[{name:'Competition Bench Press',exerciseId:'bench',type:'strength',sets:[{weight:132.45,reps:1,rpe:8},{weight:119.75,reps:2,rpe:7},{weight:114.76,reps:2,rpe:6.5},{weight:114.76,reps:2,rpe:6.5},{weight:109.77,reps:3,rpe:6},{weight:1016.95,reps:3,rpe:6}]}]};
 const correctedWorkout=JSON.parse(JSON.stringify(outlierWorkout));correctedWorkout.exercises[0].sets[5].weight=109.77;

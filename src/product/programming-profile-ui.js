@@ -16,7 +16,7 @@
     if(proposal){
       const keys=Object.keys(proposal.changes||{});
       if(proposal.kind==='training-days')proposalChanges={availableDays:proposal.availableDays};
-      else if(proposal.kind==='profile-fields'&&keys.length===1&&['equipment','sessionMinutes','priorities'].includes(keys[0]))proposalChanges=proposal.changes;
+      else if(proposal.kind==='profile-fields'&&(keys.length===1&&['sessionMinutes','priorities'].includes(keys[0])||keys.length===2&&keys.includes('equipment')&&keys.includes('accessoryEquipment')))proposalChanges=proposal.changes;
       try{if(!base||proposal.baseRevisionId!==base.id||!proposalChanges)throw Error('Stale or invalid proposal');LoadnoteProgrammingProfile.context({...base.context,...proposalChanges});}
       catch{showToast('Training setup changed or the proposal is invalid. Ask Coach again or review Profile directly.','error');return;}
     }
@@ -33,8 +33,9 @@
       const title=document.createElement('b');title.textContent='Review before saving';
       const field=Object.keys(proposalChanges)[0],label=field==='equipment'?'equipment':field==='sessionMinutes'?'session time':field==='priorities'?'training priority':'training days';
       const format=(value)=>field==='availableDays'?value.map(n=>days[n]).join(', '):field==='equipment'?value.join(', ')||'none':field==='sessionMinutes'?value+' minutes':value||'none';
-      const previous=document.createElement('p');previous.textContent='Current'+(field==='availableDays'?'': ' '+label)+': '+format(field==='availableDays'?previousDays:base.context[field]);
-      const requested=document.createElement('p');requested.textContent='Requested'+(field==='availableDays'?'': ' '+label)+': '+format(p[field]);
+      const value=source=>field==='equipment'?[...(source.equipment||[]),...(source.accessoryEquipment||[])]:source[field];
+      const previous=document.createElement('p');previous.textContent='Current'+(field==='availableDays'?'': ' '+label)+': '+format(field==='availableDays'?previousDays:value(base.context));
+      const requested=document.createElement('p');requested.textContent='Requested'+(field==='availableDays'?'': ' '+label)+': '+format(value(p));
       const explanation=document.createElement('p');explanation.textContent='This changes '+label+' for future planning only. Existing programs and workouts are not edited. Any other edits you make in this form also require Save. Nothing is saved until you choose Save below.';
       card.append(title,previous,requested,explanation);dialog.querySelector('h2').after(card);
       const form=dialog.querySelector('form');form.addEventListener('submit',event=>{
