@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.48 · Development build.**
+**v3.53 · Development build.**
 
-Phase 4 offline Coach reasoning, source-grounded knowledge, conversational planning and local-model evaluation: [v3.48 release notes](docs/releases-v3.48.md).
+Phase 5 long-term training awareness, accepted-decision outcome learning, confirmed coaching preferences and closed-loop reviews: [v3.53 release notes](docs/releases-v3.53.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 
