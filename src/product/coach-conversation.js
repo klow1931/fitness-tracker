@@ -67,6 +67,7 @@
   }
   if(intent.topic!=='health'){
    const weekly=(typeof module==='object'&&module.exports?require('./weekly-coaching'):globalThis.LoadnoteWeeklyCoaching)?.answer(state,intent.follow?intent.referenceQuestion:q,{asOf,unit,now});if(weekly)return {...weekly,intent};
+   const longTerm=(typeof module==='object'&&module.exports?require('./coach-longitudinal'):globalThis.LoadnoteLongitudinalCoach)?.answer(state,q,{asOf,now});if(longTerm)return {...longTerm,intent:{...intent,...longTerm.intent}};
    const recap=(typeof module==='object'&&module.exports?require('./coach-evidence-brief'):globalThis.LoadnoteCoachEvidenceBrief)?.answer(state,q,{asOf});if(recap)return {...recap,intent:{...intent,...recap.intent}};
    const workout=(typeof module==='object'&&module.exports?require('./workout-brief'):globalThis.LoadnoteWorkoutBrief)?.answer(state,q,{asOf,unit,now});if(workout)return {...workout,intent};
    const followup=(typeof module==='object'&&module.exports?require('./accessory-follow-up'):globalThis.LoadnoteAccessoryFollowUp)?.answer(state,q,{asOf,unit,history,now});
