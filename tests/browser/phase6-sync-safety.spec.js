@@ -32,3 +32,23 @@ test('late workout entry during a slow local sync save is recovered rather than 
  });
  expect(result).toEqual({failed:true,saves:2,retained:true});
 });
+
+test('account sign-out during a delayed local cloud save prevents cross-account training data replacement',async({page})=>{
+ await page.goto('/');
+ await expect(page.locator('.ex-name')).toHaveCount(1);
+ const result=await page.evaluate(async()=>{
+  const account='acct_beta_account_1234567890123';
+  LoadnoteAccountSession._applyForTest({authenticated:true,account:{id:account}});
+  const expected=LoadnoteSyncCoordinator.projectFingerprint(data),incoming=structuredClone(data);
+  const original=persistNow,originalCount=data.workouts.length;
+  let saves=0,rejected=false;
+  persistNow=async()=>{
+   if(++saves===1)LoadnoteAccountSession._resetForTest();
+  };
+  try{await LoadnoteStateStore.applySyncedState(incoming,{expectedProjectFingerprint:expected,expectedAccountId:account,label:'Pre-switch recovery'});}
+  catch(error){rejected=/signed-in account changed while sync was saving/i.test(error.message);}
+  finally{persistNow=original;}
+  return {saves,rejected,unchanged:data.workouts.length===originalCount,account:LoadnoteAccountSession.snapshot().status};
+ });
+ expect(result).toEqual({saves:2,rejected:true,unchanged:true,account:'anonymous'});
+});
