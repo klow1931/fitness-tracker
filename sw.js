@@ -151,6 +151,8 @@ const ASSETS = [
   './src/product/coach-training-history.js',
   './src/product/coach-intent-router.js',
   './src/product/coach-evidence-brief.js',
+  './src/product/coach-longitudinal.js',
+  './src/product/coach-longitudinal-ui.js',
   './src/product/coach-conversation.js',
   './src/product/companion-intelligence.js',
   './src/product/companion-intelligence-ui.js',
