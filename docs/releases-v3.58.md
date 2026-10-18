@@ -15,7 +15,7 @@ Built incrementally from merged, validated v3.53. **Phase 6 source engineering i
 - Cloud merge continues to be explicit and conflict-first; no automatic last-write-wins or implicit web-to-native transfer.
 
 ## v3.56 — Single-node server snapshot durability
-- New `backend/atomic-file.js` shared by account and training snapshot stores. Writes use exclusive, restricted-permission temporary files, file flush, atomic rename, directory flush and cleanup on failure. Deletion also flushes the parent directory.
+- New `backend/atomic-file.js` shared by account and training snapshot stores. Writes use exclusive, restricted-permission temporary files, file flush, atomic rename, directory flush on supported POSIX hosts and cleanup on failure. Windows local development flushes files but cannot claim equivalent directory fsync durability. Deletion also flushes the parent directory.
 - The backend still requires an explicitly configured **durable hosting volume**, external tested backups and one writer process. Fsync is not a distributed transaction, database or complete disaster-recovery plan.
 
 ## v3.57 — Athlete-beta validation
