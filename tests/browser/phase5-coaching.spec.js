@@ -34,6 +34,6 @@ test('Phase 5 unknown history does not manufacture coaching memory or a load adj
      next:LoadnoteLongitudinalCoach.answer(s,'Should my next workout adapt?',{asOf:'2026-09-22',now:'2026-09-22T12:00:00.000Z'})};
  });
  expect(facts.memory.text).toContain('no confirmed saved training setup');
- expect(facts.next.text).toContain('No validated next action');
+ expect(facts.next.text).toContain('Choose your next training plan');
  expect(facts.memory.readOnly).toBe(true);
 });
