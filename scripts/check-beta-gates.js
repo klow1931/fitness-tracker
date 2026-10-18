@@ -22,8 +22,7 @@ function check(base=root){
   'Privacy, accessibility, permissions, Play/App Store declarations, signing and private beta distribution',
   'Multi-athlete training feedback and reliability evidence; no effectiveness claim before measurement'
  ];
- return {version:pkg.version,status:checks.every(x=>x.ok)?'source-gates-pass':'blocked',checks,pendingManual:peding()};
- function peding(){return pending;}
+ return {version:pkg.version,status:checks.every(x=>x.ok)?'source-gates-pass':'blocked',checks,pendingManual:pending};
 }
 if(require.main===module){const report=check();for(const c of report.checks)console.log((c.ok?'PASS ':'FAIL ')+c.id);console.log('Still requires human/device acceptance: '+report.pendingManual.length+' categories');if(report.status!=='source-gates-pass')process.exitCode=1;}
 module.exports={check};
