@@ -13,6 +13,7 @@
     "check:mobile": "node scripts/sync-www.js && node scripts/check-mobile.js",
     "native:sync": "npm run sync:www && node scripts/sync-native.js",
     "check:native": "npm run native:sync && node scripts/check-native.js",
+    "check:beta": "node scripts/check-beta-gates.js",
     "native:android": "cap open android",
     "native:ios": "cap open ios",
     "build:ios:unsigned": "node scripts/build-ios-unsigned.js",
