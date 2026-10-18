@@ -194,6 +194,7 @@ const ASSETS = [
   './src/product/nutrition-model.js',
   './src/product/nutrition-ui.js',
   './src/product/nutrition-forms.js',
+  './src/product/device-records.js',
   './src/product/state-store.js',
   './src/product/units.js',
   './src/product/workout-form.js',
