@@ -17,14 +17,14 @@
    d.showModal();daily(d,r,p,ticket);return;
   }
   const blocked=p.availableDays.length<r.frequency||r.minutes>p.sessionMinutes;
-  d.innerHTML='<h2 id="offline-plan-title">Review your program request</h2><p>'+esc(A().summary(r))+'</p><p>These settings came from your request, not an inferred training dose. Exact loads and movement suitability still need review in the designer.</p>'+(blocked?'<p role="status">The request exceeds your saved available days or session time. Edit setup or ask Coach for a different request; nothing is silently changed.</p>':'')+'<fieldset><legend>Choose '+r.frequency+' days within your saved availability</legend>'+p.availableDays.map((n,i)=>'<label><input type="checkbox" data-offline-day value="'+n+'" '+(i<r.frequency?'checked':'')+'> '+dayNames[n]+'</label>').join('')+'</fieldset><p>Equipment requested: '+esc(r.equipment.join(', '))+'. Confirm the actual setup in the next review. New requests do not clear exclusions or override current intake restrictions.</p><p id="offline-plan-error" role="alert"></p><div class="offline-plan-actions"><button type="button" class="btn-primary" id="offline-program-continue" '+(blocked?'disabled':'')+'>Continue to program draft</button><button type="button" class="btn-secondary" id="offline-edit-setup">Edit training setup</button><button type="button" class="btn-secondary" id="offline-plan-close">Close</button></div>';
+  d.innerHTML='<h2 id="offline-plan-title">Review your program request</h2><p>'+esc(A().summary(r))+'</p><p>These settings came from your request, not an inferred training dose. Exact loads and movement suitability still need review in the designer.</p>'+(r.meet?'<p><b>Meet-prep handoff:</b> '+esc(r.weeks)+' weeks is the requested total, including the event week. First review training days and lift setup, then confirm the event type and date in the meet timeline. Nothing is scheduled from chat.</p>':'')+(blocked?'<p role="status">The request exceeds your saved available days or session time. Edit setup or ask Coach for a different request; nothing is silently changed.</p>':'')+'<fieldset><legend>Choose '+r.frequency+' days within your saved availability</legend>'+p.availableDays.map((n,i)=>'<label><input type="checkbox" data-offline-day value="'+n+'" '+(i<r.frequency?'checked':'')+'> '+dayNames[n]+'</label>').join('')+'</fieldset><p>Equipment requested: '+esc(r.equipment.join(', '))+'. Confirm the actual setup in the next review. New requests do not clear exclusions or override current intake restrictions.</p><p id="offline-plan-error" role="alert"></p><div class="offline-plan-actions"><button type="button" class="btn-primary" id="offline-program-continue" '+(blocked?'disabled':'')+'>Continue to program draft</button><button type="button" class="btn-secondary" id="offline-edit-setup">Edit training setup</button><button type="button" class="btn-secondary" id="offline-plan-close">Close</button></div>';
   d.querySelector('#offline-edit-setup').onclick=()=>{d.close();setup(r);};d.querySelector('#offline-plan-close').onclick=()=>d.close();
   d.querySelector('#offline-program-continue').onclick=()=>{try{
    const days=[...d.querySelectorAll('[data-offline-day]:checked')].map(e=>Number(e.value));if(days.length!==r.frequency)throw Error('Choose exactly '+r.frequency+' days');
    if(A().gaps(r,data).length)throw Error('Training context changed; reopen this request');
    if(r.goal==='strength'){
     if(!['barbell'].every(e=>r.equipment.includes(e)))throw Error('The strength designer requires a barbell setup. Use a muscle-growth request for supported dumbbell/bodyweight movements.');
-    d.close();showTab('coach');showSubTab('coach','co-programs');window.LoadnotePhaseBuilderUI.open(null,{guided:true,periodization:r.periodization||'linear',request:{...r,days}});
+    d.close();showTab('coach');showSubTab('coach','co-programs');window.LoadnotePhaseBuilderUI.open(null,{guided:true,continueToMeet:!!r.meet,periodization:r.periodization||'auto',request:{...r,days}});
    }else{
     d.close();showTab('coach');showSubTab('coach','co-programs');window.LoadnoteHypertrophyBuilderUI.open(null,{request:{...r,days}});
    }
@@ -72,7 +72,7 @@
   if(!r.days?.every(day=>p?.availableDays.includes(day)))throw Error('Requested days exceed saved availability');
   const put=(id,value)=>{d.querySelector('#phase-'+id).value=value;};
   put('name','Offline strength draft · '+r.weeks+' weeks');put('minutes',r.minutes);
-  const accumulation=Math.max(2,Math.min(6,Math.floor((r.weeks-1)/2)));put('accumulation',accumulation);put('strength',r.weeks-1-accumulation);
+  const accumulation=r.meet?3:Math.max(2,Math.min(6,Math.floor((r.weeks-1)/2)));put('accumulation',accumulation);put('strength',r.meet?3:r.weeks-1-accumulation);
   d.querySelectorAll('[data-phase-day]').forEach(el=>el.checked=r.days.includes(Number(el.value)));
   const lifts=['squat','bench','deadlift'];
   d.querySelectorAll('[data-phase-slot]').forEach(el=>el.value='off');
@@ -86,7 +86,7 @@
    if(lift)d.querySelector('[data-phase-slot="'+lift+':'+day+'"]').value='light:straight';
   }
   if(r.priority){const off=r.days.find(day=>d.querySelector('[data-phase-slot="'+r.priority+':'+day+'"]').value==='off');if(off!=null&&[...d.querySelectorAll('[data-phase-slot^="'+r.priority+':"]')].filter(e=>e.value!=='off').length<3)d.querySelector('[data-phase-slot="'+r.priority+':'+off+'"]').value='light:straight';}
-  const note=document.createElement('p');note.className='more-hint';note.textContent=A().summary(r)+'. Exposure suggestions are editable, not evidence of recovery or a personalized dose. Enter explicit training maxes; save and schedule only after review.';d.querySelector('h2').after(note);
+  const note=document.createElement('p');note.className='more-hint';note.textContent=A().summary(r)+(r.meet?'. This six-week preview is only a lift setup; your requested '+r.weeks+'-week timeline is transferred to the next step.':'.')+' Exposure suggestions are editable, not evidence of recovery or a personalized dose. Enter explicit training maxes; save and schedule only after review.';d.querySelector('h2').after(note);
  }
  function prefillHypertrophy(d,r){
   const goals=LoadnoteGoals.list(data.athleteGoals||[]).filter(LoadnoteHypertrophyBuilder.eligibleGoal),goal=d.querySelector('#hyp-goal');

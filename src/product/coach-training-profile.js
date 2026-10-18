@@ -11,9 +11,22 @@
  const specific=q=>/\b(equipment|available days|schedule|session time|session length|goals?|training setup|preferences|exclusions|avoided exercises|preferred exercises)\b/i.test(q);
  const follow=q=>/^(and|what about) (my |the )?(equipment|goals?|schedule|training days|available days|exclusions|preferred exercises|session time)\??$/i.test(q);
  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+ // Chat can propose a future setting only when the athlete explicitly names the days.
+ function dayProposal(question,record){
+  const q=clean(question),match=q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(?:my\s+)?(?:training|available)\s+days\s+(?:to|as)\s+(.+?)[.!?]?$/i)
+   ||q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(.+?)\s+as\s+(?:my|your)\s+(?:training|available)\s+days[.!?]?$/i);
+  if(!match||!record)return null;
+  const found=[],remainder=match[1].replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi,day=>{found.push(days.findIndex(d=>d.toLowerCase()===day.toLowerCase()));return '';});
+  if(!found.length||found.length>7||new Set(found).size!==found.length||!/^[\s,&]*(?:and[\s,&]*)*$/i.test(remainder))return null;
+  return {kind:'training-days',availableDays:found.sort((a,b)=>a-b),baseRevisionId:record.id};
+ }
  function answer(state,question,{asOf,history=[]}={}){
   const q=clean(question);
   if(!q||Support.health(String(question||'')))return null;
+  let saved=null;try{saved=Profile.current(state.programmingProfiles||[],asOf?asOf+'T23:59:59.999Z':undefined);}catch{/* The existing explicit setup-query error route below explains invalid saved data. */}
+  const proposed=dayProposal(q,saved);
+  if(proposed){const names=proposed.availableDays.map(i=>days[i]).join(', '),before=saved.context.availableDays.map(i=>days[i]).join(', ');
+   return {text:'Review requested training days: '+names+'. Current saved availability: '+before+'. Nothing has changed. Open the review card and explicitly save the revised training setup if it is correct. Existing scheduled workouts stay unchanged.',source:'Saved training preferences · proposed change',readOnly:true,evidence:[{before:saved.context.availableDays,proposed:proposed.availableDays}],intent:{topic:'training-preferences'},actions:[{kind:'profile-review',label:'Review training days before saving',proposal:proposed}]};}
   // Dedicated movement-reference and sport-goal tools take precedence.
   // Saved Profile equipment is not the equipment needed for an exercise.
   if(/\bequipment\s+(?:for|needed for|used for)\b/i.test(q)||/\b(?:review|analyse|analyze|compare|evaluate)\b.*\b(?:sport|training)\s+goal\b/i.test(q))return null;

@@ -1,3 +1,13 @@
+# v3.59.0 — Coach Clarity & First-Week Experience
+
+- Present short, actionable offline training recaps, trend explanations and program-next steps with full source evidence in expandable Coach details.
+- Replace zero-based weekday numbers in long-term saved-preference summaries with full weekday names.
+- Surface honest milestones from eligible completed set logs when RPE-aware trends are sparse; explain missing observations and what to record next without authorizing load changes.
+- Let explicit 7–52-week powerlifting meet-prep requests carry duration, frequency, minutes, equipment and priorities through reviewed lift setup to a separately confirmed meet date. Long standalone strength requests ask whether meet prep was intended; no silent truncation.
+- Permit only directly stated training-day preferences to open a version-checked Profile review card. Chat never writes preferences, programs, scheduled sessions or workout history; the athlete must explicitly save.
+- Added read-only Node tests and desktop/mobile browser regressions, including end-to-end 20-week calendar math, stale setting review, and contextual evidence expansion.
+- v3.59.0 / native build 33403. Internal kilograms and schema 32 are unchanged. Physical-device durability, real athlete feedback, store certification and production cloud restore still require manual acceptance.
+
 # v3.58 — Phase 6: data durability and athlete beta readiness
 
 - Hardened device-only sync-base persistence against IndexedDB failure, stale fallbacks and corrupted local records.

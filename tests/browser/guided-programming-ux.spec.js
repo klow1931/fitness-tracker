@@ -1,4 +1,5 @@
 const {test,expect}=require('playwright/test'),{phaseFixture}=require('../fixtures/phase-builder');
+test.use({timezoneId:'UTC'});
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-09-28T18:00:00Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);

@@ -31,7 +31,9 @@
   if(!question(String(q||'')))return null;
   try{
    const report=inspect(state,options);
-   return {text:report.notes.join('\n\n')+'\n\nNext: '+report.next+'\n\n'+report.notice,source:'Offline Coach · training recap',readOnly:true,evidence:[report],intent:{topic:'training-recap'},followUps:['How did this week go?','Explain my next workout']};
+   return {text:report.notes.join('\n\n')+'\n\nNext: '+report.next+'\n\n'+report.notice,source:'Offline Coach · training recap',readOnly:true,evidence:[report],intent:{topic:'training-recap'},
+    clarity:{happened:report.observed.sessions+' completed workouts and '+report.observed.sets+' eligible strength sets in the last 28 days.',meaning:report.observed.sets?report.observed.rpeSets+' of '+report.observed.sets+' sets have recorded actual RPE; missing effort remains unknown.':'No supported strength-work trend is available yet; that does not erase your other training.',next:report.next},
+    followUps:['How did this week go?','Explain my next workout']};
   }catch{return {text:'I could not validate a current training recap. Check saved dates, exercise mappings and training history first; no program changes were made.',source:'Offline Coach · training recap unavailable',readOnly:true,evidence:[]};}
  }
  return {question,inspect,answer};

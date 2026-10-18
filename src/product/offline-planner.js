@@ -10,7 +10,7 @@
  function parse(question,previous=null){
   const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),start=!blocked&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q));
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
-  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating)\b/.test(q));
+  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q));
   if(!start&&!follow)return null;
   const r=start?{version:1,kind:/\b(workout|session)\b/.test(q)&&!/\b(program|routine|\d+\s*week)\b/.test(q)?'daily':'program',goal:null,weeks:null,frequency:null,minutes:null,equipment:[],focus:null,priority:null,periodization:null,excluded:[],tomorrow:false}:copy(previous);
   if(/\b(powerlifting|strength|get stronger|stronger)\b/.test(q))r.goal='strength';
@@ -40,7 +40,7 @@
   for(const m of q.matchAll(/\b(?:no|avoid|without|can't do|cannot do)\s+(squats?|bench|deadlifts?|lunges?|push\s*ups?|rows?)\b/g))r.excluded=[...new Set([...r.excluded,m[1].replace(/s$/,'').replace(/\s/g,'')])];
   if(/\btomorrow\b/.test(q))r.tomorrow=true;else if(/\btoday\b/.test(q))r.tomorrow=false;
   if(/\b(olympic|snatch|clean and jerk|sprint|jumping|sport specific)\b/.test(q))r.unsupportedDomain=true;
-  if(r.kind==='program'&&/\b(meet|competition|peaking|taper)\b/.test(q))r.meet=true;
+  if(r.kind==='program'&&/\b(meet|competition|peaking|taper)\b/.test(q)){r.meet=true;if(/\bmock meet\b/.test(q))r.eventType='mock';else if(/\b(?:competition meet|real meet)\b/.test(q))r.eventType='competition';}
   if(r.kind==='daily'&&/\bnext week\b|\b(?:next|on) (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\b\d{4} \d{2} \d{2}\b/.test(q))r.dateUnsupported=true;
   else if(/\btoday|tomorrow\b/.test(q))r.dateUnsupported=false;
   if(!start&&JSON.stringify(r)===JSON.stringify(previous))return null;
@@ -50,7 +50,8 @@
   if(!r||r.version!==1||!['program','daily'].includes(r.kind)||!Array.isArray(r.equipment)||r.equipment.some(e=>!Object.hasOwn(Ref.EQUIPMENT,e))||!Array.isArray(r.excluded)||r.excluded.some(x=>typeof x!=='string')||r.goal!==null&&!['strength','hypertrophy'].includes(r.goal)||r.focus!==null&&!['upper','lower','full'].includes(r.focus)||r.priority!==null&&!['bench','squat','deadlift'].includes(r.priority)||[r.weeks,r.frequency,r.minutes].some(n=>n!==null&&!Number.isInteger(n)))return ['This planning request is incomplete or invalid. Start a new request.'];
   const p=profile(state),out=[];
   if(r.styleUnclear)out.push('Which loading style do you mean: daily undulating, weekly undulating, or waves?');
-  if(r.unsupportedDomain||r.meet)out.push('Use the dedicated reviewed sport or meet planner for this request. This chat draft path does not substitute general resistance work for technical practice or meet peaking.');
+  if(r.unsupportedDomain)out.push('Use the dedicated reviewed sport planner. This chat draft path cannot substitute resistance training for technical sport practice.');
+  if(r.meet&&r.goal==='hypertrophy')out.push('This meet-timeline handoff requires a confirmed powerlifting/strength goal. Use the separate hypertrophy planner for muscle-growth programs.');
   if(r.dateUnsupported)out.push('Daily chat drafts currently support today or tomorrow. Use Calendar for another date; I will not silently change it.');
   if(r.kind==='program'&&r.goal==='strength'&&r.equipment.length&&!r.equipment.includes('barbell'))out.push('The standalone strength designer needs barbell access, plus separately confirmed rack, bench and plates. Choose available equipment or use the reviewed muscle-growth planner; no equipment is assumed.');
   if(r.kind==='program'&&!r.goal)out.push('Should this be a strength/powerlifting program or a muscle-growth program?');
@@ -60,19 +61,19 @@
   if(!r.equipment.length)out.push('What equipment can you use: dumbbells, bodyweight, barbell, cable, or machines?');
   if(r.kind==='daily'&&!r.focus)out.push('Do you want full-body, upper-body, or lower-body training?');
   if(r.minutes!=null&&(r.minutes<(r.kind==='program'?30:10)||r.minutes>240))out.unshift('Use '+(r.kind==='program'?'30':'10')+'–240 minutes for this supported planning path.');
-  if(r.kind==='program'&&r.weeks!=null&&(r.weeks<1||r.weeks>24||r.goal==='strength'&&(r.weeks<5||r.weeks>13)))out.unshift('The standalone strength designer supports 5–13 weeks; muscle-growth supports 1–24. For longer meet prep, use the reviewed meet timeline. I will not silently shorten your request.');
+  if(r.kind==='program'&&r.weeks!=null&&(r.weeks<1||r.weeks>(r.meet?52:24)||r.goal==='strength'&&(r.weeks<(r.meet?7:5)||!r.meet&&r.weeks>13)))out.unshift(r.goal==='strength'&&!r.meet&&r.weeks>13?'The standalone strength designer supports 5–13 weeks. Is this longer cycle for a powerlifting meet or mock meet? Say "Make it meet prep" to carry your request into the reviewed meet planner; I will not silently shorten it.':'The selected planner does not support this duration. Strength blocks require 5–13 weeks; meet prep 7–52 weeks, and muscle-growth 1–24 weeks.');
   if(r.kind==='program'&&r.frequency!=null&&(r.frequency<(r.goal==='strength'?2:1)||r.frequency>(r.goal==='strength'?5:7)))out.unshift('This program path needs '+(r.goal==='strength'?'2–5':'1–7')+' training days per week.');
   if(r.kind==='program'&&r.goal==='strength'&&r.excluded.some(x=>['squat','bench','deadlift'].includes(x)))out.unshift('The strength designer includes all three competition lifts. Use the muscle-growth path for a request excluding one of them; exclusions are not ignored.');
   if(p&&Intake.active(p.intake))out.unshift('Your saved intake requires a training review. Review it with a qualified professional; I cannot draft a new training dose as medical clearance.');
   return out;
  }
- function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
+ function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+(r.meet?' meet-prep':'')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
  function answer(state,question,{history=[]}={}){
   if(Support.kind(question)==='health'||Support.kind(question)==='urgent-support')return null;
   const last=history.at(-1),previous=last?.role==='assistant'?last.planning:null;
   const r=parse(question,previous);if(!r)return null;
   const missing=gaps(r,state),text=summary(r)+'. '+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');
-  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:[],actions:missing.length?(r.unsupportedDomain||r.meet?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
+  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:!r.meet&&r.goal==='strength'&&r.weeks>13?['Make it meet prep']:[],actions:missing.length?(r.unsupportedDomain?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
  }
  function candidates(state,r,{excludedExerciseIds=[],requireMapped=false}={}){
   const p=profile(state),preferred=new Set(p?.preferredExerciseIds||[]),excluded=new Set([...(p?.avoidedExerciseIds||[]),...excludedExerciseIds]),roleRows=Roles.list(state.exerciseRoles||[]);

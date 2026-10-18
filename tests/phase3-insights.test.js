@@ -49,6 +49,11 @@ const sparse={...base,workouts:[workout('first','2026-07-10',100,null),workout('
 answer=Trend.answer(sparse,'My bench progress has plateaued',{asOf});
 assert.match(answer.text,/not enough comparable RPE-aware evidence/i);
 assert.equal(answer.evidence[0].status,'insufficient');
+assert.deepEqual(answer.evidence[0].sameRepIncrease,{reps:5,fromKg:100,toKg:105,fromDate:'2026-07-10',toDate:'2026-09-21'});
+assert.match(answer.clarity.happened,/100 kg × 5.*105 kg × 5/);
+assert.match(answer.clarity.meaning,/not enough comparable RPE-aware evidence/i);
+assert.match(answer.clarity.next,/actual sets and RPE/i);
+assert.equal(answer.evidence[0].recentRpeSets,0,'A same-rep milestone is never invented RPE evidence');
 assert.equal(Highlights.inspect(Progress.analyze(sparse,{asOf})).metrics[2].value,'0%','logged sets with unknown RPE mean zero coverage, not zero effort');
 // No future evidence and no explicitly skipped/incomplete/warm-up sets in Progress.
 const flagged=structuredClone(base);
@@ -56,6 +61,7 @@ flagged.workouts[3].exercises[0].sets.push({weight:300,reps:5,rpe:8,skipped:true
 flagged.workouts[3].exercises[0].sets.push({weight:310,reps:5,rpe:8,done:false});
 flagged.workouts[3].exercises[0].sets.push({weight:320,reps:5,rpe:8,warmup:true});
 const flaggedStory=Progress.analyze(flagged,{asOf,weeks:12});
+assert.equal(Trend.inspect(flagged,{asOf,lift:'bench'}).sameRepIncrease,null,'Skipped, unfinished and warm-up loads cannot create milestones');
 assert.equal(flaggedStory.overview.recent.strengthSets,2);
 assert.equal(flaggedStory.movements[0].recent.sets,2);
 assert.equal(flaggedStory.movements[0].recent.bestLoad.weight,100);

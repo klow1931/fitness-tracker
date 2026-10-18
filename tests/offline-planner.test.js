@@ -13,6 +13,15 @@ assert(P.gaps(P.parse('Create a 12-week strength program 3 days 60 minutes barbe
 assert(P.answer(s,'Create an Olympic workout full body 30 minutes barbell').actions.every(a=>a.kind!=='offline-plan'));
 assert.equal(C.answer(s,'Make a workout for my painful knee',{asOf:'2026-10-16'}).intent.topic,'health');
 assert(P.gaps(P.parse('Create a 20-week strength program 3 days 60 minutes full gym'),s).some(x=>x.includes('not silently shorten')));
+const longRequest=P.answer(s,'Create a 20-week powerlifting meet prep program 3 days per week 60 minutes full gym');
+assert.equal(P.gaps(longRequest.planning,s).length,0,'Long explicit meet prep uses reviewed meet path');
+assert.equal(longRequest.planning.weeks,20);assert.equal(longRequest.actions[0].kind,'offline-plan');assert.equal(longRequest.planning.meet,true);
+const unclassified=P.answer(s,'Create a 20-week strength program 3 days per week 60 minutes full gym');
+const clarified=P.answer(s,'Make it meet prep',{history:[{role:'assistant',content:unclassified.text,planning:unclassified.planning}]});
+assert.equal(clarified.planning.weeks,20);assert.equal(clarified.planning.meet,true);assert.equal(clarified.planning.frequency,3);
+assert.equal(clarified.actions[0].request.minutes,60);assert.equal(JSON.stringify(s),before,'The long-program handoff does not change state');
+assert(P.gaps(P.parse('Create a 6-week powerlifting meet prep program 3 days 60 minutes full gym'),s).length>0,'Meet planner minimum still applies');
+assert(P.gaps(P.parse('Create a 20-week muscle growth meet prep program 3 days 60 minutes full gym'),s).length>0,'Hypertrophy does not silently become powerlifting');
 assert(P.gaps(P.parse('Create a strength program 12 weeks 6 days 60 minutes full gym'),s).some(x=>x.includes('2–5')));
 assert(P.gaps(P.parse('Create an upper body workout next week 30 minutes with dumbbells'),s).some(x=>x.includes('today or tomorrow')));
 assert.deepEqual(P.parse('Make an upper body workout 30 minutes with dumbbells without a barbell').equipment,['dumbbells']);

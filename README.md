@@ -1,6 +1,10 @@
 # Loadnote
 
-**v3.58 · Development build.**
+**v3.59.0 · Development build.**
+
+Coach Clarity & First-Week Experience: [v3.59 release notes](docs/releases-v3.59.md). Coach training summaries now lead with observed work, its limitations and a next step, with detailed evidence expandable. Longer explicit meet-prep requests retain duration and setup through the existing athlete-reviewed event timeline. Chat-proposed weekdays require a version-checked Profile review and separate Save; they never silently persist.
+
+Hardware acceptance and a small athlete pilot remain required before consumer release. See [the first-week pilot checklist](docs/first-week-coach-pilot.md).
 
 Phase 6 data resilience, explicit sync protection and athlete-beta gates: [v3.58 release notes](docs/releases-v3.58.md).
 
