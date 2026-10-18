@@ -6,6 +6,7 @@
 const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
+const Atomic=require('./atomic-file');
 
 const STORE_VERSION=1;
 const clone=value=>value==null?value:JSON.parse(JSON.stringify(value));
@@ -59,31 +60,8 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   if(!latest||latest.revision!==doc.revision||doc.current.revision!==doc.revision||latest.packageFingerprint!==doc.current.packageFingerprint||latest.manifestFingerprint!==doc.current.manifestFingerprint||latest.committedAt!==doc.updatedAt)throw Error('Stored remote training revision history is inconsistent');
   return doc;
  }
- function syncDirectory(){
-  // File rename is atomic on the supported single-host filesystem, but
-  // crash durability also requires flushing the containing directory.
-  let handle;
-  try{handle=fs.openSync(root,'r');fs.fsyncSync(handle);}
-  finally{if(handle!==undefined)fs.closeSync(handle);}
- }
  function write(accountId,doc){
-  const file=fileFor(accountId);
-  fs.mkdirSync(root,{recursive:true,mode:0o700});
-  const temp=file+'.'+process.pid+'.'+crypto.randomBytes(6).toString('hex')+'.tmp';
-  let handle;
-  try{
-   handle=fs.openSync(temp,'wx',0o600);
-   fs.writeFileSync(handle,JSON.stringify(doc,null,2)+'\n',{encoding:'utf8'});
-   fs.fsyncSync(handle);
-   fs.closeSync(handle);handle=undefined;
-   fs.renameSync(temp,file);
-   fs.chmodSync(file,0o600);
-   syncDirectory();
-  }catch(error){
-   try{if(handle!==undefined)fs.closeSync(handle);}catch{}
-   try{fs.unlinkSync(temp);}catch{}
-   throw error;
-  }
+  Atomic.replace(fileFor(accountId),JSON.stringify(doc,null,2)+'\n');
  }
  function status(accountId){
   const doc=read(accountId);
@@ -125,8 +103,7 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
  function remove(accountId){
   const id=clean(accountId),file=fileFor(id);
   if(!fs.existsSync(file))return {deleted:false};
-  fs.unlinkSync(file);
-  syncDirectory();
+  Atomic.remove(file);
   return {deleted:true};
  }
  function inspect(accountId){const doc=read(accountId);return clone(doc);}
