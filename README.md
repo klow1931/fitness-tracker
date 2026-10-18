@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.53 · Development build.**
+**v3.58 · Development build.**
 
-Phase 5 long-term training awareness, accepted-decision outcome learning, confirmed coaching preferences and closed-loop reviews: [v3.53 release notes](docs/releases-v3.53.md).
+Phase 6 data resilience, explicit sync protection and athlete-beta gates: [v3.58 release notes](docs/releases-v3.58.md).
 
 Reliable last-session quick fill: [v3.34 release notes](docs/releases-v3.34.md).
 

@@ -1,3 +1,12 @@
+# v3.58 — Phase 6: data durability and athlete beta readiness
+
+- Hardened device-only sync-base persistence against IndexedDB failure, stale fallbacks and corrupted local records.
+- Prevented slow remote sync responses from overwriting newer local training; account switching and concurrent conflict-review commits fail safely.
+- Added shared fsync-backed atomic account/training snapshot writes for the supported single-instance server model.
+- Increased native beta build number; kept native services local-only until device/account validation is complete.
+- Added beta source gate, documented physical athlete acceptance and operational hosting requirements, and expanded unit/browser regressions.
+- No new storage schema, automatic cloud sync, client-side secret, medical-advice feature or unreviewed training change.
+
 # v3.53 — Phase 5: Long-term adaptive coaching
 
 - Added a date-bounded, read-only longitudinal Coach that combines the current saved training phase, exact accepted-adaptation outcomes, confirmed athlete preferences and existing reviewed next-workout actions.

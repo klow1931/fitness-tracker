@@ -139,7 +139,7 @@
   }
   if(!basePackage)throw Error('No acknowledged cloud package is available');
   const base=baseFromPackage(id,revision,basePackage);
-  return {status:'committed',mode:p.mode,revision,state:nextState,applyRequired,uploadRequired,base,plan:p.plan||null};
+  return {status:'committed',mode:p.mode,revision,state:nextState,applyRequired,uploadRequired,base,expectedLocalFingerprint:currentLocalFingerprint,plan:p.plan||null};
  }
  function conflictLabel(item){
   if(item.scope==='document'){

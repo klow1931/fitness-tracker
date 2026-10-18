@@ -6,6 +6,7 @@
 const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
+const Atomic=require('./atomic-file');
 
 const STORE_VERSION=1;
 const clean=value=>String(value??'').trim();
@@ -59,11 +60,7 @@ function createFileAccountStore({filePath,now=Date.now,createId}={}){
  }
  function persist(doc){
   validateDocument(doc);
-  fs.mkdirSync(path.dirname(target),{recursive:true});
-  const temp=target+'.'+process.pid+'.tmp';
-  fs.writeFileSync(temp,JSON.stringify(doc,null,2)+'\n',{encoding:'utf8',mode:0o600});
-  fs.renameSync(temp,target);
-  try{fs.chmodSync(target,0o600);}catch{}
+  Atomic.replace(target,JSON.stringify(doc,null,2)+'\n');
   cache=doc;
  }
  function providersFor(accountId){

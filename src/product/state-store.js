@@ -98,26 +98,21 @@
         req.onerror = () => reject(req.error);
       }));
     }
-    const deviceFallbackKey = key => DEVICE_RECORD_PREFIX + key;
-    async function getDeviceRecord(key) {
-      try { return await idbRecordGet(key); }
-      catch (_) {
-        try { return JSON.parse(localStorage.getItem(deviceFallbackKey(key)) || 'null'); }
-        catch { return null; }
-      }
+    // Browser script order and standalone storage tests may evaluate this file
+    // without device dependencies. Require them only for an actual sync-base
+    // operation, and fail closed if anything is unavailable at that time.
+    function deviceRecords(){
+      const records=window.LoadnoteDeviceRecords;
+      if(!records)throw Error('Device record safety module is unavailable');
+      return records;
     }
-    async function setDeviceRecord(key,value) {
-      try {
-        await idbRecordSet(key,value);
-        try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
-      } catch (_) {
-        localStorage.setItem(deviceFallbackKey(key), JSON.stringify(value));
-      }
-    }
-    async function removeDeviceRecord(key) {
-      try { await idbRecordRemove(key); } catch (_) {}
-      try { localStorage.removeItem(deviceFallbackKey(key)); } catch (_) {}
-    }
+    const deviceIo=()=>({
+      idbGet:idbRecordGet,idbSet:idbRecordSet,idbRemove:idbRecordRemove,
+      local:typeof localStorage==='undefined'?null:localStorage
+    });
+    async function getDeviceRecord(key){return deviceRecords().get(key,deviceIo());}
+    async function setDeviceRecord(key,value){return deviceRecords().set(key,value,deviceIo());}
+    async function removeDeviceRecord(key){return deviceRecords().remove(key,deviceIo());}
 
     function loadFromLocalStorage() {
       try {
@@ -253,7 +248,12 @@
     window.LoadnoteDeviceStorage = { get:getDeviceRecord, set:setDeviceRecord, remove:removeDeviceRecord };
     window.LoadnoteStateStore = {
       current: () => data,
-      async applySyncedState(incoming,{label='Before account sync'}={}) {
+      async applySyncedState(incoming,{label='Before account sync',expectedProjectFingerprint=null,expectedAccountId=null}={}) {
+        const fingerprint=()=>window.LoadnoteSyncCoordinator?.projectFingerprint?.(data)||null;
+        const accountMatches=()=>expectedAccountId==null||window.LoadnoteAccountSession?.snapshot?.().account?.id===expectedAccountId;
+        if(!accountMatches())throw Error('Signed-in account changed before remote training could be applied.');
+        if(expectedProjectFingerprint!==null&&fingerprint()!==expectedProjectFingerprint)
+          throw Error('Local training changed before the sync could be applied. Review the latest version.');
         const previous=data;
         const normalized=normalizeDataShape(incoming);
         const relationships=window.LoadnoteIntegrity?.auditRelationships?.(normalized);
@@ -263,6 +263,12 @@
           : normalized;
         clearTimeout(saveTimer);
         await persistNow(next);
+        // If a workout changed while IndexedDB was committing, restore the
+        // newer in-memory training immediately; never publish a stale overlay.
+        if((expectedProjectFingerprint!==null&&fingerprint()!==expectedProjectFingerprint)||!accountMatches()){
+          await persistNow(data);
+          throw Error('Local training or the signed-in account changed while sync was saving. The newer local training was restored; review sync again.');
+        }
         data=next;
         if(typeof applyDark==='function')applyDark();
         if(typeof updateUnitToggle==='function')updateUnitToggle();

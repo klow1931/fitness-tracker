@@ -1,0 +1,40 @@
+const assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path');
+const Atomic=require('../backend/atomic-file');
+const {createFileAccountStore}=require('../backend/account-store');
+const {createFileSyncStore}=require('../backend/sync-store');
+const Sync=require('../src/product/sync-model');
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'loadnote-phase6-'));
+try{
+ const file=path.join(dir,'nested','durable.json');
+ Atomic.replace(file,'{"revision":1}');
+ assert.equal(fs.readFileSync(file,'utf8'),'{"revision":1}');
+ Atomic.replace(file,'{"revision":2}');
+ assert.equal(fs.readFileSync(file,'utf8'),'{"revision":2}');
+ if(process.platform!=='win32')assert.equal(fs.statSync(file).mode&0o777,0o600);
+ assert.equal(fs.readdirSync(path.dirname(file)).filter(x=>x.endsWith('.tmp')).length,0);
+ assert.equal(Atomic.remove(file),true);assert.equal(Atomic.remove(file),false);
+ const accountPath=path.join(dir,'accounts','accounts.json'),accountId='acct_phase6_account_123456789012345';
+ let accounts=createFileAccountStore({filePath:accountPath,createId:()=>accountId,now:()=>Date.parse('2026-10-18T12:00:00.000Z')});
+ const created=accounts.resolveIdentity({provider:'test-oidc',subject:'athlete-1',displayName:'Beta athlete'});
+ assert.equal(created.account.id,accountId);
+ accounts=createFileAccountStore({filePath:accountPath});
+ assert.equal(accounts.getAccount(accountId).id,accountId,'committed OIDC mapping must survive restart');
+ assert.equal(accounts.deleteAccount(accountId).deleted,true);
+ accounts=createFileAccountStore({filePath:accountPath});
+ assert.equal(accounts.getAccount(accountId),null,'durable account deletion must survive restart');
+ const rootDir=path.join(dir,'training'),store=createFileSyncStore({rootDir,verifyPackage:Sync.verifyPackage});
+ const state=Object.fromEntries(Sync.COLLECTIONS.map(x=>[x,[]]));
+ Object.assign(state,{schemaVersion:32,athleteProfile:null,exerciseNotes:{},programStates:{},activeProgramId:null,
+  workouts:[{id:'bench-set',date:'2026-10-18',createdAt:'2026-10-18T12:00:00.000Z',exercises:[{exerciseId:'b',name:'Bench',sets:[{reps:5,weight:100,rpe:8}]}]}]});
+ const pkg=Sync.createPackage(state,{clientId:'client_phase6_atomic_store',createdAt:'2026-10-18T12:00:00.000Z'});
+ const receipt=store.commit(accountId,pkg,{expectedRevision:0});
+ assert.equal(receipt.revision,1);
+ const filename=store.fileFor(accountId);
+ if(process.platform!=='win32')assert.equal(fs.statSync(filename).mode&0o777,0o600);
+ assert.equal(fs.readdirSync(rootDir).filter(x=>x.endsWith('.tmp')).length,0,'no stale write temp on success');
+ const restarted=createFileSyncStore({rootDir,verifyPackage:Sync.verifyPackage});
+ assert.equal(restarted.get(accountId).revision,1);
+ assert.equal(restarted.remove(accountId).deleted,true);
+ assert.equal(restarted.status(accountId).status,'empty','deleting the account removes its on-disk training snapshot');
+ console.log('Phase 6: atomic fsync persistence, file modes, identity restart/deletion, scoped training snapshot restart/deletion passed');
+}finally{fs.rmSync(dir,{recursive:true,force:true});}

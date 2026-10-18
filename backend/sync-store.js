@@ -6,6 +6,7 @@
 const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
+const Atomic=require('./atomic-file');
 
 const STORE_VERSION=1;
 const clone=value=>value==null?value:JSON.parse(JSON.stringify(value));
@@ -60,12 +61,7 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
   return doc;
  }
  function write(accountId,doc){
-  const file=fileFor(accountId);
-  fs.mkdirSync(root,{recursive:true});
-  const temp=file+'.'+process.pid+'.tmp';
-  fs.writeFileSync(temp,JSON.stringify(doc,null,2)+'\n',{encoding:'utf8',mode:0o600});
-  fs.renameSync(temp,file);
-  try{fs.chmodSync(file,0o600);}catch{}
+  Atomic.replace(fileFor(accountId),JSON.stringify(doc,null,2)+'\n');
  }
  function status(accountId){
   const doc=read(accountId);
@@ -107,7 +103,7 @@ function createFileSyncStore({rootDir,verifyPackage,now=Date.now,maxHistory=50}=
  function remove(accountId){
   const id=clean(accountId),file=fileFor(id);
   if(!fs.existsSync(file))return {deleted:false};
-  fs.unlinkSync(file);
+  Atomic.remove(file);
   return {deleted:true};
  }
  function inspect(accountId){const doc=read(accountId);return clone(doc);}
