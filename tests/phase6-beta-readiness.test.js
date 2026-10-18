@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const {check}=require('../scripts/check-beta-gates');
+const report=check();
+assert.equal(report.version,'3.58');
+assert.equal(report.status,'source-gates-pass',JSON.stringify(report.checks.filter(c=>!c.ok)));
+assert(report.checks.length>=7);
+assert(report.checks.every(c=>c.ok));
+assert(report.pendingManual.length>=4,'Passing CI must not be called a physical-device or store certification');
+assert(report.pendingManual.some(x=>/Physical Android/.test(x)));
+assert(report.pendingManual.some(x=>/OIDC/.test(x)));
+console.log('Phase 6 source release gates passed; field, hosting and signing acceptance remain pending as documented');
