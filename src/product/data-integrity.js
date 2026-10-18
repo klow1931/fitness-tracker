@@ -202,6 +202,34 @@
    prs:diff(current?.prs,incoming?.prs),nutrition:diff(current?.nutrition,incoming?.nutrition,{byDate:true}),bodyweight:diff(current?.bodyweight,incoming?.bodyweight),measurements:diff(current?.measurements,incoming?.measurements),progressPhotos:diff(current?.progressPhotos,incoming?.progressPhotos),restDays:diff(current?.restDays,incoming?.restDays)
   };
  }
+ // Read-only preflight for legacy JSON imports. Validate the recorded facts that
+ // schema migration must not silently change; extra derived identities are OK.
+ function auditImportPreservation(source,target){
+  const issues=[],counts={};
+  for(const key of ['workouts','workoutRevisions','prs','scheduledSessions']){
+   const before=Array.isArray(source?.[key])?source[key]:[],after=Array.isArray(target?.[key])?target[key]:[];
+   counts[key]={before:before.length,after:after.length};
+   if(before.length!==after.length)issues.push(key+': record count changed during migration');
+   const identities=rows=>rows.map(row=>row?.id==null?null:String(row.id)).filter(Boolean).sort();
+   if(before.every(row=>row?.id!=null)&&JSON.stringify(identities(before))!==JSON.stringify(identities(after)))issues.push(key+': record identities changed during migration');
+  }
+  for(const key of ['unit','measureUnit'])if(source?.[key]!==undefined&&source[key]!==target?.[key])issues.push(key+': original display unit changed');
+  const incoming=Array.isArray(source?.workouts)?source.workouts:[],current=Array.isArray(target?.workouts)?target.workouts:[];
+  for(let i=0;i<incoming.length;i++){
+   const old=incoming[i],record=old?.id!=null?current.find(w=>String(w?.id)===String(old.id)):current[i];
+   if(!old||!record){issues.push('Workout '+(i+1)+': original record unavailable');continue;}
+   if(old.date!==undefined&&old.date!==record.date)issues.push('Workout '+(i+1)+': recorded date changed');
+   const a=old.exercises||[],b=record.exercises||[];
+   if(a.length!==b.length){issues.push('Workout '+(i+1)+': exercise count changed');continue;}
+   for(let j=0;j<a.length;j++){
+    const sets=a[j]?.sets||[],restored=b[j]?.sets||[];
+    if(sets.length!==restored.length){issues.push('Workout '+(i+1)+', exercise '+(j+1)+': set count changed');continue;}
+    for(let k=0;k<sets.length;k++)for(const field of ['weight','reps','rpe','duration','completed','loadConvention'])
+     if(Object.hasOwn(sets[k]||{},field)&&JSON.stringify(sets[k][field])!==JSON.stringify(restored[k]?.[field]))issues.push('Workout '+(i+1)+', exercise '+(j+1)+', set '+(k+1)+': '+field+' changed');
+   }
+  }
+  return {version:1,status:issues.length?'blocking':'pass',sourceSchema:Number(source?.schemaVersion)||null,targetSchema:Number(target?.schemaVersion)||null,unit:target?.unit||null,counts,issues:issues.slice(0,20),issueCount:issues.length,notes:'Checks recorded identities, dated work, set values, unit selection, revisions and PR counts. This is a migration preflight, not a substitute for testing a restored backup on a separate device.'};
+ }
  function addRecoverySnapshot(target,source,label,{now=new Date().toISOString(),id}={}){
   if(!iso(now))throw Error('Invalid recovery snapshot time.');const next=clone(target)||{},payload=clone(source)||{};delete payload.recoverySnapshots;
   const snapshot={id:String(id||('recovery_'+hash(now+Math.random()))),createdAt:now,label:name(label)||'Recovery snapshot',payload:JSON.stringify(payload),fingerprintVersion:1,fingerprint:fingerprint(payload)};
@@ -223,5 +251,5 @@
   state.workouts=(state.workouts||[]).filter(w=>String(w.id)!==String(revision.workoutId));if(revision.before)state.workouts.push(clone(revision.before));state.workouts.sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.id).localeCompare(String(a.id)));
   state.workoutRevisions.push({id:String(id||('revision_'+hash(now+revision.id+Math.random()))),workoutId:revision.workoutId,recordedAt:now,action:'undo',targetRevisionId:revision.id,before:clone(revision.after),after:clone(revision.before)});return state;
  }
- return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,auditTrainingData,auditRelationships,auditReliability,addBackupManifest,verifyBackupManifest,previewImport,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
+ return {nameKey,compactKey,stableExerciseId,resolveExercise,normalizeState,mergeExercises,auditTrainingData,auditRelationships,auditReliability,addBackupManifest,verifyBackupManifest,previewImport,auditImportPreservation,addRecoverySnapshot,restoreRecoverySnapshot,appendWorkoutRevision,undoableWorkoutRevisions,undoWorkoutRevision};
 });

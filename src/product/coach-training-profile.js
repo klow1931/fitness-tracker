@@ -20,13 +20,32 @@
   if(!found.length||found.length>7||new Set(found).size!==found.length||!/^[\s,&]*(?:and[\s,&]*)*$/i.test(remainder))return null;
   return {kind:'training-days',availableDays:found.sort((a,b)=>a-b),baseRevisionId:record.id};
  }
+ function fieldProposal(question,record){
+  if(!record)return null;const q=clean(question);
+  const equipment=q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(?:my\s+)?equipment\s+(?:to|as)\s+(.+?)[.!?]?$/i)
+   ||q.match(/^(?:please\s+)?use\s+(.+?)\s+as\s+my\s+equipment[.!?]?$/i);
+  if(equipment){
+   const found=[],rest=equipment[1].replace(/\b(barbell|plates|rack|bench)\b/gi,word=>{found.push(word.toLowerCase());return '';}).replace(/\b(suitable|squat)\b/gi,'');
+   if(found.length&&new Set(found).size===found.length&&/^[\s,&]*(?:and[\s,&]*)*$/i.test(rest))
+    return {kind:'profile-fields',changes:{equipment:found.sort()},baseRevisionId:record.id};
+   return null;
+  }
+  const minutes=q.match(/^(?:please\s+)?(?:set|change|make)\s+(?:my\s+)?(?:session time|session length|time per session)\s+to\s+(\d{2,3})\s+minutes?[.!?]?$/i);
+  if(minutes){const value=Number(minutes[1]);return value>=30&&value<=240?{kind:'profile-fields',changes:{sessionMinutes:value},baseRevisionId:record.id}:null;}
+  const priority=q.match(/^(?:please\s+)?(?:set|change)\s+(?:my\s+)?(?:training priority|training priorities)\s+to\s+(.+?)[.!?]?$/i);
+  if(priority&&priority[1].trim().length<=1000)return {kind:'profile-fields',changes:{priorities:priority[1].trim()},baseRevisionId:record.id};
+  return null;
+ }
  function answer(state,question,{asOf,history=[]}={}){
   const q=clean(question);
   if(!q||Support.health(String(question||'')))return null;
   let saved=null;try{saved=Profile.current(state.programmingProfiles||[],asOf?asOf+'T23:59:59.999Z':undefined);}catch{/* The existing explicit setup-query error route below explains invalid saved data. */}
-  const proposed=dayProposal(q,saved);
-  if(proposed){const names=proposed.availableDays.map(i=>days[i]).join(', '),before=saved.context.availableDays.map(i=>days[i]).join(', ');
-   return {text:'Review requested training days: '+names+'. Current saved availability: '+before+'. Nothing has changed. Open the review card and explicitly save the revised training setup if it is correct. Existing scheduled workouts stay unchanged.',source:'Saved training preferences · proposed change',readOnly:true,evidence:[{before:saved.context.availableDays,proposed:proposed.availableDays}],intent:{topic:'training-preferences'},actions:[{kind:'profile-review',label:'Review training days before saving',proposal:proposed}]};}
+  const proposed=dayProposal(q,saved)||fieldProposal(q,saved);
+  if(proposed){const change=proposed.kind==='training-days'?{key:'availableDays',old:saved.context.availableDays,value:proposed.availableDays,label:'training days',format:rows=>rows.map(i=>days[i]).join(', ')}:
+   proposed.changes.equipment?{key:'equipment',old:saved.context.equipment,value:proposed.changes.equipment,label:'equipment',format:rows=>rows.join(', ')}:
+   Object.hasOwn(proposed.changes,'sessionMinutes')?{key:'sessionMinutes',old:saved.context.sessionMinutes,value:proposed.changes.sessionMinutes,label:'session time',format:n=>n+' minutes'}:
+   {key:'priorities',old:saved.context.priorities,value:proposed.changes.priorities,label:'training priority',format:s=>s||'none'};
+   return {text:'Review requested '+change.label+': '+change.format(change.value)+'. Current saved '+change.label+': '+change.format(change.old)+'. Nothing has changed. Open the review card and explicitly save the revised training setup if it is correct. Existing scheduled workouts stay unchanged.',source:'Saved training preferences · proposed change',readOnly:true,evidence:[{field:change.key,before:change.old,proposed:change.value}],intent:{topic:'training-preferences'},actions:[{kind:'profile-review',label:'Review '+change.label+' before saving',proposal:proposed}]};}
   // Dedicated movement-reference and sport-goal tools take precedence.
   // Saved Profile equipment is not the equipment needed for an exercise.
   if(/\bequipment\s+(?:for|needed for|used for)\b/i.test(q)||/\b(?:review|analyse|analyze|compare|evaluate)\b.*\b(?:sport|training)\s+goal\b/i.test(q))return null;

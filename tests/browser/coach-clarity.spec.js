@@ -40,6 +40,28 @@ test('stale chat preference cannot overwrite a newer training setup',async({page
  await expect(page.locator('#programming-profile-dialog')).not.toBeVisible();
  expect(await page.evaluate(()=>LoadnoteProgrammingProfile.current(data.programmingProfiles).context.notes)).toBe('Newly saved elsewhere');
 });
+test('Coach can propose equipment, time and priorities but saves each only through reviewed Profile',async({page})=>{
+ const initial=await page.evaluate(()=>({profile:data.programmingProfiles.length,workouts:JSON.stringify(data.workouts)}));
+ const equipment=await ask(page,'Set my equipment to barbell, plates, rack and bench');
+ await expect(equipment).toContainText('Nothing has changed');
+ await press(equipment.getByRole('button',{name:'Review equipment before saving'}));
+ const dialog=page.locator('#programming-profile-dialog');await expect(dialog.getByLabel('Review coaching preference')).toContainText('Requested equipment: barbell, bench, plates, rack');
+ await dialog.locator('#profile-close').click();expect(await page.evaluate(()=>data.programmingProfiles.length)).toBe(initial.profile);
+ await press(equipment.getByRole('button',{name:'Review equipment before saving'}));await dialog.getByRole('button',{name:'Save programming profile'}).click();await expect(dialog).toBeHidden();
+ const minutes=await ask(page,'Set my session time to 75 minutes');await press(minutes.getByRole('button',{name:'Review session time before saving'}));
+ await expect(dialog.getByLabel('Review coaching preference')).toContainText('Requested session time: 75 minutes');
+ await dialog.getByRole('button',{name:'Save programming profile'}).click();await expect(dialog).toBeHidden();
+ const priority=await ask(page,'Set my training priority to bench technique');await press(priority.getByRole('button',{name:'Review training priority before saving'}));
+ await expect(dialog.getByLabel('Review coaching preference')).toContainText('Requested training priority: bench technique');
+ await dialog.getByRole('button',{name:'Save programming profile'}).click();await expect(dialog).toBeHidden();
+ const after=await page.evaluate(()=>({profile:data.programmingProfiles.length,setup:LoadnoteProgrammingProfile.current(data.programmingProfiles).context,workouts:JSON.stringify(data.workouts)}));
+ expect(after.profile).toBe(initial.profile+3);expect(after.setup.equipment).toEqual(['barbell','bench','plates','rack']);expect(after.setup.sessionMinutes).toBe(75);expect(after.setup.priorities).toBe('bench technique');expect(after.workouts).toBe(initial.workouts);
+});
+test('Coach evidence offers a direct, read-only route to the workout logger',async({page})=>{
+ const before=await page.evaluate(()=>JSON.stringify(data.workouts)),reply=await ask(page,'Summarize my training');
+ await press(reply.getByRole('button',{name:'Open workout logger'}));
+ await expect(page.locator('#panel-dashboard')).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
+});
 test('20-week powerlifting request carries its duration into reviewed meet lift setup',async({page})=>{
  const initial=await ask(page,'Create a 20-week strength program three days per week 60 minutes full gym');
  await expect(initial).toContainText('not silently shorten');
@@ -64,5 +86,10 @@ test('20-week powerlifting request carries its duration into reviewed meet lift 
  await expect(timeline).toContainText('20 weeks requested');
  await timeline.locator('#cycle-form button[type=submit]').click();await expect(timeline.locator('#cycle-error')).toBeEmpty();
  await expect(timeline.locator('#cycle-preview')).toContainText('20 weeks');
+ await expect(timeline.locator('[data-meet-full-timeline]')).toContainText('Complete 20-week timeline');
+ await expect(timeline.locator('[data-meet-stage]')).toHaveCount(5);
+ await expect(timeline.locator('[data-meet-stage="mock-meet"]')).toContainText('0 sessions');
+ const chosenDays=await page.evaluate(()=>data.phasePrograms.at(-1).config.days.map(d=>['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][d]).join(', '));
+ await expect(timeline.locator('[data-meet-full-timeline]')).toContainText(chosenDays);
  expect(await page.evaluate(()=>data.meetCycles.length)).toBe(0);
 });

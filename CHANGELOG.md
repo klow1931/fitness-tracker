@@ -1,3 +1,14 @@
+# v3.60.0 — Unified Athlete Confidence & Meet-Prep Experience
+
+- Combine legacy-backup recovery confidence, direct Coach actions and an end-to-end meet timeline into one update built on v3.59.
+- Before replacing local data, check legacy workout identities, workout dates, set load/reps/effort, revision/PR counts and displayed units after schema migration. Block replacement if these recorded facts unexpectedly change; flag legacy backups without a verified fingerprint.
+- Reject a restore confirmation when local data changed since the review opened. Failed persistence must not reset in-memory state to a stale snapshot.
+- Allow exact chat proposals for training equipment, session length and coaching priorities, using the existing version-checked Profile review and athlete Save. Chat remains read-only; existing workouts and scheduled programs are not rewritten.
+- Connect Coach's logged-evidence replies to the real Progress page, workout logger or movement mapping review without creating a prescription.
+- Show one five-stage 7–52-week meet-prep timeline, reviewed training days/budget, exact week ranges, planned sessions and existing Calendar conflicts. Scheduling still requires separate approval and fails closed on overlaps.
+- Expand synthetic schema-22/lb migration, stale-save, Coach proposal, full-cycle and WebKit native-restore tests; no personal athlete export is in CI.
+- v3.60.0 / native build 33404; schema 32 and canonical internal kg remain unchanged. No real-device or multi-athlete acceptance is claimed.
+
 # v3.59.0 — Coach Clarity & First-Week Experience
 
 - Present short, actionable offline training recaps, trend explanations and program-next steps with full source evidence in expandable Coach details.

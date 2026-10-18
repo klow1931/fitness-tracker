@@ -4,10 +4,10 @@ const incoming={schemaVersion:25,unit:'kg',workouts:[{id:'replacement',date:'202
 const button={disabled:false},cancel={disabled:false},messages=[];
 const context={data:original,saveTimer:0,clearTimeout(){},document:{addEventListener(){},getElementById:id=>id==='confirm-import-review'?button:cancel},LoadnoteIntegrity:require('../src/product/data-integrity'),persistNow:async()=>{throw Error('quota failure');},reportStorageFailure:error=>messages.push(error.message),showToast:message=>messages.push(message)};
 vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../src/product/data-transfer'),'utf8'),context);
-vm.runInContext('pendingImportReview={incoming,previousState:data}',Object.assign(context,{incoming}));
+vm.runInContext('pendingImportReview={incoming,previousState:data,expectedState:JSON.stringify(data),migration:{status:"pass"}}',Object.assign(context,{incoming}));
 (async()=>{
  const before=JSON.stringify(original);await context.commitImportReview();
  assert.equal(context.data,original);assert.equal(JSON.stringify(original),before);assert.equal(button.disabled,false);assert.equal(cancel.disabled,false);
- assert(messages.includes('quota failure'));assert(messages.at(-1).includes('Current data is unchanged'));
+ assert(messages.includes('quota failure'));assert(messages.at(-1).includes('Current data was not replaced'));
  console.log('Failed restore persistence leaves original in-memory data unchanged and controls retryable');
 })().catch(error=>{console.error(error);process.exitCode=1;});

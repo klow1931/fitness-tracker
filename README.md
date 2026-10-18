@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.59.0 · Development build.**
+**v3.60.0 · Development build.**
+
+Unified Athlete Confidence: [v3.60 release notes](docs/releases-v3.60.md). A read-only migration preflight checks legacy backup record identities, counts, set values, and display units before replacement; stale import previews cannot overwrite newer local work. Coach can propose reviewed equipment, session duration and training priorities, with direct navigation to relevant evidence or the logger. Meet prep now summarizes the entire reviewed timeline, selected days and current Calendar conflicts in one place. [Combined device and athlete acceptance](docs/unified-v3.60-pilot.md) remains mandatory before release.
 
 Coach Clarity & First-Week Experience: [v3.59 release notes](docs/releases-v3.59.md). Coach training summaries now lead with observed work, its limitations and a next step, with detailed evidence expandable. Longer explicit meet-prep requests retain duration and setup through the existing athlete-reviewed event timeline. Chat-proposed weekdays require a version-checked Profile review and separate Save; they never silently persist.
 

@@ -77,6 +77,17 @@
    }
    return {meetDate:raw?.meetDate||null,eventType:eventType(raw),eventName:raw?.eventName||'',phaseOverride:override?copy(override):null};
  }
+ function timeline(proposal,state={}){
+   if(!proposal?.config||!Array.isArray(proposal.weekly))throw Error('A reviewed meet timeline is required');
+   const label={accumulation:'Accumulation',strength:'Strength',peaking:'Peak',taper:'Taper','mock-meet':'Mock meet',meet:'Competition meet'},stages=[];
+   for(const week of proposal.weekly){
+     const previous=stages.at(-1);
+     if(previous?.phase===week.phase){previous.lastWeek=week.week;previous.endDate=week.endDate;previous.weeks++;previous.sessions+=week.sessionCount;}
+     else stages.push({phase:week.phase,label:label[week.phase]||week.phase,firstWeek:week.week,lastWeek:week.week,startDate:week.startDate,endDate:week.endDate,weeks:1,sessions:week.sessionCount});
+   }
+   const conflicts=Schedule.list(state.scheduledSessions||[]).filter(s=>s.status==='scheduled'&&s.date>=proposal.config.startDate&&s.date<=proposal.config.meetDate);
+   return {version:1,totalWeeks:proposal.config.weeks,startDate:proposal.config.startDate,eventDate:proposal.config.meetDate,eventType:eventType(proposal.config),stages,conflicts:conflicts.map(s=>({id:s.id,date:s.date,name:s.name})),plannedSessions:proposal.sessions.length};
+ }
  function legacyPlanningInput(c){return {meetDate:c.meetDate,eventType:eventType(c),eventName:c.eventName||'',phaseOverride:{accumulationWeeks:c.accumulationWeeks,strengthWeeks:c.strengthWeeks,peakWeeks:c.peakWeeks,taperWeeks:c.taperWeeks}};}
  function comparablePlanningDecision(value){const out=copy(value);if(out){delete out.cutoff;delete out.inputFingerprint;delete out.decisionFingerprint;}return out;}
  function comparablePrepared(value){const out=copy(value);if(out?.planningDecision)out.planningDecision=comparablePlanningDecision(out.planningDecision);return out;}
@@ -150,5 +161,5 @@
    record.scheduledAt=now;
    return {...state,meetCycles:validate(all),scheduledSessions:sessions};
  }
- return {POLICY,EVENT_TYPES,eventType,config,build,prepare,validate,save,schedule,planningInput};
+ return {POLICY,EVENT_TYPES,eventType,config,build,prepare,validate,save,schedule,planningInput,timeline};
 });

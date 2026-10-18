@@ -15,17 +15,19 @@
     async function commitImportReview(){
       if(!pendingImportReview)return;
       const button=document.getElementById('confirm-import-review'),cancel=document.getElementById('cancel-import-review');button.disabled=true;cancel.disabled=true;
-      const {incoming,previousState}=pendingImportReview;
+      const {incoming,previousState,expectedState,migration}=pendingImportReview;let attemptedPersist=false;
       try{
+        if(migration.status!=='pass')throw Error('Import preflight found changed training records. Keep the original backup and investigate before restoring.');
+        if(JSON.stringify(data)!==expectedState)throw Error('Training data changed after the import preview. Cancel and review the backup again.');
         let next=LoadnoteIntegrity.addRecoverySnapshot(incoming,previousState,'Before JSON import');
-        clearTimeout(saveTimer);await persistNow(next);
+        clearTimeout(saveTimer);attemptedPersist=true;await persistNow(next);
         data=next;invalidateViews();applyDark();updateUnitToggle();closeImportReview();showTab('dashboard');window.renderDataIntegrityTools?.();updateBackupBanner();
         showToast('Import complete · previous data saved in Recovery snapshots','success');
       }catch(error){
-        data=previousState;button.disabled=false;cancel.disabled=false;reportStorageFailure(error);showToast('Import could not be saved. Current data is unchanged.','error');
+        button.disabled=migration.status!=='pass';cancel.disabled=false;if(attemptedPersist)reportStorageFailure(error);showToast('Import could not be saved. Current data was not replaced. '+error.message,'error');
       }
     }
-    function showImportReview(fileName,backup,preview,reliability,incoming,previousState){
+    function showImportReview(fileName,backup,preview,reliability,incoming,previousState,migration){
       const dialog=document.getElementById('import-review'),host=document.getElementById('import-review-content'),source=document.getElementById('import-review-source');
       if(!dialog||!host)throw Error('Import review is unavailable.');
       const health=reliability.training,relationships=reliability.relationships;
@@ -39,6 +41,9 @@
       const linkDetail=relationships.blocking
         ?relationships.blocking+' blocking relationship issue(s) must be reviewed before adaptive evidence is trusted.'
         :relationships.warnings?relationships.warnings+' revision-history warning(s); current workout/Calendar relationships remain usable.':'Workout, Calendar, and planned-work references passed relationship checks.';
+      const migrated=migration.status==='pass';
+      const migrationDetail='Schema '+(migration.sourceSchema??'unknown')+' → '+(migration.targetSchema??'unknown')+' · '+migration.counts.workouts.after+' workouts · '+migration.counts.workoutRevisions.after+' workout revisions · '+migration.counts.prs.after+' PRs · '+(migration.unit||'unknown')+' display.'+
+        (migrated?' Original workout identities, dates, set values, record counts and display-unit selection passed preservation checks.':' '+migration.issueCount+' preservation issue(s): '+migration.issues.join('; ')+'. Import is blocked until the source data can be reviewed.');
       const rows=[
         ['Workouts',preview.workouts],['Calendar sessions',preview.scheduledSessions],['Workout revisions',preview.workoutRevisions],
         ['Training blocks',preview.trainingBlocks],['Meet cycles',preview.meetCycles],['Athlete goals',preview.athleteGoals],
@@ -52,12 +57,13 @@
       source.textContent=(fileName||'JSON backup')+' · This will replace local structured data only after you confirm.';
       host.innerHTML='<div class="import-review-status">'+
         '<article data-import-check="backup"><span>Backup file</span><b>'+importEsc(backupTitle)+'</b><small>'+importEsc(backupDetail)+'</small></article>'+
+        '<article data-import-check="migration"><span>Migration preflight</span><b>'+importEsc(migrated?'Recorded history preserved':'Import blocked · records changed')+'</b><small>'+importEsc(migrationDetail)+'</small></article>'+
         '<article data-import-check="training"><span>Training data</span><b>'+importEsc(healthTitle)+'</b><small>'+importEsc(healthDetail)+'</small></article>'+
         '<article data-import-check="links"><span>Record links</span><b>'+importEsc(linkTitle)+'</b><small>'+importEsc(linkDetail)+'</small></article>'+
        '</div><div class="import-review-changes"><h3>What will change</h3>'+rows.map(([label,row])=>importChangeRow(label,row)).join('')+'</div>'+
        '<p class="import-review-recovery"><b>Recovery protection:</b> Loadnote will save your current data as an automatic recovery snapshot before replacement. Import does not silently merge conflicting records.</p>';
-      pendingImportReview={incoming,previousState,backup,preview,reliability,fileName};
-      document.getElementById('confirm-import-review').disabled=false;document.getElementById('cancel-import-review').disabled=false;
+      pendingImportReview={incoming,previousState,expectedState:JSON.stringify(previousState),migration,backup,preview,reliability,fileName};
+      document.getElementById('confirm-import-review').disabled=!migrated;document.getElementById('cancel-import-review').disabled=false;
       if(!dialog.open)dialog.showModal();
     }
     function handleImport(ev) {
@@ -85,8 +91,8 @@
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);
           parsed.exerciseRoles = LoadnoteReadiness.validate(parsed.exerciseRoles === undefined ? [] : parsed.exerciseRoles);
-          const incoming=normalizeDataShape(parsed),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming);
-          showImportReview(file.name,backup,preview,reliability,incoming,previousState);
+          const incoming=normalizeDataShape(parsed),migration=LoadnoteIntegrity.auditImportPreservation(parsed,incoming),preview=LoadnoteIntegrity.previewImport(data,incoming),reliability=LoadnoteIntegrity.auditReliability(incoming);
+          showImportReview(file.name,backup,preview,reliability,incoming,previousState,migration);
         } catch (e) {
           data = previousState;ev.target.value='';alert('Import failed: ' + e.message);
         }

@@ -13,6 +13,7 @@ for(const weeks of [8,12,16,20,26,52]){
  assert(p.sessions.every(s=>s.date<date(weeks)&&s.week<weeks));
  assert.deepEqual(p.sessions.filter(s=>s.phase==='taper').flatMap(s=>s.exercises).flatMap(e=>e.sets).map(s=>s.targetRpe),[6,6,6]);
  assert.equal(p.config.accumulationWeeks+p.config.strengthWeeks+p.config.peakWeeks+p.config.taperWeeks+1,weeks);
+ const line=Meet.timeline(p,reviewed);assert.equal(line.totalWeeks,weeks);assert.equal(line.stages.reduce((n,s)=>n+s.weeks,0),weeks);assert.equal(line.stages[0].phase,'accumulation');assert.equal(line.stages.at(-1).sessions,0);assert.equal(line.eventDate,date(weeks));
  assert(p.qualityGate);assert.notEqual(p.qualityGate.status,'blocking');assert.equal(p.qualityGate.weekly.length,weeks);
  assert(p.sessions.every(s=>s.exercises.every(e=>e.sets.every(set=>set.weight>0&&set.weight<=e.trainingMaxKg*.85+.001))));
  if(weeks>16)assert(p.warnings.some(w=>w.includes('six progressive weeks')));
@@ -36,6 +37,7 @@ assert(scheduled.scheduledSessions.every(s=>s.revisions[0].context.date!==date(1
 assert.deepEqual(scheduled.meetCycles[0].sessions,p.sessions,'Immutable original');
 assert.throws(()=>Meet.schedule(scheduled,'meet12',{...args,now:'2026-09-24T14:00:00.000Z'}));
 const conflict={...saved,scheduledSessions:Schedule.create([],{date:p.sessions[0].date,name:'Existing',role:'mixed',goal:'Other',prescription:scheduled.scheduledSessions[0].revisions[0].context.prescription},{id:'occupied',now:args.now})};
+assert.equal(Meet.timeline(p,conflict).conflicts.length,1);assert.equal(Meet.timeline(p,reviewed).conflicts.length,0);
 assert.throws(()=>Meet.schedule(conflict,'meet12',{...args,now:'2026-09-24T14:00:00.000Z'}),/Calendar conflict/);
 const altered=structuredClone(saved.meetCycles);altered[0].sessions[0].exercises[0].sets[0].weight=999;
 assert.throws(()=>Meet.validate(altered),/differs/);

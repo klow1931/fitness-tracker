@@ -25,6 +25,8 @@ test('native shared JSON restores training, program history and units after rest
  await page.evaluate(async()=>{data.workouts=[];data.programs=[];data.unit='kg';await persistNow(data);});
  await upload(page,text);await expect(page.locator('#import-review')).toBeVisible();
  await expect(page.locator('[data-import-check="backup"]')).toContainText('verified');
+ await expect(page.locator('[data-import-check="migration"]')).toContainText('Recorded history preserved');
+ await expect(page.locator('[data-import-check="migration"]')).toContainText('lb display');
  await page.locator('#confirm-import-review').click();await expect(page.locator('#import-review')).toBeHidden();
  expect(await snapshot(page)).toEqual(before);
  expect(await page.evaluate(()=>data.recoverySnapshots.length)).toBeGreaterThan(0);
@@ -47,4 +49,11 @@ test('failed native restore remains reviewable and never replaces durable traini
  await page.locator('#confirm-import-review').click();await expect(page.locator('#toast-host')).toContainText('Import could not be saved');
  await expect(page.locator('#import-review')).toBeVisible();await expect(page.locator('#confirm-import-review')).toBeEnabled();expect(await snapshot(page)).toEqual(before);
  await page.locator('#cancel-import-review').click();await page.reload();await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);expect(await snapshot(page)).toEqual(before);
+});
+test('a stale import preview cannot overwrite newly changed local training',async({page})=>{
+ const text=await backup(page);await upload(page,text);await expect(page.locator('#import-review')).toBeVisible();
+ await page.evaluate(()=>{data={...data,workouts:[{...data.workouts[0],notes:'New session edit after preview'}]};});
+ await page.locator('#confirm-import-review').click();await expect(page.locator('#toast-host')).toContainText('Training data changed after the import preview');
+ expect(await page.evaluate(()=>data.workouts[0].notes)).toBe('New session edit after preview');
+ await page.locator('#cancel-import-review').click();
 });
