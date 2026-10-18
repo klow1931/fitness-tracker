@@ -39,6 +39,11 @@
     // Cancelling the touchend default suppresses that compatibility click.
     let touchStart=null,lastHandledTouch=-Infinity;
     b.style.touchAction='manipulation';
+    // Safari can scroll the overflowing chat when mouse-down focuses a
+    // button, moving it away from the held pointer before release.
+    // Mouse click still activates normally; keyboard click (detail === 0)
+    // retains native focus and accessibility behavior.
+    b.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
     b.addEventListener('touchstart',event=>{
       const touch=event.touches?.[0];
       touchStart=touch?{id:touch.identifier,x:touch.clientX,y:touch.clientY}:null;

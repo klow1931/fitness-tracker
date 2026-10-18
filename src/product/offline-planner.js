@@ -8,7 +8,7 @@
  const normalize=q=>String(q||'').toLowerCase().replace(/[’‘]/g,"'").replace(/[-–]/g,' ').replace(new RegExp('\\b('+Object.keys(words).join('|')+')\\b','g'),w=>words[w]).replace(/\s+/g,' ').trim().slice(0,500);
  const profile=state=>Profile.current(state.programmingProfiles||[])?.context||null;
  function parse(question,previous=null){
-  const q=normalize(question),start=/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q);
+  const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),start=!blocked&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q));
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
   const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating)\b/.test(q));
   if(!start&&!follow)return null;
@@ -72,7 +72,7 @@
   const last=history.at(-1),previous=last?.role==='assistant'?last.planning:null;
   const r=parse(question,previous);if(!r)return null;
   const missing=gaps(r,state),text=summary(r)+'. '+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');
-  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],actions:missing.length?(r.unsupportedDomain||r.meet?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
+  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:[],actions:missing.length?(r.unsupportedDomain||r.meet?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
  }
  function candidates(state,r,{excludedExerciseIds=[],requireMapped=false}={}){
   const p=profile(state),preferred=new Set(p?.preferredExerciseIds||[]),excluded=new Set([...(p?.avoidedExerciseIds||[]),...excludedExerciseIds]),roleRows=Roles.list(state.exerciseRoles||[]);
