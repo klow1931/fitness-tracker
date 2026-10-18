@@ -1,3 +1,11 @@
+# v3.53 — Phase 5: Long-term adaptive coaching
+
+- Added a date-bounded, read-only longitudinal Coach that combines the current saved training phase, exact accepted-adaptation outcomes, confirmed athlete preferences and existing reviewed next-workout actions.
+- Reuses deterministic Learning and Lifecycle tools; observed associations never become causal claims or unapproved new loading recommendations.
+- Displays a compact expandable long-term coaching card under Coach, with an action that routes only to the existing approved program review.
+- Adds Node and browser regressions for time cutoffs, absent/overlapping history, immutable workouts, training memory boundaries and mobile-safe output.
+- No data migration, new privacy collection, unit conversion or additional online/LLM dependency.
+
 # v3.48 — Phase 4: Offline Coach intelligence
 
 - Added bounded intent routing and a truthful guide to existing offline coaching capabilities.
