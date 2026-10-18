@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.60.0 · Development build.**
+**v3.61.0 · Development build.**
+
+Coach & Recovery Reliability: [v3.61 release notes](docs/releases-v3.61.md). Everyday phrases such as “Set my equipment to dumbbells and bench” and “Create a 20-week meet prep three days per week 60 minutes full gym” now route to athlete-reviewed actions. Import preflight checks original exercise names and identities, PR weights, revision payloads, schedules and other saved records, not just counts. The optional first-workout guide walks new users through movements, fresh loads, effort and review without inventing a weight. The [v3.61 real-athlete pilot plan](docs/v3.61-athlete-pilot.md) defines the remaining physical-device and acceptance gates.
 
 Unified Athlete Confidence: [v3.60 release notes](docs/releases-v3.60.md). A read-only migration preflight checks legacy backup record identities, counts, set values, and display units before replacement; stale import previews cannot overwrite newer local work. Coach can propose reviewed equipment, session duration and training priorities, with direct navigation to relevant evidence or the logger. Meet prep now summarizes the entire reviewed timeline, selected days and current Calendar conflicts in one place. [Combined device and athlete acceptance](docs/unified-v3.60-pilot.md) remains mandatory before release.
 

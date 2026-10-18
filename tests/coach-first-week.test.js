@@ -16,9 +16,15 @@ for(const invalid of ['Use Monday, Monday as my training days','Use Monday and n
 assert.equal(JSON.stringify(state),before,'Chat suggestions cannot persist training preferences');
 for(const [query,field,expected] of [
  ['Set my equipment to barbell, plates, rack and bench','equipment',['barbell','bench','plates','rack']],
+ ['Set my equipment to dumbbells and bench','equipment',['bench']],
  ['Set my session time to 75 minutes','sessionMinutes',75],
  ['Set my training priority to bench technique','priorities','bench technique']
 ]){const reply=Coach.answer(state,query,{asOf:'2026-10-18'});assert.equal(reply.actions[0].kind,'profile-review',query);assert.deepEqual(reply.actions[0].proposal.changes[field],expected);assert.equal(reply.actions[0].proposal.baseRevisionId,Profile.current(state.programmingProfiles).id);}
+const mixed=Coach.answer(state,'Set my equipment to dumbbells and bench',{asOf:'2026-10-18'});
+assert.deepEqual(mixed.actions[0].proposal.changes.accessoryEquipment,['dumbbells']);assert.match(mixed.text,/Nothing has changed/);
+assert(!/Bench Press explanation/.test(mixed.text),'Preference requests cannot fall through to exercise descriptions');
+const ambiguous=Coach.answer(state,'Set my equipment to dumbbells or barbells',{asOf:'2026-10-18'});
+assert.match(ambiguous.text,/could not safely interpret/);assert.equal(ambiguous.actions.length,0);
 for(const query of ['Set my equipment to barbells or dumbbells','Set my session time to 900 minutes','Set my equipment to everything'])assert(!Coach.answer(state,query,{asOf:'2026-10-18'})?.actions?.some(a=>a.kind==='profile-review'),query);
 const recap=Recap.answer(state,'Summarize my training',{asOf:'2026-10-18'});
 assert(recap.clarity.happened&&recap.clarity.meaning&&recap.clarity.next);

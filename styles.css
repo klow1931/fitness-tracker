@@ -2064,3 +2064,12 @@ body.dark .weekly-target{border-color:#475569}
 .progress3-highlights small{font-size:.75rem;line-height:1.35;opacity:.8}
 .progress3-coverage{margin-bottom:.85rem}
 @media(max-width:430px){.progress3-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}.progress3-highlights article:last-child{grid-column:span 2}}
+
+/* The optional first-workout guide reveals one decision at a time on phones. */
+#offline-plan-dialog [hidden]{display:none!important}
+#offline-guide-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:.8rem 0}
+#offline-guide-status{flex:1 1 100%;font-weight:700;margin:0}
+#offline-guide-help{flex:1 1 100%;margin:0;line-height:1.45}
+#offline-plan-dialog [data-offline-movement]{min-width:0}
+#offline-plan-dialog [data-offline-input]{display:block;margin:.6rem 0}
+#offline-plan-dialog #offline-load-help,#offline-plan-dialog #offline-rpe-help{margin:.75rem 0}

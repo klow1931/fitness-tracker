@@ -62,6 +62,27 @@ test('Coach evidence offers a direct, read-only route to the workout logger',asy
  await press(reply.getByRole('button',{name:'Open workout logger'}));
  await expect(page.locator('#panel-dashboard')).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
 });
+test('ordinary dumbbell-and-bench equipment request opens a reviewed, non-mutating setup',async({page})=>{
+ const old=await page.evaluate(()=>({revisions:data.programmingProfiles.length,workouts:JSON.stringify(data.workouts)}));
+ const reply=await ask(page,'Set my equipment to dumbbells and bench');
+ await expect(reply).toContainText('Nothing has changed');
+ await press(reply.getByRole('button',{name:'Review equipment before saving'}));
+ const dialog=page.locator('#programming-profile-dialog');await expect(dialog).toBeVisible();
+ await expect(dialog.getByLabel('Review coaching preference')).toContainText('Requested equipment: bench, dumbbells');
+ await expect(dialog.locator('[data-profile-equipment][value="bench"]')).toBeChecked();
+ await expect(dialog.locator('[data-profile-accessory-equipment][value="dumbbells"]')).toBeChecked();
+ await dialog.locator('#profile-close').click();
+ expect(await page.evaluate(()=>({revisions:data.programmingProfiles.length,workouts:JSON.stringify(data.workouts)}))).toEqual(old);
+});
+test('direct plain-language 20-week meet prep starts a review instead of generic advice',async({page})=>{
+ const reply=await ask(page,'Create a 20-week meet prep three days per week 60 minutes full gym');
+ await expect(reply).toContainText('20 weeks');
+ await press(reply.getByRole('button',{name:'Review program request'}));
+ const dialog=page.locator('#offline-plan-dialog');await expect(dialog).toBeVisible();
+ await expect(dialog).toContainText('Meet-prep handoff');
+ await expect(dialog.locator('[data-offline-day]:checked')).toHaveCount(3);
+ expect(await page.evaluate(()=>data.meetCycles.length)).toBe(0);
+});
 test('20-week powerlifting request carries its duration into reviewed meet lift setup',async({page})=>{
  const initial=await ask(page,'Create a 20-week strength program three days per week 60 minutes full gym');
  await expect(initial).toContainText('not silently shorten');

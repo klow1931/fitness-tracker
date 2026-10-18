@@ -58,6 +58,22 @@ test('daily draft needs explicit loads and loads targets without actual effort o
  expect(await page.evaluate(()=>pendingPrescription.plannedExercises.every(e=>e.loadConvention==='per-hand'))).toBe(true);expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
  await page.reload({waitUntil:'domcontentloaded'});expect(await page.evaluate(()=>!!pendingPrescription)).toBe(true);
 });
+test('first workout offers one-question-at-a-time guidance without guessing a starting weight',async({page})=>{
+ const before=await page.evaluate(()=>JSON.stringify(data.workouts)),d=await daily(page);
+ await d.locator('#offline-guide-start').click();await expect(d.locator('#offline-guide-status')).toContainText('Step 1 of 4');
+ await expect(d.locator('[data-value=load]').first()).not.toBeVisible();
+ await d.locator('#offline-guide-next').click();await expect(d.locator('#offline-guide-status')).toContainText('Step 2 of 4');
+ await expect(d.locator('#offline-load-help')).toBeVisible();await d.locator('#offline-load-help summary').click();
+ await expect(d.locator('#offline-load-help')).toContainText('not infer a number');
+ await d.locator('#offline-guide-next').click();await expect(d.locator('#offline-plan-error')).toContainText('starting load');
+ for(const field of await d.locator('[data-value=load]').all())await field.fill('12');
+ await d.locator('#offline-guide-next').click();await expect(d.locator('#offline-guide-status')).toContainText('Step 3 of 4');
+ await expect(d.locator('#offline-guide-help')).toContainText('RPE 7');
+ await d.locator('#offline-guide-next').click();await expect(d.locator('#offline-guide-status')).toContainText('Step 4 of 4');
+ await d.locator('#offline-workout-confirm').check();await d.locator('#offline-review-targets').click();
+ await expect(d.locator('#offline-workout-preview')).toContainText('Review planned work');
+ expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
+});
 test('fresh review cannot replace an unfinished logger or silently use changed doses',async({page})=>{
  await page.evaluate(()=>{showTab('workouts');});await page.locator('.ex-name').fill('Keep my session');await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
  const d=await daily(page);await review(page,d);await d.locator('#offline-load-confirm').check();await d.locator('#offline-load-workout').click();await expect(d.locator('#offline-plan-error')).toContainText('has not been replaced');
