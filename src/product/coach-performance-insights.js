@@ -16,13 +16,19 @@
   const marker=candidates[0],story=Story.movementStory(state,marker,{asOf,weeks}),trend=story.direction;
   const valid=['higher','lower','similar'].includes(trend.status);
   const rpeDays=story.overall.capacityDays,baselineDays=story.baseline.capacityDays,recentDays=story.recent.capacityDays;
+  // Descriptive work remains useful without RPE, but is never an RPE-adjusted trend.
+  const earlier=story.days.filter(day=>day.date>=story.baseline.from&&day.date<=story.baseline.to).flatMap(day=>day.sets);
+  const newer=story.days.filter(day=>day.date>=story.recent.from&&day.date<=story.recent.to).flatMap(day=>day.sets);
+  const sameRepIncrease=newer.flatMap(latest=>earlier.filter(first=>first.reps===latest.reps&&latest.weight>first.weight).map(first=>({reps:latest.reps,fromKg:first.weight,toKg:latest.weight,fromDate:first.date,toDate:latest.date})))
+   .sort((a,b)=>(b.toKg-b.fromKg)-(a.toKg-a.fromKg)||b.toDate.localeCompare(a.toDate))[0]||null;
   return {status:valid?trend.status:'insufficient',lift,name:marker.name,asOf,weeks,unit,
    baselineDays,recentDays,allEvidenceDays:rpeDays,
    changePct:valid?trend.deltaPct:null,changeKg:valid?trend.deltaKg:null,
    baselineVolumeKg:story.baseline.volumeKg,recentVolumeKg:story.recent.volumeKg,
    baselineRpe:story.baseline.averageRpe,recentRpe:story.recent.averageRpe,
    explanation:trend.reason||trend.note||'Comparable data are unavailable.',
-   recentSets:story.recent.sets,
+   recentSets:story.recent.sets,recentSessions:story.recent.sessions,recentRpeSets:story.recent.rpeSets,
+   recentBestLoad:story.recent.bestLoad?{kg:story.recent.bestLoad.weight,reps:story.recent.bestLoad.reps,date:story.recent.bestLoad.date}:null,sameRepIncrease,
    notice:'An observed pattern cannot establish why it happened. Compare equivalent lifts, reps and effort, and review your existing plan before changing any loads.'};
  }
  function answer(state,question,{asOf,unit='kg',history=[]}={}){
@@ -43,7 +49,12 @@
   const comparison=report.changePct==null?'At least two usable capacity days are needed in both the first and last four weeks.':
    'The median of the daily best estimates changed '+(report.changePct>0?'+':'')+report.changePct+'% ('+(report.changeKg>0?'+':'')+fmt(report.changeKg)+').';
   const missing=report.recentSets>0&&report.recentDays===0?' Recent logged sets lack eligible RPE-aware capacity estimates.':'';
-  return {text:report.name+': '+outcome+' '+comparison+' First comparison window: '+report.baselineDays+' capacity days; most recent: '+report.recentDays+'. '+report.explanation+missing+' '+report.notice+' You can review the exact lift history in Progress and the next scheduled targets in Decisions.',
+  const best=report.recentBestLoad,matched=report.sameRepIncrease;
+  const observed=matched?'Recorded equal-rep work: '+fmt(matched.fromKg)+' × '+matched.reps+' on '+matched.fromDate+' → '+fmt(matched.toKg)+' × '+matched.reps+' on '+matched.toDate+'. This is a load milestone, not proof of improved RPE-adjusted capacity.':best?'Recent recorded set: '+fmt(best.kg)+' × '+best.reps+' on '+best.date+' (not adjusted for effort).':report.recentSessions+' logged training days in the most recent four weeks.';
+  const needed=report.status==='insufficient'?'To compare capacity, record valid actual RPE and completed working sets on at least '+Math.max(0,2-report.baselineDays)+' more earlier-window and '+Math.max(0,2-report.recentDays)+' more recent-window training days, using the same mapped lift. Historical gaps may require waiting for the next comparison window.':'Continue comparing equivalent lift identities, repetitions and effort before reviewing changes.';
+  const next='Keep logging actual sets and RPE; review comparable training in Progress and any adjustment in Decisions.';
+  return {text:report.name+': '+outcome+' '+comparison+' First comparison window: '+report.baselineDays+' capacity days; most recent: '+report.recentDays+'. '+observed+' '+needed+' '+report.explanation+missing+' '+report.notice+' You can review the exact lift history in Progress and the next scheduled targets in Decisions.',
+   clarity:{happened:report.name+': '+report.recentSessions+' training days and '+report.recentSets+' eligible working sets in the last 28 days. '+observed,meaning:outcome+' '+needed,next},
    source:'Offline Coach · corrected training trends',readOnly:true,evidence:[report],intent:{topic:'training-trend',lift},followUps:['Review my weekly training','Explain my next workout']};
  }
  return {focus,inspect,answer};

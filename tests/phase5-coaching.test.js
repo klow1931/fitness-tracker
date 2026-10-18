@@ -27,6 +27,8 @@ assert.deepEqual(report.unavailable,[]);
 assert.match(Long.explain(report,'journey'),/week 1 of 7/i);
 assert.match(Long.explain(report,'next'),/saved session alone does not authorize a new dose/i);
 assert.match(Long.explain(report,'memory'),/confirmed saved preferences, not memories inferred from chat/i);
+assert.match(Long.explain(report,'memory'),/Monday, Tuesday, Wednesday/);
+assert.doesNotMatch(Long.explain(report,'memory'),/Mon=0|0, 2, 4/);
 assert.match(Long.explain(report,'outcomes'),/No eligible approved adaptation/i);
 for(const [q,kind] of [
  ['Where am I in my program?','journey'],
@@ -47,6 +49,7 @@ for(const [q,kind] of [
 ]){assert.equal(Long.intent(q),kind,q);const response=Long.answer(state,q,{asOf:date,now});assert.equal(response.intent.kind,kind,q);assert.equal(response.readOnly,true);assert.equal(response.evidence[0].knownAt,now);}
 for(const q of ['My knee hurts','What is my bench training max?','Change my training automatically','Build a program','Why did my deadlift stall?','Hello','Use my injury history','Adjust 120 kg to 140 kg','Cancel the workout'])assert.equal(Long.intent(q),null,'No guessing or interception: '+q);
 const result=Coach.answer(state,'Should my next workout adapt?',{asOf:date,now});
+assert.equal(result.clarity.next,report.nextAction.label);
 assert.equal(result.source,'Offline Coach · longitudinal training');
 assert.equal(result.actions[0].kind,'lifecycle');
 assert.match(result.text,/existing review and athlete approval/i);

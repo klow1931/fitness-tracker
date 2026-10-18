@@ -54,7 +54,7 @@
   host.querySelectorAll('[data-cycle-current]').forEach(b=>b.addEventListener('click',()=>showCurrentProgram(b.dataset.cycleCurrent)));
   window.renderMockMeet?.();
  }
- function open(source){
+ function open(source,{request=null}={}){
   if(!source||busy)return;chosenSource=source;preview=null;
   let dlg=document.getElementById('cycle-dialog');if(!dlg){dlg=document.createElement('dialog');dlg.id='cycle-dialog';dlg.className='card schedule-dialog';document.body.append(dlg);}
   const start=source.config.startDate,profile=LoadnoteProgrammingProfile.current(data.programmingProfiles||[]),profileContext=profile?.context||null;
@@ -67,7 +67,11 @@
    '<button class="btn-primary" type="submit">Calculate & preview prep</button><div id="cycle-preview"></div><p id="cycle-error" role="alert"></p><button type="button" id="cycle-close" class="btn-secondary">Close</button></form>';
   const type=dlg.querySelector('#cycle-event-type'),name=dlg.querySelector('#cycle-event-name'),nameWrap=dlg.querySelector('#cycle-event-name-wrap'),dateLabel=dlg.querySelector('#cycle-date-label'),meet=dlg.querySelector('#cycle-meet-date'),customize=dlg.querySelector('#cycle-customize'),output=dlg.querySelector('#cycle-preview'),error=dlg.querySelector('#cycle-error');
   const syncType=()=>{const competition=type.value==='competition';nameWrap.hidden=!competition;nameWrap.style.display=competition?'grid':'none';name.required=competition;dateLabel.textContent=competition?'Competition meet date':'Mock meet date (Saturday or Sunday)';if(!competition)name.value='';};
-  const fallback=move(start,11*7+5),profileEventDay=profileContext?.eventDate?new Date(profileContext.eventDate+'T12:00:00Z').getUTCDay():null;if(profileContext?.eventDate&&!([0,6].includes(profileEventDay)))type.value='competition';meet.value=profileContext?.eventDate||fallback;syncType();
+  const requestedWeeks=Number.isInteger(request?.weeks)&&request.weeks>=7&&request.weeks<=52?request.weeks:null;
+  const fallback=move(start,(requestedWeeks||12)*7-2),profileEventDay=profileContext?.eventDate?new Date(profileContext.eventDate+'T12:00:00Z').getUTCDay():null;
+  if(request?.eventType==='competition'||!request&&profileContext?.eventDate&&!([0,6].includes(profileEventDay)))type.value='competition';
+  meet.value=requestedWeeks?fallback:profileContext?.eventDate||fallback;syncType();
+  if(requestedWeeks){const note=document.createElement('p');note.className='cycle-controller-summary';note.textContent='Coach handoff: '+requestedWeeks+' weeks requested. Event date '+fallback+' is a suggested review starting point, not an assumed meet registration. Confirm your actual date and event type; the full quality gate runs before saving.';dlg.querySelector('h2').after(note);}
   const invalidate=()=>{preview=null;output.replaceChildren();error.textContent='';};
   const fillCustom=p=>{for(const [id,key] of [['accumulation','accumulationWeeks'],['strength','strengthWeeks'],['peak','peakWeeks'],['taper','taperWeeks']])dlg.querySelector('#cycle-'+id).value=String(p.config[key]);};
   meet.addEventListener('input',invalidate);type.addEventListener('change',()=>{syncType();invalidate();});name.addEventListener('input',invalidate);customize.addEventListener('change',invalidate);

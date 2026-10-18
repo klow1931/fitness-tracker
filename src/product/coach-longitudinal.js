@@ -9,6 +9,7 @@
  const clean=x=>String(x||'').trim().replace(/\s+/g,' ').slice(0,500);
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
  const dayEnd=d=>d+'T23:59:59.999Z';
+ const weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
  const actions=new Set(['review-week','review-phase','resolve-overdue','start-workout','next-session','program-upcoming','resume-workout','resume-draft','review-next-program','review-handoff','save-transition','review-programs','review-hypertrophy','review-sport','wait-event','record-event','no-program','error']);
  const types={
   journey:/\b(where am i in (?:my |the )?(?:training |current )?(?:program|cycle|block)|what phase am i in|how far (?:am i|along) in my (?:training )?(?:program|cycle)|what comes after (?:this|my) (?:training )?(?:phase|block)|where is my training heading)\b/i,
@@ -71,7 +72,7 @@
   if(kind==='memory'){
    if(m.status!=='confirmed')return 'I have no confirmed saved training setup at this date. Review Profile → Training setup before I rely on goals, equipment or schedule preferences.';
    return 'Saved training setup (confirmed '+m.recordedAt.slice(0,10)+'): goal '+m.goal+'; experience '+(m.experience||'unconfirmed')+
-    '; availability '+(m.availableDays.length?m.availableDays.join(', ')+' (Mon=0)':'unconfirmed')+
+    '; availability '+(m.availableDays.length?m.availableDays.map(i=>weekdays[i]).filter(Boolean).join(', '):'unconfirmed')+
     '; session length '+(m.sessionMinutes??'unconfirmed')+' minutes; equipment '+(m.equipment.join(', ')||'unconfirmed')+
     '; preferred exercises '+(m.preferredMovements.join(', ')||'none confirmed')+
     '; excluded exercises '+(m.excludedMovements.join(', ')||'none confirmed')+
@@ -107,7 +108,9 @@
  function answer(state,question,options={}){
   const requested=intent(String(question||''));if(!requested)return null;
   try{const report=inspect(state,options),kind=requested;
-   return {text:explain(report,kind)+'\n\n'+report.notice,
+   const clarity=kind==='journey'&&report.program?{happened:report.program.name+' · week '+(report.program.week||'unknown')+' of '+(report.program.totalWeeks||'unknown')+(report.program.phase?' · '+report.program.phase:''),meaning:'This is your saved reviewed timeline, not a prediction of performance.',next:report.nextAction?.label||'Open Programs to review the current plan.'}:
+    kind==='next'?{happened:report.handoff?report.handoff.label:'Last linked workout evidence is not available for this next session.',meaning:report.nextSession?'Next scheduled: '+report.nextSession.date+' · '+report.nextSession.name+'. No automatic changes are authorized.':'No single upcoming scheduled workout was confirmed.',next:report.nextAction?.label||'Review the current program and Calendar.'}:null;
+   return {text:explain(report,kind)+'\n\n'+report.notice,clarity,
     source:'Offline Coach · longitudinal training',readOnly:true,
     intent:{topic:'longitudinal-training',kind},evidence:[report],
     actions:kind==='memory'?[]:[{kind:'lifecycle',label:'Review current program'}],

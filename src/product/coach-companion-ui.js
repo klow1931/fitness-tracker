@@ -85,6 +85,7 @@
   .cc-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 10px 8px 14px;border-bottom:1px solid #e2e8f0;background:#fff}.cc-head b{display:block}.cc-head small{display:block;color:#64748b;margin-top:3px}.cc-close{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border:0;border-radius:999px;background:transparent;font-size:24px;line-height:1;cursor:pointer;color:inherit}
   .cc-context{display:flex;flex:0 0 auto;gap:6px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid #e2e8f0}.cc-chip{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.cc-chip.live{background:#ecfdf5;color:#047857}
   .cc-messages{height:auto;min-height:120px;flex:1 1 300px;overflow:auto;overscroll-behavior:contain;padding:12px 14px;display:flex;flex-direction:column;gap:9px}.cc-msg{max-width:88%;padding:9px 11px;border-radius:13px;background:#f1f5f9;color:#0f172a;font-size:13px;line-height:1.4}.cc-msg.user{align-self:flex-end;background:#312e81;color:#fff}.cc-msg small{display:block;margin-top:5px;color:#64748b}.cc-msg.user small{color:#c7d2fe}
+  .cc-msg:has(.cc-clarity){max-width:96%}.cc-clarity p{margin:3px 0 9px}.cc-clarity b{font-size:12px}.cc-clarity details{border-top:1px solid #cbd5e1;padding-top:7px}.cc-clarity details p{white-space:pre-wrap;overflow-wrap:anywhere}.cc-clarity summary{cursor:pointer;font-weight:700}
   .cc-quick{display:flex;flex:0 0 auto;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
   .cc-form{display:flex;flex:0 0 auto;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
   body.dark .cc-head{background:#0f172a;border-color:#334155}body.dark .cc-head small{color:#94a3b8}body.dark .cc-close:hover{background:#1e293b}
@@ -120,6 +121,14 @@
  }
  function attachReply(message,reply){
   for(const host of [message,message?.fullView]){
+   if(host&&reply?.clarity&&reply?.readOnly!==false){
+    const c=reply.clarity;if(['happened','meaning','next'].every(key=>typeof c[key]==='string'&&c[key].trim())){
+     host.replaceChildren();const box=document.createElement('div');box.className='cc-clarity';
+     for(const [label,key] of [['What happened','happened'],['What it means','meaning'],['Your next action','next']]){const heading=document.createElement('b');heading.textContent=label;const p=document.createElement('p');p.textContent=c[key];box.append(heading,p);}
+     const detail=document.createElement('details'),summary=document.createElement('summary'),explanation=document.createElement('p');summary.textContent='Evidence and limitations';explanation.textContent=String(reply.text||'');detail.append(summary,explanation);box.append(detail);host.append(box);
+     const source=document.createElement('small');source.textContent=reply.source||'Built-in Coach';host.append(source);
+    }
+   }
    window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);
    // Include appended actions in the final scroll. Otherwise WebKit can move
    // a clipped button while focusing it between the press and release.

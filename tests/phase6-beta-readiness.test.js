@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const {check}=require('../scripts/check-beta-gates');
 const report=check();
-assert.equal(report.version,'3.58');
+assert.equal(report.version,require('../package.json').version);
 assert.equal(report.status,'source-gates-pass',JSON.stringify(report.checks.filter(c=>!c.ok)));
 assert(report.checks.length>=7);
 assert(report.checks.every(c=>c.ok));
