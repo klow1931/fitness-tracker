@@ -1,6 +1,6 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm'),path=require('path');
 function fixture(value){
- const context={console:{warn(){}},localStorage:{getItem:()=>value},window:{}};vm.createContext(context);
+ const context={console:{warn(){}},localStorage:{getItem:()=>value},window:{LoadnoteDeviceRecords:require('../src/product/device-records')}};vm.createContext(context);
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/product/state-store.js'),'utf8'),context);return context;
 }
 (async()=>{
