@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.61.0 · Development build.**
+**v3.62.0 · Development build.**
+
+Athlete Trust & Coaching Intelligence: [v3.62 release notes](docs/releases-v3.62.md). Tools now offers a local, copyable save-health report for testers without exposing training records, plus a read-only checker for saved backup files; saving via fallback storage is identified honestly. Offline Coach follows explicit corrections and asks when training days or workout duration conflict. Progress → Training Review includes a guarded, read-only planned-versus-logged snapshot for 7 or 28 days; the Coach can explain it on request. Actual restore testing and physical-device acceptance remain separate tasks.
 
 Coach & Recovery Reliability: [v3.61 release notes](docs/releases-v3.61.md). Everyday phrases such as “Set my equipment to dumbbells and bench” and “Create a 20-week meet prep three days per week 60 minutes full gym” now route to athlete-reviewed actions. Import preflight checks original exercise names and identities, PR weights, revision payloads, schedules and other saved records, not just counts. The optional first-workout guide walks new users through movements, fresh loads, effort and review without inventing a weight. The [v3.61 real-athlete pilot plan](docs/v3.61-athlete-pilot.md) defines the remaining physical-device and acceptance gates.
 

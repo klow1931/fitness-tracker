@@ -66,6 +66,10 @@
    }catch{return {text:'I could not validate the recorded lift history. Review exercise mappings and data health before interpreting it; no change is proposed.',source:'Recorded workout history unavailable',readOnly:true,evidence:[],intent};}
   }
   if(intent.topic!=='health'){
+   // An explicit prescribed-vs-actual question gets an observational view
+   // across logged programs without implying an automatic target change.
+   const execution=(typeof module==='object'&&module.exports?require('./workout-feedback'):globalThis.LoadnoteWorkoutFeedback)?.answer(state,q,{asOf,unit,now});
+   if(execution)return {...execution,intent};
    const weekly=(typeof module==='object'&&module.exports?require('./weekly-coaching'):globalThis.LoadnoteWeeklyCoaching)?.answer(state,intent.follow?intent.referenceQuestion:q,{asOf,unit,now});if(weekly)return {...weekly,intent};
    const longTerm=(typeof module==='object'&&module.exports?require('./coach-longitudinal'):globalThis.LoadnoteLongitudinalCoach)?.answer(state,q,{asOf,now});if(longTerm)return {...longTerm,intent:{...intent,...longTerm.intent}};
    const recap=(typeof module==='object'&&module.exports?require('./coach-evidence-brief'):globalThis.LoadnoteCoachEvidenceBrief)?.answer(state,q,{asOf});if(recap)return {...recap,intent:{...intent,...recap.intent}};

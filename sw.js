@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.61.0';
+const CACHE = 'loadnote-v3.62.0';
 const ASSETS = [
   './appearance.css',
   './src/product/appearance.js',
@@ -196,6 +196,8 @@ const ASSETS = [
   './src/product/nutrition-forms.js',
   './src/product/device-records.js',
   './src/product/state-store.js',
+  './src/product/save-diagnostics.js',
+  './src/product/save-diagnostics-ui.js',
   './src/product/units.js',
   './src/product/workout-form.js',
   './src/product/session-intent-ui.js',
@@ -234,6 +236,7 @@ const ASSETS = [
   './src/product/history-cleanup.js',
   './src/product/history-cleanup-ui.js',
   './src/product/training-review.js',
+  './src/product/workout-feedback.js',
   './src/product/training-review-ui.js',
   './src/product/training-blocks-ui.js',
   './src/product/decision-readiness-ui.js',

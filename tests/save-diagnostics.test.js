@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const D=require('../src/product/save-diagnostics');
+assert.equal(D.storageError({name:'QuotaExceededError',message:'private workout name'}),'storage-full');
+assert.equal(D.storageError({message:'Transaction aborted, workout #41'}),'transaction');
+const value=D.collect({version:'3.62.0',platform:'web',backend:'localStorage',status:'failed',lastSavedAt:'2026-10-18T12:30:00.000Z',errorCode:'storage-full',athlete:'Private Name',workouts:[{notes:'secret'}]});
+assert.deepEqual(Object.keys(value).sort(),['backend','errorCode','lastSavedAt','platform','status','version']);
+const report=D.format(value);
+assert.match(report,/Fallback storage active/);assert.match(report,/Failure category: storage-full/);
+assert.doesNotMatch(report,/Private Name|secret|workout #41/);
+assert.equal(D.collect({backend:'indexeddb',status:'ok',lastSavedAt:'yesterday',errorCode:'another'}).lastSavedAt,null);
+console.log('Privacy-safe diagnostics and storage failure categories passed');

@@ -1325,13 +1325,23 @@
         <p class="text-sm text-slate-500 mb-2" id="storage-info">Storage: —</p>
         <div class="flex flex-wrap gap-2">
           <button onclick="exportData()" class="btn-primary">Export JSON backup</button>
+          <button id="verify-backup-button" type="button" class="btn-secondary">Check saved backup file</button>
+          <input id="verify-backup-input" type="file" class="hidden" accept=".json,application/json" aria-label="Choose saved JSON backup to verify" />
           <button onclick="exportCSV()" class="btn-secondary">Export CSV</button>
           <button onclick="importData()" class="btn-secondary">Import JSON backup</button>
           <button onclick="updateStorageInfo()" class="btn-secondary">Refresh size</button>
           <details class="more-demo"><summary>Demo data</summary><p class="more-hint">Use the sample dataset to explore the app. Review the confirmation before replacing existing records.</p><button onclick="loadDemoData()" id="load-demo-btn" class="btn-secondary">Load demo data</button></details>
         </div>
+        <p id="verify-backup-result" class="more-hint" role="status" aria-live="polite"></p>
         <p class="text-xs text-slate-500 mt-2">CSV exports workouts and nutrition as spreadsheet-friendly files. JSON backups include an integrity fingerprint so accidental file corruption can be detected on import. Unfinished workout drafts are device-only and are not included. Save a reviewed workout first; export photos separately. Opening a download or share sheet does not prove the file was saved.</p>
         <p class="more-hint">Your records stay on this device. Export a backup before changing devices. The fingerprint is a corruption check, not cryptographic authentication.</p>
+        <details class="more-details" id="tools-save-diagnostics"><summary>Save diagnostics for beta testing</summary><div class="more-details-body">
+          <p>See the latest save result and storage fallback. The report contains only release and save-status metadata—no workouts, athlete identity, or account details. It stays on this device unless you choose to copy it.</p>
+          <textarea id="save-diagnostics-report" class="input" rows="9" readonly aria-label="Local save diagnostics report"></textarea>
+          <div class="flex flex-wrap gap-2"><button id="save-diagnostics-refresh" type="button" class="btn-secondary">Refresh save status</button><button id="save-diagnostics-copy" type="button" class="btn-secondary">Copy diagnostics</button></div>
+          <p id="save-diagnostics-copy-status" role="status"></p>
+          <p class="more-hint">A successful local save is not an external backup or proof of durability after a restart. Use Export JSON, inspect the downloaded file, and cancel the Import review after verifying its fingerprint.</p>
+        </div></details>
         <details class="more-details"><summary>Data health</summary><div id="training-data-health" class="more-details-body"></div></details>
         <details class="more-details"><summary>Recovery snapshots</summary><div id="recovery-snapshots" class="more-details-body"></div></details>
         <details class="more-details"><summary>Exercise names & aliases</summary><div id="exercise-alias-tools" class="more-details-body"></div></details>
@@ -1409,7 +1419,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.61.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.62.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -1974,7 +1984,9 @@
   <script src="src/product/nutrition-ui.js" defer></script>
   <script src="src/product/nutrition-forms.js" defer></script>
   <script src="src/product/device-records.js" defer></script>
+  <script src="src/product/save-diagnostics.js" defer></script>
   <script src="src/product/state-store.js" defer></script>
+  <script src="src/product/save-diagnostics-ui.js" defer></script>
   <script src="src/product/sync-coordinator.js" defer></script>
   <script src="src/product/account-ui.js" defer></script>
   <script src="src/product/appearance.js" defer></script>
@@ -2129,6 +2141,7 @@
   <script src="src/product/history-cleanup.js" defer></script>
   <script src="src/product/history-cleanup-ui.js" defer></script>
   <script src="src/product/training-review.js" defer></script>
+  <script src="src/product/workout-feedback.js" defer></script>
   <script src="src/product/training-review-ui.js" defer></script>
   <script src="src/product/training-blocks-ui.js" defer></script>
   <script src="src/product/decision-readiness-ui.js" defer></script>

@@ -7,8 +7,24 @@
  const copy=x=>JSON.parse(JSON.stringify(x)),words={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20};
  const normalize=q=>String(q||'').toLowerCase().replace(/[’‘]/g,"'").replace(/[-–]/g,' ').replace(new RegExp('\\b('+Object.keys(words).join('|')+')\\b','g'),w=>words[w]).replace(/\s+/g,' ').trim().slice(0,500);
  const profile=state=>Profile.current(state.programmingProfiles||[])?.context||null;
+ // Corrections prefer the expressly chosen value, not the first number in a
+ // phrase such as "instead of four days, use three". An unresolved "or" is
+ // a clarification, never a silent choice.
+ function numericPreference(q,unit){
+  const u=unit==='day'?'(?:days?|times?(?:\\s+(?:per|a)\\s+week)?)':'(?:minutes?|mins?)';
+  if(new RegExp('\\b\\d+\\s+(?:or|versus|vs)\\s+\\d+\\s*'+u+'\\b').test(q))return {value:null,ambiguous:true};
+  const re=new RegExp('\\b(\\d+)\\s*'+u+'\\b','g'),matches=[...q.matchAll(re)];
+  if(!matches.length)return {value:null,ambiguous:false};
+  if(matches.length===1)return {value:Number(matches[0][1]),ambiguous:false};
+  const values=[...new Set(matches.map(m=>Number(m[1])))];
+  if(values.length===1)return {value:values[0],ambiguous:false};
+  const contrast=new RegExp('\\b(?:instead of|rather than|not|no)\\s+\\d+\\s*'+u+'\\b');
+  const rejected=matches.filter(m=>contrast.test(q.slice(Math.max(0,m.index-20),m.index+m[0].length))&&/\b(?:instead of|rather than|not|no)\s*$/.test(q.slice(Math.max(0,m.index-20),m.index)));
+  if(rejected.length===1){const others=matches.filter(m=>m!==rejected[0]);if(new Set(others.map(m=>m[1])).size===1)return {value:Number(others[0][1]),ambiguous:false};}
+  return {value:null,ambiguous:true};
+ }
  function parse(question,previous=null){
-  const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),meetRequest=/\b(?:meet prep|meet preparation|meet cycle|peaking cycle)\b/.test(q),changePrior=previous&&/^(?:make|change|switch) (?:it|this) (?:to )?meet (?:prep|preparation)$/.test(q),start=!blocked&&!changePrior&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||meetRequest&&/\b(build|create|write|make|design|generate|draft|plan|want|need)\b/.test(q));
+  const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),meetRequest=/\b(?:meet prep|meet preparation|meet cycle|peaking cycle)\b/.test(q),changePrior=previous&&/^(?:actually,?\s+)?(?:make|change|switch) (?:it|this) (?:to |a |an )?/i.test(q),start=!blocked&&!changePrior&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||meetRequest&&/\b(build|create|write|make|design|generate|draft|plan|want|need)\b/.test(q));
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
   const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q));
   if(!start&&!follow)return null;
@@ -17,8 +33,15 @@
   if(/\b(hypertrophy|muscle growth|build muscle|gain muscle|bigger muscles|bodybuilding)\b/.test(q))r.goal='hypertrophy';
   if(meetRequest&&!r.goal)r.goal='strength';
   const n=pattern=>{const m=q.match(pattern);return m?Number(m[1]):null;};
-  const weeks=n(/\b(\d+)\s*weeks?\b/),frequency=n(/\b(\d+)\s*(?:days?|times?)(?:\s*(?:a|per|each)\s*week)?\b/)??n(/\b(\d+)\s*x\s*(?:per|a|\/)?\s*week\b/),minutes=n(/\b(\d+)\s*(?:minutes?|mins?)\b/)??(n(/\b(\d+)\s*hours?\b/)!=null?n(/\b(\d+)\s*hours?\b/)*60:/\bhalf an hour\b/.test(q)?30:null);
+  const weeks=n(/\b(\d+)\s*weeks?\b/),dayChoice=numericPreference(q,'day'),minuteChoice=numericPreference(q,'minute');
+  const frequency=dayChoice.value??(dayChoice.ambiguous?null:n(/\b(\d+)\s*x\s*(?:per|a|\/)?\s*week\b/));
+  const minutes=minuteChoice.value??(minuteChoice.ambiguous?null:n(/\b(\d+)\s*hours?\b/)!=null?n(/\b(\d+)\s*hours?\b/)*60:/\bhalf an hour\b/.test(q)?30:null);
   if(weeks!==null)r.weeks=weeks;if(frequency!==null)r.frequency=frequency;if(minutes!==null)r.minutes=minutes;
+  // Don't carry a previous answer through an explicitly ambiguous correction.
+  if(dayChoice.ambiguous){r.frequency=null;r.frequencyUnclear=true;}
+  else if(dayChoice.value!==null||frequency!==null)r.frequencyUnclear=false;
+  if(minuteChoice.ambiguous){r.minutes=null;r.minutesUnclear=true;}
+  else if(minutes!==null)r.minutesUnclear=false;
   // Negative equipment corrects even an earlier chat selection.
   const equipment=[],unavailable=[];
   const equipmentNoun='(?:barbells?|dumbbells?|dbs?|cables?|machines?|body\\s*weight|pull\\s*up bar|cardio(?: equipment)?)';
@@ -30,7 +53,7 @@
     else if(new RegExp('\\b'+name+'\\b').test(q))equipment.push(key);
   }
   if(/\bfull gym\b/.test(q))equipment.push('barbell','dumbbells','cable','machine','bodyweight');
-  if(equipment.length)r.equipment=[...new Set(equipment)];
+  if(equipment.length)r.equipment=previous&&/\b(?:add|also|too|as well)\b/.test(q)?[...new Set([...r.equipment,...equipment])]:[...new Set(equipment)];
   if(/\bno (equipment|weights)\b/.test(q))r.equipment=['bodyweight'];
   r.equipment=r.equipment.filter(key=>!unavailable.includes(key));
   if(/\bupper body\b/.test(q))r.focus='upper';else if(/\blower body|leg workout\b/.test(q))r.focus='lower';else if(/\bfull body\b/.test(q))r.focus='full';
@@ -41,7 +64,11 @@
   for(const m of q.matchAll(/\b(?:no|avoid|without|can't do|cannot do)\s+(squats?|bench|deadlifts?|lunges?|push\s*ups?|rows?)\b/g))r.excluded=[...new Set([...r.excluded,m[1].replace(/s$/,'').replace(/\s/g,'')])];
   if(/\btomorrow\b/.test(q))r.tomorrow=true;else if(/\btoday\b/.test(q))r.tomorrow=false;
   if(/\b(olympic|snatch|clean and jerk|sprint|jumping|sport specific)\b/.test(q))r.unsupportedDomain=true;
-  if(r.kind==='program'&&/\b(meet|competition|peaking|taper)\b/.test(q)){r.meet=true;if(/\bmock meet\b/.test(q))r.eventType='mock';else if(/\b(?:competition meet|real meet)\b/.test(q))r.eventType='competition';}
+  if(r.kind==='program'&&/\b(meet|competition|peaking|taper)\b/.test(q)){
+   const withdraw=/\b(?:not|no|without|skip|drop)\s+(?:a\s+|the\s+)?meet\s*(?:prep|preparation|cycle)?\b|\b(?:regular|normal)\s+(?:strength\s+)?program\s+(?:instead of|rather than)\s+meet\s*prep\b/.test(q);
+   if(withdraw){r.meet=false;delete r.eventType;}
+   else{r.meet=true;if(/\bmock meet\b/.test(q))r.eventType='mock';else if(/\b(?:competition meet|real meet)\b/.test(q))r.eventType='competition';}
+  }
   if(r.kind==='daily'&&/\bnext week\b|\b(?:next|on) (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\b\d{4} \d{2} \d{2}\b/.test(q))r.dateUnsupported=true;
   else if(/\btoday|tomorrow\b/.test(q))r.dateUnsupported=false;
   if(!start&&JSON.stringify(r)===JSON.stringify(previous))return null;
@@ -50,6 +77,8 @@
  function gaps(r,state){
   if(!r||r.version!==1||!['program','daily'].includes(r.kind)||!Array.isArray(r.equipment)||r.equipment.some(e=>!Object.hasOwn(Ref.EQUIPMENT,e))||!Array.isArray(r.excluded)||r.excluded.some(x=>typeof x!=='string')||r.goal!==null&&!['strength','hypertrophy'].includes(r.goal)||r.focus!==null&&!['upper','lower','full'].includes(r.focus)||r.priority!==null&&!['bench','squat','deadlift'].includes(r.priority)||[r.weeks,r.frequency,r.minutes].some(n=>n!==null&&!Number.isInteger(n)))return ['This planning request is incomplete or invalid. Start a new request.'];
   const p=profile(state),out=[];
+  if(r.frequencyUnclear)out.push('You mentioned more than one training frequency. Which single number of days per week should I use?');
+  if(r.minutesUnclear)out.push('You mentioned more than one workout duration. Which single time limit should I use?');
   if(r.styleUnclear)out.push('Which loading style do you mean: daily undulating, weekly undulating, or waves?');
   if(r.unsupportedDomain)out.push('Use the dedicated reviewed sport planner. This chat draft path cannot substitute resistance training for technical sport practice.');
   if(r.meet&&r.goal==='hypertrophy')out.push('This meet-timeline handoff requires a confirmed powerlifting/strength goal. Use the separate hypertrophy planner for muscle-growth programs.');
