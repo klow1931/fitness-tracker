@@ -105,7 +105,31 @@
       document.getElementById('cancel-import-review')?.addEventListener('click',closeImportReview);
       document.getElementById('confirm-import-review')?.addEventListener('click',commitImportReview);
       document.getElementById('import-review')?.addEventListener('cancel',event=>{event.preventDefault();closeImportReview();});
+      document.getElementById('verify-backup-button')?.addEventListener('click',()=>document.getElementById('verify-backup-input')?.click());
+      document.getElementById('verify-backup-input')?.addEventListener('change',verifySavedBackupFile);
     });
+
+    function verifySavedBackupFile(event){
+      const file=event.target.files?.[0],status=document.getElementById('verify-backup-result');
+      if(!file||!status)return;
+      status.textContent='Checking the selected file locally…';
+      const finish=message=>{status.textContent=message;event.target.value='';};
+      if(file.size>64*1024*1024)return finish('File is too large for this read-only check (64 MB limit). No data was changed.');
+      const reader=new FileReader();
+      reader.onload=()=>{
+        try{
+          const raw=JSON.parse(reader.result);
+          if(!raw||typeof raw!=='object'||!Array.isArray(raw.workouts)||!Array.isArray(raw.prs))throw Error('structure');
+          const result=LoadnoteIntegrity.verifyBackupManifest(raw);
+          if(result.status==='invalid')return finish('Backup check FAILED: '+result.reason+' Keep your original file and do not restore this copy. No data was changed.');
+          const summary=raw.workouts.length+' workouts · '+raw.prs.length+' PR records · '+(raw.unit==='lb'?'lb':raw.unit==='kg'?'kg':'unknown')+' display units.';
+          if(result.verified)return finish('Saved file opened and integrity fingerprint VERIFIED · '+summary+' This checks accidental corruption only, not completeness, authenticity or restore compatibility. Use Import review and Cancel for a separate migration check. No data was changed.');
+          finish('Legacy JSON file opened · '+summary+' No integrity fingerprint is available, so corruption cannot be verified. Inspect through Import review and Cancel. No data was changed.');
+        }catch{finish('Could not read a valid Loadnote JSON backup. No data was changed.');}
+      };
+      reader.onerror=()=>finish('Could not read the selected backup file. No data was changed.');
+      reader.readAsText(file);
+    }
 
     async function exportData() {
       // Strip large photo binaries from routine backup
@@ -130,7 +154,7 @@
       saveData(data);
       updateBackupBanner();
       if(typeof renderWorkoutHistory==='function'&&document.getElementById('panel-workouts')&&!document.getElementById('panel-workouts').classList.contains('hidden'))renderWorkoutHistory();
-      showToast('Verified JSON backup downloaded · '+(data.workouts||[]).length+' workouts protected (photos excluded)', 'success');
+      showToast('JSON backup download started · confirm the saved file and fingerprint before relying on it (photos excluded)', 'success');
     }
 
     async function exportPhotosBackup() {

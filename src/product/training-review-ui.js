@@ -38,8 +38,14 @@
       if(chosen&&!available.some(b=>b.id===chosen)){blockSelect.add(new Option('Selected block unavailable in this mode/date',chosen));}
       blockSelect.value=chosen;host.querySelector('#review-weeks').disabled=!!chosen;
       const r=LoadnoteReview.review(data,{asOf,weeks:Number(host.querySelector('#review-weeks').value),retrospective:corrected,blockId:chosen||undefined});
+      const feedback=corrected?window.LoadnoteWorkoutFeedback?.analyze(data,{asOf,days:host.querySelector('#review-weeks').value==='1'?7:28}):null;
+      const feedbackMarkup=feedback?'<section class="review-context-note" aria-label="Prescription comparison">'+
+        '<h3>Planned versus logged · last '+feedback.days+' days</h3><p>'+feedback.comparable+'/'+feedback.logged+' logged workouts have a full, verifiable pre-training prescription comparison; '+feedback.unknown+' need context or contain changes.</p>'+
+        '<p>'+feedback.matchedSets+'/'+feedback.plannedSets+' prescribed strength sets matched load and reps · '+feedback.effortCompared+' with comparable actual RPE · '+feedback.aboveCap+' above the prescribed effort cap.</p>'+
+        '<ul>'+feedback.next.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul><p>'+esc(feedback.notice)+'</p></section>':'';
       const week=r.week,c=week.counts;syncExercisePicker(host,r.exercises);const shown=selectedExercises(host,r.exercises);
       results.innerHTML='<p class="review-mode-note">'+esc(r.mode==='current-corrected'?'Current-corrected: uses today’s corrected workout and block context, excluding workouts after the analysis date.':'Historical as-recorded: reconstructs retained workout history and withholds later block context.')+'</p>'+
+        feedbackMarkup+
         '<h3>Week of '+esc(week.from)+' – '+esc(week.to)+'</h3><p>'+c.completed+' completed · '+c.skipped+' explicitly skipped · '+c.unconfirmed+' unconfirmed · '+c.cancelled+' cancelled · '+c.scheduled+' scheduled</p>'+
         '<p>'+week.rescheduled+' sessions moved into/within this week · '+week.loggedWorkouts+' workouts logged this week ('+week.unlinkedWorkouts+' without a schedule link).</p>'+
         '<p>Resolved-session adherence: '+pct(week.adherence)+' ('+c.completed+'/'+week.resolved+'). '+esc(week.definition)+'</p>'+

@@ -1,3 +1,11 @@
+# v3.62.0 — Athlete Trust & Coaching Intelligence
+
+- Local-only save diagnostics under Tools: last save result, backend and fallback status, last success in the current session and sanitized error category. Copy requires a user gesture; no workout, identity or account values are included.
+- IndexedDB-to-localStorage fallback now explicitly states that fallback storage is in use. Export status no longer claims the downloaded file has been verified; a new read-only saved-file checker validates the existing fingerprint, while Import review and Cancel remain necessary for restore compatibility.
+- Offline Coach follows explicit numeric corrections and additive equipment updates, preserves a long-cycle request when meet prep is withdrawn, and clarifies conflicting day or duration choices instead of guessing.
+- A new 7/28-day planned-versus-logged read-only summary in Progress and the offline Coach distinguishes comparable, changed, missing-effort, unplanned and unverified-timing logs. It provides evidence-based next review steps without silently changing targets or treating adherence as strength gains.
+- v3.62.0 / native build 33406; schema 32 and canonical internal kg unchanged. Local tests/CI do not replace physical-device, store-signing or athlete acceptance.
+
 # v3.61.0 — Coach Intent, Deep Restore & First-Workout Guidance
 
 - Route ordinary direct equipment requests (including mixed dumbbell/bench access) to a reviewable Profile proposal, not movement explanations; reject ambiguous gear with a clear clarification rather than guessing.

@@ -58,5 +58,16 @@ assert(P.gaps(notAvailable,s).some(v=>/needs barbell access/.test(v)));
 const prior=P.answer(s,'Create a 12-week strength program 4 days 60 minutes full gym');
 const corrected=P.answer(s,'No barbell',{history:[{role:'assistant',content:prior.text,planning:prior.planning}]});
 assert(corrected&&!corrected.actions.some(a=>a.kind==='offline-plan'),'Unsupported equipment cannot reach a strength draft');
+const base=P.parse('Create a 12-week strength program 4 days per week 60 minutes full gym');
+const amended=P.parse('Actually, instead of 4 days use 3 days and 45 minutes',base);
+assert.equal(amended.frequency,3);assert.equal(amended.minutes,45);assert.equal(amended.weeks,12);
+assert.equal(P.parse('Not 60 minutes, 45 minutes',base).minutes,45);
+const unsure=P.parse('3 or 4 days each week',base);
+assert.equal(unsure.frequency,null);assert(unsure.frequencyUnclear);assert(P.gaps(unsure,s)[0].includes('more than one'));
+assert.equal(P.parse('3 days',unsure).frequency,3);assert.equal(P.parse('3 days',unsure).frequencyUnclear,false);
+assert.equal(P.parse('Also add dumbbells',P.parse('Create an upper body workout 45 minutes with a barbell')).equipment.sort().join(','),'barbell,dumbbells');
+const priorMeet=P.parse('Create a 20-week strength meet prep 3 days per week 60 minutes full gym');
+const withdrawnMeet=P.parse('Make it a normal strength program rather than meet prep',priorMeet);
+assert.equal(withdrawnMeet.meet,false);assert(P.gaps(withdrawnMeet,s).some(x=>x.includes('not silently shorten')));
 
 console.log('Offline planning: multi-turn requests, supported bounds, equipment, exclusions, explicit doses, safety, immutable previews and concept retrieval passed');

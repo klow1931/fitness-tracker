@@ -156,19 +156,29 @@
 
     let persistenceWriter;
     let persistenceRevision=0;
+    let lastSavedAt=null,lastSaveErrorCode=null;
+    window.LoadnoteLocalSaveInfo=()=>window.LoadnoteSaveDiagnostics?.collect({
+      version:window.LoadnoteCore?.RELEASE_VERSION,
+      platform:window.LoadnoteRuntime?.native?window.LoadnoteRuntime.nativePlatform:'web',
+      backend:storageBackend,status:window.LoadnoteSaveHealth,
+      lastSavedAt,errorCode:lastSaveErrorCode
+    });
     function persistNow(state) {
       const revision=++persistenceRevision;
       window.LoadnoteSaveHealth='pending';window.LoadnoteBetaOnboarding?.refresh();
       const status=document.getElementById('device-save-status');
       if(status)status.textContent='Saving on this device…';
+      window.LoadnoteSaveDiagnosticsUI?.refresh();
       if(typeof invalidateViews==='function')invalidateViews();
       if (!persistenceWriter) persistenceWriter = LoadnotePersistence.createWriter({backend:()=>storageBackend,setBackend:value=>{storageBackend=value;},idbSet,local:localStorage,key:STORAGE_KEY});
-      return persistenceWriter(state || data).then(() => {
+      return persistenceWriter(state || data).then(result => {
         if(revision!==persistenceRevision)return;
+        lastSavedAt=new Date().toISOString();lastSaveErrorCode=null;
         window.LoadnoteSaveHealth='saved';window.LoadnoteBetaOnboarding?.refresh();
         document.getElementById('storage-error-banner')?.remove();
-        if(status)status.textContent='Saved on this device';
-      }).catch(error=>{if(revision===persistenceRevision){window.LoadnoteSaveHealth='failed';window.LoadnoteBetaOnboarding?.refresh();if(status)status.textContent='Not saved — keep open and retry';}throw error;});
+        if(status)status.textContent=result?.fallback?'Saved in fallback storage — export a backup':'Saved on this device';
+        window.LoadnoteSaveDiagnosticsUI?.refresh();
+      }).catch(error=>{if(revision===persistenceRevision){window.LoadnoteSaveHealth='failed';lastSaveErrorCode=window.LoadnoteSaveDiagnostics?.storageError(error)||'storage-error';window.LoadnoteBetaOnboarding?.refresh();if(status)status.textContent='Not saved — keep open and retry';window.LoadnoteSaveDiagnosticsUI?.refresh();}throw error;});
     }
     function reportStorageFailure(error) {
       console.warn('Loadnote could not persist changes', error);

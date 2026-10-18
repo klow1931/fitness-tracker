@@ -15,11 +15,12 @@
             await io.idbSet(snapshot);
             // A successful primary commit supersedes a previous fallback snapshot.
             try { io.local.removeItem(io.key); } catch (_) {}
-            return;
+            return {backend:'indexedDB',fallback:false};
           } catch (_) { /* Fall back atomically with a marker used at startup. */ }
         }
         io.local.setItem(io.key, JSON.stringify({...snapshot, _loadnoteFallback:true}));
         io.setBackend('localStorage');
+        return {backend:'localStorage',fallback:true};
       });
       queue = operation.catch(() => {});
       return operation;
