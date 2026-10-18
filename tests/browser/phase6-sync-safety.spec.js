@@ -26,7 +26,7 @@ test('late workout entry during a slow local sync save is recovered rather than 
   };
   try{
    await LoadnoteStateStore.applySyncedState(incoming,{expectedProjectFingerprint:expected,label:'Phase 6 slow-save test'});
-  }catch(error){failed=/Local training changed while sync was saving/.test(error.message);}
+  }catch(error){failed=/Local training or the signed-in account changed while sync was saving/.test(error.message);}
   finally{persistNow=original;}
   return {failed,saves,retained:data.workouts.length===beforeWorkouts+1&&data.workouts.at(-1).id==='during-sync'};
  });
