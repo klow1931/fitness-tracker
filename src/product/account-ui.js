@@ -2,7 +2,7 @@
 (function(){
  'use strict';
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let remoteRenderToken=0,syncBusy=false;
+ let remoteRenderToken=0,syncBusy=false,commitBusy=false;
  const coordinator=()=>window.LoadnoteSyncCoordinator;
  const stateStore=()=>window.LoadnoteStateStore;
  function activeDraft(){
@@ -25,6 +25,8 @@
  function bindRetry(target,accountId){target.querySelector('#account-sync-now')?.addEventListener('click',()=>void startSync(target,accountId));}
  async function applyAndAcknowledge(target,accountId,result){
   try{
+   if(window.LoadnoteAccountSession?.snapshot?.().account?.id!==accountId)
+    throw Error('Account changed during sync. Sign in and review the correct training copy.');
    // The remote operation may have taken seconds. A new set logged during
    // that time must never be overwritten by a now-stale sync response.
    const latestFingerprint=coordinator().projectFingerprint(stateStore().current());
@@ -49,16 +51,24 @@
   }
  }
  async function commitPreview(target,accountId,preview,options={}){
-  const local=stateStore().current();
-  target.innerHTML='<p class="account-remote-title"><b>Syncing training…</b></p><p class="more-hint">Checking the current cloud revision before committing changes.</p>';
-  const result=await coordinator().commit(preview,local,{...options,releaseVersion:window.LoadnoteCore?.RELEASE_VERSION||local.releaseVersion||''});
-  if(result.status==='stale'){
-   target.innerHTML='<p class="account-remote-title"><b>Cloud changed during review</b></p><p class="more-hint">'+esc(result.message)+'</p>'+button('Review latest','account-sync-now','secondary');
-   bindRetry(target,accountId);return;
-  }
-  if(result.status==='blocked'){renderSyncBlocked(target,result);bindRetry(target,accountId);return;}
-  if(result.status==='review'){renderConflictReview(target,accountId,result.preview||preview);return;}
-  await applyAndAcknowledge(target,accountId,result);
+  if(commitBusy)return;
+  commitBusy=true;
+  try{
+   const local=stateStore().current();
+   target.innerHTML='<p class="account-remote-title"><b>Syncing training…</b></p><p class="more-hint">Checking the current cloud revision before committing changes.</p>';
+   const result=await coordinator().commit(preview,local,{...options,releaseVersion:window.LoadnoteCore?.RELEASE_VERSION||local.releaseVersion||''});
+   if(result.status==='stale'){
+    target.innerHTML='<p class="account-remote-title"><b>Cloud changed during review</b></p><p class="more-hint">'+esc(result.message)+'</p>'+button('Review latest','account-sync-now','secondary');
+    bindRetry(target,accountId);return;
+   }
+   if(result.status==='blocked'){renderSyncBlocked(target,result);bindRetry(target,accountId);return;}
+   if(result.status==='review'){renderConflictReview(target,accountId,result.preview||preview);return;}
+   await applyAndAcknowledge(target,accountId,result);
+  }catch(error){
+   target.innerHTML='<p class="account-remote-title"><b>Sync interrupted</b></p><p class="more-hint">The local training is not replaced. A cloud upload may have finished, so review the current cloud revision before trying again.</p><p class="more-hint">'+esc(error.message||'Sync could not complete')+'</p>'+button('Review latest','account-sync-now','secondary');
+   bindRetry(target,accountId);
+   window.showToast?.('Sync needs another review','error');
+  }finally{commitBusy=false;}
  }
  function renderFirstLink(target,accountId,preview){
   target.innerHTML='<p class="account-remote-title"><b>Choose the starting copy</b></p><p class="more-hint">This device and the cloud already contain different training data, but they have never shared a verified sync base. Loadnote will not guess or combine them.</p><div class="sync-choice-actions">'+button('Keep this device','sync-first-local','secondary')+button('Use cloud on this device','sync-first-remote','primary')+'</div><p class="more-hint">Using cloud creates a local recovery snapshot first. Keeping this device replaces the cloud snapshot only after a revision check.</p>';
