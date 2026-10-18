@@ -44,7 +44,11 @@
       patterns:patterns.map(p=>({lift:p.lift,action:p.action,recorded:p.recorded,observed:p.observed,evidence:p.evidence,
         counts:{...p.counts},medianCapacityChangePct:p.medianCapacityChangePct,description:p.pattern}))};
   }catch(e){learningIssue='Accepted outcome history could not be validated: '+e.message;}
-  const workouts=(state?.workouts||[]).filter(w=>w?.date<=snapshotDate&&w?.createdAt<=cutoff&&w?.sessionIntent?.schedule?.id)
+  // A workout from a different program cannot explain this program's next
+  // prescribed session. Ignore unlinked, undated, and future workout records.
+  const prefix=life?.program?({ 'phase-program':'phase:', 'meet-cycle':'meet:', 'hypertrophy-program':'hypertrophy:', 'sport-program':'sport:' }[life.program.kind]||'')+life.program.id+':':null;
+  const workouts=(state?.workouts||[]).filter(w=>prefix&&w?.date<=snapshotDate&&w?.createdAt<=cutoff&&
+    String(w?.sessionIntent?.schedule?.id||'').startsWith(prefix))
    .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))||String(b.id).localeCompare(String(a.id)));
   let handoff=null,handoffIssue=null;
   if(workouts[0]&&life?.status!=='ambiguous'){
