@@ -25,14 +25,21 @@
  function bindRetry(target,accountId){target.querySelector('#account-sync-now')?.addEventListener('click',()=>void startSync(target,accountId));}
  async function applyAndAcknowledge(target,accountId,result){
   try{
+   // The remote operation may have taken seconds. A new set logged during
+   // that time must never be overwritten by a now-stale sync response.
+   const latestFingerprint=coordinator().projectFingerprint(stateStore().current());
+   if(result.expectedLocalFingerprint!==latestFingerprint){
+    target.innerHTML='<p class="account-remote-title"><b>Training changed during sync</b></p><p class="more-hint">A newer local change was saved or entered while the cloud responded. No incoming training was applied or acknowledged. Review the latest cloud version and sync again.</p>'+button('Review latest','account-sync-now','secondary');
+    bindRetry(target,accountId);return;
+   }
    if(result.applyRequired){
-    await stateStore().applySyncedState(result.state,{label:'Before account sync'});
+    await stateStore().applySyncedState(result.state,{label:'Before account sync',expectedProjectFingerprint:result.expectedLocalFingerprint});
    }
    await coordinator().acknowledge(accountId,result.base);
    const changes=[];
    if(result.uploadRequired)changes.push('cloud updated');
    if(result.applyRequired)changes.push('this device updated');
-   target.innerHTML='<p class="account-remote-title"><b>Synced</b></p><p class="more-hint">Revision '+esc(result.revision)+(changes.length?' · '+esc(changes.join(' · ')):' · already current')+'</p><p class="more-hint">A recovery snapshot was created before any incoming training data was applied.</p>'+button('Sync again','account-sync-now','secondary');
+   target.innerHTML='<p class="account-remote-title"><b>Synced</b></p><p class="more-hint">Revision '+esc(result.revision)+(changes.length?' · '+esc(changes.join(' · ')):' · already current')+'</p><p class="more-hint">'+esc(result.applyRequired?'A recovery snapshot was created before incoming data was applied.':'No incoming data was applied to this device.')+'</p>'+button('Sync again','account-sync-now','secondary');
    bindRetry(target,accountId);
    window.showToast?.('Training sync complete','success');
   }catch(error){
