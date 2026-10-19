@@ -124,6 +124,7 @@ test('per-movement reasons require Coach opt-in and future replacement retains o
  await page.locator('[data-custom-row="0"] [data-field="sets"]').fill('2');
  await page.locator('#custom-preview').click();
  await page.locator('#custom-change-kind').selectOption('performance');
+ await page.locator('#custom-preview-result summary').filter({hasText:'Optional movement-specific reasons'}).click();
  await page.locator('[data-change-kind="0"]').selectOption('recovery');
  await page.locator('[data-change-detail="0"]').fill('Reduce Monday bench fatigue');
  await page.locator('#custom-confirm').check();await page.locator('#custom-save').click();
