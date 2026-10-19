@@ -71,28 +71,33 @@
  }
  function compare(original,updated){
    if(!original?.config||!Array.isArray(original.entries)||!updated?.config||!Array.isArray(updated.entries))throw Error('Choose a reviewed program to compare');
-   const changes=[];
-   for(const [key,label] of [['name','Program name'],['weeks','Program length'],['startDate','Week 1 start date']])if(original.config[key]!==updated.config[key])changes.push(label+': '+original.config[key]+' → '+updated.config[key]);
+   const changes=[],kinds=[];
+   const add=(message,kind)=>{changes.push(message);kinds.push(kind);};
+   for(const [key,label] of [['name','Program name'],['weeks','Program length'],['startDate','Week 1 start date']])if(original.config[key]!==updated.config[key])add(label+': '+original.config[key]+' → '+updated.config[key],'config');
    const key=e=>e.week+':'+e.weekday+':'+e.type+':'+e.name.toLowerCase(),groups=entries=>{const m=new Map();for(const e of entries){const k=key(e);if(!m.has(k))m.set(k,[]);m.get(k).push(e);}return m;};
    const before=groups(original.entries),after=groups(updated.entries);
    for(const k of new Set([...before.keys(),...after.keys()])){
      const old=before.get(k)||[],fresh=after.get(k)||[];
      for(let i=0;i<Math.max(old.length,fresh.length);i++){
        const a=old[i],b=fresh[i],r=a||b,label='Week '+r.week+' '+dayNames[r.weekday]+' · '+r.name;
-       if(!a||!b){changes.push((a?'Removed ':'Added ')+label);continue;}
+       if(!a||!b){add((a?'Removed ':'Added ')+label,'exercise');continue;}
        const fields=r.type==='cardio'?[['minutes','minutes']]:[['sets','sets'],['reps','reps'],['weightKg','load (kg)'],['rpe','RPE'],['rest','rest (sec)']];
        const edits=fields.filter(([field])=>a[field]!==b[field]).map(([field,name])=>name+': '+(a[field]??'unspecified')+' → '+(b[field]??'unspecified'));
        if(a.notes!==b.notes)edits.push('exercise notes edited');
-       if(edits.length)changes.push(label+' — '+edits.join(', '));
+       if(edits.length)add(label+' — '+edits.join(', '),'exercise');
      }
    }
-   return {count:changes.length,changes:changes.slice(0,25).map(x=>x.slice(0,250))};
+   return {count:changes.length,changes:changes.slice(0,25).map(x=>x.slice(0,250)),kinds:kinds.slice(0,25)};
  }
  function validate(records){
    if(!Array.isArray(records)||records.length>200)throw Error('Invalid custom program library');const ids=new Set();
    return records.map(r=>{
      if(!r||r.version!==1||typeof r.id!=='string'||!r.id||ids.has(r.id)||!iso(r.createdAt)||r.review?.confirmed!==true||r.review.recordedAt!==r.createdAt||typeof r.review.notes!=='string'||r.review.notes.length>1000||r.scheduledAt!=null&&!iso(r.scheduledAt)||!Array.isArray(r.entries)||!Array.isArray(r.sessions)||!r.sessions.length||!r.source||!['manual','csv','tsv','txt','xlsx','pdf','json'].includes(r.source.kind)||typeof r.source.name!=='string'||r.source.name.length>180)throw Error('Invalid saved custom program');
-     if(r.revision!==undefined){const v=r.revision;if(!v||typeof v.parentId!=='string'||!v.parentId||v.parentId===r.id||!v.reason||!Object.hasOwn(REASONS,v.reason.kind)||typeof v.reason.detail!=='string'||v.reason.detail.length>500||typeof v.reason.coachVisible!=='boolean'||!Number.isInteger(v.changeCount)||v.changeCount<1||v.changeCount>3003||!Array.isArray(v.changes)||v.changes.length<1||v.changes.length>25||v.changeCount<v.changes.length||v.changes.some(x=>typeof x!=='string'||!x||x.length>250))throw Error('Invalid custom program revision');}
+     if(r.revision!==undefined){const v=r.revision;if(!v||typeof v.parentId!=='string'||!v.parentId||v.parentId===r.id||!v.reason||!Object.hasOwn(REASONS,v.reason.kind)||typeof v.reason.detail!=='string'||v.reason.detail.length>500||typeof v.reason.coachVisible!=='boolean'||!Number.isInteger(v.changeCount)||v.changeCount<1||v.changeCount>3003||!Array.isArray(v.changes)||v.changes.length<1||v.changes.length>25||v.changeCount<v.changes.length||v.changes.some(x=>typeof x!=='string'||!x||x.length>250))throw Error('Invalid custom program revision');
+       if(v.exerciseReasons!==undefined){if(!Array.isArray(v.exerciseReasons)||v.exerciseReasons.length>25)throw Error('Invalid exercise edit reasons');const indexes=new Set();for(const e of v.exerciseReasons){if(!e||!Number.isInteger(e.changeIndex)||e.changeIndex<0||e.changeIndex>=v.changes.length||indexes.has(e.changeIndex)||!Object.hasOwn(REASONS,e.kind)||typeof e.detail!=='string'||e.detail.length>350||(e.kind==='other'&&!e.detail.trim()))throw Error('Invalid exercise edit reasons');indexes.add(e.changeIndex);}}
+     }
+     if(r.replacedBy!==undefined&&(typeof r.replacedBy!=='string'||!r.replacedBy||r.replacedBy===r.id||!r.scheduledAt||!iso(r.replacedAt)))throw Error('Invalid custom program replacement history');
+     if(r.replacedAt!==undefined&&r.replacedBy===undefined)throw Error('Invalid custom program replacement time');
      config(r.config);if(r.entries.length>1500||r.entries.some(e=>!Number.isInteger(e.week)||e.week<1||e.week>r.config.weeks||!Number.isInteger(e.weekday)||e.weekday<0||e.weekday>6||typeof e.name!=='string'||!e.name||!['strength','cardio'].includes(e.type)))throw Error('Invalid saved custom exercise row');
      if(r.sessions.some(s=>!day(s.date)||!Number.isInteger(s.week)||!Array.isArray(s.exercises)||!s.exercises.length))throw Error('Invalid saved custom session');ids.add(r.id);return copy(r);
    });
@@ -107,7 +112,9 @@
    if(parentId!==null){const parent=validate(state.customPrograms||[]).find(p=>p.id===parentId);if(!parent)throw Error('The original program is no longer available');
      const difference=compare(parent,fresh);if(!difference.count)throw Error('No changes found. Edit the copy before saving it.');
      if(!reason||!Object.hasOwn(REASONS,reason.kind)||typeof reason.detail!=='string'||reason.detail.length>500||typeof reason.coachVisible!=='boolean'||(reason.kind==='other'&&!reason.detail.trim()))throw Error('Choose why you changed this program; describe an Other reason');
-     revision={parentId,reason:{kind:reason.kind,detail:reason.detail.trim(),coachVisible:reason.coachVisible},changeCount:difference.count,changes:difference.changes};
+     const exerciseReasons=reason.exerciseReasons??[];if(!Array.isArray(exerciseReasons)||exerciseReasons.length>25)throw Error('Invalid exercise edit reasons');
+     const used=new Set();for(const entry of exerciseReasons){if(!entry||!Number.isInteger(entry.changeIndex)||difference.kinds[entry.changeIndex]!=='exercise'||used.has(entry.changeIndex)||!Object.hasOwn(REASONS,entry.kind)||typeof entry.detail!=='string'||entry.detail.length>350||(entry.kind==='other'&&!entry.detail.trim()))throw Error('Review each exercise reason against the current change list');used.add(entry.changeIndex);}
+     revision={parentId,reason:{kind:reason.kind,detail:reason.detail.trim(),coachVisible:reason.coachVisible},changeCount:difference.count,changes:difference.changes,exerciseReasons:exerciseReasons.map(e=>({changeIndex:e.changeIndex,kind:e.kind,detail:e.detail.trim()}))};
    }else if(reason!==null)throw Error('Change reasons require an existing program copy');
    const catalog=copy(state.exerciseCatalog||[]);for(const s of fresh.sessions)for(const e of s.exercises)if(!e.exerciseId){let exerciseId=Integrity.stableExerciseId(e.name),suffix=1;while(catalog.some(x=>x.id===exerciseId&&Integrity.compactKey(x.name)!==Integrity.compactKey(e.name)))exerciseId=Integrity.stableExerciseId(e.name)+'_'+suffix++;if(!catalog.some(x=>x.id===exerciseId))catalog.push({id:exerciseId,name:e.name,aliases:[]});e.exerciseId=exerciseId;}
    const record={...fresh,id:String(id||('custom_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7))),createdAt:now,source:{kind:source.kind,name:source.name},review:{confirmed:true,recordedAt:now,notes:notes.trim()},scheduledAt:null};
@@ -118,11 +125,40 @@
    if(!iso(now))throw Error('Invalid schedule time');const records=validate(state.customPrograms||[]),p=records.find(r=>r.id===id);if(!p||p.scheduledAt)throw Error('Program is unavailable or already scheduled');
    const existing=Schedule.list(state.scheduledSessions||[]);if(existing.some(s=>s.status==='scheduled'&&p.sessions.some(x=>x.date===s.date)))throw Error('Calendar conflict: resolve existing scheduled dates before scheduling this program');
    let sessions=state.scheduledSessions||[];
-   for(const s of p.sessions){const exercises=s.exercises.map(e=>e.type==='cardio'?{name:e.name,exerciseId:e.exerciseId||undefined,type:'cardio',duration:e.duration}:{name:e.name,exerciseId:e.exerciseId||undefined,type:'strength',sets:e.sets,restSeconds:e.restSeconds});
-     const plan=Intent.createPrescription(exercises,{type:'program',referenceId:p.id,label:p.config.name+' · '+s.name},now);
-     sessions=Schedule.create(sessions,{name:p.config.name+' · '+s.name,date:s.date,role:'mixed',goal:'Athlete-authored program; preserve original planned targets',prescription:plan},{id:'custom:'+p.id+':'+s.key,now});
-   }
+   for(const s of p.sessions)sessions=Schedule.create(sessions,sessionContext(p,s,now),{id:'custom:'+p.id+':'+s.key,now});
    p.scheduledAt=now;return {...state,customPrograms:validate(records),scheduledSessions:sessions};
+ }
+ function sessionContext(p,s,now){
+   const exercises=s.exercises.map(e=>e.type==='cardio'?{name:e.name,exerciseId:e.exerciseId||undefined,type:'cardio',duration:e.duration}:{name:e.name,exerciseId:e.exerciseId||undefined,type:'strength',sets:e.sets,restSeconds:e.restSeconds});
+   const prescription=Intent.createPrescription(exercises,{type:'program',referenceId:p.id,label:p.config.name+' · '+s.name},now);
+   return {name:p.config.name+' · '+s.name,date:s.date,role:'mixed',goal:'Athlete-authored program; preserve original planned targets',prescription};
+ }
+ function replacementPreview(state,id,{asOf}={}){
+   if(!day(asOf))throw Error('Choose a valid program replacement date');
+   const records=validate(state.customPrograms||[]),child=records.find(p=>p.id===id),parent=records.find(p=>p.id===child?.revision?.parentId);
+   if(!child||!parent||!parent.scheduledAt||child.scheduledAt||parent.replacedBy)throw Error('Choose an unscheduled copy of a currently scheduled original');
+   const all=Schedule.list(state.scheduledSessions||[]),prefix='custom:'+parent.id+':',own=all.filter(s=>s.id.startsWith(prefix));
+   const remove=own.filter(s=>s.date>asOf&&s.status==='scheduled'),protectedRows=own.filter(s=>s.date<=asOf||s.status!=='scheduled');
+   const add=child.sessions.filter(s=>s.date>asOf),removeIds=new Set(remove.map(s=>s.id)),logged=new Set((state.workouts||[]).map(w=>w.sessionIntent?.schedule?.id).filter(Boolean));
+   const blockers=[];
+   if(!remove.length)blockers.push('No unperformed future sessions remain in the original program.');
+   if(!add.length)blockers.push('The edited program has no sessions after today.');
+   const linked=remove.filter(s=>logged.has(s.id));if(linked.length)blockers.push(linked.length+' future session(s) already have linked workouts; preserve them and review manually.');
+   const conflicts=all.filter(s=>s.status==='scheduled'&&!removeIds.has(s.id)&&add.some(n=>n.date===s.date));if(conflicts.length)blockers.push(conflicts.length+' other scheduled Calendar session(s) conflict with the revised dates.');
+   const evidence=JSON.stringify({records:records.map(p=>[p.id,p.scheduledAt,p.replacedBy,p.createdAt]),calendar:(state.scheduledSessions||[]).map(s=>[s.id,s.revisions.at(-1)?.recordedAt,s.revisions.length]),linked:[...logged].sort(),target:add.map(s=>[s.date,s.key])});
+   let hash=2166136261;for(const c of evidence)hash=Math.imul(hash^c.charCodeAt(0),16777619);
+   return {version:1,asOf,childId:child.id,parentId:parent.id,childName:child.config.name,parentName:parent.config.name,remove:remove.map(s=>({id:s.id,date:s.date,name:s.name,revisionAt:s.revisionAt})),add:add.map(s=>({key:s.key,date:s.date,name:child.config.name+' · '+s.name,exercises:s.exercises.length})),preserved:protectedRows.length,blockers,fingerprint:(hash>>>0).toString(36)};
+ }
+ function replaceFuture(state,preview,{confirmed=false,asOf,now=new Date().toISOString(),draftOpen=false}={}){
+   if(!confirmed||draftOpen||!iso(now)||!day(asOf)||asOf!==preview?.asOf||asOf>now.slice(0,10))throw Error('Confirm exact future dates and close any workout draft');
+   const fresh=replacementPreview(state,preview.childId,{asOf});if(JSON.stringify(fresh)!==JSON.stringify(preview))throw Error('Program or Calendar changed; review the replacement again');
+   if(fresh.blockers.length)throw Error(fresh.blockers.join(' '));
+   const records=validate(state.customPrograms||[]),child=records.find(p=>p.id===fresh.childId),parent=records.find(p=>p.id===fresh.parentId);
+   const commitAt=new Date(Math.max(Date.parse(now),...fresh.remove.map(s=>Date.parse(s.revisionAt)+1))).toISOString();
+   let sessions=state.scheduledSessions||[];for(const s of fresh.remove)sessions=Schedule.change(sessions,s.id,{status:'cancelled',reason:'Future session replaced by reviewed program '+child.config.name.slice(0,100)},commitAt);
+   for(const s of child.sessions.filter(s=>s.date>asOf))sessions=Schedule.create(sessions,sessionContext(child,s,commitAt),{id:'custom:'+child.id+':'+s.key,now:commitAt});
+   parent.replacedBy=child.id;parent.replacedAt=commitAt;child.scheduledAt=commitAt;
+   return {...state,scheduledSessions:sessions,customPrograms:validate(records)};
  }
  function insights(state,id,{asOf}={}){
    if(!day(asOf))throw Error('Choose a valid review date');const p=validate(state.customPrograms||[]).find(r=>r.id===id);if(!p)throw Error('Custom program not found');
@@ -139,7 +175,7 @@
        for(let i=0;i<exercise.sets.length;i++){linkedSets++;const target=exercise.sets[i],actual=match.sets?.[i];if(actual&&actual.reps===target.reps&&(target.weight==null||Math.abs(Number(actual.weight)-Number(target.weight))<=0.01))matchedSets++;}
      }
    }
-   return {status:'ready',name:p.config.name,revision:p.revision||null,planned:p.sessions.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:['Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
+   return {status:'ready',name:p.config.name,revision:p.revision||null,planned:rows.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:[...(p.revision&&p.sessions.length!==rows.length?['Only future sessions of this edited program were adopted; earlier dates remain with the original program.']:[]),'Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
  }
- return {dayNames,REASONS,build,compare,validate,save,schedule,insights,normalizeRow};
+ return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow};
 });

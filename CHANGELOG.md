@@ -1,3 +1,10 @@
+# v3.65.0 — Safer Custom Program Editing
+
+- Autosave unfinished Studio rows, dates, configuration and optional explanations locally for 30 days; resume or discard from the Studio landing page. Up to 20 Undo snapshots support corrections before save. Imported file bytes are never retained; browser drafts are not account-synced and may be accessible to others using the same browser.
+- Record optional per-movement reasons alongside an overall edit reason. Coach sees any of these athlete-reported explanations only when the athlete explicitly opts in; otherwise it sees prescriptions and change summaries without explanations.
+- Allow a reviewed edit of a scheduled custom program to replace only future Calendar sessions after a date-by-date confirmation, conflict and linked-workout preflight, stale-preview guard and open-workout-draft protection. Earlier days, logged workouts and original Calendar revisions remain intact; replaced future dates are cancelled with new audit revisions.
+- Keep original programs as historical sources, mark superseded programs, and count only actually scheduled sessions in edited-copy evidence summaries. Schema 33 / native build 33409. No automatic adaptations or causal-learning claims. Physical-device acceptance remains outstanding.
+
 # v3.64.0 — Explainable Custom Program Edits
 
 - Compare each saved custom program copy to its original: show changed week/day, exercise prescription, load, effort, rest, cardio dose and notes (without exposing note text), plus additions/removals and program configuration edits.

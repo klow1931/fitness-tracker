@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.64.0 · Development build.**
+**v3.65.0 · Development build.**
+
+Safer program editing: [v3.65 release notes](docs/releases-v3.65.md). Autosave and Undo protect unfinished Custom Program Studio work on this browser. Edited copies can annotate individual movement changes and optionally share those explanations with Coach. Reviewed copies of scheduled programs can replace **future-only** Calendar sessions after an exact date-by-date confirmation, preserving today, completed workouts and revision history.
 
 Program edit explanations: [v3.64 release notes](docs/releases-v3.64.md). Editing a copy of a saved program now shows an exact reviewable before/after summary and asks why the athlete adjusted it. Coach may discuss the athlete's own explanation only with explicit consent; linked training and original prescriptions remain unchanged. No automatic exercise or loading adjustments are made.
 
