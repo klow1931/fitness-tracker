@@ -17,9 +17,11 @@ test('three paths, opt-in Simple view and Full view survive reload without chang
  expect(await page.evaluate(()=>JSON.stringify({profiles:data.programmingProfiles,workouts:data.workouts,roles:data.exerciseRoles}))).toBe(before);
  await page.reload();await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
 });
-test('existing-program path offers manual entry without requiring profile or maxes',async({page})=>{
- await page.locator('[data-beginner-entry=program]').click();await expect(page.locator('#beginner-existing-program')).toBeVisible();
- await page.getByRole('button',{name:'Enter my session',exact:true}).click();await expect(page.locator('#workout-log-card')).toBeVisible();
+test('existing-program path opens custom import without requiring profile or maxes',async({page})=>{
+ await page.locator('[data-beginner-entry=program]').click();await expect(page.locator('#custom-program-dialog')).toBeVisible();
+ await expect(page.locator('#custom-upload')).toBeVisible();
+ await page.locator('#custom-close').click();
+ await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');});await expect(page.locator('#workout-log-card')).toBeVisible();
  expect(await page.evaluate(()=>data.programmingProfiles.length)).toBe(0);
  await expect(page.locator('.set-rpe').first()).toHaveValue('');
 });

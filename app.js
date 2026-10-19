@@ -2419,6 +2419,7 @@
     function renderCoach() {
       window.renderProgrammingProfile?.();
       window.renderProgramAdoption?.();
+      window.renderCustomProgramStudio?.();
       window.renderPowerliftingBuilder?.();
       window.renderHypertrophyBuilder?.();
       window.renderSportPlanner?.();

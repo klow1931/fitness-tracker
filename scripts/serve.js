@@ -1,7 +1,7 @@
 // Development server, bound to loopback only. Not a production backend.
 const http=require('http'),fs=require('fs'),path=require('path');
 const root=path.resolve(__dirname,'..');
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
+const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
 http.createServer((req,res)=>{
   let file;
   try {file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));} catch(_){res.writeHead(400).end();return;}

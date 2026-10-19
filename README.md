@@ -1,6 +1,10 @@
 # Loadnote
 
-**v3.62.0 · Development build.**
+**v3.63.0 · Development build.**
+
+Custom Program Studio: [v3.63 release notes](docs/releases-v3.63.md). In Coach → Programs, athletes can write an exercise-by-exercise plan or import a CSV, TSV, XLSX, text-based PDF, TXT or standalone Loadnote program JSON. A fully editable, paginated preview keeps week/date mapping, explicit load units and unknown values visible before any save. Scheduling uses the existing Calendar prescription model with conflict detection, immutable original targets and linked training evidence. Coach can describe recurring movements and compare exact logged work; it does not train an LLM on personal files or silently rewrite a program. PDF text extraction is best-effort and does not OCR scanned pages. See the release notes for the spreadsheet schema and limitations.
+
+Offline Excel/PDF reader assets are generated into `assets/vendor/` by `npm ci` (or `npm install`) from the pinned dependencies. GitHub Pages runs that step before packaging. They are bundled with the installed web/native app so importing a saved file needs no server upload or live connection.
 
 Athlete Trust & Coaching Intelligence: [v3.62 release notes](docs/releases-v3.62.md). Tools now offers a local, copyable save-health report for testers without exposing training records, plus a read-only checker for saved backup files; saving via fallback storage is identified honestly. Offline Coach follows explicit corrections and asks when training days or workout duration conflict. Progress → Training Review includes a guarded, read-only planned-versus-logged snapshot for 7 or 28 days; the Coach can explain it on request. Actual restore testing and physical-device acceptance remain separate tasks.
 
@@ -36,7 +40,7 @@ Programming changes are deterministic, explainable and athlete-approved. Logged 
 
 Meet prep has two steps: lift/schedule setup, then event-date review. Loading styles are linear, three-week waves, daily undulating and weekly undulating. Decisions suggestion remains the default in meet setup and currently selects linear or daily undulating from recorded experience and selected light exposures—not a prediction that one style will work best. Weekly undulating alternates volume/intensity weeks, with explicit rep/load targets and a base step per two-week pair. Accumulation/strength/peaking/taper describe phase structure, not additional loading-style options. Peak/taper protections and separate scheduling approval remain intact. See [v3.10 notes](docs/releases-v3.10.md) and the [feature-demo checklist](docs/feature-demo-v3.10.md).
 
-Current schema: **32**. Internal weights are kilograms; kg/lb is a display/input preference. JSON backups carry integrity metadata and replacement imports require review. Device-local drafts and photo binaries are not account-sync records. Manual account sync and Online Coach need a configured backend; GitHub Pages alone does not provide them.
+Current schema: **33**. Internal weights are kilograms; kg/lb is a display/input preference. JSON backups carry integrity metadata and replacement imports require review. Device-local drafts and photo binaries are not account-sync records. Manual account sync and Online Coach need a configured backend; GitHub Pages alone does not provide them.
 
 Native Android/iOS packages are an unsigned, local-only beta. Compilation is not physical-device acceptance or TestFlight distribution. WebGPU local AI is experimental and its real-device performance/availability is not established. See [mobile acceptance](docs/mobile-acceptance.md), [native acceptance](docs/native-device-acceptance.md) and [store readiness](docs/store-readiness.md).
 

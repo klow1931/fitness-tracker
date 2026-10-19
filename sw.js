@@ -1,6 +1,12 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.62.0';
+const CACHE = 'loadnote-v3.63.0';
 const ASSETS = [
+  './src/product/custom-program.js',
+  './src/product/custom-program-import.js',
+  './src/product/custom-program-ui.js',
+  './assets/vendor/exceljs.min.js',
+  './assets/vendor/pdf.mjs',
+  './assets/vendor/pdf.worker.mjs',
   './appearance.css',
   './src/product/appearance.js',
   './src/product/appearance-ui.js',

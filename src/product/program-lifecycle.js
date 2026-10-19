@@ -6,14 +6,14 @@
  if(typeof module==='object'&&module.exports)module.exports=factory(
    require('./schedule'),require('./phase-builder'),require('./meet-cycle'),
    require('./cycle-review'),require('./phase-review'),require('./transition-baseline'),
-   require('./next-block-handoff'),require('./hypertrophy-builder'),require('./sport-planner'),require('./program-cancellation')
+   require('./next-block-handoff'),require('./hypertrophy-builder'),require('./sport-planner'),require('./program-cancellation'),require('./custom-program')
  );
  else root.LoadnoteProgramLifecycle=factory(
    root.LoadnoteSchedule,root.LoadnotePhaseBuilder,root.LoadnoteMeetCycle,
    root.LoadnoteCycleReview,root.LoadnotePhaseReview,root.LoadnoteTransitionBaseline,
-   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner,root.LoadnoteProgramCancellation
+   root.LoadnoteNextBlockHandoff,root.LoadnoteHypertrophyBuilder,root.LoadnoteSportPlanner,root.LoadnoteProgramCancellation,root.LoadnoteCustomProgram
  );
-})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp,Sport,Cancellation){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Phase,Meet,CycleReview,PhaseReview,Transition,Handoff,Hyp,Sport,Cancellation,Custom){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const move=(day,n)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -39,16 +39,17 @@
    const cycles=CycleReview.validate(state||{}).filter(x=>x.scheduledAt).map(meetProgram);
    const hypertrophy=Hyp.validate(state?.hypertrophyPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'hypertrophy-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'hypertrophy:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
    const sports=Sport.validate(state?.sportPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'sport-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:r.weekly.at(-1).through,totalWeeks:r.config.weeks,record:r,prefix:'sport:'+r.id+':',phaseBounds:r.weekly.map((w,index)=>({type:w.phase,index,weeks:1,startDate:w.from,endDate:w.through,startWeek:w.week,endWeek:w.week}))}));
-   return [...phases,...cycles,...hypertrophy,...sports].filter(p=>includeCancelled||!Cancellation.isCancelled(state,p.id,p.kind)).sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
+   const custom=Custom.validate(state?.customPrograms||[]).filter(r=>r.scheduledAt).map(r=>({kind:'custom-program',id:r.id,name:r.config.name,startDate:r.config.startDate,endDate:move(r.config.startDate,r.config.weeks*7-1),totalWeeks:r.config.weeks,record:r,prefix:'custom:'+r.id+':',phaseBounds:Array.from({length:r.config.weeks},(_,index)=>({type:'personal',index,weeks:1,startDate:move(r.config.startDate,index*7),endDate:move(r.config.startDate,index*7+6),startWeek:index+1,endWeek:index+1}))}));
+   return [...phases,...cycles,...hypertrophy,...sports,...custom].filter(p=>includeCancelled||!Cancellation.isCancelled(state,p.id,p.kind)).sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.endDate.localeCompare(b.endDate)||a.id.localeCompare(b.id));
  }
- function transitionFor(state,p){if(['hypertrophy-program','sport-program'].includes(p.kind))return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
+ function transitionFor(state,p){if(['hypertrophy-program','sport-program','custom-program'].includes(p.kind))return null;return Transition.validate(state?.transitionSnapshots||[]).find(x=>x.programId===p.id)||null;}
  function eventRecorded(p){
    if(p.kind!=='meet-cycle')return true;
    const record=p.eventType==='competition'?p.record.meetResult:p.record.mockMeet;
    return !!record?.revisions?.length;
  }
  function needsClosure(state,p){
-   if(['hypertrophy-program','sport-program'].includes(p.kind))return false;
+   if(['hypertrophy-program','sport-program','custom-program'].includes(p.kind))return false;
    if(p.kind==='meet-cycle'&&!eventRecorded(p))return true;
    return !transitionFor(state,p);
  }
@@ -103,7 +104,7 @@
    return null;
  }
  function missedReviewWindows(state,p,asOf){
-   if(['hypertrophy-program','sport-program'].includes(p.kind))return [];
+   if(['hypertrophy-program','sport-program','custom-program'].includes(p.kind))return [];
    if(p.kind==='meet-cycle'){
      const reviewed=new Set((p.record.weeklyReviews||[]).map(x=>x.week));
      return p.record.weekly.filter(x=>x.week<p.totalWeeks&&!reviewed.has(x.week)&&p.record.weekly.find(n=>n.week===x.week+1)?.startDate<=asOf).map(x=>({kind:'week',week:x.week,phase:x.phase,ended:x.endDate}));
@@ -134,6 +135,7 @@
    else if(p.kind==='meet-cycle'&&asOf>=p.eventDate&&!eventRecorded(p))nextAction=action('record-event','Record '+(p.eventType==='competition'?(p.eventName||'competition meet'):'mock meet')+' results','The program endpoint has arrived. Record actual attempts before closing the cycle.',{cycleId:p.id,eventType:p.eventType,eventDate:p.eventDate});
    else if(p.kind==='sport-program'&&asOf>=p.endDate)nextAction=action('review-sport','Review sport-plan evidence','Review separately logged skill/performance outcomes with your coach; no SBD transition or sport peak is inferred.',{programId:p.id});
    else if(p.kind==='hypertrophy-program'&&asOf>=p.endDate)nextAction=action('review-hypertrophy','Review hypertrophy evidence','Review complete logs and tolerance before choosing the next plan; no strength transition is inferred.',{programId:p.id});
+   else if(p.kind==='custom-program'&&asOf>=p.endDate)nextAction=action('review-custom','Review your custom program','Compare linked sessions and exact planned-versus-actual sets before planning another block. The authored plan stays unchanged.',{programId:p.id});
    else if(asOf>=p.endDate&&!transition)nextAction=action('save-transition','Review program handoff','Freeze the completed program’s training evidence as the transition baseline for the next block.',{programId:p.id});
    else if(transition){
      let handoff=null;try{handoff=Handoff.inspect(state,{asOf,draftOpen:false});}catch(e){handoff={ready:false,status:'blocked',summary:e.message,blockers:[e.message]};}

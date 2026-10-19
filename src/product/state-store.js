@@ -6,7 +6,7 @@
     const IDB_KEY = 'state';
 
     const DEFAULT_DATA = {
-      schemaVersion: 32, programCancellations: [], coachingReviews: [], sportPrograms: [], athleticPractice: [], hypertrophyPrograms: [], olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
+      schemaVersion: 33, customPrograms: [], programCancellations: [], coachingReviews: [], sportPrograms: [], athleticPractice: [], hypertrophyPrograms: [], olympicPractice: [], workloadProfiles: [], transitionSnapshots: [], adoptedPrograms: [], meetCycles: [], phaseReviews: [], phasePrograms: [], programmingProfiles: [], programReviews: [], reviewedPrograms: [], athleteGoals: [], scheduledSessions: [], trainingBlocks: [], integrityVersion: 1, readinessVersion: 1, prescriptionVersion: 1,
       exerciseCatalog: [], workoutRevisions: [], recoverySnapshots: [], exerciseRoles: [],
       athleteProfileVersion: 1, athleteProfile: null,
       workouts: [], nutrition: [], prs: [], goals: [], programs: [],
@@ -237,13 +237,14 @@
         if(window.LoadnoteCycleReview)integrity.meetCycles=window.LoadnoteCycleReview.validate(integrity);
         if(window.LoadnoteMockMeet)integrity.meetCycles=window.LoadnoteMockMeet.validate(integrity);
         if(window.LoadnoteProgramAdoption)integrity.adoptedPrograms=window.LoadnoteProgramAdoption.validate(integrity.adoptedPrograms===undefined?[]:integrity.adoptedPrograms);
+        if(window.LoadnoteCustomProgram)integrity.customPrograms=window.LoadnoteCustomProgram.validate(integrity.customPrograms===undefined?[]:integrity.customPrograms);
         if(window.LoadnoteTransitionBaseline)integrity.transitionSnapshots=window.LoadnoteTransitionBaseline.validate(integrity.transitionSnapshots===undefined?[]:integrity.transitionSnapshots);
         if(window.LoadnoteBuilder)integrity.reviewedPrograms=window.LoadnoteBuilder.validate(integrity.reviewedPrograms===undefined?[]:integrity.reviewedPrograms);
         if(window.LoadnoteProgramReview)integrity.programReviews=window.LoadnoteProgramReview.validate(integrity.programReviews===undefined?[]:integrity.programReviews);
         return window.LoadnoteIntent?.validateState?window.LoadnoteIntent.validateState(integrity):integrity;
       }
       const base = { ...DEFAULT_DATA, ...(d || {}) };
-      ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews','exerciseCatalog','workoutRevisions','recoverySnapshots','exerciseRoles'].forEach(k => {
+      ['workouts','nutrition','prs','goals','programs','templates','bodyweight','foodLibrary','restDays','progressPhotos','measurements','formReviews','exerciseCatalog','workoutRevisions','recoverySnapshots','exerciseRoles','customPrograms'].forEach(k => {
         if (!Array.isArray(base[k])) base[k] = [];
       });
       if (!base.exerciseNotes || typeof base.exerciseNotes !== 'object') base.exerciseNotes = {};

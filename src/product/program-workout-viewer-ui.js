@@ -38,7 +38,8 @@
    const context=why(exercise);
    return '<section class="program-workout-exercise"><div class="program-workout-exercise-head"><h4>'+esc(exercise.name)+'</h4>'+(exercise.trainingMaxKg?'<span>TM '+esc(displayWeight(exercise.trainingMaxKg))+'</span>':'')+'</div>'+
      (exercise.type==='cardio'?'<p>'+esc(exercise.duration+' conditioning minutes')+'</p>':sets?'<ol class="program-workout-sets">'+sets+'</ol>':'<p>No set targets captured.</p>')+
-     (context?'<p class="program-workout-why"><b>Why:</b> '+esc(context)+'</p>':'')+'</section>';
+     (context?'<p class="program-workout-why"><b>Why:</b> '+esc(context)+'</p>':'')+
+     (exercise.athleteNotes?'<p class="more-hint"><b>Program notes:</b> '+esc(exercise.athleteNotes)+'</p>':'')+'</section>';
  }
  function sessionHtml(session,{open=false,calendar=false}={}){
    const summary=(calendar?'Planned workout':'')+(calendar?' · ':'')+dateLabel(session.date)+' · '+session.exercises.map(e=>e.name).join(' / ');

@@ -32,7 +32,7 @@ const STATIC_PREFIXES=['assets/','src/'];
 
 function contentType(file){
  const ext=path.extname(file).toLowerCase();
- return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon'})[ext]||'application/octet-stream';
+ return ({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon'})[ext]||'application/octet-stream';
 }
 function parseBody(req,maxBytes=MAX_BODY){
  return new Promise((resolve,reject)=>{

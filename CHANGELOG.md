@@ -1,3 +1,12 @@
+# v3.63.0 — Custom Program Studio
+
+- Add a prominent athlete-authored program path in Coach → Programs: create multiweek exercise rows, import private local program files, edit paginated rows and copy a week forward without auto-progressing its loads.
+- Import CSV/TSV, XLSX and reviewed standalone program JSON; parse unstructured text and text-based PDFs with explicit best-effort limitations. Never import a full-app backup as a standalone program or silently discard invalid prescribed targets.
+- Require exact review and load-unit confirmation before saving. Original program entries and scheduling baseline are immutable; imported source bytes are not retained or transmitted.
+- Schedule approved strength and cardio targets through Calendar, block conflicts, support cancellation/restore, preserve sources through JSON backups and sync, and compare linked completed sessions with reviewed targets.
+- Integrate authored programs into active program lifecycle and offline Coach context, where recurring movements, set distributions and actual adherence can inform *reviewed suggestions*, not automatic edits or claims of causation.
+- Schema 33 / native build 33407. PDF OCR, arbitrary spreadsheet layouts, formula evaluation, complex training-percentage calculations and direct custom-program in-place editing are intentionally not claimed. Physical-device validation remains outstanding.
+
 # v3.62.0 — Athlete Trust & Coaching Intelligence
 
 - Local-only save diagnostics under Tools: last save result, backend and fallback status, last success in the current session and sanitized error category. Copy requires a user gesture; no workout, identity or account values are included.

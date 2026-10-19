@@ -48,7 +48,7 @@
         ['Workouts',preview.workouts],['Calendar sessions',preview.scheduledSessions],['Workout revisions',preview.workoutRevisions],
         ['Training blocks',preview.trainingBlocks],['Meet cycles',preview.meetCycles],['Athlete goals',preview.athleteGoals],
         ['Reviewed programs',preview.reviewedPrograms],['Phase programs',preview.phasePrograms],['Phase reviews',preview.phaseReviews],
-        ['Program reviews',preview.programReviews],['Programming profiles',preview.programmingProfiles],['Adopted programs',preview.adoptedPrograms],
+        ['Program reviews',preview.programReviews],['Programming profiles',preview.programmingProfiles],['Adopted programs',preview.adoptedPrograms],['Custom programs',preview.customPrograms],
         ['Decision history',preview.decisionEvents],['Transition baselines',preview.transitionSnapshots],['Templates',preview.templates],
         ['Exercise catalog',preview.exerciseCatalog],['Exercise roles',preview.exerciseRoles],['PR records',preview.prs],
         ['Nutrition days',preview.nutrition],['Bodyweight entries',preview.bodyweight],['Measurements',preview.measurements],
@@ -88,6 +88,7 @@
           parsed.programReviews=LoadnoteProgramReview.validate(parsed.programReviews===undefined?[]:parsed.programReviews);
           parsed.meetCycles=LoadnoteMeetCycle.validate(parsed.meetCycles===undefined?[]:parsed.meetCycles);
           parsed.adoptedPrograms=LoadnoteProgramAdoption.validate(parsed.adoptedPrograms===undefined?[]:parsed.adoptedPrograms);
+          parsed.customPrograms=LoadnoteCustomProgram.validate(parsed.customPrograms===undefined?[]:parsed.customPrograms);
           parsed.transitionSnapshots=LoadnoteTransitionBaseline.validate(parsed.transitionSnapshots===undefined?[]:parsed.transitionSnapshots);
           for(const w of parsed.workouts||[])LoadnoteSchedule.checkLink(parsed,w,{id:w.id,original:w});
           parsed.trainingBlocks = LoadnoteBlocks.validate(parsed.trainingBlocks === undefined ? [] : parsed.trainingBlocks);

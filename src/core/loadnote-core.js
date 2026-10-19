@@ -5,8 +5,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const SCHEMA_VERSION = 32;
-  const RELEASE_VERSION = '3.62.0';
+  const SCHEMA_VERSION = 33;
+  const RELEASE_VERSION = '3.63.0';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -22,7 +22,7 @@
   const DEFAULT_COLLECTIONS = [
     'workouts', 'nutrition', 'prs', 'goals', 'programs', 'templates',
     'bodyweight', 'foodLibrary', 'restDays', 'progressPhotos', 'measurements', 'formReviews',
-    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles', 'decisionEvents', 'adoptedPrograms'
+    'exerciseCatalog', 'workoutRevisions', 'recoverySnapshots', 'exerciseRoles', 'decisionEvents', 'adoptedPrograms', 'customPrograms'
   ];
 
   function normalizeState(input, defaults) {
@@ -181,6 +181,8 @@
     // Schema 32 adds optional, explicit intake inside programming-profile revisions.
     // Legacy contexts remain intact: missing intake stays unknown.
     if(Number(state.schemaVersion||1)<32)state.schemaVersion=32;
+    if(state.customPrograms===undefined)state.customPrograms=[];
+    if(Number(state.schemaVersion||1)<33)state.schemaVersion=33;
     return state;
   }
 
