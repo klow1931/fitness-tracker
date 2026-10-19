@@ -63,6 +63,35 @@ assert.equal(review.linkedSets,4);
 assert.equal(review.matchedSets,4);
 assert.equal(review.patterns[0].exposures,2);
 assert.equal(JSON.stringify(state.customPrograms[0]),before);
+// Edited copies preserve the original and record both the exact change and athlete's stated rationale.
+const edited=Custom.build(state,{name:'My adjusted program',weeks:2,startDate:'2026-11-02',rows:[
+  {...cfg.rows[0],sets:'3'},...cfg.rows.slice(1)],unit:'lb'});
+const change=Custom.compare(state.customPrograms[0],edited);
+assert.equal(change.count,2); // Name and first squat set count.
+assert.ok(change.changes.some(x=>x.includes('sets: 4 → 3')));
+assert.throws(()=>Custom.save(state,edited,{confirmed:true,parentId:'missing',reason:{kind:'recovery',detail:'Fatigued',coachVisible:true}}),/original program/);
+assert.throws(()=>Custom.save(state,edited,{confirmed:true,parentId:'plan1'}),/Choose why/);
+assert.throws(()=>Custom.save(state,edited,{confirmed:true,parentId:'plan1',reason:{kind:'other',detail:'',coachVisible:true}}),/Choose why/);
+const copyState=Custom.save(state,edited,{confirmed:true,parentId:'plan1',reason:{kind:'recovery',detail:'Five sets left me too fatigued for the next day',coachVisible:false},now:'2026-10-20T13:00:00.000Z',id:'plan2'});
+assert.deepEqual(copyState.customPrograms[0],state.customPrograms[0]);
+assert.equal(copyState.customPrograms[1].scheduledAt,null);
+assert.equal(copyState.customPrograms[1].revision.parentId,'plan1');
+assert.equal(copyState.customPrograms[1].revision.changeCount,2);
+assert.equal(Custom.insights(copyState,'plan2',{asOf:'2026-10-21'}).revision.reason.coachVisible,false);
+const unchanged=Custom.build(copyState,{...cfg,unit:'lb'});
+assert.throws(()=>Custom.save(copyState,unchanged,{confirmed:true,parentId:'plan1',reason:{kind:'preference',detail:'',coachVisible:false}}),/No changes found/);
+assert.throws(()=>Custom.validate([{...copyState.customPrograms[1],revision:{...copyState.customPrograms[1].revision,reason:{...copyState.customPrograms[1].revision.reason,coachVisible:'yes'}}}]),/revision/);
+const Coh=require('../src/product/coaching-context');
+const privateReply=Coh.answer(copyState,'Why did I change bench sets in my program?',{asOf:'2026-10-21'});
+assert.match(privateReply.text,/kept your change reason private/);
+assert.doesNotMatch(privateReply.text,/Five sets left/);
+const shareState=Custom.save(state,edited,{confirmed:true,parentId:'plan1',reason:{kind:'recovery',detail:'This week needed fewer sets',coachVisible:true},now:'2026-10-20T13:00:00.000Z',id:'plan3'});
+const sharedReply=Coh.answer(shareState,'Why did I change the program?',{asOf:'2026-10-21'});
+assert.match(sharedReply.text,/This week needed fewer sets/);
+assert.match(sharedReply.text,/sets: 4 → 3/);
+assert.ok(!require('../src/product/local-coach-context').build(copyState,{asOf:'2026-11-02'}).athleteProgram?.revision?.reportedReason);
+assert.equal(Integrity.verifyBackupManifest(Integrity.addBackupManifest(copyState)).status,'verified');
+assert.equal(Sync.project(copyState).collections.customPrograms.length,2);
 const normalized=Core.normalizeState({schemaVersion:32,workouts:[]},{customPrograms:[]});
 assert.equal(normalized.schemaVersion,33);
 assert.deepEqual(normalized.customPrograms,[]);

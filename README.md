@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.63.0 · Development build.**
+**v3.64.0 · Development build.**
+
+Program edit explanations: [v3.64 release notes](docs/releases-v3.64.md). Editing a copy of a saved program now shows an exact reviewable before/after summary and asks why the athlete adjusted it. Coach may discuss the athlete's own explanation only with explicit consent; linked training and original prescriptions remain unchanged. No automatic exercise or loading adjustments are made.
 
 Custom Program Studio: [v3.63 release notes](docs/releases-v3.63.md). In Coach → Programs, athletes can write an exercise-by-exercise plan or import a CSV, TSV, XLSX, text-based PDF, TXT or standalone Loadnote program JSON. A fully editable, paginated preview keeps week/date mapping, explicit load units and unknown values visible before any save. Scheduling uses the existing Calendar prescription model with conflict detection, immutable original targets and linked training evidence. Coach can describe recurring movements and compare exact logged work; it does not train an LLM on personal files or silently rewrite a program. PDF text extraction is best-effort and does not OCR scanned pages. See the release notes for the spreadsheet schema and limitations.
 

@@ -1,3 +1,10 @@
+# v3.64.0 — Explainable Custom Program Edits
+
+- Compare each saved custom program copy to its original: show changed week/day, exercise prescription, load, effort, rest, cardio dose and notes (without exposing note text), plus additions/removals and program configuration edits.
+- Require a reason category and optional explanation before accepting an edited copy; a private checkbox separately authorizes offline Coach to use that athlete-reported rationale. Privacy remains opt-in for reasons and signed-off edits never rewrite the original or Calendar.
+- Preserve source linkage and a bounded diff in saved data and backup/sync. Coach can distinguish a recorded edit from the athlete's explanation, with unknown reasons left unknown rather than invented.
+- Expand model/browser tests for edits, privacy consent, immutable baselines and Coach explanation. Schema remains 33; native build 33408. Physical-device acceptance and complex real-world file testing remain outstanding.
+
 # v3.63.0 — Custom Program Studio
 
 - Add a prominent athlete-authored program path in Coach → Programs: create multiweek exercise rows, import private local program files, edit paginated rows and copy a week forward without auto-progressing its loads.

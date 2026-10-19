@@ -48,3 +48,35 @@ test('Excel upload parses locally and invalid units block save',async({page})=>{
  await page.locator('#custom-unit').selectOption('kg');
  await page.locator('#custom-preview').click();await expect(page.locator('#custom-preview-result')).toContainText('225 kg');
 });
+
+test('an edited copy records what changed, asks for a reason and honors Coach consent',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-studio-open').click();
+ await page.locator('#custom-name').fill('My bench block');
+ await page.locator('#custom-weeks').fill('1');
+ await page.locator('#custom-start').fill('2026-10-19');
+ await page.locator('[data-custom-row="0"] [data-field="exercise"]').fill('Bench Press');
+ await page.locator('#custom-preview').click();await page.locator('#custom-confirm').check();await page.locator('#custom-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.customPrograms.length)).toBe(1);
+ const original=await page.evaluate(()=>JSON.stringify(data.customPrograms[0]));
+ const saved=page.locator('#custom-program-studio details').filter({hasText:'My bench block'}).first();
+ await saved.locator('summary').click();await saved.locator('[data-custom-copy]').click();
+ await page.locator('[data-custom-row="0"] [data-field="sets"]').fill('2');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-preview-result')).toContainText('sets: 3 → 2');
+ await page.locator('#custom-confirm').check();await page.locator('#custom-save').click();
+ await expect(page.locator('#custom-error')).toContainText('Choose why you changed');
+ await page.locator('#custom-change-kind').selectOption('recovery');
+ await page.locator('#custom-change-detail').fill('Three sets interfered with the next workout');
+ await page.locator('#custom-coach-share').check();
+ await page.locator('#custom-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.customPrograms.length)).toBe(2);
+ expect(await page.evaluate(()=>JSON.stringify(data.customPrograms[0]))).toBe(original);
+ expect(await page.evaluate(()=>data.customPrograms[1].revision.changeCount)).toBe(1);
+ const reply=await page.evaluate(()=>LoadnoteCoachingContext.answer(data,'Why did I change the program?',{asOf:'2026-10-19'}).text);
+ expect(reply).toContain('Three sets interfered with the next workout');
+ await page.locator('#custom-program-studio details').filter({hasText:'My bench block'}).last().locator('summary').click();
+ await expect(page.locator('#custom-program-studio')).toContainText('Edited copy of My bench block');
+});
