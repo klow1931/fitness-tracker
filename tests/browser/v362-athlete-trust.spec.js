@@ -10,7 +10,7 @@ test('save diagnostics are visible, local and free of training details',async({p
  await page.evaluate(()=>{data.workouts.push({id:'private',date:'2026-10-18',notes:'PRIVATE ATHLETE NOTES',exercises:[]});showTab('tools');});
  await page.locator('#tools-save-diagnostics summary').click();
  await page.locator('#save-diagnostics-refresh').click();
- await expect(page.locator('#save-diagnostics-report')).toHaveValue(/Version: 3\.62\.0/);
+ await expect(page.locator('#save-diagnostics-report')).toHaveValue(/Version: 3\.63\.0/);
  const report=await page.locator('#save-diagnostics-report').inputValue();
  expect(report).toContain('Platform: web');expect(report).not.toContain('PRIVATE ATHLETE NOTES');expect(report).not.toContain('private');
 });

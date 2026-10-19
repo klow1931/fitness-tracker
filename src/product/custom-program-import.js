@@ -36,7 +36,7 @@
    }
    if(result.length>1500)throw Error('Uploaded program exceeds 1500 exercise rows');
    if(!result.length)throw Error('No exercise rows found after the header');
-   if(sheetName)warnings.push('Imported worksheet: '+sheetName+'. Other sheets were not imported.');
+   if(sheetName)warnings.push('Imported worksheet: '+sheetName+'.');
    return {rows:result,warnings,source};
  }
  function csv(text,separator=','){return fromTable(parseDelimited(text,separator),{source:separator==='\t'?'tsv':'csv'});}
@@ -63,15 +63,64 @@
    if(p.rows.length<1||p.rows.length>1500)throw Error('Program JSON must contain 1–1500 rows');
    return {rows:p.rows,name:p.name||'',weeks:p.weeks||null,startDate:p.startDate||'',source:'json',warnings:[]};
  }
- function fromWorkbook(book){
-   const sheet=book?.worksheets?.[0];if(!sheet)throw Error('No Excel worksheet found');
-   const table=[];sheet.eachRow({includeEmpty:false},r=>{const cells=[];for(let i=1;i<=Math.max(sheet.columnCount,12);i++){const v=r.getCell(i).value;cells.push(v&&typeof v==='object'?v.result??v.text??v.richText?.map(x=>x.text).join('')??'':v??'');}table.push(cells);});
-   const parsed=fromTable(table,{source:'xlsx',sheetName:sheet.name});if(book.worksheets.length>1)parsed.warnings.push('Only the first worksheet was imported.');return parsed;
+ // Read only the cell values needed for a reviewed training table. JSZip has no
+ // workbook formula evaluation, macros, or executable spreadsheet features.
+ async function xlsx(bytes,JSZip,Parser){
+   if(!JSZip||!Parser)throw Error('Offline Excel reader is unavailable');
+   const zip=await JSZip.loadAsync(bytes);
+   if(Object.keys(zip.files).length>400)throw Error('Excel file contains too many embedded parts');
+   const nodes=(node,name)=>Array.from(node.getElementsByTagNameNS('*',name));
+   const child=(node,name)=>Array.from(node.childNodes).find(n=>n.localName===name);
+   const xml=async(path,optional=false)=>{
+     const part=zip.file(path);if(!part){if(optional)return null;throw Error('Excel file is missing '+path);}
+     if((part._data?.uncompressedSize||0)>8*1024*1024)throw Error('Excel worksheet is too large');
+     const text=await part.async('string');
+     if(text.length>8*1024*1024||/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Unsupported or oversized Excel XML');
+     const doc=new Parser().parseFromString(text,'application/xml');
+     if(nodes(doc,'parsererror').length)throw Error('Invalid Excel XML in '+path);
+     return doc;
+   };
+   const workbook=await xml('xl/workbook.xml'),rels=await xml('xl/_rels/workbook.xml.rels');
+   const sheets=nodes(workbook,'sheet');if(!sheets.length)throw Error('No Excel worksheet found');
+   const first=sheets[0],rid=first.getAttribute('r:id')||first.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+   const relation=nodes(rels,'Relationship').find(n=>n.getAttribute('Id')===rid);
+   if(!relation)throw Error('First Excel worksheet has no relationship');
+   const target=relation.getAttribute('Target')||'';
+   const segments=(target.startsWith('/')?target.slice(1):'xl/'+target).split('/'),normalized=[];
+   for(const part of segments){if(!part||part==='.')continue;if(part==='..')normalized.pop();else normalized.push(part);}
+   const sheetPath=normalized.join('/');
+   if(!sheetPath.startsWith('xl/')||!sheetPath.endsWith('.xml'))throw Error('Invalid Excel worksheet path');
+   const [sheet,strings]=await Promise.all([xml(sheetPath),xml('xl/sharedStrings.xml',true)]);
+   const shared=strings?nodes(strings,'si').map(si=>nodes(si,'t').map(t=>t.textContent||'').join('')):[];
+   const table=[],sheetRows=nodes(sheet,'sheetData').flatMap(d=>nodes(d,'row'));
+   if(sheetRows.length>1502)throw Error('Uploaded program exceeds 1500 exercise rows');
+   let formulaResults=false;
+   for(const row of sheetRows){
+     const cells=[];
+     for(const c of nodes(row,'c')){
+       const addr=c.getAttribute('r')||'',letters=addr.match(/^[A-Z]+/i)?.[0]?.toUpperCase();
+       if(!letters)throw Error('Excel cell is missing its column address');
+       const col=[...letters].reduce((v,ch)=>v*26+ch.charCodeAt(0)-64,0)-1;
+       if(col>=64)throw Error('Excel table has more than 64 columns');
+       const formula=child(c,'f'),value=child(c,'v')?.textContent;
+       if(formula){if(value==null||value==='')throw Error('An Excel formula has no saved value. Recalculate in Excel and save again, or export CSV.');formulaResults=true;}
+       const type=c.getAttribute('t');let parsed=value??'';
+       if(type==='s'){const index=Number(value);if(!Number.isInteger(index)||index<0||index>=shared.length)throw Error('Invalid Excel shared string reference');parsed=shared[index];}
+       else if(type==='inlineStr')parsed=nodes(c,'is').flatMap(is=>nodes(is,'t')).map(t=>t.textContent||'').join('');
+       else if(type==='b')parsed=value==='1'?'TRUE':'FALSE';
+       cells[col]=parsed;
+     }
+     if(cells.some(v=>String(v??'').trim()))table.push(cells);
+   }
+   const parsed=fromTable(table,{source:'xlsx',sheetName:first.getAttribute('name')||'Sheet 1'});
+   if(sheets.length>1)parsed.warnings.push('Only the first worksheet was imported.');
+   if(formulaResults)parsed.warnings.push('Formula cells used their saved values; formulas were not executed. Check those targets against your workbook.');
+   return parsed;
  }
  function pdfItemsToText(items){
    const lines=[];for(const item of items){if(!item.str?.trim())continue;const x=item.transform?.[4]||0,y=item.transform?.[5]||0;let line=lines.find(row=>Math.abs(row.y-y)<3);if(!line){line={y,parts:[]};lines.push(line);}line.parts.push({x,str:item.str});}
    return lines.sort((a,b)=>b.y-a.y).map(l=>l.parts.sort((a,b)=>a.x-b.x).map(x=>x.str).join(' ')).join('\n');
  }
  const sample='Week,Day,Exercise,Sets,Reps,Weight,Unit,RPE,Rest,Type,Minutes,Notes\n1,Monday,Competition Squat,4,5,315,lb,7,180,strength,,\n1,Monday,Pause Bench Press,3,6,205,lb,7,150,strength,,\n1,Wednesday,Easy Cycling,,,,,, ,cardio,20,Recovery\n2,Monday,Competition Squat,4,4,325,lb,8,180,strength,,\n';
- return {parseDelimited,fromTable,fromWorkbook,pdfItemsToText,csv,plainText,json,sample};
+ return {parseDelimited,fromTable,xlsx,pdfItemsToText,csv,plainText,json,sample};
 });

@@ -1,7 +1,6 @@
 const assert=require('node:assert/strict');
 const Custom=require('../src/product/custom-program');
 const Import=require('../src/product/custom-program-import');
-const ExcelJS=require('exceljs');
 const Schedule=require('../src/product/schedule');
 const Lifecycle=require('../src/product/program-lifecycle');
 const Cancellation=require('../src/product/program-cancellation');
@@ -17,8 +16,7 @@ assert.equal(Import.plainText('Week 1\nMonday\nCompetition Bench 3x5 @ 225 lb RP
 assert.throws(()=>Import.csv('Name,Sets,Reps\nBench,3,5'),/Week, Day and Exercise/);
 assert.throws(()=>Import.csv('Week,Day,Exercise,Sets,Reps,Weight (plates)\n1,Monday,Bench,3,5,4'),/Unrecognized training target/);
 assert.throws(()=>Import.json('{"schemaVersion":32,"workouts":[]}'),/not a standalone/);
-const workbook=new ExcelJS.Workbook(),sheet=workbook.addWorksheet('Program');sheet.addRow(['Week','Day','Exercise','Sets','Reps','Weight (lb)']);sheet.addRow([1,'Monday','Pause Bench Press',3,6,225]);
-assert.deepEqual(Import.fromWorkbook(workbook).rows[0],{week:'1',day:'Monday',exercise:'Pause Bench Press',sets:'3',reps:'6',weight:'225',unit:'lb'});
+assert.deepEqual(Import.fromTable([['Week','Day','Exercise','Sets','Reps','Weight (lb)'],[1,'Monday','Pause Bench Press',3,6,225]],{source:'xlsx',sheetName:'Program'}).rows[0],{week:'1',day:'Monday',exercise:'Pause Bench Press',sets:'3',reps:'6',weight:'225',unit:'lb'});
 assert.equal(Import.pdfItemsToText([{str:'Monday',transform:[0,0,0,0,0,20]},{str:'Week 1',transform:[0,0,0,0,0,40]},{str:'Squat 4x5',transform:[0,0,0,0,0,10]}]),'Week 1\nMonday\nSquat 4x5');
 
 const savedState={schemaVersion:33,customPrograms:[],scheduledSessions:[],workouts:[],exerciseCatalog:[{id:'squat',name:'Competition Squat',aliases:[]}]};

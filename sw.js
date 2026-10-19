@@ -4,7 +4,7 @@ const ASSETS = [
   './src/product/custom-program.js',
   './src/product/custom-program-import.js',
   './src/product/custom-program-ui.js',
-  './assets/vendor/exceljs.min.js',
+  './assets/vendor/jszip.min.js',
   './assets/vendor/pdf.mjs',
   './assets/vendor/pdf.worker.mjs',
   './appearance.css',

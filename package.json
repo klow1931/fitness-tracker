@@ -32,11 +32,12 @@
     "@capacitor/filesystem": "^7.1.9",
     "@capacitor/ios": "^7.4.3",
     "@capacitor/share": "^7.0.4",
-    "exceljs": "^4.4.0",
+    "jszip": "^3.10.2",
     "pdfjs-dist": "^4.10.38"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
+    "@xmldom/xmldom": "^0.9.12",
     "chart.js": "4.4.1",
     "playwright": "1.62.1"
   }

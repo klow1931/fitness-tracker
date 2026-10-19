@@ -1,5 +1,8 @@
 const fs=require('fs'); const path=require('path');
 const root=path.resolve(__dirname,'..'); const out=path.join(root,'www');
+// Native build workflows intentionally skip npm lifecycle scripts. Bundle readers
+// here as well, so offline uploads are never absent from a compiled app.
+require('./vendor-program-readers.js');
 fs.rmSync(out,{recursive:true,force:true}); fs.mkdirSync(out,{recursive:true});
 for (const name of ['index.html','privacy.html','support.html','delete-account.html','app.js','styles.css','energy.css','appearance.css','manifest.webmanifest','sw.js','apple-touch-icon.png','icon-192.png','icon-512.png']) { const src=path.join(root,name); if(fs.existsSync(src)) fs.copyFileSync(src,path.join(out,name)); }
 for (const dir of ['src','assets']) { fs.cpSync(path.join(root,dir),path.join(out,dir),{recursive:true}); }

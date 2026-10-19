@@ -1,5 +1,5 @@
 const {test,expect}=require('playwright/test');
-const ExcelJS=require('exceljs');
+const JSZip=require('jszip');
 
 test('CSV import can be corrected, approved, scheduled and explained by Coach',async({page})=>{
  await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
@@ -18,10 +18,12 @@ test('CSV import can be corrected, approved, scheduled and explained by Coach',a
  await expect.poll(()=>page.evaluate(()=>data.customPrograms.length)).toBe(1);
  await expect(studio).toContainText('keith-program');
  expect(await page.evaluate(()=>data.customPrograms[0].source)).toEqual({kind:'csv',name:'keith-program.csv'});
- page.once('dialog',dlg=>dlg.accept());await studio.locator('[data-custom-schedule]').click();
+ const saved=studio.locator('details').filter({hasText:'keith-program'});await saved.locator('summary').click();
+ page.once('dialog',dlg=>dlg.accept());await saved.locator('[data-custom-schedule]').click();
  await expect.poll(()=>page.evaluate(()=>data.scheduledSessions.filter(x=>x.id.startsWith('custom:')).length)).toBe(2);
  expect(await page.evaluate(()=>LoadnoteProgramLifecycle.inspect(data,{asOf:'2026-10-19'}).program.kind)).toBe('custom-program');
- await studio.locator('[data-custom-insights]').click();await expect(studio).toContainText('Recurring movements from your plan');
+ await saved.locator('summary').click();
+ await saved.locator('[data-custom-insights]').click();await expect(studio).toContainText('Recurring movements from your plan');
  const answer=await page.evaluate(()=>LoadnoteCoachingContext.answer(data,'What have you learned from my uploaded program?',{asOf:'2026-10-19'}));
  expect(answer.text).toContain('Competition Squat');
  expect(answer.text).toContain('not been');
@@ -30,12 +32,16 @@ test('CSV import can be corrected, approved, scheduled and explained by Coach',a
 
 test('Excel upload parses locally and invalid units block save',async({page})=>{
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
- const book=new ExcelJS.Workbook(),sheet=book.addWorksheet('My sessions');sheet.addRow(['Week','Day','Exercise','Sets','Reps','Weight','Unit','RPE']);sheet.addRow([1,'Monday','Bench Press',3,5,225,'lb',7]);
- const buffer=Buffer.from(await book.xlsx.writeBuffer());
+ const zip=new JSZip();zip.file('xl/workbook.xml','<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="My sessions" sheetId="1" r:id="rId1"/></sheets></workbook>');
+ zip.file('xl/_rels/workbook.xml.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Target="worksheets/sheet1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"/></Relationships>');
+ const header=['Week','Day','Exercise','Sets','Reps','Weight','Unit','RPE'];
+ const cells=header.map((v,i)=>'<c r="'+String.fromCharCode(65+i)+'1" t="inlineStr"><is><t>'+v+'</t></is></c>').join('');
+ zip.file('xl/worksheets/sheet1.xml','<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1">'+cells+'</row><row r="2"><c r="A2"><v>1</v></c><c r="B2" t="inlineStr"><is><t>Monday</t></is></c><c r="C2" t="inlineStr"><is><t>Bench Press</t></is></c><c r="D2"><v>3</v></c><c r="E2"><v>5</v></c><c r="F2"><v>225</v></c><c r="G2" t="inlineStr"><is><t>lb</t></is></c><c r="H2"><v>7</v></c></row></sheetData></worksheet>');
+ const buffer=Buffer.from(await zip.generateAsync({type:'nodebuffer'}));
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
  await page.locator('#custom-studio-open').click();
  await page.locator('#custom-upload').setInputFiles({name:'my-plan.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer});
- await expect(page.locator('#custom-count')).toContainText('1 exercise rows',{timeout:30000});
+ await expect(page.locator('#custom-import-info')).toContainText('1 rows extracted locally',{timeout:30000});
  await page.locator('#custom-start').fill('2026-10-19');
  await page.locator('#custom-preview').click();await expect(page.locator('#custom-preview-result')).toContainText('102.06 kg');
  await page.locator('[data-custom-row="0"] [data-field="unit"]').selectOption('');

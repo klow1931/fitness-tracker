@@ -63,7 +63,7 @@
      const t=await file.text();return extension==='csv'?I().csv(t):extension==='tsv'?I().csv(t,'\t'):extension==='json'?I().json(t):I().plainText(t);
    }
    if(extension==='xlsx'){
-     if(!window.ExcelJS)await loadExcel();const book=new window.ExcelJS.Workbook();await book.xlsx.load(await file.arrayBuffer());return I().fromWorkbook(book);
+     if(!window.JSZip)await loadExcel();return I().xlsx(await file.arrayBuffer(),window.JSZip,window.DOMParser);
    }
    if(extension==='pdf'){
      const pdf=await import(new URL('assets/vendor/pdf.mjs',document.baseURI).href);pdf.GlobalWorkerOptions.workerSrc=new URL('assets/vendor/pdf.worker.mjs',document.baseURI).href;
@@ -73,7 +73,7 @@
    throw Error('Supported formats: CSV, TSV, TXT, XLSX, PDF and standalone program JSON.');
  }
  let excelLoading=null;
- function loadExcel(){if(excelLoading)return excelLoading;excelLoading=new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=new URL('assets/vendor/exceljs.min.js',document.baseURI).href;el.onload=()=>window.ExcelJS?resolve():reject(Error('Excel parser did not initialize'));el.onerror=()=>reject(Error('Excel parser is not cached. Connect briefly to load the offline reader, then try again.'));document.head.append(el);}).catch(e=>{excelLoading=null;throw e;});return excelLoading;}
+ function loadExcel(){if(excelLoading)return excelLoading;excelLoading=new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=new URL('assets/vendor/jszip.min.js',document.baseURI).href;el.onload=()=>window.JSZip?resolve():reject(Error('Excel reader did not initialize'));el.onerror=()=>reject(Error('Excel reader is not cached. Connect briefly to load the offline reader, then try again.'));document.head.append(el);}).catch(e=>{excelLoading=null;throw e;});return excelLoading;}
  function showPreview(d){
    readRows(d);try{const raw={name:d.querySelector('#custom-name').value,weeks:d.querySelector('#custom-weeks').value,startDate:d.querySelector('#custom-start').value,rows,unit:d.querySelector('#custom-unit').value};preview=M().build(data,raw);
      const host=d.querySelector('#custom-preview-result');host.innerHTML='<div class="custom-program-preview"><h3>Review your exact program</h3><p><b>'+preview.config.name+'</b> · '+preview.config.weeks+' weeks · '+preview.sessions.length+' training sessions · '+preview.entries.length+' exercise rows. Only explicitly entered targets are prescribed.</p>'+preview.warnings.map(w=>'<p class="more-hint">'+esc(w)+'</p>').join('')+'<details class="more-details" open><summary>Session preview (first 5)</summary>'+preview.sessions.slice(0,5).map(s=>'<p><b>'+esc(s.date)+' · '+esc(s.name)+'</b> — '+s.exercises.map(e=>esc(e.name)+(e.type==='strength'?' '+e.sets.length+'×'+e.sets[0].reps+(e.sets[0].weight!=null?' @ '+(d.querySelector('#custom-unit').value==='lb'?Math.round(e.sets[0].weight*2.20462262185*100)/100+' lb':e.sets[0].weight+' kg'):' (no load)'):' '+e.duration+' min')).join('; ')+'</p>').join('')+'</details><p>Confirm all rows, training days, load units and omitted values against your original file. Saving does not schedule anything.</p><label><input type="checkbox" id="custom-confirm"> I reviewed the full program, including load units, notes, and omitted targets.</label><label>Review notes<textarea id="custom-notes" class="input" maxlength="1000"></textarea></label><button type="button" class="btn-primary" id="custom-save">Save reviewed program</button></div>';

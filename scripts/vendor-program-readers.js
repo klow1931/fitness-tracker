@@ -3,8 +3,8 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'assets/vendor');
 const files=[
- ['exceljs/dist/exceljs.min.js','exceljs.min.js'],
- ['exceljs/LICENSE','exceljs-LICENSE.txt'],
+ ['jszip/dist/jszip.min.js','jszip.min.js'],
+ ['jszip/LICENSE.markdown','jszip-LICENSE.txt'],
  ['pdfjs-dist/build/pdf.mjs','pdf.mjs'],
  ['pdfjs-dist/build/pdf.worker.mjs','pdf.worker.mjs'],
  ['pdfjs-dist/LICENSE','pdfjs-LICENSE.txt']
@@ -15,4 +15,4 @@ for(const [source,name] of files){
  if(!fs.existsSync(from))throw Error('Missing offline program reader: '+source+'. Run npm ci before packaging Loadnote.');
  fs.copyFileSync(from,path.join(out,name));
 }
-console.log('Bundled local Excel and PDF readers, with licenses, for offline program import');
+console.log('Bundled local XLSX ZIP and PDF readers, with licenses, for offline program import');
