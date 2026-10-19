@@ -26,7 +26,7 @@ test('CSV import can be corrected, approved, scheduled and explained by Coach',a
  await saved.locator('[data-custom-insights]').click();await expect(studio).toContainText('Recurring movements from your plan');
  const answer=await page.evaluate(()=>LoadnoteCoachingContext.answer(data,'What have you learned from my uploaded program?',{asOf:'2026-10-19'}));
  expect(answer.text).toContain('Competition Squat');
- expect(answer.text).toContain('not been');
+ expect(answer.text).toContain('0 of 2 Calendar sessions have linked workouts');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
 });
 
