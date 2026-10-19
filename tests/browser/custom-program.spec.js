@@ -105,7 +105,7 @@ test('unfinished editor drafts recover on reopening and Undo restores an earlier
 });
 
 test('per-movement reasons require Coach opt-in and future replacement retains original dates',async({page})=>{
- await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
+ await page.clock.install({time:new Date('2026-10-19T18:00:00.000Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
  await page.locator('#custom-studio-open').click();
@@ -119,6 +119,7 @@ test('per-movement reasons require Coach opt-in and future replacement retains o
  let saved=page.locator('#custom-program-studio details').filter({hasText:'My bench rotation'}).first();
  await saved.locator('summary').click();page.once('dialog',d=>d.accept());await saved.locator('[data-custom-schedule]').click();
  await expect.poll(()=>page.evaluate(()=>data.scheduledSessions.filter(s=>s.id.startsWith('custom:')).length)).toBe(3);
+ await saved.locator('summary').click();
  await saved.locator('[data-custom-copy]').click();
  await page.locator('[data-custom-row="0"] [data-field="sets"]').fill('2');
  await page.locator('#custom-preview').click();

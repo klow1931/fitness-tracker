@@ -4,6 +4,7 @@ const Schedule=require('../src/product/schedule');
 const Lifecycle=require('../src/product/program-lifecycle');
 const Integrity=require('../src/product/data-integrity');
 const Sync=require('../src/product/sync-model');
+const LocalCoach=require('../src/product/local-coach-context');
 
 const rows=[1,2,3].map(week=>({week,day:'Monday',exercise:'Bench Press',sets:5,reps:5,weight:100,unit:'kg',rpe:7,rest:180}));
 const base={customPrograms:[],scheduledSessions:[],exerciseCatalog:[],workouts:[]};
@@ -43,6 +44,10 @@ assert.equal(next.scheduledSessions.find(s=>s.id==='custom:first:w2d0').revision
 assert.equal(Schedule.list(next.scheduledSessions).find(s=>s.id==='custom:second:w2d0').prescription.plannedExercises[0].sets.length,3);
 assert.equal(Lifecycle.programs(next).filter(p=>p.kind==='custom-program').length,1);
 assert.equal(Lifecycle.programs(next).find(p=>p.kind==='custom-program').id,'second');
+assert.equal(Custom.insights(next,'second',{asOf:'2026-11-04'}).planned,2);
+assert.match(JSON.stringify(LocalCoach.build(next,{asOf:'2026-11-04'})) ,/Three sets kept bar speed consistent/);
+const privateCopy=JSON.parse(JSON.stringify(next));privateCopy.customPrograms[1].revision.reason.coachVisible=false;
+assert.doesNotMatch(JSON.stringify(LocalCoach.build(privateCopy,{asOf:'2026-11-04'})),/Three sets kept bar speed consistent/);
 assert.throws(()=>Custom.replacementPreview(next,'second',{asOf:'2026-11-04'}),/unscheduled copy/);
 assert.equal(Integrity.verifyBackupManifest(Integrity.addBackupManifest(next)).status,'verified');
 assert.equal(Sync.project(next).collections.customPrograms.length,2);
