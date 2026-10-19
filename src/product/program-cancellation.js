@@ -6,7 +6,7 @@
  'use strict';
  const clone=x=>JSON.parse(JSON.stringify(x)),canonical=x=>x==null||typeof x!=='object'?JSON.stringify(x):Array.isArray(x)?'['+x.map(canonical).join(',')+']':'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+canonical(x[k])).join(',')+'}',same=(a,b)=>canonical(a)===canonical(b);
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
- const TYPES={'legacy-program':['programs','legacy'],'phase-program':['phasePrograms','phase'],'meet-cycle':['meetCycles','meet'],'hypertrophy-program':['hypertrophyPrograms','hypertrophy'],'sport-program':['sportPrograms','sport'],'reviewed-program':['reviewedPrograms','builder'],'adopted-program':['adoptedPrograms','adopted']};
+ const TYPES={'legacy-program':['programs','legacy'],'phase-program':['phasePrograms','phase'],'meet-cycle':['meetCycles','meet'],'hypertrophy-program':['hypertrophyPrograms','hypertrophy'],'sport-program':['sportPrograms','sport'],'reviewed-program':['reviewedPrograms','builder'],'adopted-program':['adoptedPrograms','adopted'],'custom-program':['customPrograms','custom']};
  function validate(records){
   if(!Array.isArray(records)||records.length>1000)throw Error('Invalid program cancellation history');const ids=new Set();
   return records.map(r=>{if(!r||r.version!==1||typeof r.id!=='string'||!r.id||r.id.length>240||ids.has(r.id)||r.id!==r.kind+':'+r.programId||!TYPES[r.kind]||typeof r.programId!=='string'||!r.programId||r.programId.length>160||!Array.isArray(r.revisions)||!r.revisions.length||r.revisions.length>100)throw Error('Invalid program cancellation record');ids.add(r.id);

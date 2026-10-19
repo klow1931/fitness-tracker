@@ -23,6 +23,7 @@
    if(a.kind==='record-event'){window.openMeetResult?.(a.cycleId);return;}
    if(a.kind==='review-sport'){openCoachPrograms();window.LoadnoteSportPlannerUI?.show?.(a.programId);return;}
    if(a.kind==='review-hypertrophy'){openCoachPrograms();window.LoadnoteHypertrophyBuilderUI?.show?.(a.programId);return;}
+   if(a.kind==='review-custom'){openCoachPrograms();window.LoadnoteCustomProgramUI?.render();document.getElementById('custom-program-studio')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
    if(a.kind==='save-transition'){window.LoadnoteTransitionBaselineUI?.open?.(a.programId);return;}
    if(a.kind==='review-next-program'){window.LoadnoteNextBlockHandoffUI?.open?.(data,today());return;}
    if(a.kind==='review-handoff'){openCoachPrograms();const tools=document.getElementById('programming-tools-panel'),panel=document.getElementById('phase-builder-panel');if(tools)tools.open=true;if(panel)panel.open=true;setTimeout(()=>document.getElementById('next-block-handoff')?.scrollIntoView({behavior:'smooth',block:'start'}),50);return;}
@@ -30,7 +31,7 @@
    openCoachPrograms();
  }
  function actionLabel(kind){
-   return ({'review-week':'Review week','review-phase':'Review phase','record-event':'Record results','save-transition':'Review handoff','review-next-program':'Review next program','review-handoff':'Review handoff','resolve-overdue':'Resolve sessions','start-workout':'Start workout','resume-workout':'Resume workout','resume-draft':'Resume workout','next-session':'View next session','program-upcoming':'View calendar','wait-event':'View calendar','review-programs':'Review programs','no-program':'Open programming'}[kind]||'Review');
+   return ({'review-week':'Review week','review-phase':'Review phase','record-event':'Record results','save-transition':'Review handoff','review-next-program':'Review next program','review-handoff':'Review handoff','review-custom':'Review program','resolve-overdue':'Resolve sessions','start-workout':'Start workout','resume-workout':'Resume workout','resume-draft':'Resume workout','next-session':'View next session','program-upcoming':'View calendar','wait-event':'View calendar','review-programs':'Review programs','no-program':'Open programming'}[kind]||'Review');
  }
  function programLine(r){
    if(!r.program)return '';
@@ -46,7 +47,7 @@
      const warning=r.status==='ambiguous'?'<p class="program-lifecycle-warning" role="status">'+esc(r.nextAction?.detail||'')+'</p>':'';
      return '<div class="program-lifecycle-empty"><p class="eyebrow">TRAINING PLAN</p><h3>'+esc(r.nextAction?.label||'No active program')+'</h3>'+warning+'<button type="button" class="btn-primary" data-lifecycle-action>'+esc(actionLabel(r.nextAction?.kind))+'</button></div>';
    }
-   const kind=r.program.kind==='sport-program'?'Sport development program':r.program.kind==='hypertrophy-program'?'Hypertrophy program':r.program.kind==='meet-cycle'?(r.program.eventType==='competition'?'Competition cycle':'Mock-meet cycle'):'Phase program';
+   const kind=r.program.kind==='custom-program'?'Athlete-authored program':r.program.kind==='sport-program'?'Sport development program':r.program.kind==='hypertrophy-program'?'Hypertrophy program':r.program.kind==='meet-cycle'?(r.program.eventType==='competition'?'Competition cycle':'Mock-meet cycle'):'Phase program';
    const missed=(r.missedReviews||[]).length?'<p class="program-lifecycle-history-note">'+r.missedReviews.length+' earlier review window'+(r.missedReviews.length===1?' passed':'s passed')+' without a saved review. Past prescriptions stay unchanged; this does not block current training.</p>':'';
    return (window.LoadnoteProgramUsabilityUI?.progress(window.LoadnoteProgramUsability.status(r))||'')+'<div class="program-lifecycle-head"><div><p class="eyebrow">'+esc(kind.toUpperCase())+'</p><h3>'+esc(r.program.name)+'</h3><p class="program-lifecycle-meta">'+esc(programLine(r))+'</p></div><span class="badge">'+esc(window.LoadnoteProgramUsability?.status(r)||r.status)+'</span></div>'+
      '<div class="program-lifecycle-next"><span>Next action</span><b>'+esc(r.nextAction.label)+'</b><p>'+esc(r.nextAction.detail)+'</p></div>'+missed+

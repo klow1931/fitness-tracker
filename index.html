@@ -102,7 +102,7 @@
         </button>
         <button type="button" class="onboard-tip" data-beginner-entry="program">
           <span class="onboard-num">2</span>
-          <span><b>I already have a program</b><br><span class="text-slate-500 text-xs">Use templates or log your own sessions</span></span>
+          <span><b>I already have a program</b><br><span class="text-slate-500 text-xs">Write it, upload it, or log your own sessions</span></span>
         </button>
         <button type="button" class="onboard-tip" data-beginner-entry="log">
           <span class="onboard-num">3</span>
@@ -1040,6 +1040,7 @@
       <details class="card" id="phase-review-panel"><summary><b>Program reviews</b><small>Phase evidence and approved adjustments</small></summary><div id="phase-review"></div></details>
       <details class="card" id="program-week-review-panel"><summary><b>Weekly program review</b><small>Recovery, evidence and next-week changes</small></summary><div id="program-week-review"></div></details>
       <div class="decision-group-label"><b>Build or change a program</b><small>One recommended path first; alternate tools stay out of the way</small></div>
+      <section class="card" aria-label="Custom program studio"><div id="custom-program-studio"></div></section>
       <div id="programming-workspace" class="card programming-workspace" aria-label="Program planner"></div>
       <details class="card" id="athlete-planning-tools"><summary><b>Training context &amp; edits</b><small>Review your context and exact planned targets</small></summary><div class="programming-workspace-actions"><button type="button" class="btn-secondary" onclick="LoadnoteAthleteIntakeUI.open()">Athlete intake</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.open()">Edit planned exercises</button><button type="button" class="btn-secondary" onclick="LoadnoteAccessoryReviewUI.open()">Review accessory targets</button><button type="button" class="btn-secondary" onclick="LoadnoteAccessoryFollowUpUI.open()">Accessory follow-ups</button><button type="button" class="btn-secondary" onclick="LoadnoteWorkoutBriefUI.open()">Explain next workout</button><button type="button" class="btn-secondary" onclick="LoadnoteWeeklyCoachingUI.open()">Weekly review</button><button type="button" class="btn-secondary" onclick="LoadnoteWeeklyCoachingUI.openFollowups()">Primary-lift follow-ups</button><button type="button" class="btn-secondary" onclick="LoadnoteCardioPlannerUI.open()">Plan cardio</button><button type="button" class="btn-secondary" onclick="LoadnoteProgramEditUI.learning()">What edits show</button></div></details>
       <details class="card programming-tools-panel" id="programming-tools-panel"><summary><span><b>More program tools</b><small>Setup, return blocks and existing programs</small></span></summary>
@@ -1419,7 +1420,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v3.62.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v3.63.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2093,6 +2094,9 @@
   <script src="src/product/cycle-adaptive-controller.js" defer></script>
   <script src="src/product/program-adoption.js" defer></script>
   <script src="src/product/program-adoption-ui.js" defer></script>
+  <script src="src/product/custom-program.js" defer></script>
+  <script src="src/product/custom-program-import.js" defer></script>
+  <script src="src/product/custom-program-ui.js" defer></script>
   <script src="src/product/cycle-response-ui.js" defer></script>
   <script src="src/product/cycle-observability-ui.js" defer></script>
   <script src="src/product/mock-meet.js" defer></script>

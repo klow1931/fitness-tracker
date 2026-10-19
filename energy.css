@@ -947,3 +947,18 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
 #offline-plan-dialog p{line-height:1.5;margin:.75rem 0}
 #offline-plan-dialog button{min-height:48px;white-space:normal;margin:.4rem 0;max-width:100%}
 @media(max-width:640px){.offline-plan-actions{display:grid;grid-template-columns:minmax(0,1fr)}#offline-plan-dialog input{min-width:0}}
+/* v3.63 — compact, touch-friendly per-exercise program review. */
+.custom-program-dialog{width:min(920px,calc(100vw - 24px));max-width:920px;max-height:calc(100dvh - 24px);overflow:auto;padding:clamp(14px,3vw,26px)}
+.custom-program-heading{margin-bottom:16px}
+.custom-program-heading h2{font-size:1.35rem;font-weight:750}
+.custom-program-config,.custom-program-row-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.custom-program-dialog label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:.83rem;font-weight:600}
+.custom-program-dialog label:has(input[type="checkbox"]){flex-direction:row;align-items:flex-start;gap:8px}
+.custom-program-dialog .programming-workspace-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}
+.custom-program-row{border:1px solid var(--line,#cbd5e1);border-radius:12px;padding:12px;margin:10px 0;background:var(--surface,#fff)}
+.custom-program-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.custom-program-preview{border:1px solid #7c8ed4;border-radius:12px;padding:14px;margin:14px 0;background:rgba(91,113,197,.07)}
+.custom-program-preview h3,.custom-program-preview h4{font-weight:700;margin-bottom:8px}
+.custom-program-preview p{margin:5px 0}
+.custom-program-dialog .input{width:100%;min-width:0}
+@media(max-width:520px){.custom-program-config,.custom-program-row-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-row-fields label:has([data-field="exercise"]),.custom-program-row-fields label:has([data-field="notes"]),.custom-program-config label:first-child{grid-column:1 / -1}.custom-program-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:12px}.custom-program-row{padding:10px}}

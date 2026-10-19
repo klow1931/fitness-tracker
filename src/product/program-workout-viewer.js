@@ -46,7 +46,8 @@
      format:source?.format||null,
      trainingMaxKg:Number.isFinite(tm)&&tm>0?tm:null,
      sourcePercentOfTrainingMax:Number.isFinite(Number(source?.percentOfTrainingMax))?Number(source.percentOfTrainingMax):null,
-     purpose:source?.purpose||null
+     purpose:source?.purpose||null,
+     athleteNotes:typeof source?.notes==='string'?source.notes:null
    };
  }
  function rowModel(state,row,program,asOf){
@@ -59,7 +60,7 @@
      program:program?{id:program.id,kind:program.kind,name:program.name}:null,
      week:Number(source?.week)||null,phase:source?.phase||null,phaseLabel:phaseLabel(source?.phase),phaseWeek:Number(source?.phaseWeek)||null,
      estimatedMinutes:Number(source?.estimatedMinutes)||null,
-     exercises:(row.prescription?.plannedExercises||[]).map(p=>exercise(p,sourceExercise(source,p))),
+     exercises:(row.prescription?.plannedExercises||[]).map((p,index)=>{const exact=source?.exercises?.[index];return exercise(p,exact?.name===p.name?exact:sourceExercise(source,p));}),
      completedWorkout:done?{id:done.id,date:done.date,notes:done.notes||'',exercises:copy(done.exercises||[])}:null
    };
  }

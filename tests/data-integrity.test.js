@@ -5,7 +5,7 @@ const original={schemaVersion:11,workouts:[
  {id:'b',date:'2026-08-08',exercises:[{name:'Tricep Push Down',sets:[{weight:45,reps:10,rpe:8}]},{name:'Hip Adduction',sets:[{weight:55,reps:10,rpe:8}]}]}
 ],prs:[],templates:[],trainingBlocks:[]};
 const snapshot=JSON.stringify(original),migrated=Integrity.normalizeState(Core.normalizeState(original,{}));
-assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,32);assert.equal(migrated.releaseVersion,require('../package.json').version);
+assert.equal(JSON.stringify(original),snapshot,'migration must not mutate imported input');assert.equal(migrated.schemaVersion,33);assert.equal(migrated.releaseVersion,require('../package.json').version);
 assert.equal(migrated.workouts[0].exercises[0].exerciseId,migrated.workouts[1].exercises[0].exerciseId,'compact spelling variants share identity');
 assert.notEqual(migrated.workouts[0].exercises[1].exerciseId,migrated.workouts[1].exercises[1].exerciseId,'semantic aliases require explicit merge');
 const source=migrated.workouts[0].exercises[1].exerciseId,target=migrated.workouts[1].exercises[1].exerciseId,merged=Integrity.mergeExercises(migrated,source,target);
@@ -27,7 +27,7 @@ assert.deepEqual(preview.workouts,{before:2,after:2,added:1,changed:1,removed:1}
 // Synthetic schema-22 lb backup structure. Never embed real athlete exports in CI.
 const oldBackup={schemaVersion:22,releaseVersion:'2.18.0',unit:'lb',measureUnit:'in',workouts:[{id:'legacy-w',date:'2026-09-20',exercises:[{name:'Bench Press',sets:[{weight:102.5,reps:5,rpe:8},{weight:97.5,reps:6}]}]}],workoutRevisions:[{id:'legacy-rev',workoutId:'legacy-w',action:'edit',recordedAt:'2026-09-21T12:00:00.000Z',before:null,after:null}],prs:[{id:'legacy-pr',exercise:'Bench Press',weight:102.5}]};
 const upgraded=Integrity.normalizeState(Core.normalizeState(oldBackup));const preservation=Integrity.auditImportPreservation(oldBackup,upgraded);
-assert.equal(preservation.status,'pass');assert.equal(preservation.sourceSchema,22);assert.equal(preservation.targetSchema,32);assert.equal(preservation.unit,'lb');
+assert.equal(preservation.status,'pass');assert.equal(preservation.sourceSchema,22);assert.equal(preservation.targetSchema,33);assert.equal(preservation.unit,'lb');
 assert.deepEqual(preservation.counts.workouts,{before:1,after:1});assert.equal(Integrity.auditImportPreservation(oldBackup,{...upgraded,workouts:[]}).status,'blocking');
 const changedSet=structuredClone(upgraded);changedSet.workouts[0].exercises[0].sets[0].weight=103;
 assert(Integrity.auditImportPreservation(oldBackup,changedSet).issues.some(s=>s.includes('.weight: recorded value changed')));

@@ -24,6 +24,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node for offline reader bundling
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Bundle offline program readers
+        run: npm ci --no-audit --no-fund
       - name: Package static web app
         run: |
           mkdir _site

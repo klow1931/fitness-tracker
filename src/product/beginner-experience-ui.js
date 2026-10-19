@@ -23,8 +23,8 @@
   if(entry==='help'){
    window.openProgrammingProfile?.({guided:true,notice:'Start with your goal, available days and equipment. You can leave unknown experience as unknown. Review any suggested program before scheduling it.',onSaved:()=>window.LoadnoteTrainingHubUI?.plan?.()});return;
   }
-  window.showTab?.('workouts');window.showSubTab?.('workouts','wo-templates');
-  document.getElementById('beginner-existing-program')?.focus();
+  window.showTab?.('coach');window.showSubTab?.('coach','co-programs');
+  window.renderCustomProgramStudio?.();window.LoadnoteCustomProgramUI?.open();
  }
  function renderGuide(){
   const host=document.getElementById('beginner-workout-guide');if(!host)return;
