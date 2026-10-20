@@ -51,3 +51,8 @@ test('program cues render as text without overwriting personal notes',async({pag
  await page.evaluate(()=>{data.exerciseNotes={'Bench':'My personal cue'};const prescription=LoadnoteIntent.createPrescription([{name:'Bench',type:'strength',notes:'<img src=x onerror="window.cueExecuted=true">',sets:[{reps:5,weight:100}]}]);fillWorkoutForm(prescription.plannedExercises,'',false,{restore:{prescription}});openFastStartLogger({compact:false});});
  await expect(page.locator('.planned-exercise-notes')).toContainText('<img');expect(await page.locator('.planned-exercise-notes img').count()).toBe(0);await expect(page.locator('.ex-note')).toHaveValue('My personal cue');expect(await page.evaluate(()=>window.cueExecuted)).toBeUndefined();
 });
+test('an unspecified planned load remains distinct from explicit zero',async({page})=>{
+ await page.evaluate(()=>{const prescription=LoadnoteIntent.createPrescription([{name:'Bench',sets:[{reps:5},{reps:5,weight:0}]}]);fillWorkoutForm(prescription.plannedExercises,'',false,{restore:{prescription}});openFastStartLogger({compact:false});});
+ await expect(page.locator('#planned-work-summary')).toContainText('load unspecified');
+ await expect(page.locator('#planned-work-summary')).toContainText('0 kg');
+});

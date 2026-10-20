@@ -8,3 +8,5 @@ This patch fixes four issues reproduced in the v3.73 training demo. Schema remai
 - **Exercise cues:** New Calendar prescriptions retain program exercise notes. The logger shows them as text alongside the matching exercise, separately from editable personal notes, and restores them with the unfinished workout draft. Changing the exercise removes the old cue. For older Calendar snapshots missing this field, the logger reads the cue from the exact linked original custom-program session. Existing scheduled snapshots remain immutable.
 
 Validation covers unsupported targets, rest/cue extraction, single above-cap feedback, known-date completion, prescription round trips, safe cue rendering, actual workout completion and mobile draft recovery. The new browser demo runs in both Chromium projects and the iPhone WebKit CI gate. Automated checks do not replace physical-device acceptance.
+
+The follow-up review also reproduced an unspecified-load display issue: the expanded planned-work summary showed `0 kg` when no load existed. It now says **load unspecified**, while an explicitly entered zero remains zero. A browser regression exercises both cases together.
