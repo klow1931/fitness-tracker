@@ -53,6 +53,7 @@ assert.equal(shared.sharedReasons.length,1);
 assert.match(Coach.explain(shared,'edits'),/More time for back training/);
 assert.equal(Coach.questionKind('Review my custom program'),'review');
 assert.equal(Coach.questionKind('What have you learned from my program edits?'),'edits');
+assert.equal(Coach.questionKind('What have we learned from my program changes?'),null,'General progress questions stay with longitudinal coaching');
 assert.equal(Coach.questionKind('I have shoulder pain during my uploaded program'),'review');
 assert.match(Conversation.answer(withShared,'I have shoulder pain during my uploaded program',{asOf:'2026-10-23'}).source,/capability limit|support/i,'Health requests retain the safety route');
 assert.equal(Coach.select({...state,customPrograms:[]},{asOf:'2026-11-04'}).record,null);

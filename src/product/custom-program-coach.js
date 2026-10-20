@@ -12,7 +12,9 @@
  function questionKind(question){
   const q=clean(question);
   if(/\b(?:uploaded|imported|custom|athlete.authored|my own)\s+(?:training\s+)?(?:program|plan|routine)\b/i.test(q))return /\b(?:edit|change|learn|preference|reason|remember)\w*\b/i.test(q)?'edits':'review';
-  if(/\b(?:my\s+)?(?:program|plan)\s+(?:edits|changes|revisions|import)\b|\b(?:learned|remember)\s+from\s+my\s+(?:program|plan)\s+(?:edits|changes)\b/i.test(q))return 'edits';
+  // General "program changes" questions belong to longitudinal coaching.
+  // Reserve this route for explicit custom programs or athlete-authored edits.
+  if(/\b(?:my\s+)?(?:program|plan)\s+edits\b/i.test(q))return 'edits';
   return null;
  }
  function eligible(state,asOf){

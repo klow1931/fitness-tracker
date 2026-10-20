@@ -98,6 +98,19 @@ function initWorkoutLogger() {
   const container = document.getElementById('exercise-rows');
   if (!container) return;
   if (draft) {
+    // The unfinished workout is checkpointed synchronously, but the general
+    // unit preference uses a debounced IndexedDB write. An immediate reload
+    // (especially during an offline interruption) can therefore recover a
+    // newer draft than the stored preference. Honor the draft's explicit unit
+    // so the athlete sees the same entered weights, not converted values.
+    if (draft.unit !== currentUnit()) {
+      data.unit = draft.unit;
+      updateUnitToggle();
+      document.querySelectorAll('.unit-label').forEach(el => el.textContent = unitLabel());
+      const plateBar = document.getElementById('plate-bar');
+      if (plateBar) plateBar.value = draft.unit === 'lb' ? 45 : 20;
+      saveData(data);
+    }
     container.innerHTML = '';
     draft.rows.forEach(saved => {
       addExerciseRow({ type: saved.type, trackBy: saved.trackBy, sets: (saved.sets || []).map(s=>({done:s.done,showCompletion:s.showCompletion})) });
