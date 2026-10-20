@@ -7,8 +7,16 @@ const Schedule=require('../src/product/schedule');
 const Intent=require('../src/product/session-intent');
 const Core=require('../src/core/loadnote-core');
 
-for(const target of ['3x8-12 @ 100 kg','3x8–12 @ 100 kg','3x8 to 12 @ 100 kg','3x8+ @ 100 kg','3x8.5 @ 100 kg','4x5 @ -100 kg','4x5 @ 75% RPE 8','4x5 @ 75 percent RPE 8','4x5 @ 80–100 kg'])
- assert.throws(()=>Import.plainText('Week 1\nMonday\nSquat '+target),/Line 3:.*explicit fixed/,target);
+for(const target of ['3x8+ @ 100 kg','3x8.5 @ 100 kg','4x5 @ -100 kg','4x5 @ 80–100 kg'])
+ assert.throws(()=>Import.plainText('Week 1\nMonday\nSquat '+target),/Line 3:.*unsupported/i,target);
+for(const target of ['3x8-12 @ 100 kg','3x8–12 @ 100 kg','3x8 to 12 @ 100 kg']){
+ const row=Import.plainText('Week 1\nMonday\nSquat '+target).rows[0];assert.equal(row.reps,'8-12',target);
+}
+for(const target of ['4x5 @ 75% RPE 8','4x5 @ 75 percent RPE 8']){
+ const row=Import.plainText('Week 1\nMonday\nSquat '+target).rows[0];assert.equal(row.percent,'75',target);
+ assert.equal(row.weight,'');
+}
+
 const parsed=Import.plainText('Week 1\nMonday\nBench 1x5 @ 100 kg RPE 8 rest 90s; Pause each rep for two seconds\nWeek 2\nMonday\nBench 1x5 @ 102.5 kg RPE 8 rest 2 minutes').rows;
 assert.equal(parsed[0].notes,'Pause each rep for two seconds');
 assert.equal(parsed[0].rest,'90');assert.equal(parsed[1].rest,'120');
