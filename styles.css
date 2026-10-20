@@ -2074,3 +2074,25 @@ body.dark .weekly-target{border-color:#475569}
 #offline-plan-dialog [data-offline-movement]{min-width:0}
 #offline-plan-dialog [data-offline-input]{display:block;margin:.6rem 0}
 #offline-plan-dialog #offline-load-help,#offline-plan-dialog #offline-rpe-help{margin:.75rem 0}
+
+/* Program Studio: keep long programs usable on narrow screens and show only
+   the controls that apply to the selected exercise type. */
+.custom-program-row[data-kind="cardio"] [data-custom-field="sets"],
+.custom-program-row[data-kind="cardio"] [data-custom-field="reps"],
+.custom-program-row[data-kind="cardio"] [data-custom-field="weight"],
+.custom-program-row[data-kind="cardio"] [data-custom-field="unit"],
+.custom-program-row[data-kind="cardio"] [data-custom-field="rpe"],
+.custom-program-row[data-kind="cardio"] [data-custom-field="rest"],
+.custom-program-row[data-kind="strength"] [data-custom-field="minutes"] { display:none !important; }
+.custom-program-row-detail { min-width:0; }
+.custom-program-row-detail > summary { cursor:pointer; min-height:44px; padding:10px 4px; font-weight:600; }
+.custom-row-select { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:4px; white-space:nowrap; }
+.custom-row-select input { width:18px; height:18px; }
+.custom-program-row [aria-invalid="true"] { outline:2px solid currentColor; outline-offset:2px; }
+.custom-program-inline-error { display:block; font-size:.82em; margin-top:4px; }
+@media(max-width:600px) {
+ .custom-program-row-head { flex-wrap:wrap; gap:8px; }
+ .custom-program-row-actions { display:flex; flex-wrap:wrap; gap:8px; }
+ .custom-program-row-actions button { min-height:44px; }
+ .custom-program-row-fields { grid-template-columns:minmax(0,1fr) !important; }
+}
