@@ -243,7 +243,7 @@
      for(const exercise of s.prescription?.plannedExercises||[]){if(exercise.type!=='strength')continue;
        const match=(w.exercises||[]).find(e=>exercise.exerciseId&&e.exerciseId===exercise.exerciseId||String(e.name||'').toLowerCase()===exercise.name.toLowerCase());
        if(!match){differences.push(s.date+' · '+exercise.name+' not logged');continue;}
-       for(let i=0;i<exercise.sets.length;i++){linkedSets++;const target=exercise.sets[i],actual=match.sets?.[i];if(actual&&actual.reps===target.reps&&(target.weight==null||Math.abs(Number(actual.weight)-Number(target.weight))<=0.01))matchedSets++;}
+       for(let i=0;i<exercise.sets.length;i++){linkedSets++;const target=exercise.sets[i],actual=match.sets?.[i];if(actual&&(target.minReps!=null?Number.isInteger(actual.reps)&&actual.reps>=target.minReps&&actual.reps<=target.maxReps:actual.reps===target.reps)&&(target.weight==null||Math.abs(Number(actual.weight)-Number(target.weight))<=0.01))matchedSets++;}
      }
    }
    return {status:'ready',name:p.config.name,revision:p.revision||null,planned:rows.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:[...(p.revision&&p.sessions.length!==rows.length?['Only future sessions of this edited program were adopted; earlier dates remain with the original program.']:[]),'Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
