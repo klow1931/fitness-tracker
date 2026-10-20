@@ -1,3 +1,10 @@
+# v3.70.0 — Combined v3.68–v3.70 Program Studio & Offline Coach
+
+- v3.68: Add undoable, device-local copy-from-week and athlete-approved exact movement replacement across a week range. Protect existing target weeks and clear prior load/RPE values on exercise substitutions.
+- v3.69: Answer daily and next-workout questions about an uploaded program from its active, current Calendar prescription, with exact units and unknown targets retained. Unscheduled, cancelled or superseded sessions are not silently assigned; no data is mutated.
+- v3.70: Add an all-week coverage view, descriptive set-count jumps and empty-week notes, direct navigation to an invalid imported row, mobile quick-edit layout, and coach/editor/draft regressions.
+- Ship the three milestones in **one v3.70.0 build**, preserve schema 33 and the existing v3.66 offline-update protections; native build 33450. See [release notes](docs/releases-v3.70.md).
+
 # v3.67.0 — Offline Program Check & Complete Studio Review
 
 - Show every week and session in a complete import review before confirmation; add duplicate-exercise and jump-to-week editing tools.

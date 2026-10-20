@@ -69,6 +69,40 @@
    if(busy.length)warnings.push(busy.length+' existing scheduled Calendar session(s) overlap imported dates. Scheduling will be blocked until resolved.');
    return {version:1,config:cfg,entries,sessions,warnings};
  }
+ // Editor operations are pure and never touch an approved program or Calendar.
+ // In particular, a movement swap cannot inherit the old exercise's load/RPE.
+ function copyDraftWeek(rows,fromWeek,toWeek){
+   if(!Array.isArray(rows)||rows.length>1500||![fromWeek,toWeek].every(n=>Number.isInteger(n)&&n>=1&&n<=52)||fromWeek===toWeek)throw Error('Choose two different valid program weeks');
+   const originals=rows.filter(r=>Number(r.week)===fromWeek);
+   if(!originals.length)throw Error('The source week has no exercise rows');
+   if(rows.some(r=>Number(r.week)===toWeek))throw Error('The target week already contains exercises; choose an empty week to avoid overwriting work');
+   if(rows.length+originals.length>1500)throw Error('The program editor supports at most 1500 exercise rows');
+   return [...copy(rows),...originals.map(r=>({...copy(r),week:String(toWeek)}))];
+ }
+ function swapDraftMovement(rows,{from,to,firstWeek=1,lastWeek=52}={}){
+   if(!Array.isArray(rows)||rows.length>1500||!Number.isInteger(firstWeek)||!Number.isInteger(lastWeek)||firstWeek<1||lastWeek>52||firstWeek>lastWeek)throw Error('Choose a valid week range');
+   const oldName=String(from||'').trim().replace(/\s+/g,' '),newName=String(to||'').trim().replace(/\s+/g,' ');
+   if(!oldName||!newName||newName.length>160||oldName.toLowerCase()===newName.toLowerCase())throw Error('Choose different, nonempty exercise names (160 characters maximum)');
+   let changed=0,clearedTargets=0;
+   const result=copy(rows).map(r=>{
+     if(Number(r.week)<firstWeek||Number(r.week)>lastWeek||String(r.exercise||'').trim().replace(/\s+/g,' ').toLowerCase()!==oldName.toLowerCase())return r;
+     changed++;
+     const previous=String(r.weight??'').trim()!==''||String(r.rpe??'').trim()!=='';
+     if(r.type!=='cardio'){r.weight='';r.rpe='';if(previous)clearedTargets++;}
+     r.exercise=newName;return r;
+   });
+   if(!changed)throw Error('No matching exercise rows were found in those weeks');
+   return {rows:result,changed,clearedTargets};
+ }
+ function weeklyOverview(proposal){
+   if(!proposal?.config||!Array.isArray(proposal.entries)||!Number.isInteger(proposal.config.weeks)||proposal.config.weeks<1||proposal.config.weeks>52)throw Error('Review a valid program first');
+   const weeks=Array.from({length:proposal.config.weeks},(_,i)=>({week:i+1,days:new Set(),exerciseRows:0,strengthSets:0,cardioMinutes:0}));
+   for(const row of proposal.entries){const w=weeks[row.week-1];if(!w)throw Error('Exercise week is outside the program');w.days.add(row.weekday);w.exerciseRows++;if(row.type==='strength')w.strengthSets+=row.sets;else if(row.type==='cardio')w.cardioMinutes+=row.minutes;}
+   const summary=weeks.map(w=>({week:w.week,days:w.days.size,exerciseRows:w.exerciseRows,strengthSets:w.strengthSets,cardioMinutes:w.cardioMinutes}));
+   const increases=[];
+   for(let i=1;i<summary.length;i++){const before=summary[i-1].strengthSets,after=summary[i].strengthSets;if(before>0&&after>=before*1.5&&after-before>=4)increases.push({week:i+1,from:before,to:after});}
+   return {weeks:summary,emptyWeeks:summary.filter(w=>!w.exerciseRows).map(w=>w.week),largeSetIncreases:increases};
+ }
  function compare(original,updated){
    if(!original?.config||!Array.isArray(original.entries)||!updated?.config||!Array.isArray(updated.entries))throw Error('Choose a reviewed program to compare');
    const changes=[],kinds=[];
@@ -177,5 +211,5 @@
    }
    return {status:'ready',name:p.config.name,revision:p.revision||null,planned:rows.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:[...(p.revision&&p.sessions.length!==rows.length?['Only future sessions of this edited program were adopted; earlier dates remain with the original program.']:[]),'Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
  }
- return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow};
+ return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow,copyDraftWeek,swapDraftMovement,weeklyOverview};
 });

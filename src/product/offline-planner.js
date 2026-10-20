@@ -100,6 +100,9 @@
  function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+(r.meet?' meet-prep':'')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
  function answer(state,question,{history=[]}={}){
   if(Support.kind(question)==='health'||Support.kind(question)==='urgent-support')return null;
+  // Reading a previously reviewed personal plan is not a request to create a
+  // new workout. Leave that to the exact Calendar-backed custom-program route.
+  if(/\b(?:uploaded|imported|custom|my own)\s+(?:training\s+)?(?:program|plan)\b/i.test(question)&&/\b(?:what|which|show|review|when)\b/i.test(question)&&!/\b(?:create|write|build|draft|generate)\b/i.test(question))return null;
   const last=history.at(-1),previous=last?.role==='assistant'?last.planning:null;
   const r=parse(question,previous);if(!r)return null;
   const missing=gaps(r,state),text=summary(r)+'. '+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');

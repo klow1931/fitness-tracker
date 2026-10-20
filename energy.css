@@ -966,4 +966,9 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
 .custom-program-preview h3,.custom-program-preview h4{font-weight:700;margin-bottom:8px}
 .custom-program-preview p{margin:5px 0}
 .custom-program-dialog .input{width:100%;min-width:0}
+.custom-program-quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));align-items:end;gap:10px;margin:12px 0}
+.custom-program-quick-grid button{min-height:42px;white-space:normal}
+.custom-program-coverage{margin:12px 0}
+.custom-program-coverage p{overflow-wrap:anywhere}
 @media(max-width:520px){.custom-program-config,.custom-program-row-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-row-fields label:has([data-field="exercise"]),.custom-program-row-fields label:has([data-field="notes"]),.custom-program-config label:first-child{grid-column:1 / -1}.custom-program-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:12px}.custom-program-row{padding:10px}.custom-program-row-head{gap:8px}.custom-program-row-actions button{min-height:42px;padding:8px 10px}}
+@media(max-width:520px){.custom-program-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-quick-grid button{grid-column:1 / -1}}

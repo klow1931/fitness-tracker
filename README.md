@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.67.0 · Development build.**
+**v3.70.0 · Development build.**
+
+Combined Program Studio & offline Coach update: [v3.70 release notes](docs/releases-v3.70.md). The v3.68–v3.70 milestones ship together as one v3.70 build: quickly copy an existing week to an empty week, replace exact movements over selected weeks without carrying their previous load/RPE, then Undo, review and save. The offline Coach can read the **active scheduled** custom-program session for today or the next workout, without inventing a prescription or rewriting Calendar. The full-program review highlights week coverage and direct import-row errors; v3.66 safe Home Screen updates remain available.
 
 Custom program intelligence: [v3.67 release notes](docs/releases-v3.67.md). Program Studio now shows every saved session in a week-by-week import preview, supports duplicate-row editing and jump-to-week navigation, and offers an offline plan check against the athlete's confirmed training days and avoided exercises. Coach can explain this reviewed plan and consented edit reasons without inventing loads, overwriting programs or claiming causal learning. The v3.66 safe-update workflow remains in place.
 
