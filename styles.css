@@ -2096,3 +2096,10 @@ body.dark .weekly-target{border-color:#475569}
  .custom-program-row-actions button { min-height:44px; }
  .custom-program-row-fields { grid-template-columns:minmax(0,1fr) !important; }
 }
+
+/* Reviewed percentage targets belong to strength sessions, never cardio. */
+.custom-program-row[data-kind="cardio"] .custom-program-percent { display:none !important; }
+.custom-program-percent { grid-column:1/-1; min-width:0; margin:.4rem 0; }
+.custom-program-percent > summary { cursor:pointer; min-height:44px; font-weight:600; padding:.5rem; }
+.custom-program-percent > label { display:block; margin:.5rem 0; }
+.custom-program-row [data-custom-field="reps"] input { min-width:0; }
