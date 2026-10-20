@@ -33,10 +33,17 @@
     if(!(amount>0)||measure==='reps'&&!Number.isInteger(amount))return null;
     const set={[measure]:amount};const hasWeight=raw?.weight!==''&&raw?.weight!=null&&Number.isFinite(Number(raw.weight));if(hasWeight)set.weight=Math.round(Math.max(0,Number(raw.weight))*100)/100;
     if(raw?.minReps!==undefined||raw?.maxReps!==undefined){
-      if(measure!=='reps'||!Number.isInteger(raw.minReps)||!Number.isInteger(raw.maxReps)||raw.minReps<6||raw.maxReps>20||raw.minReps>raw.maxReps||amount<raw.minReps||amount>raw.maxReps)throw Error('Invalid planned accessory rep range');
+      if(measure!=='reps'||!Number.isInteger(raw.minReps)||!Number.isInteger(raw.maxReps)||raw.minReps<1||raw.maxReps>50||raw.minReps>raw.maxReps||amount<raw.minReps||amount>raw.maxReps)throw Error('Invalid planned accessory rep range');
       set.minReps=raw.minReps;set.maxReps=raw.maxReps;
     }
-    const target=Number(raw?.targetRpe??raw?.rpe);
+    // Optional reviewed percentage provenance: never guess a training max or
+   // tested 1RM from the calculated load alone.
+   if(raw?.percent!==undefined||raw?.percentBasis!==undefined||raw?.referenceKg!==undefined||raw?.roundTo!==undefined||raw?.roundUnit!==undefined){
+     const percent=Number(raw?.percent),referenceKg=Number(raw?.referenceKg),roundTo=Number(raw?.roundTo),basis=raw?.percentBasis,roundUnit=raw?.roundUnit;
+     if(measure!=='reps'||!hasWeight||!Number.isFinite(percent)||percent<1||percent>100||!['training-max','tested-1rm'].includes(basis)||!Number.isFinite(referenceKg)||referenceKg<=0||referenceKg>1000||!Number.isFinite(roundTo)||roundTo<0.1||roundTo>25||!['kg','lb'].includes(roundUnit))throw Error('Invalid reviewed percentage-load prescription');
+     Object.assign(set,{percent,percentBasis:basis,referenceKg,roundTo,roundUnit});
+   }
+   const target=Number(raw?.targetRpe??raw?.rpe);
     if(target>=1&&target<=10)set.targetRpe=target;
     return set;
   }
