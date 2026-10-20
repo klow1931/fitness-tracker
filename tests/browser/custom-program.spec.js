@@ -10,6 +10,7 @@ test('v3.73 custom program weekly evidence and self-report survive offline reloa
   next=LoadnoteCustomProgram.schedule(next,'pilot-weekly',{now:'2026-10-01T12:00:00.000Z'});
   await persistNow(next);data=next;showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();
  });
+ await page.locator('#custom-program-studio details.more-details').filter({has:page.locator('[data-custom-insights="pilot-weekly"]')}).locator('summary').first().click();
  await page.locator('[data-custom-insights="pilot-weekly"]').click();
  const review=page.locator('[data-custom-report="pilot-weekly"]');
  await expect(review).toContainText('Weekly training review');
@@ -24,6 +25,7 @@ test('v3.73 custom program weekly evidence and self-report survive offline reloa
  expect(await page.evaluate(()=>({calendar:data.scheduledSessions.length,logs:data.workouts.length}))).toEqual({calendar:2,logs:0});
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-program-studio details.more-details').filter({has:page.locator('[data-custom-insights="pilot-weekly"]')}).locator('summary').first().click();
  await page.locator('[data-custom-insights="pilot-weekly"]').click();
  await page.locator('[data-custom-report="pilot-weekly"] [data-weekly-select]').selectOption('1');
  await expect(page.locator('[data-custom-report="pilot-weekly"]')).toContainText('Discuss reported recovery');
