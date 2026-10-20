@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.66.0 · Development build.**
+**v3.67.0 · Development build.**
+
+Custom program intelligence: [v3.67 release notes](docs/releases-v3.67.md). Program Studio now shows every saved session in a week-by-week import preview, supports duplicate-row editing and jump-to-week navigation, and offers an offline plan check against the athlete's confirmed training days and avoided exercises. Coach can explain this reviewed plan and consented edit reasons without inventing loads, overwriting programs or claiming causal learning. The v3.66 safe-update workflow remains in place.
 
 PWA update recovery: [v3.66 release notes](docs/releases-v3.66.md). A lightweight service-worker installation can reach the waiting-update prompt even when old cached releases occupy storage. On athlete-approved activation it retires only older Loadnote app-shell caches and refreshes offline assets; device-local workouts, backup files, drafts, account data and recovery snapshots are not cleared. Device & backup now offers **Check for updates**, plus a retry if offline assets cannot finish downloading. Safari and Home Screen installs may have separate local data; export and verify a JSON backup before removing either install.
 

@@ -51,6 +51,11 @@
   // not a new recommendation or an LLM-generated explanation.
   const explainedDecision=(typeof module==='object'&&module.exports?require('./decision-explanation'):globalThis.LoadnoteDecisionExplanation)?.answer(state,question,{asOf,unit});
   if(explainedDecision)return explainedDecision;
+  // Athlete-authored program questions use their exact reviewed rows, not a
+  // general training answer or a guessed prescription. Private edit reasons
+  // stay private, including when a device model is installed.
+  const customProgram=(typeof module==='object'&&module.exports?require('./custom-program-coach'):globalThis.LoadnoteCustomProgramCoach)?.answer(state,q,{asOf});
+  if(customProgram)return customProgram;
   // Saved athlete preferences can be recalled without inventing cross-session memories.
   const trainingProfile=(typeof module==='object'&&module.exports?require('./coach-training-profile'):globalThis.LoadnoteCoachTrainingProfile)?.answer(state,question,{asOf,history});
   if(trainingProfile)return trainingProfile;

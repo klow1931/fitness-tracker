@@ -32,6 +32,7 @@ test('offline interruption checkpoints cardio, units, notes and completion witho
  await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.set-weight')).toHaveValue('220.46');
+ expect(await page.evaluate(()=>currentUnit())).toBe('lb');
  const after=await page.evaluate(()=>{const d=LoadnoteDraft.normalize(captureLoggerDraft());delete d.updatedAt;return d;});
  expect(after).toEqual(before);expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
  await context.setOffline(false);
