@@ -71,6 +71,22 @@
  }
  // Editor operations are pure and never touch an approved program or Calendar.
  // In particular, a movement swap cannot inherit the old exercise's load/RPE.
+ // Bulk editor is draft-only: a separate preview/confirmation is required in the UI.
+ function bulkEditDraftRows(rows,selected,changes){
+  if(!Array.isArray(rows)||rows.length>1500||!Array.isArray(selected)||!selected.length||selected.length>rows.length||!changes||typeof changes!=='object')throw Error('Select valid draft exercise rows');
+  const indexes=new Set(selected);if(indexes.size!==selected.length||[...indexes].some(i=>!Number.isInteger(i)||i<0||i>=rows.length))throw Error('Invalid exercise selection');
+  const keys=Object.keys(changes);if(!keys.length||keys.some(k=>!['sets','reps','rpe','rest','minutes'].includes(k)))throw Error('Choose supported targets to update');
+  for(const [key,value] of Object.entries(changes))if(value===null||value===undefined||String(value).trim()==='')throw Error('Enter a value for '+key);
+  const result=copy(rows);for(const i of indexes){
+   const row=result[i],cardio=row.type==='cardio';
+   for(const [key,value] of Object.entries(changes)){
+    if(cardio!== (key==='minutes'))throw Error('Select only compatible '+(cardio?'cardio':'strength')+' rows for this edit');
+    const allowed={sets:[1,12],reps:[1,50],rpe:[1,10],rest:[60,600],minutes:[1,360]}[key],n=Number(value);
+    if(!Number.isFinite(n)||n<allowed[0]||n>allowed[1]||key!=='rpe'&&!Number.isInteger(n))throw Error('Invalid '+key+' target');
+    row[key]=String(n);
+   }
+  }return {rows:result,changed:indexes.size,affected:selected.map(i=>({row:i+1,week:rows[i].week,day:rows[i].day,exercise:rows[i].exercise,type:rows[i].type}))};
+ }
  function copyDraftWeek(rows,fromWeek,toWeek){
    if(!Array.isArray(rows)||rows.length>1500||![fromWeek,toWeek].every(n=>Number.isInteger(n)&&n>=1&&n<=52)||fromWeek===toWeek)throw Error('Choose two different valid program weeks');
    const originals=rows.filter(r=>Number(r.week)===fromWeek);
@@ -211,5 +227,5 @@
    }
    return {status:'ready',name:p.config.name,revision:p.revision||null,planned:rows.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:[...(p.revision&&p.sessions.length!==rows.length?['Only future sessions of this edited program were adopted; earlier dates remain with the original program.']:[]),'Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
  }
- return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow,copyDraftWeek,swapDraftMovement,weeklyOverview};
+ return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow,copyDraftWeek,bulkEditDraftRows,swapDraftMovement,weeklyOverview};
 });
