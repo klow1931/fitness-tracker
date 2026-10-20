@@ -21,7 +21,7 @@
  function describe(e,unit='kg'){
   const weight=x=>Number.isFinite(x)?Math.round(x*(unit==='lb'?2.2046226218:1)*10)/10+' '+unit:'unknown load';
   if(e.type==='cardio')return e.name+' · '+e.duration+' min';if(e.type==='practice')return e.name+' · reviewed '+e.kind+' protocol';
-  const lines=(e.sets||[]).map(s=>weight(s.weight)+' × '+(s.duration!=null?s.duration+' sec':s.minReps!=null?s.minReps+'–'+s.maxReps:s.reps)+' · RPE cap '+(s.targetRpe??'unknown'));
+  const lines=(e.sets||[]).map(s=>weight(s.weight)+' × '+(s.duration!=null?s.duration+' sec':s.minReps!=null?s.minReps+'–'+s.maxReps:s.reps)+(s.percent!=null?' · '+s.percent+'% '+(s.percentBasis==='training-max'?'training max':'tested 1RM')+' (rounded '+s.roundTo+' '+s.roundUnit+')':'')+' · RPE cap '+(s.targetRpe??'unknown'));
   return e.name+' · '+(lines.length&&lines.every(l=>l===lines[0])?lines.length+' sets · '+lines[0]:lines.map((l,i)=>'Set '+(i+1)+': '+l).join(' / '));
  }
  function review(state,options){try{return inspect(state,options);}catch{return {status:'invalid',candidates:[],notice:NOTICE};}}
