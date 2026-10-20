@@ -58,7 +58,15 @@
    d.querySelector('#custom-upload').onchange=async()=>{const file=d.querySelector('#custom-upload').files?.[0];if(!file)return;try{if(file.size>10*1024*1024)throw Error('Maximum file size is 10 MB');const parsed=await parseFile(file);setImported(d,parsed,{kind:parsed.source,name:file.name});}catch(e){error(d,e.message);}finally{d.querySelector('#custom-upload').value='';}};
    d.querySelector('#custom-template').onclick=()=>download('loadnote-program-example.csv',I().sample,'text/csv');
    d.querySelector('#custom-parse-text').onclick=()=>{try{const content=d.querySelector('#custom-paste').value,parsed=/^\s*week\s*,/i.test(content)?I().csv(content):I().plainText(content);setImported(d,parsed,{kind:parsed.source,name:'Pasted program'});}catch(e){error(d,e.message);}};
-   d.querySelector('#custom-preview').onclick=()=>showPreview(d);
+   d.querySelector('#custom-bulk-preview-button').onclick=()=>{readRows(d);const output=d.querySelector('#custom-bulk-preview');try{
+ const field=d.querySelector('#custom-bulk-field').value,value=d.querySelector('#custom-bulk-value').value;
+ bulkPreview=M().bulkEditDraftRows(rows,[...selectedRows].sort((a,b)=>a-b),{[field]:value});
+ output.textContent=bulkPreview.changed+' row(s) will change '+field+' to '+value+': '+bulkPreview.affected.map(x=>'Week '+x.week+' '+x.day+' · '+x.exercise+' (row '+x.row+')').join('; ')+'. Nothing changed yet.';
+ d.querySelector('#custom-bulk-apply').disabled=false;
+ }catch(e){bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;output.textContent=e.message;}};
+ d.querySelector('#custom-bulk-apply').onclick=()=>{if(!bulkPreview)return;rows=bulkPreview.rows;selectedRows.clear();bulkPreview=null;renderRows(d);changed(d,true);d.querySelector('#custom-bulk-preview').textContent='Applied to unsaved draft. Undo is available; preview the program before saving.';d.querySelector('#custom-bulk-apply').disabled=true;};
+ for(const id of ['custom-bulk-field','custom-bulk-value'])d.querySelector('#'+id).addEventListener('input',()=>{bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;d.querySelector('#custom-bulk-preview').textContent='Review the selection again before applying.';});
+ d.querySelector('#custom-preview').onclick=()=>showPreview(d);
    d.querySelector('#custom-program-form').addEventListener('submit',e=>e.preventDefault());
    ['custom-name','custom-weeks','custom-start','custom-unit'].forEach(id=>d.querySelector('#'+id).addEventListener('input',()=>{if(id==='custom-weeks')d.querySelector('#custom-range-end').value=d.querySelector('#custom-weeks').value;invalidate(d);changed(d);}));
    d.querySelector('#custom-undo').onclick=()=>undo(d);
@@ -80,7 +88,8 @@
    d.querySelector('#custom-prev-page').onclick=()=>{readRows(d);page--;renderRows(d);changed(d);};d.querySelector('#custom-next-page').onclick=()=>{readRows(d);page++;renderRows(d);changed(d);};
    d.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{readRows(d);rows.splice(Number(b.dataset.remove),1);renderRows(d);changed(d,true);});
    d.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>{readRows(d);if(rows.length>=1500){error(d,'The program editor supports at most 1500 exercise rows.');return;}const i=Number(b.dataset.duplicate);rows.splice(i+1,0,clone(rows[i]));page=Math.floor((i+1)/PAGE);renderRows(d);changed(d,true);});
-   d.querySelectorAll('[data-custom-row] [data-field]').forEach(el=>el.addEventListener('input',()=>{readReason(d);invalidate(d);changed(d);}));
+   d.querySelectorAll('[data-select-row]').forEach(el=>el.onchange=()=>{const i=Number(el.dataset.selectRow);if(el.checked)selectedRows.add(i);else selectedRows.delete(i);bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;d.querySelector('#custom-bulk-preview').textContent=selectedRows.size+' selected. Preview again before applying.';d.querySelector('#custom-editor-state').textContent='Unsaved draft · '+rows.length+' exercises · '+selectedRows.size+' selected.';});
+   d.querySelectorAll('[data-custom-row] [data-field]').forEach(el=>el.addEventListener('input',()=>{if(el.dataset.field==='type')el.closest('[data-custom-row]').dataset.kind=el.value;bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;readReason(d);invalidate(d);changed(d);}));
  }
  function setImported(d,result,from){
    if(!result.rows.length)throw Error('The file contained no exercise prescriptions');rows=result.rows;page=0;preview=null;source={...from,name:from.name.slice(0,180)};
