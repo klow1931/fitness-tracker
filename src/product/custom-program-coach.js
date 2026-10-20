@@ -2,16 +2,16 @@
  * This is a descriptive review, never a new training prescription or a model update.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./programming-profile'));
- else root.LoadnoteCustomProgramCoach=factory(root.LoadnoteCustomProgram,root.LoadnoteProgrammingProfile);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Profile){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./programming-profile'),require('./schedule'));
+ else root.LoadnoteCustomProgramCoach=factory(root.LoadnoteCustomProgram,root.LoadnoteProgrammingProfile,root.LoadnoteSchedule);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Profile,Schedule){
  'use strict';
  const day=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T12:00:00Z'))&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const clean=x=>String(x||'').replace(/\s+/g,' ').trim().slice(0,500);
  const dayNames=Custom.dayNames;
  function questionKind(question){
   const q=clean(question);
-  if(/\b(?:uploaded|imported|custom|athlete.authored|my own)\s+(?:training\s+)?(?:program|plan|routine)\b/i.test(q))return /\b(?:edit|change|learn|preference|reason|remember)\w*\b/i.test(q)?'edits':'review';
+  if(/\b(?:uploaded|imported|custom|athlete.authored|my own)\s+(?:training\s+)?(?:program|plan|routine)\b/i.test(q))return /\b(?:today|tomorrow|next|upcoming|this week|session|workout)\b/i.test(q)?'session':/\b(?:edit|change|learn|preference|reason|remember)\w*\b/i.test(q)?'edits':'review';
   // General "program changes" questions belong to longitudinal coaching.
   // Reserve this route for explicit custom programs or athlete-authored edits.
   if(/\b(?:my\s+)?(?:program|plan)\s+edits\b/i.test(q))return 'edits';
@@ -65,9 +65,13 @@
   if(noEffort.length)notes.push(noEffort.length+' strength row(s) have no RPE target. Coach cannot infer an effort cap.');
   if(!scheduled)notes.push('This program was saved but not scheduled by this review date. Workout outcomes cannot be attributed to it yet.');
   const days=weekly.map(w=>w.days.size),sets=weekly.map(w=>w.sets);
+  const overview=Custom.weeklyOverview(record);
+  if(overview.emptyWeeks.length)notes.push('Weeks '+overview.emptyWeeks.join(', ')+' have no exercises in the reviewed file. Confirm that this is intentional.');
+  if(overview.largeSetIncreases.length)notes.push('Review strength-set jumps: '+overview.largeSetIncreases.slice(0,6).map(x=>'week '+x.week+' ('+x.from+' to '+x.to+' sets)').join('; ')+'. This is a descriptive change in programmed sets, not a claim of excessive training or an instruction to deload.');
   const report={version:1,asOf,id:record.id,name:record.config.name,weeks:record.config.weeks,scheduled,
    sessions:record.sessions.length,exerciseRows:record.entries.length,plannedDays:dayNames.filter((_,i)=>prescribedDays.has(i)),
    weekly:weekly.map(w=>({week:w.week,days:w.days.size,strengthSets:w.sets,exerciseRows:w.exercises})),
+   emptyWeeks:overview.emptyWeeks,largeSetIncreases:overview.largeSetIncreases,
    range:{sessionDays:[Math.min(...days),Math.max(...days)],strengthSets:[Math.min(...sets),Math.max(...sets)]},
    missingLoad:unloaded.length,missingRpe:noEffort.length,profileChecked:!!profile,
    outsideAvailability:unavailable.map(d=>dayNames[d]),excludedMovements:conflicting.slice(0,8),
@@ -95,14 +99,36 @@
   else lines.push('No linked workout outcomes yet because this reviewed program has not been scheduled.');
   return lines.join(' ')+' Review any proposed edit in Custom Program Studio; nothing has been changed.';
  }
- function answer(state,question,{asOf}={}){
+ function dailySession(state,record,{asOf,question,unit='kg'}={}){
+  const base={source:'Offline Coach · reviewed custom session',readOnly:true,intent:{topic:'custom-program',kind:'session'},actions:[{kind:'custom-programs',label:'Review Custom Program Studio'}]};
+  const name=record.config.name,cutoff=asOf+'T23:59:59.999Z';
+  if(!record.scheduledAt||record.scheduledAt>cutoff)return {...base,text:name+' is reviewed but was not scheduled on Calendar by '+asOf+'. Save and explicitly schedule it in Custom Program Studio before using it as a daily workout. No training was changed.',evidence:[]};
+  if(record.replacedBy&&record.replacedAt<=cutoff)return {...base,text:name+' was superseded by a reviewed edit. Open Custom Program Studio and use the active Calendar version; I will not quote outdated session targets.',evidence:[]};
+  const all=Schedule.list(state.scheduledSessions||[],cutoff).filter(s=>s.id.startsWith('custom:'+record.id+':')&&s.status==='scheduled').sort((a,b)=>a.date.localeCompare(b.date));
+  const tomorrow=/\btomorrow\b/i.test(question),next=/\b(?:next|upcoming)\b/i.test(question),requested=tomorrow?(()=>{const d=new Date(asOf+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);})():asOf;
+  const session=next?all.find(s=>s.date>=requested):all.find(s=>s.date===requested);
+  if(!session){const upcoming=all.find(s=>s.date>requested);return {...base,text:'No scheduled session from '+name+' is listed for '+requested+'. '+(upcoming?'The next active Calendar session is '+upcoming.date+'. ':'No later active session is available in this program. ')+'I have not created a substitute workout.',evidence:[]};}
+  const weight=kg=>Math.round(kg*(unit==='lb'?2.20462262185:1)*100)/100+' '+(unit==='lb'?'lb':'kg');
+  const exercises=session.prescription?.plannedExercises||[];
+  const lines=exercises.map(e=>{
+   if(e.type==='cardio')return e.name+' — '+(e.duration==null?'duration unspecified':e.duration+' minutes');
+   const sets=e.sets||[],reps=[...new Set(sets.map(x=>x.reps))],loads=[...new Set(sets.map(x=>x.weight??null))],rpes=[...new Set(sets.map(x=>x.targetRpe??null))];
+   const repText=reps.length===1?reps[0]+' reps':'reps vary by set';
+   const loadText=loads.length===1?(loads[0]===null?'load unspecified':weight(loads[0])):'loads vary by set';
+   const rpeText=rpes.length===1?(rpes[0]===null?'RPE unspecified':'RPE '+rpes[0]):'RPE varies by set';
+   return e.name+' — '+sets.length+' sets, '+repText+', '+loadText+', '+rpeText;
+  });
+  return {...base,text:name+' · '+session.date+' · '+session.name+'. Reviewed Calendar prescription: '+lines.slice(0,12).join('; ')+(lines.length>12?'; plus '+(lines.length-12)+' more exercise(s) in Calendar':'')+'. These are planned targets, not proof of completion or an updated load recommendation. Log your actual sets separately; no program was changed.',evidence:[{id:session.id,date:session.date,revisionAt:session.revisionAt,plannedExercises:exercises}]};
+ }
+ function answer(state,question,{asOf,unit='kg'}={}){
   const kind=questionKind(question);if(!kind)return null;
   try{
    const selected=select(state,{asOf,question});
    if(!selected.record)return {text:selected.choices.length?'Which saved custom program should I review? '+selected.choices.map(x=>x.name).join('; ')+'.':'There is no reviewed custom program saved yet. Write or import one in Custom Program Studio, then review it before scheduling.',source:'Offline Coach · custom program check',readOnly:true,evidence:[],actions:[{kind:'custom-programs',label:'Open Custom Program Studio'}]};
+   if(kind==='session')return dailySession(state,selected.record,{asOf,question,unit});
    const report=inspect(state,selected.record.id,{asOf});
    return {text:explain(report,kind)+' '+report.notice,source:'Offline Coach · custom program check',readOnly:true,evidence:[report],intent:{topic:'custom-program',kind},actions:[{kind:'custom-programs',label:'Review the saved program'}],followUps:kind==='edits'?['Review my uploaded program']:['What have you learned from my program edits?']};
   }catch{return {text:'I could not validate the saved custom program for this date. Open Custom Program Studio and review the program and its history; no training was changed.',source:'Offline Coach · custom program unavailable',readOnly:true,evidence:[],actions:[{kind:'custom-programs',label:'Open Custom Program Studio'}]};}
  }
- return {questionKind,select,inspect,explain,answer};
+ return {questionKind,select,inspect,explain,dailySession,answer};
 });

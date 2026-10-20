@@ -1,6 +1,81 @@
 const {test,expect}=require('playwright/test');
 const JSZip=require('jszip');
 
+test('v3.70 quick edit copies an empty week and replaces a movement without carrying old loads',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-19T18:00:00.000Z')});
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-studio-open').click();
+ await page.locator('#custom-name').fill('Coach-reviewed block');
+ await page.locator('#custom-weeks').fill('3');
+ await page.locator('#custom-start').fill('2026-10-19');
+ await page.locator('[data-custom-row="0"] [data-field="exercise"]').fill('Competition Bench');
+ await page.locator('[data-custom-row="0"] [data-field="weight"]').fill('100');
+ await page.locator('[data-custom-row="0"] [data-field="rpe"]').fill('8');
+ await page.locator('#custom-quick-tools summary').click();
+ await page.locator('#custom-copy-from').fill('1');await page.locator('#custom-copy-to').fill('2');
+ await page.locator('#custom-copy-chosen').click();
+ await expect(page.locator('#custom-count')).toContainText('2 exercise rows');
+ await expect(page.locator('[data-custom-row="1"] [data-field="week"]')).toHaveValue('2');
+ await page.locator('#custom-swap-from').fill('competition bench');
+ await page.locator('#custom-swap-to').fill('Paused Bench');
+ await page.locator('#custom-range-start').fill('2');await page.locator('#custom-range-end').fill('2');
+ page.once('dialog',dialog=>dialog.accept());await page.locator('#custom-swap-apply').click();
+ await expect(page.locator('[data-custom-row="1"] [data-field="exercise"]')).toHaveValue('Paused Bench');
+ await expect(page.locator('[data-custom-row="1"] [data-field="weight"]')).toHaveValue('');
+ await expect(page.locator('[data-custom-row="1"] [data-field="rpe"]')).toHaveValue('');
+ await expect(page.locator('[data-custom-row="0"] [data-field="weight"]')).toHaveValue('100');
+ await page.locator('#custom-undo').click();
+ await expect(page.locator('[data-custom-row="1"] [data-field="exercise"]')).toHaveValue('Competition Bench');
+ await expect(page.locator('[data-custom-row="1"] [data-field="weight"]')).toHaveValue('100');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('.custom-program-coverage')).toContainText('Week 3');
+ await expect(page.locator('#custom-preview-result')).toContainText('Weeks without sessions: 3');
+ await expect(page.locator('#custom-draft-status')).toContainText('Draft saved');
+ await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await expect(page.locator('#custom-resume')).toBeVisible();
+ await page.locator('#custom-resume').click();
+ await expect(page.locator('[data-custom-row="1"] [data-field="exercise"]')).toHaveValue('Competition Bench');
+});
+
+test('v3.70 offline Coach quotes the scheduled custom session, not an invented daily workout',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-19T18:00:00.000Z')});
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ const answer=await page.evaluate(()=>{
+  const rows=[{week:1,day:'Monday',exercise:'Competition Bench',sets:3,reps:5,weight:100,unit:'kg',rpe:7}];
+  const proposal=LoadnoteCustomProgram.build(data,{name:'My uploaded bench plan',weeks:1,startDate:'2026-10-19',rows,unit:'kg'});
+  let state=LoadnoteCustomProgram.save(data,proposal,{confirmed:true,now:'2026-10-19T12:00:00.000Z',id:'uploaded-plan'});
+  const unscheduled=LoadnoteCoachConversation.answer(state,'What is my custom program workout today?',{asOf:'2026-10-19'});
+  state=LoadnoteCustomProgram.schedule(state,'uploaded-plan',{now:'2026-10-19T13:00:00.000Z'});
+  const scheduled=LoadnoteCoachConversation.answer(state,'Show my custom program workout for today',{asOf:'2026-10-19',unit:'lb'});
+  return {unscheduled:unscheduled.text,source:scheduled.source,text:scheduled.text,evidence:scheduled.evidence,unchanged:data.customPrograms.length};
+ });
+ expect(answer.unscheduled).toContain('was not scheduled');
+ expect(answer.source).toBe('Offline Coach · reviewed custom session');
+ expect(answer.text).toContain('Competition Bench');
+ expect(answer.text).toContain('220.46 lb');
+ expect(answer.evidence[0].id).toContain('uploaded-plan');
+ expect(answer.unchanged).toBe(0);
+});
+
+test('v3.70 invalid imported row offers a direct jump without discarding other rows',async({page})=>{
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-studio-open').click();
+ const lines=['Week,Day,Exercise,Sets,Reps,Weight,Unit,RPE'];
+ for(let week=1;week<=17;week++)lines.push(`${week},Monday,Competition Squat,3,${week===17?0:5},100,kg,7`);
+ await page.locator('#custom-upload').setInputFiles({name:'row-errors.csv',mimeType:'text/csv',buffer:Buffer.from(lines.join('\n'))});
+ await page.locator('#custom-start').fill('2026-10-19');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-error')).toContainText('Row 17');
+ await page.locator('#custom-error button').click();
+ await expect(page.locator('[data-custom-row="16"] [data-field="reps"]')).toHaveValue('0');
+ await page.locator('[data-custom-row="16"] [data-field="reps"]').fill('4');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-preview-result')).toContainText('17 training sessions');
+});
+
 test('v3.67 reviews all imported weeks and supports quick duplicate and jump editing',async({page})=>{
  await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
