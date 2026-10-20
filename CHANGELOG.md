@@ -1,3 +1,10 @@
+# v3.66.0 — Reliable Home Screen Updates
+
+- Install the next web-app service worker with a small bootstrap instead of requiring a full static-shell download before the update prompt. This reduces the risk that retained release caches or an individual asset failure indefinitely strand iPhone Home Screen users on an old release.
+- After a saved, explicitly approved update (or first installation), reclaim **only** obsolete `loadnote-v*` Cache Storage entries and warm the complete offline shell before claiming pages. Workout data, logger drafts, photos, account state, IndexedDB/localStorage and other origin caches are not touched.
+- Add a manual update check and visible failure guidance under Device & backup. A partial offline asset install reports its limitation and offers a retry; cache misses can self-heal online. A user still decides when a waiting version activates, and open app windows continue to block activation.
+- Add lifecycle and cache-recovery regression coverage. Schema stays 33; native build 33410. Physical iPhone PWA update/offline tests remain required.
+
 # v3.65.0 — Safer Custom Program Editing
 
 - Autosave unfinished Studio rows, dates, configuration and optional explanations locally for 30 days; resume or discard from the Studio landing page. Up to 20 Undo snapshots support corrections before save. Imported file bytes are never retained; browser drafts are not account-synced and may be accessible to others using the same browser.
