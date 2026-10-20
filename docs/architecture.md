@@ -57,7 +57,7 @@ The v2.64 starting-prescription layer is read-only until explicit athlete applic
 
 Continue extracting legacy orchestration only with regression coverage. Some non-workout inline handlers remain. Retired technique-review code is archived, while saved form-review records remain intact. Styles and charts are now generated into committed assets; food lookup and online coaching still require a connection.
 
-The service worker caches each release's complete app shell without background replacement. app-lifecycle.js presents waiting updates, saves drafts/data before explicit activation and blocks activation while other app tabs are open. Old caches are retained for open pages; cache reclamation remains follow-up work. Browser eviction can still remove local caches/data, so exports remain important. Release labels are checked against `package.json`.
+The v3.66 service worker installs a small index bootstrap so storage occupied by old release caches does not require another full shell to be downloaded before an update can wait. After explicit, saved-data activation (or first install), it retires only obsolete `loadnote-v*` Cache Storage entries, then warms the full offline shell before claiming pages. A failed warm-up is reported, may be retried from Device & backup, and missing static assets are cached on successful online fetch. `app-lifecycle.js` keeps the waiting-update gate, open-tab guard, manual check and safe failure guidance. No update or cache-repair path deletes IndexedDB, localStorage, drafts, photos or other origin caches. Browser eviction can still remove local caches/data, so verified exports and physical-device acceptance remain important. Release labels are checked against `package.json`.
 
 
 ### v2.65 phase policy

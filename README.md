@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.65.0 · Development build.**
+**v3.66.0 · Development build.**
+
+PWA update recovery: [v3.66 release notes](docs/releases-v3.66.md). A lightweight service-worker installation can reach the waiting-update prompt even when old cached releases occupy storage. On athlete-approved activation it retires only older Loadnote app-shell caches and refreshes offline assets; device-local workouts, backup files, drafts, account data and recovery snapshots are not cleared. Device & backup now offers **Check for updates**, plus a retry if offline assets cannot finish downloading. Safari and Home Screen installs may have separate local data; export and verify a JSON backup before removing either install.
 
 Safer program editing: [v3.65 release notes](docs/releases-v3.65.md). Autosave and Undo protect unfinished Custom Program Studio work on this browser. Edited copies can annotate individual movement changes and optionally share those explanations with Coach. Reviewed copies of scheduled programs can replace **future-only** Calendar sessions after an exact date-by-date confirmation, preserving today, completed workouts and revision history.
 

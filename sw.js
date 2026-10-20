@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.65.0';
+const CACHE = 'loadnote-v3.66.0';
 const ASSETS = [
   './src/product/custom-program.js',
   './src/product/custom-program-import.js',
@@ -270,14 +270,61 @@ const ASSETS = [
 ];
 const SCOPE = self.registration.scope;
 const assetURLs = new Set(ASSETS.map(path => new URL(path, SCOPE).href));
-self.addEventListener('install', event => {event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));});
+// Install a small entry point first. Previous releases cached the entire shell
+// before an update could reach "waiting", which could fail on storage-constrained
+// Home Screen apps retaining several older version caches.
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./index.html'])));
+});
 self.addEventListener('message', event => {
+  if(event.data?.type==='CHECK_OFFLINE_CACHE'||event.data?.type==='REPAIR_OFFLINE_CACHE'){
+    event.waitUntil((async()=>{
+      const cache=await caches.open(CACHE);
+      let ready=true;
+      if(event.data.type==='REPAIR_OFFLINE_CACHE'){
+        try{await cache.addAll(ASSETS);}catch(error){ready=false;}
+      }
+      if(ready){
+        for(const path of ASSETS){
+          if(!await cache.match(new URL(path,SCOPE).href)){ready=false;break;}
+        }
+      }
+      event.source?.postMessage({type:'OFFLINE_CACHE_STATUS',ready});
+    })());
+    return;
+  }
   if(event.data?.type !== 'APPLY_UPDATE')return;
   event.waitUntil((async()=>{const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});const appClients=clients.filter(client=>client.url.startsWith(SCOPE));if(appClients.length>1){event.source?.postMessage({type:'UPDATE_BLOCKED'});return;}await self.skipWaiting();})());
 });
-self.addEventListener('activate', event => {event.waitUntil(self.clients.claim());});
+// Once the athlete has approved activation (or on a first install), it is safe
+// to retire only Loadnote's old *asset* caches. Do not touch IndexedDB,
+// localStorage, workout drafts, other app caches, or the current cache.
+self.addEventListener('activate', event => {
+  event.waitUntil((async()=>{
+    let offlineReady=true;
+    try{
+      const names=await caches.keys();
+      await Promise.all(names.filter(name=>name.startsWith('loadnote-v')&&name!==CACHE).map(name=>caches.delete(name)));
+    }catch(error){offlineReady=false;}
+    try{await (await caches.open(CACHE)).addAll(ASSETS);}
+    catch(error){offlineReady=false;/* A failed asset should not strand a saved workout on the old version. */}
+    await self.clients.claim();
+    if(!offlineReady){
+      const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+      for(const client of clients.filter(client=>client.url.startsWith(SCOPE))){
+        try{client.postMessage({type:'OFFLINE_CACHE_INCOMPLETE'});}catch(error){/* The window may have closed during activation. */}
+      }
+    }
+  })());
+});
 self.addEventListener('fetch', event => {
   const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);url.hash='';url.search='';
   if(url.origin!==self.location.origin||!assetURLs.has(url.href))return;
-  event.respondWith(caches.open(CACHE).then(async cache=>{const cached=await cache.match(url.href);if(cached)return cached;return fetch(req);}));
+  event.respondWith(caches.open(CACHE).then(async cache=>{
+    const cached=await cache.match(url.href);if(cached)return cached;
+    // Recover missing files from a partially warmed cache when back online.
+    const response=await fetch(req);
+    if(response.ok){try{await cache.put(url.href,response.clone());}catch(error){/* Storage may be full; keep the online response. */}}
+    return response;
+  }));
 });

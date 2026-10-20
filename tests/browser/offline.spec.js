@@ -51,3 +51,27 @@ test('Returning to an installed app checks for a waiting update without reloadin
  await expect(page.locator('#app-update-status')).toContainText('newer Loadnote version');
  await expect(page.locator('.ex-name')).toHaveValue('Keep My Draft');
 });
+
+test('An athlete can check manually and repair missing offline files without changing the draft',async({page})=>{
+ await ready(page);
+ await page.locator('.ex-name').fill('Do Not Clear My Draft');
+ await page.locator('#device-status-details summary').click();
+ await expect(page.locator('#check-app-update')).toBeVisible();
+ await page.locator('#check-app-update').click();
+ await expect(page.locator('#update-check-status')).toContainText('Update check completed');
+ await page.evaluate(async()=>{
+   const target=new URL('./src/release.js',location.href).href;
+   for(const name of await caches.keys()){
+     const cache=await caches.open(name);
+     if(await cache.match(target)){await cache.delete(target);break;}
+   }
+   navigator.serviceWorker.controller.postMessage({type:'CHECK_OFFLINE_CACHE'});
+ });
+ await expect(page.locator('#repair-offline-cache')).toBeVisible();
+ await expect(page.locator('#app-update-status')).toContainText('Do not clear website data');
+ await expect(page.locator('.ex-name')).toHaveValue('Do Not Clear My Draft');
+ await page.locator('#repair-offline-cache').click();
+ await expect(page.locator('#update-check-status')).toContainText('Offline app files are ready');
+ await expect(page.locator('#repair-offline-cache')).toBeHidden();
+ await expect(page.locator('.ex-name')).toHaveValue('Do Not Clear My Draft');
+});
