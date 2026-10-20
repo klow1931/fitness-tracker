@@ -19,6 +19,8 @@ let request=Planner.parse('Create a 12-week strength program. I train Monday, We
 assert.deepEqual(request.days,[0,2,4]);assert.equal(request.frequency,3);assert.equal(request.minutes,45);
 request=Planner.parse('Actually, make it four days',request);
 assert.equal(request.frequency,4);assert.equal(request.days,undefined,'changing frequency invalidates prior named-day selection');
+let corrected=Planner.parse('Actually, I train Tuesday and Thursday',Planner.parse('Create a 12-week strength program. I train Monday, Wednesday and Friday, 45 minutes, full gym'));
+assert.deepEqual(corrected.days,[1,3]);assert.equal(corrected.frequency,2);assert.equal(corrected.weeks,12);assert.equal(corrected.minutes,45);
 const source=[
  {week:'1',day:'Monday',exercise:'Bench',type:'strength',sets:'3',reps:'5',weight:'100',unit:'kg',rpe:'8'},
  {week:'1',day:'Wednesday',exercise:'Bike',type:'cardio',minutes:'20'},
