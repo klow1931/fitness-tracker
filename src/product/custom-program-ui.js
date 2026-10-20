@@ -5,7 +5,7 @@
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const blank=()=>({week:'1',day:'Monday',exercise:'',type:'strength',sets:'3',reps:'5',weight:'',unit:'',rpe:'',rest:'',minutes:'',notes:''});
  const nextMonday=()=>{const t=new Date(today()+'T12:00:00Z'),d=t.getUTCDay(),shift=(8-d)%7;t.setUTCDate(t.getUTCDate()+shift);return t.toISOString().slice(0,10);};
- let rows=[blank()],source={kind:'manual',name:''},preview=null,diffChanges=null,busy=false,page=0,copiedFrom=null,reasonState={},undoStack=[],lastSnapshot=null,lastEditAt=0,draftTimer=null,saveSucceeded=false;
+ let rows=[blank()],source={kind:'manual',name:''},preview=null,diffChanges=null,busy=false,weeklyBusy=false,page=0,copiedFrom=null,reasonState={},undoStack=[],lastSnapshot=null,lastEditAt=0,draftTimer=null,saveSucceeded=false;
  const PAGE=15;
  const DRAFT_KEY='loadnote:custom-program-studio-draft:v1',DRAFT_AGE=30*24*60*60*1000;
  const clone=x=>JSON.parse(JSON.stringify(x));
@@ -159,8 +159,34 @@
        (a.privateReasonCount?'<p class="more-hint">'+a.privateReasonCount+' edited revision(s) have private reasons; Coach cannot use them.</p>':'')+
        '<h4>Linked workout evidence</h4><p>'+r.completed+'/'+r.planned+' sessions completed · '+r.skipped+' skipped · '+r.unconfirmed+' unconfirmed · '+r.matchedSets+'/'+r.linkedSets+' exact comparable planned strength sets.</p><h4>Recurring movements from your plan</h4>'+
        r.patterns.map(x=>'<p>'+esc(x.name)+' · '+x.exposures+' exposures in '+x.weeks+' weeks · '+x.sets+' programmed sets'+(x.firstLoadKg!==null?' · first/last specified load '+x.firstLoadKg+'/'+x.lastLoadKg+' kg':'')+'</p>').join('')+
-       (r.differences||[]).map(x=>'<p>'+esc(x)+'</p>').join('')+r.notes.map(x=>'<p class="more-hint">'+esc(x)+'</p>').join('')+'<p class="more-hint">'+esc(a.notice)+'</p></div>';
+       (r.differences||[]).map(x=>'<p>'+esc(x)+'</p>').join('')+r.notes.map(x=>'<p class="more-hint">'+esc(x)+'</p>').join('')+'<p class="more-hint">'+esc(a.notice)+'</p></div><div data-custom-weekly-review></div>';
+     renderWeeklyReview(host,id);
    }catch(e){host.textContent=e.message;}
+ }
+ function renderWeeklyReview(host,id,week=null){
+   const target=host.querySelector('[data-custom-weekly-review]');if(!target)return;
+   try{
+     const r=window.LoadnoteCustomProgramWeeklyReview.inspect(data,id,{asOf:today(),week});
+     if(r.status!=='ready'){target.innerHTML='<section class="custom-program-preview"><h4>Weekly athlete review</h4><p>'+esc(r.status==='waiting'?'Your first complete program week ends '+r.through+'.':r.notice)+'</p></section>';return;}
+     const choices=(name,values)=>'<label>'+esc(name)+'<select class="input" data-weekly-field="'+esc(name)+'">'+values.map(v=>'<option value="'+esc(v)+'" '+(r.checkIn?.checkIn[name]===v?'selected':'')+'>'+esc(v==='unknown'?'Not reported':v.replace(/-/g,' '))+'</option>').join('')+'</select></label>';
+     const stats=r.totals;
+     target.innerHTML='<section class="custom-program-preview" aria-label="Custom program weekly athlete review"><h4>Weekly training review · read-only guidance</h4><label>Completed week<select class="input" data-weekly-select>'+r.weeks.map(w=>'<option value="'+w.week+'" '+(w.week===r.week?'selected':'')+'>Week '+w.week+' · '+esc(w.from+'–'+w.through)+'</option>').join('')+'</select></label><p>'+stats.completed+'/'+stats.planned+' linked sessions · '+stats.skipped+' explicitly skipped · '+stats.unconfirmed+' unconfirmed · '+stats.cancelled+' cancelled.</p><p>'+stats.comparable+' fully comparable logs · '+stats.matchedSets+'/'+stats.plannedSets+' matched strength sets · '+stats.effortCompared+' known actual RPE · '+stats.aboveCap+' above saved cap.</p>'+
+       r.observations.map(o=>'<p><b>'+esc(o.label)+'</b> · '+esc(o.reason)+'</p>').join('')+
+       '<details class="more-details"><summary>Inspect all scheduled outcomes ('+r.rows.length+')</summary>'+r.rows.map(row=>'<p><b>'+esc(row.date+' · '+row.name)+'</b> · '+esc(row.status)+(row.comparison?' · '+esc(row.comparison):'')+(row.reasons.length?' · '+esc(row.reasons.join('; ')):'')+'</p>').join('')+'</details>'+
+       '<h4>My weekly check-in</h4><p class="more-hint">Athlete-reported sleep, soreness, fatigue and how the week felt; none of these is a medical measurement. A new check-in appends to history, including if you correct an earlier report.</p><form data-weekly-form>'+choices('sleep',['unknown','adequate','poor'])+choices('fatigue',['unknown','usual','elevated'])+choices('soreness',['unknown','usual','elevated'])+choices('sessionExperience',['unknown','as-planned','modified'])+'<label>Reflection notes (included in backups and optional account sync)<textarea class="input" data-weekly-notes maxlength="1000" rows="3">'+esc(r.checkIn?.checkIn.notes||'')+'</textarea></label><label><input type="checkbox" data-weekly-confirm> I reviewed my reports for this completed week. Saving does not modify workouts or the program.</label><button type="submit" class="btn-primary">Save this week\'s check-in</button></form><p class="more-hint">'+r.checkInCount+' saved report(s) for this week. '+esc(r.notice)+'</p>'+
+       '<div class="programming-workspace-actions"><button type="button" class="btn-secondary" data-weekly-edit '+(!r.canEditFuture?'disabled':'')+'>Copy program to review future changes</button><button type="button" class="btn-secondary" data-weekly-decisions>Open coaching Decisions</button></div><p data-weekly-status role="status"></p></section>';
+     target.querySelector('[data-weekly-select]').onchange=e=>renderWeeklyReview(host,id,Number(e.target.value));
+     target.querySelector('[data-weekly-edit]').onclick=()=>open((data.customPrograms||[]).find(p=>p.id===id));
+     target.querySelector('[data-weekly-decisions]').onclick=()=>{showTab('coach');showSubTab('coach','co-decisions');};
+     target.querySelector('[data-weekly-form]').onsubmit=async event=>{
+       event.preventDefault();if(weeklyBusy)return;const form=event.currentTarget,status=target.querySelector('[data-weekly-status]');weeklyBusy=true;form.querySelector('button').disabled=true;
+       try{
+         const raw=Object.fromEntries(['sleep','fatigue','soreness','sessionExperience'].map(field=>[field,form.querySelector('[data-weekly-field="'+field+'"]').value]));raw.notes=form.querySelector('[data-weekly-notes]').value;
+         if(r.week!==Number(target.querySelector('[data-weekly-select]').value))throw Error('The selected week changed. Review it again.');
+         const next=window.LoadnoteCustomProgramWeeklyReview.save(data,id,r.week,raw,{asOf:today(),confirmed:form.querySelector('[data-weekly-confirm]').checked});clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();renderWeeklyReview(host,id,r.week);showToast('Weekly report saved. Training targets were not changed.','success');
+       }catch(e){status.textContent=e.message;}finally{weeklyBusy=false;const button=target.querySelector('[data-weekly-form] button');if(button)button.disabled=false;}
+     };
+   }catch(e){target.textContent='Weekly review unavailable: '+e.message;}
  }
  function exportProgram(p){if(!p)return;const rows=p.entries.map(r=>r.type==='cardio'?{week:r.week,day:M().dayNames[r.weekday],exercise:r.name,type:'cardio',minutes:r.minutes,notes:r.notes}:{week:r.week,day:M().dayNames[r.weekday],exercise:r.name,type:'strength',sets:r.sets,reps:r.reps,weight:r.weightKg,unit:'kg',rpe:r.rpe,rest:r.rest,notes:r.notes});download('loadnote-program-'+p.id+'.json',JSON.stringify({format:'loadnote-program-v1',name:p.config.name,startDate:p.config.startDate,weeks:p.config.weeks,rows},null,2),'application/json');}
  function download(name,content,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}

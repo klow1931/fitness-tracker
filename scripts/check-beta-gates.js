@@ -14,7 +14,9 @@ function check(base=root){
   {id:'backup-manifest',ok:read('src/product/data-integrity.js').includes('verifyBackupManifest')},
   {id:'single-host-durable-files',ok:read('backend/account-store.js').includes("require('./atomic-file')")&&read('backend/sync-store.js').includes("require('./atomic-file')")},
   {id:'native-local-only',ok:native.stage==='unsigned-development'&&native.storeReady===false&&native.services==='local-only'&&read('src/product/account-ui.js').includes('Native beta: local training only.')},
-  {id:'physical-acceptance-unclaimed',ok:fs.existsSync(path.join(base,'docs/phase6-athlete-beta-acceptance.md'))}
+  {id:'physical-acceptance-unclaimed',ok:fs.existsSync(path.join(base,'docs/phase6-athlete-beta-acceptance.md'))},
+  {id:'custom-weekly-data-portability',ok:read('src/product/sync-model.js').includes("'customProgramWeeklyReviews'")&&read('src/product/data-integrity.js').includes("'customProgramWeeklyReviews'")&&read('src/product/data-transfer.js').includes('LoadnoteCustomProgramWeeklyReview.validateState')},
+  {id:'android-athlete-pilot-gate',ok:fs.existsSync(path.join(base,'docs/android-v3.73-pilot.md'))&&read('android/app/src/androidTest/java/app/loadnote/mobile/BetaJourneyTest.java').includes('LoadnoteCustomProgramWeeklyReview.save')&&read('sw.js').includes("'./src/product/custom-program-weekly-review.js'")}
  ];
  const pending=[
   'Physical Android and iOS cold-launch, save/relaunch, unit entry and export/restore acceptance',

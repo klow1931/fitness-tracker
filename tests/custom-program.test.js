@@ -93,7 +93,7 @@ assert.ok(!require('../src/product/local-coach-context').build(copyState,{asOf:'
 assert.equal(Integrity.verifyBackupManifest(Integrity.addBackupManifest(copyState)).status,'verified');
 assert.equal(Sync.project(copyState).collections.customPrograms.length,2);
 const normalized=Core.normalizeState({schemaVersion:32,workouts:[]},{customPrograms:[]});
-assert.equal(normalized.schemaVersion,33);
+assert.equal(normalized.schemaVersion,34);
 assert.deepEqual(normalized.customPrograms,[]);
 assert.equal(Integrity.verifyBackupManifest(Integrity.addBackupManifest(state)).status,'verified');
 assert.ok(Sync.COLLECTIONS.includes('customPrograms'));
