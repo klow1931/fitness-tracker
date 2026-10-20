@@ -48,6 +48,7 @@ assert.equal(JSON.stringify(state.scheduledSessions),originalSchedule);
 assert.match(Weekly.explain(Weekly.inspect(state,'program',{asOf,now})),/unconfirmed/);
 assert.equal(Coach.questionKind('How did I do in my uploaded program this week?'),'weekly');
 assert.match(Coach.answer(state,'Review my custom program weekly review',{asOf}).text,/week 1/);
+assert.doesNotMatch(JSON.stringify(Coach.answer(state,'Review my custom program weekly review',{asOf})),/Took an extra rest day/);
 const correction=Weekly.save(state,'program',1,{...checkIn,sleep:'adequate',notes:'Correction'},{asOf,now:'2026-10-13T20:00:00.000Z',confirmed:true});
 assert.equal(correction.customProgramWeeklyReviews.length,2);
 assert.equal(Weekly.inspect(correction,'program',{asOf,now:'2026-10-13T21:00:00.000Z'}).checkIn.checkIn.notes,'Correction');

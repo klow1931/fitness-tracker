@@ -128,7 +128,10 @@
    if(kind==='session')return dailySession(state,selected.record,{asOf,question,unit});
    if(kind==='weekly'){
     const weekly=Weekly.inspect(state,selected.record.id,{asOf});
-    return {text:Weekly.explain(weekly),source:'Offline Coach · custom weekly review',readOnly:true,evidence:weekly.status==='ready'?[weekly]:[],intent:{topic:'custom-program',kind:'weekly'},actions:[{kind:'custom-programs',label:'Review weekly training evidence'}],followUps:['Review my uploaded program']};
+    // Only descriptive, linked training evidence is passed to Coach. Weekly
+    // reflection notes stay in the athlete's private local review record.
+    const evidence=weekly.status==='ready'?[{status:weekly.status,programId:weekly.programId,programName:weekly.programName,week:weekly.week,from:weekly.from,through:weekly.through,totals:weekly.totals,rows:weekly.rows,observations:weekly.observations,notice:weekly.notice}]:[];
+    return {text:Weekly.explain(weekly),source:'Offline Coach · custom weekly review',readOnly:true,evidence,intent:{topic:'custom-program',kind:'weekly'},actions:[{kind:'custom-programs',label:'Review weekly training evidence'}],followUps:['Review my uploaded program']};
    }
    const report=inspect(state,selected.record.id,{asOf});
    return {text:explain(report,kind)+' '+report.notice,source:'Offline Coach · custom program check',readOnly:true,evidence:[report],intent:{topic:'custom-program',kind},actions:[{kind:'custom-programs',label:'Review the saved program'}],followUps:kind==='edits'?['Review my uploaded program']:['What have you learned from my program edits?']};
