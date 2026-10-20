@@ -1,3 +1,10 @@
+# v3.67.0 — Offline Program Check & Complete Studio Review
+
+- Show every week and session in a complete import review before confirmation; add duplicate-exercise and jump-to-week editing tools.
+- Add a read-only Coach/Studio program check using exact reviewed rows, linked workout evidence, and available days/avoided movements from confirmed athlete preferences.
+- Explain saved program edit reasons only when explicitly shared with Coach; private notes and reasons remain private, and outcomes stay descriptive rather than a learned cause or automatic adaptation.
+- Keep schema 33 and the v3.66 safe PWA update flow; native build 33420. See [release notes](docs/releases-v3.67.md).
+
 # v3.66.0 — Reliable Home Screen Updates
 
 - Install the next web-app service worker with a small bootstrap instead of requiring a full static-shell download before the update prompt. This reduces the risk that retained release caches or an individual asset failure indefinitely strand iPhone Home Screen users on an old release.

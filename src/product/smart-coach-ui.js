@@ -1,7 +1,7 @@
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const KINDS=new Set(['profile-review','offline-plan','progress','training-feedback','log-workout','review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up','mappings']);
+ const KINDS=new Set(['profile-review','offline-plan','progress','training-feedback','log-workout','review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up','mappings','custom-programs']);
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
   if(a.kind==='offline-plan'){window.LoadnoteOfflinePlannerUI.open(a.request);return;}
@@ -28,6 +28,7 @@
   if(a.kind==='guidance'){window.LoadnoteMovementGuidanceUI?.open?.();return;}
   if(a.kind==='calendar'){showTab('calendar');return;}
   showTab('coach');showSubTab('coach','co-programs');
+  if(a.kind==='custom-programs'){window.renderCustomProgramStudio?.();revealNavigationTarget('custom-program-studio');return;}
   if(a.kind==='manage'){window.LoadnoteProgramCancellationUI?.open?.();return;}
   if(a.kind==='wave'){window.LoadnotePhaseBuilderUI?.open?.(null,{periodization:'wave'});return;}
   if(a.kind==='lifecycle'){window.LoadnoteProgramLifecycleUI?.route?.(window.LoadnoteProgramLifecycleUI.currentReport());return;}

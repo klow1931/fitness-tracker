@@ -957,8 +957,13 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
 .custom-program-dialog .programming-workspace-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}
 .custom-program-row{border:1px solid var(--line,#cbd5e1);border-radius:12px;padding:12px;margin:10px 0;background:var(--surface,#fff)}
 .custom-program-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.custom-program-row-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.custom-program-jump{min-width:125px;max-width:185px}
+.custom-program-reviewed-session{padding:10px 0;border-bottom:1px solid var(--line,#cbd5e1)}
+.custom-program-reviewed-session ul{padding-left:1.25rem;margin:6px 0;overflow-wrap:anywhere}
+.custom-program-week-review .more-details{margin:7px 0}
 .custom-program-preview{border:1px solid #7c8ed4;border-radius:12px;padding:14px;margin:14px 0;background:rgba(91,113,197,.07)}
 .custom-program-preview h3,.custom-program-preview h4{font-weight:700;margin-bottom:8px}
 .custom-program-preview p{margin:5px 0}
 .custom-program-dialog .input{width:100%;min-width:0}
-@media(max-width:520px){.custom-program-config,.custom-program-row-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-row-fields label:has([data-field="exercise"]),.custom-program-row-fields label:has([data-field="notes"]),.custom-program-config label:first-child{grid-column:1 / -1}.custom-program-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:12px}.custom-program-row{padding:10px}}
+@media(max-width:520px){.custom-program-config,.custom-program-row-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-row-fields label:has([data-field="exercise"]),.custom-program-row-fields label:has([data-field="notes"]),.custom-program-config label:first-child{grid-column:1 / -1}.custom-program-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:12px}.custom-program-row{padding:10px}.custom-program-row-head{gap:8px}.custom-program-row-actions button{min-height:42px;padding:8px 10px}}

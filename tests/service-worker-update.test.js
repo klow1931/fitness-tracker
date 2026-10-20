@@ -4,6 +4,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const script=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
+const currentCache='loadnote-v'+require('../package.json').version;
 const scope='https://example.test/loadnote/';
 
 function harness(failWarm=false){
@@ -60,16 +61,16 @@ function harness(failWarm=false){
   assert.equal(sw.stats().claims,1);
   assert(!sw.stores.has('loadnote-v3.26.0')&&!sw.stores.has('loadnote-v3.62.0'),'Only retired Loadnote asset caches are reclaimed');
   assert(sw.stores.has('other-app-cache'),'Other origin caches must remain untouched');
-  assert(sw.getCache('loadnote-v3.66.0').entries.size>100,'Activation must warm the complete offline shell');
+  assert(sw.getCache(currentCache).entries.size>100,'Activation must warm the complete offline shell');
   await sw.fire('message',{data:{type:'CHECK_OFFLINE_CACHE'},source:sw.source});
   assert.equal(sw.calls.at(-1).message.ready,true);
   const url=scope+'src/release.js';
-  sw.getCache('loadnote-v3.66.0').entries.delete(url);
+  sw.getCache(currentCache).entries.delete(url);
   const reply=await sw.fire('fetch',{request:{method:'GET',url}});
   // Fetch misses must repopulate their cache when the device is online.
   assert.equal(reply.ok,true);
   assert.equal(sw.stats().networkRequests,1);
-  assert(await sw.getCache('loadnote-v3.66.0').match(url));
+  assert(await sw.getCache(currentCache).match(url));
 
   const recovery=harness(true);
   recovery.getCache('loadnote-v3.62.0');

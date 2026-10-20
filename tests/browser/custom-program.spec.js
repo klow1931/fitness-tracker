@@ -1,6 +1,36 @@
 const {test,expect}=require('playwright/test');
 const JSZip=require('jszip');
 
+test('v3.67 reviews all imported weeks and supports quick duplicate and jump editing',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-studio-open').click();
+ const lines=['Week,Day,Exercise,Sets,Reps,Weight,Unit,RPE'];
+ for(let week=1;week<=20;week++)lines.push(`${week},Monday,Pause Bench ${week},3,5,100,kg,7`);
+ await page.locator('#custom-upload').setInputFiles({name:'full-program.csv',mimeType:'text/csv',buffer:Buffer.from(lines.join('\n'))});
+ await expect(page.locator('#custom-count')).toContainText('20 exercise rows');
+ await expect(page.locator('[data-custom-row="18"]')).toHaveCount(0);
+ await page.locator('#custom-jump-week').selectOption('19');
+ await expect(page.locator('[data-custom-row="18"] [data-field="exercise"]')).toHaveValue('Pause Bench 19');
+ await page.locator('[data-duplicate="18"]').click();
+ await expect(page.locator('#custom-count')).toContainText('21 exercise rows');
+ await expect(page.locator('[data-custom-row="19"] [data-field="exercise"]')).toHaveValue('Pause Bench 19');
+ await page.locator('#custom-start').fill('2026-10-19');
+ await page.locator('#custom-preview').click();
+ const preview=page.locator('#custom-preview-result');
+ await expect(preview).toContainText('20 training sessions');
+ await expect(preview.getByText('Review every week')).toContainText('20 with sessions');
+ await expect(preview.locator('.custom-program-week-review details')).toHaveCount(20);
+ await expect(preview).toContainText('Pause Bench 20');
+ await expect(preview).toContainText('Pause Bench 19');
+ await preview.getByText('Week 20 · 1 session(s)').click();
+ await expect(preview.getByText('Pause Bench 20')).toBeVisible();
+ await page.locator('#custom-confirm').check();await page.locator('#custom-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.customPrograms.length)).toBe(1);
+ expect(await page.evaluate(()=>({sessions:data.customPrograms[0].sessions.length,rows:data.customPrograms[0].entries.length}))).toEqual({sessions:20,rows:21});
+});
+
 test('CSV import can be corrected, approved, scheduled and explained by Coach',async({page})=>{
  await page.clock.install({time:new Date('2026-10-18T18:00:00.000Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
