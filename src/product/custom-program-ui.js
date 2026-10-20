@@ -76,7 +76,28 @@
    renderRows(d);if(recovered){restore(d,recovered);d.querySelector('#custom-draft-status').textContent='Recovered the unfinished draft on this browser.';}else lastSnapshot=snapshot(d);
    d.showModal();autosave(d);
  }
- function error(d,message){const host=d.querySelector('#custom-error');host.textContent=message;const match=/\bRow (\d+):/.exec(message),index=match?Number(match[1])-1:-1;if(index>=0&&index<rows.length){const button=document.createElement('button');button.type='button';button.className='btn-secondary';button.textContent='Go to exercise row '+(index+1);button.onclick=()=>{syncRows(d);page=Math.floor(index/PAGE);renderRows(d);d.querySelector('[data-custom-row="'+index+'"] [data-field="exercise"]')?.focus();};host.append(' ',button);}}
+ function error(d,message){
+  const host=d.querySelector('#custom-error');host.textContent=message;
+  d.querySelectorAll('.custom-program-inline-error').forEach(el=>el.remove());
+  d.querySelectorAll('[data-custom-row] [aria-invalid="true"]').forEach(el=>el.removeAttribute('aria-invalid'));
+  const match=/\\bRow (\\d+):/.exec(message),index=match?Number(match[1])-1:-1;
+  if(index<0||index>=rows.length)return;
+  const detail=message.split(':').slice(1).join(':').toLowerCase();
+  const mapping=[[/percentage basis/,'percentBasis'],[/percentage reference|reference load/,'reference'],[/percentage reference unit/,'referenceUnit'],[/rounding/,'roundTo'],[/rep range|minimum reps|maximum reps|\\breps\\b/,'reps'],[/\\bsets\\b/,'sets'],[/\\brpe\\b/,'rpe'],[/rest/,'rest'],[/cardio minutes|\\bminutes\\b/,'minutes'],[/load unit/,'unit'],[/\\bload\\b/,'weight'],[/\\bweek\\b/,'week'],[/\\bday\\b/,'day'],[/exercise name/,'exercise']];
+  const target=mapping.find(([pattern])=>pattern.test(detail))?.[1]||'exercise';
+  const locate=()=>{
+    const card=d.querySelector('[data-custom-row="'+index+'"]');
+    if(!card)return;
+    card.querySelector('.custom-program-row-detail').open=true;
+    if(['percentBasis','reference','referenceUnit','roundTo','percent'].includes(target))card.querySelector('.custom-program-percent').open=true;
+    const field=card.querySelector('[data-field="'+target+'"]')||card.querySelector('[data-field="exercise"]');
+    if(field){field.setAttribute('aria-invalid','true');const line=document.createElement('span');line.className='custom-program-inline-error';line.setAttribute('role','alert');line.textContent=detail.trim();field.closest('label')?.append(line);}
+    field?.focus();
+  };
+  if(d.querySelector('[data-custom-row="'+index+'"]'))locate();
+  const button=document.createElement('button');button.type='button';button.className='btn-secondary';button.textContent='Go to exercise row '+(index+1);
+  button.onclick=()=>{syncRows(d);page=Math.floor(index/PAGE);renderRows(d);locate();};host.append(' ',button);
+ }
  function invalidate(d){preview=null;diffChanges=null;d.querySelector('#custom-preview-result').replaceChildren();error(d,'');}
  function readRows(d){syncRows(d);readReason(d);invalidate(d);}
  function renderRows(d){
@@ -86,8 +107,8 @@
    d.querySelector('#custom-count').textContent=rows.length+' exercise rows';d.querySelector('#custom-editor-state').textContent='Unsaved draft · '+rows.length+' exercises · '+selectedRows.size+' selected.';d.querySelector('#custom-pages').innerHTML='<button type="button" class="btn-secondary" id="custom-prev-page" '+(!page?'disabled':'')+'>Previous</button><span>Page '+(page+1)+' of '+(max+1)+'</span><button type="button" class="btn-secondary" id="custom-next-page" '+(page===max?'disabled':'')+'>Next</button>';
    const jump=d.querySelector('#custom-jump-week');const weeks=[...new Set(rows.map(r=>Number(r.week)).filter(n=>Number.isInteger(n)&&n>=1&&n<=52))].sort((a,b)=>a-b);const current=Number(rows[from]?.week)||weeks[0];jump.innerHTML='<option value="">Select a week</option>'+weeks.map(w=>'<option value="'+w+'" '+(w===current?'selected':'')+'>Week '+w+'</option>').join('');
    d.querySelector('#custom-prev-page').onclick=()=>{readRows(d);page--;renderRows(d);changed(d);};d.querySelector('#custom-next-page').onclick=()=>{readRows(d);page++;renderRows(d);changed(d);};
-   d.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{readRows(d);rows.splice(Number(b.dataset.remove),1);renderRows(d);changed(d,true);});
-   d.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>{readRows(d);if(rows.length>=1500){error(d,'The program editor supports at most 1500 exercise rows.');return;}const i=Number(b.dataset.duplicate);rows.splice(i+1,0,clone(rows[i]));page=Math.floor((i+1)/PAGE);renderRows(d);changed(d,true);});
+   d.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{readRows(d);rows.splice(Number(b.dataset.remove),1);selectedRows.clear();bulkPreview=null;renderRows(d);changed(d,true);});
+   d.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>{readRows(d);if(rows.length>=1500){error(d,'The program editor supports at most 1500 exercise rows.');return;}const i=Number(b.dataset.duplicate);rows.splice(i+1,0,clone(rows[i]));selectedRows.clear();bulkPreview=null;page=Math.floor((i+1)/PAGE);renderRows(d);changed(d,true);});
    d.querySelectorAll('[data-select-row]').forEach(el=>el.onchange=()=>{const i=Number(el.dataset.selectRow);if(el.checked)selectedRows.add(i);else selectedRows.delete(i);bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;d.querySelector('#custom-bulk-preview').textContent=selectedRows.size+' selected. Preview again before applying.';d.querySelector('#custom-editor-state').textContent='Unsaved draft · '+rows.length+' exercises · '+selectedRows.size+' selected.';});
    d.querySelectorAll('[data-custom-row] [data-field]').forEach(el=>el.addEventListener('input',()=>{if(el.dataset.field==='type')el.closest('[data-custom-row]').dataset.kind=el.value;bulkPreview=null;d.querySelector('#custom-bulk-apply').disabled=true;readReason(d);invalidate(d);changed(d);}));
  }
