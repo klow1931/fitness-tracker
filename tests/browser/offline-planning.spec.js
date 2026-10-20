@@ -21,6 +21,12 @@ test('complete replies scroll the appended action into the chat viewport before 
  await ask(page,'Create an upper-body workout today for 30 minutes with dumbbells');
  const action=page.locator('#chat-messages').getByRole('button',{name:'Draft my workout',exact:true});
  expect(await action.evaluate(button=>{const host=document.getElementById('chat-messages'),a=button.getBoundingClientRect(),h=host.getBoundingClientRect();return a.top>=h.top&&a.bottom<=h.bottom;})).toBe(true);
+ // Mobile WebKit can synthesize mouse hover/down as a different gesture from
+ // an actual touch. Verify the first real tap on that platform; retain the
+ // pressed-pointer geometry check for desktop mouse input.
+ if(test.info().project.name.startsWith('mobile')){
+  await action.tap();await expect(page.locator('#offline-plan-dialog')).toBeVisible();return;
+ }
  await action.hover();const before=await action.boundingBox();await page.mouse.down();
  expect(before.height).toBeGreaterThanOrEqual(44);expect(before.height).toBeLessThanOrEqual(80);
  const pressed=await action.boundingBox(),x=before.x+before.width/2,y=before.y+before.height/2;
