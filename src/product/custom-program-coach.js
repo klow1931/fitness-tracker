@@ -2,16 +2,16 @@
  * This is a descriptive review, never a new training prescription or a model update.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./programming-profile'),require('./schedule'));
- else root.LoadnoteCustomProgramCoach=factory(root.LoadnoteCustomProgram,root.LoadnoteProgrammingProfile,root.LoadnoteSchedule);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Profile,Schedule){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./programming-profile'),require('./schedule'),require('./custom-program-weekly-review'));
+ else root.LoadnoteCustomProgramCoach=factory(root.LoadnoteCustomProgram,root.LoadnoteProgrammingProfile,root.LoadnoteSchedule,root.LoadnoteCustomProgramWeeklyReview);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Profile,Schedule,Weekly){
  'use strict';
  const day=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T12:00:00Z'))&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  const clean=x=>String(x||'').replace(/\s+/g,' ').trim().slice(0,500);
  const dayNames=Custom.dayNames;
  function questionKind(question){
   const q=clean(question);
-  if(/\b(?:uploaded|imported|custom|athlete.authored|my own)\s+(?:training\s+)?(?:program|plan|routine)\b/i.test(q))return /\b(?:today|tomorrow|next|upcoming|this week|session|workout)\b/i.test(q)?'session':/\b(?:edit|change|learn|preference|reason|remember)\w*\b/i.test(q)?'edits':'review';
+  if(/\b(?:uploaded|imported|custom|athlete.authored|my own)\s+(?:training\s+)?(?:program|plan|routine)\b/i.test(q))return /\b(?:weekly review|how did .*\bweek\b|review .*\bweek\b|training feedback|adherence)\b/i.test(q)?'weekly':/\b(?:today|tomorrow|next|upcoming|this week|session|workout)\b/i.test(q)?'session':/\b(?:edit|change|learn|preference|reason|remember)\w*\b/i.test(q)?'edits':'review';
   // General "program changes" questions belong to longitudinal coaching.
   // Reserve this route for explicit custom programs or athlete-authored edits.
   if(/\b(?:my\s+)?(?:program|plan)\s+edits\b/i.test(q))return 'edits';
@@ -126,6 +126,13 @@
    const selected=select(state,{asOf,question});
    if(!selected.record)return {text:selected.choices.length?'Which saved custom program should I review? '+selected.choices.map(x=>x.name).join('; ')+'.':'There is no reviewed custom program saved yet. Write or import one in Custom Program Studio, then review it before scheduling.',source:'Offline Coach · custom program check',readOnly:true,evidence:[],actions:[{kind:'custom-programs',label:'Open Custom Program Studio'}]};
    if(kind==='session')return dailySession(state,selected.record,{asOf,question,unit});
+   if(kind==='weekly'){
+    const weekly=Weekly.inspect(state,selected.record.id,{asOf});
+    // Only descriptive, linked training evidence is passed to Coach. Weekly
+    // reflection notes stay in the athlete's private local review record.
+    const evidence=weekly.status==='ready'?[{status:weekly.status,programId:weekly.programId,programName:weekly.programName,week:weekly.week,from:weekly.from,through:weekly.through,totals:weekly.totals,rows:weekly.rows,observations:weekly.observations,notice:weekly.notice}]:[];
+    return {text:Weekly.explain(weekly),source:'Offline Coach · custom weekly review',readOnly:true,evidence,intent:{topic:'custom-program',kind:'weekly'},actions:[{kind:'custom-programs',label:'Review weekly training evidence'}],followUps:['Review my uploaded program']};
+   }
    const report=inspect(state,selected.record.id,{asOf});
    return {text:explain(report,kind)+' '+report.notice,source:'Offline Coach · custom program check',readOnly:true,evidence:[report],intent:{topic:'custom-program',kind},actions:[{kind:'custom-programs',label:'Review the saved program'}],followUps:kind==='edits'?['Review my uploaded program']:['What have you learned from my program edits?']};
   }catch{return {text:'I could not validate the saved custom program for this date. Open Custom Program Studio and review the program and its history; no training was changed.',source:'Offline Coach · custom program unavailable',readOnly:true,evidence:[],actions:[{kind:'custom-programs',label:'Open Custom Program Studio'}]};}

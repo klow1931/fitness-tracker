@@ -1,6 +1,37 @@
 const {test,expect}=require('playwright/test');
 const JSZip=require('jszip');
 
+test('v3.73 custom program weekly evidence and self-report survive offline reload without editing Calendar',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-20T18:00:00.000Z')});
+ await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(async()=>{
+  const raw={name:'Weekly athlete pilot',weeks:2,startDate:'2026-10-05',unit:'kg',rows:[{week:1,day:'Monday',exercise:'Competition Bench',sets:3,reps:5,weight:100,unit:'kg',rpe:8},{week:2,day:'Monday',exercise:'Competition Bench',sets:3,reps:5,weight:102.5,unit:'kg',rpe:8}]};
+  let next=LoadnoteCustomProgram.save(data,LoadnoteCustomProgram.build(data,raw),{confirmed:true,now:'2026-10-01T11:00:00.000Z',id:'pilot-weekly'});
+  next=LoadnoteCustomProgram.schedule(next,'pilot-weekly',{now:'2026-10-01T12:00:00.000Z'});
+  await persistNow(next);data=next;showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();
+ });
+ await page.locator('#custom-program-studio details.more-details').filter({has:page.locator('[data-custom-insights="pilot-weekly"]')}).locator('summary').first().click();
+ await page.locator('[data-custom-insights="pilot-weekly"]').click();
+ const review=page.locator('[data-custom-report="pilot-weekly"]');
+ await expect(review).toContainText('Weekly training review');
+ await expect(review).toContainText('unconfirmed');
+ await review.locator('[data-weekly-select]').selectOption('1');
+ await review.locator('[data-weekly-field="sleep"]').selectOption('poor');
+ await review.locator('[data-weekly-field="fatigue"]').selectOption('elevated');
+ await review.locator('[data-weekly-notes]').fill('Schedule was difficult this week.');
+ await review.locator('[data-weekly-confirm]').check();
+ await review.locator('[data-weekly-form] button').click();
+ await expect.poll(()=>page.evaluate(()=>data.customProgramWeeklyReviews.length)).toBe(1);
+ expect(await page.evaluate(()=>({calendar:data.scheduledSessions.length,logs:data.workouts.length}))).toEqual({calendar:2,logs:0});
+ await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
+ await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
+ await page.locator('#custom-program-studio details.more-details').filter({has:page.locator('[data-custom-insights="pilot-weekly"]')}).locator('summary').first().click();
+ await page.locator('[data-custom-insights="pilot-weekly"]').click();
+ await page.locator('[data-custom-report="pilot-weekly"] [data-weekly-select]').selectOption('1');
+ await expect(page.locator('[data-custom-report="pilot-weekly"]')).toContainText('Discuss reported recovery');
+ await expect(page.locator('[data-custom-report="pilot-weekly"] [data-weekly-notes]')).toHaveValue('Schedule was difficult this week.');
+});
+
 test('v3.70 quick edit copies an empty week and replaces a movement without carrying old loads',async({page})=>{
  await page.clock.install({time:new Date('2026-10-19T18:00:00.000Z')});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);

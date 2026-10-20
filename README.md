@@ -1,8 +1,8 @@
 # Loadnote
 
-**v3.70.0 · Development build.**
+**v3.73.0 · Development build.**
 
-Combined Program Studio & offline Coach update: [v3.70 release notes](docs/releases-v3.70.md). The v3.68–v3.70 milestones ship together as one v3.70 build: quickly copy an existing week to an empty week, replace exact movements over selected weeks without carrying their previous load/RPE, then Undo, review and save. The offline Coach can read the **active scheduled** custom-program session for today or the next workout, without inventing a prescription or rewriting Calendar. The full-program review highlights week coverage and direct import-row errors; v3.66 safe Home Screen updates remain available.
+Combined athlete-feedback and Android beta update: [v3.73 release notes](docs/releases-v3.73.md). The v3.71–v3.73 milestones ship together as one v3.73 build: completed-week reviews now compare a user's own scheduled program to exactly linked workout evidence, prompt a deliberate review for effort/attendance/athlete-reported recovery concerns, and preserve optional append-only weekly check-ins in backups and account sync. The Offline Coach can explain weekly observations without changing targets. The Android offline beta now checks the synthetic weekly review/backup path; physical-device testing and store approvals remain outstanding. The v3.66 Home Screen update protection is preserved.
 
 Custom program intelligence: [v3.67 release notes](docs/releases-v3.67.md). Program Studio now shows every saved session in a week-by-week import preview, supports duplicate-row editing and jump-to-week navigation, and offers an offline plan check against the athlete's confirmed training days and avoided exercises. Coach can explain this reviewed plan and consented edit reasons without inventing loads, overwriting programs or claiming causal learning. The v3.66 safe-update workflow remains in place.
 
@@ -50,7 +50,7 @@ Programming changes are deterministic, explainable and athlete-approved. Logged 
 
 Meet prep has two steps: lift/schedule setup, then event-date review. Loading styles are linear, three-week waves, daily undulating and weekly undulating. Decisions suggestion remains the default in meet setup and currently selects linear or daily undulating from recorded experience and selected light exposures—not a prediction that one style will work best. Weekly undulating alternates volume/intensity weeks, with explicit rep/load targets and a base step per two-week pair. Accumulation/strength/peaking/taper describe phase structure, not additional loading-style options. Peak/taper protections and separate scheduling approval remain intact. See [v3.10 notes](docs/releases-v3.10.md) and the [feature-demo checklist](docs/feature-demo-v3.10.md).
 
-Current schema: **33**. Internal weights are kilograms; kg/lb is a display/input preference. JSON backups carry integrity metadata and replacement imports require review. Device-local drafts and photo binaries are not account-sync records. Manual account sync and Online Coach need a configured backend; GitHub Pages alone does not provide them.
+Current schema: **34**. Internal weights are kilograms; kg/lb is a display/input preference. JSON backups carry integrity metadata and replacement imports require review. Program-specific weekly check-ins are saved records in backups and optional account sync; unfinished device-local drafts and photo binaries are not account-sync records. Manual account sync and Online Coach need a configured backend; GitHub Pages alone does not provide them.
 
 Native Android/iOS packages are an unsigned, local-only beta. Compilation is not physical-device acceptance or TestFlight distribution. WebGPU local AI is experimental and its real-device performance/availability is not established. See [mobile acceptance](docs/mobile-acceptance.md), [native acceptance](docs/native-device-acceptance.md) and [store readiness](docs/store-readiness.md).
 

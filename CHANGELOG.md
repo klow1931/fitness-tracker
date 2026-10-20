@@ -1,3 +1,10 @@
+# v3.73.0 — Combined v3.71–v3.73 Adaptive Review, Athlete Feedback & Android Pilot
+
+- v3.71: Read-only uploaded-program weekly analysis for completed/skipped/unconfirmed sessions, exact planned-versus-actual effort, athlete-reported concerns and a route into the existing athlete-approved future-only edit flow.
+- v3.72: Append-only per-program weekly check-ins (sleep, soreness, fatigue, session experience and optional notes) in schema 34, backed up and optionally synced with explicit consent.
+- v3.73: Offline Android emulator regression for check-in, Calendar non-mutation, backup/restore and activity recreation; physical beta acceptance checklist and updated source release gates.
+- Ship once as **3.73.0**, native build **33480**; earlier v3.70 training history and staged Home Screen update protections remain intact. See [release notes](docs/releases-v3.73.md).
+
 # v3.70.0 — Combined v3.68–v3.70 Program Studio & Offline Coach
 
 - v3.68: Add undoable, device-local copy-from-week and athlete-approved exact movement replacement across a week range. Protect existing target weeks and clear prior load/RPE values on exercise substitutions.
