@@ -1,3 +1,12 @@
+# v3.73.1 — Program Import, Feedback & Workout Cue Corrections
+
+- Block unsupported ranges and percentage targets in text/PDF imports with the source line and a correction message. Preserve supported rest allowances and trailing exercise instructions.
+- Exclude linked completed workouts from Coach's upcoming custom sessions and identify already logged days.
+- Flag a single above-cap set in weekly review instead of describing the logs as within their caps.
+- Retain exercise cues in Calendar prescriptions and show them in the logger after draft recovery, independently of personal notes.
+- Show unspecified loads explicitly in the expanded planned-work summary; preserve an actual zero-load target as zero.
+- Add model and mobile browser regressions, including the iPhone WebKit gate. Schema 34; native build 33481. See [release notes](docs/releases-v3.73.1.md).
+
 # v3.73.0 — Combined v3.71–v3.73 Adaptive Review, Athlete Feedback & Android Pilot
 
 - v3.71: Read-only uploaded-program weekly analysis for completed/skipped/unconfirmed sessions, exact planned-versus-actual effort, athlete-reported concerns and a route into the existing athlete-approved future-only edit flow.

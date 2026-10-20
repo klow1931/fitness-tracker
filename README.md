@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.73.0 · Development build.**
+**v3.73.1 · Development build.**
+
+Program review corrections: [v3.73.1 release notes](docs/releases-v3.73.1.md). Text/PDF imports stop for unsupported rep/load ranges and percentage prescriptions, retain supported rest and exercise cues, and leave the current draft intact on failure. Coach advances past logged custom sessions; weekly feedback flags even one above-cap set. Program cues survive scheduling and workout draft recovery and display separately from personal notes. Schema remains 34.
 
 Combined athlete-feedback and Android beta update: [v3.73 release notes](docs/releases-v3.73.md). The v3.71–v3.73 milestones ship together as one v3.73 build: completed-week reviews now compare a user's own scheduled program to exactly linked workout evidence, prompt a deliberate review for effort/attendance/athlete-reported recovery concerns, and preserve optional append-only weekly check-ins in backups and account sync. The Offline Coach can explain weekly observations without changing targets. The Android offline beta now checks the synthetic weekly review/backup path; physical-device testing and store approvals remain outstanding. The v3.66 Home Screen update protection is preserved.
 

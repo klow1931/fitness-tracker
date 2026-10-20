@@ -42,7 +42,7 @@
  function csv(text,separator=','){return fromTable(parseDelimited(text,separator),{source:separator==='\t'?'tsv':'csv'});}
  const WEEK=/^\s*(?:week|wk)\s*#?\s*(\d{1,2})\s*[:\-–]?\s*$/i;
  const DAY=/^\s*(mon(?:day)?|tue(?:s(?:day)?)?|wed(?:nesday)?|thu(?:rs?(?:day)?)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)\s*[:\-–]?\s*$/i;
- const EXERCISE=/^\s*(?:[-•*]\s*)?(.+?)\s*[:–-]?\s+(\d{1,2})\s*[x×]\s*(\d{1,2})(.*)$/i;
+ const EXERCISE=/^\s*(?:[-•*]\s*)?(.+?)\s*[:–-]?\s+(\d{1,2})\s*[x×]\s*(\d{1,2})(?!\d)(.*)$/i;
  function plainText(text){
    const raw=String(text||'').replace(/\u00a0/g,' ').split(/\r?\n/),rows=[],ignored=[];let week=1,day='';
    for(let i=0;i<raw.length;i++){
@@ -50,8 +50,13 @@
      const w=line.match(WEEK);if(w){week=Number(w[1]);continue;}
      const d=line.match(DAY);if(d){day=d[1];continue;}
      const e=line.match(EXERCISE);if(e&&day){
-       const tail=e[4],load=tail.match(/@?\s*(\d+(?:\.\d+)?)\s*(kg|lb|lbs)\b/i),rpe=tail.match(/\bRPE\s*[:@]?\s*(\d+(?:\.\d+)?)/i);
-       rows.push({week,day,exercise:e[1],sets:e[2],reps:e[3],weight:load?.[1]||'',unit:load?.[2]||'',rpe:rpe?.[1]||'',notes:''});
+       const tail=e[4];
+       if(/^\s*(?:[-–—/]\s*\d|to\s+\d|\+|[.,]\d)/i.test(tail)||/\d\s*(?:%|percent\b)|\d\s*[-–—]\s*\d|\bAMRAP\b|(?:@|RPE|rest)\s*-\s*\d/i.test(tail))
+         throw Error('Line '+(i+1)+': rep/load ranges, AMRAP (+) and percentage targets need an explicit fixed reps/load choice before import. Original: '+line.slice(0,160));
+       const load=tail.match(/@?\s*(\d+(?:\.\d+)?)\s*(kg|lbs?)\b/i),rpe=tail.match(/\bRPE\s*[:@]?\s*(\d+(?:\.\d+)?)/i),rest=tail.match(/\brest\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b/i);
+       let notes=tail;for(const target of [load,rpe,rest])if(target)notes=notes.replace(target[0],'');
+       notes=notes.replace(/^[\s,;:@|–—-]+|[\s,;|]+$/g,'').trim();
+       rows.push({week,day,exercise:e[1],sets:e[2],reps:e[3],weight:load?.[1]||'',unit:load?.[2]||'',rpe:rpe?.[1]||'',...(rest?{rest:String(Number(rest[1])*(/^m/i.test(rest[2])?60:1))}:{}),notes});
      }else ignored.push('Line '+(i+1)+': '+line.slice(0,80));
    }
    if(!rows.length)throw Error('No recognizable exercise rows. Use Week 1 / Monday headings and lines like Squat 4x5 @ 225 lb RPE 7, or import a CSV spreadsheet.');

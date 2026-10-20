@@ -163,7 +163,7 @@
    p.scheduledAt=now;return {...state,customPrograms:validate(records),scheduledSessions:sessions};
  }
  function sessionContext(p,s,now){
-   const exercises=s.exercises.map(e=>e.type==='cardio'?{name:e.name,exerciseId:e.exerciseId||undefined,type:'cardio',duration:e.duration}:{name:e.name,exerciseId:e.exerciseId||undefined,type:'strength',sets:e.sets,restSeconds:e.restSeconds});
+   const exercises=s.exercises.map(e=>e.type==='cardio'?{name:e.name,exerciseId:e.exerciseId||undefined,type:'cardio',duration:e.duration,notes:e.notes}:{name:e.name,exerciseId:e.exerciseId||undefined,type:'strength',sets:e.sets,restSeconds:e.restSeconds,notes:e.notes});
    const prescription=Intent.createPrescription(exercises,{type:'program',referenceId:p.id,label:p.config.name+' · '+s.name},now);
    return {name:p.config.name+' · '+s.name,date:s.date,role:'mixed',goal:'Athlete-authored program; preserve original planned targets',prescription};
  }

@@ -104,10 +104,12 @@
   const name=record.config.name,cutoff=asOf+'T23:59:59.999Z';
   if(!record.scheduledAt||record.scheduledAt>cutoff)return {...base,text:name+' is reviewed but was not scheduled on Calendar by '+asOf+'. Save and explicitly schedule it in Custom Program Studio before using it as a daily workout. No training was changed.',evidence:[]};
   if(record.replacedBy&&record.replacedAt<=cutoff)return {...base,text:name+' was superseded by a reviewed edit. Open Custom Program Studio and use the active Calendar version; I will not quote outdated session targets.',evidence:[]};
-  const all=Schedule.list(state.scheduledSessions||[],cutoff).filter(s=>s.id.startsWith('custom:'+record.id+':')&&s.status==='scheduled').sort((a,b)=>a.date.localeCompare(b.date));
+  const knownWorkouts=(state.workouts||[]).filter(w=>!w.createdAt||w.createdAt<=cutoff);
+  const rows=Schedule.rows(state.scheduledSessions||[],knownWorkouts,{asOf}).filter(s=>s.id.startsWith('custom:'+record.id+':'));
+  const all=rows.filter(s=>s.status==='scheduled'&&s.state!=='completed').sort((a,b)=>a.date.localeCompare(b.date));
   const tomorrow=/\btomorrow\b/i.test(question),next=/\b(?:next|upcoming)\b/i.test(question),requested=tomorrow?(()=>{const d=new Date(asOf+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);})():asOf;
   const session=next?all.find(s=>s.date>=requested):all.find(s=>s.date===requested);
-  if(!session){const upcoming=all.find(s=>s.date>requested);return {...base,text:'No scheduled session from '+name+' is listed for '+requested+'. '+(upcoming?'The next active Calendar session is '+upcoming.date+'. ':'No later active session is available in this program. ')+'I have not created a substitute workout.',evidence:[]};}
+  if(!session){const upcoming=all.find(s=>s.date>requested),completed=rows.some(s=>s.date===requested&&s.state==='completed');return {...base,text:(completed?'The '+name+' session for '+requested+' is already logged. ':'No scheduled session from '+name+' is listed for '+requested+'. ')+(upcoming?'The next active Calendar session is '+upcoming.date+'. ':'No later active session is available in this program. ')+'I have not created a substitute workout.',evidence:[]};}
   const weight=kg=>Math.round(kg*(unit==='lb'?2.20462262185:1)*100)/100+' '+(unit==='lb'?'lb':'kg');
   const exercises=session.prescription?.plannedExercises||[];
   const lines=exercises.map(e=>{
