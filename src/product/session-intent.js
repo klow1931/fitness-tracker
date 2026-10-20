@@ -42,9 +42,13 @@
   }
   function plannedExercise(raw){
     const name=text(raw?.name,160);if(!name)return null;
+    const notes={};if(raw.notes!=null&&raw.notes!==''){
+      if(typeof raw.notes!=='string'||raw.notes.length>500)throw Error('Planned exercise notes must be 500 characters or less.');
+      notes.notes=raw.notes;
+    }
     if(raw.type==='practice'){
       if(!['weightlifting','speed','jump','agility'].includes(raw.kind)||typeof raw.exerciseId!=='string'||!raw.exerciseId||!Number.isInteger(raw.rounds)||raw.rounds<1||raw.rounds>12||!Number.isInteger(raw.reps)||raw.reps<1||raw.reps>10||!Number.isInteger(raw.restSeconds)||raw.restSeconds<60||raw.restSeconds>600||typeof raw.protocol!=='string'||!raw.protocol.trim()||raw.protocol.length>500)throw Error('Invalid reviewed practice target');
-      const row={name,type:'practice',exerciseId:raw.exerciseId,kind:raw.kind,rounds:raw.rounds,reps:raw.reps,restSeconds:raw.restSeconds,protocol:raw.protocol};
+      const row={name,type:'practice',exerciseId:raw.exerciseId,kind:raw.kind,rounds:raw.rounds,reps:raw.reps,restSeconds:raw.restSeconds,protocol:raw.protocol,...notes};
       if(raw.kind==='weightlifting'){if(!Number.isFinite(raw.weight)||raw.weight<0||raw.weight>1000||!['snatch','clean','jerk','clean-jerk','snatch-pull','clean-pull','other'].includes(raw.family)||typeof raw.variation!=='string'||raw.variation.length>160||raw.reps>3)throw Error('Invalid technical practice target');Object.assign(row,{weight:raw.weight,family:raw.family,variation:raw.variation,loadConvention:'total'});}
       else{if(!Number.isFinite(raw.distanceMeters)||raw.distanceMeters<0||raw.distanceMeters>200||raw.kind!=='jump'&&raw.distanceMeters<=0)throw Error('Invalid drill distance');row.distanceMeters=raw.distanceMeters;}
       return row;
@@ -52,11 +56,11 @@
     if(raw.type==='cardio'){
       const duration=Math.max(0,Number(raw.duration)||0),distance=Math.max(0,Number(raw.distance)||0);
       if(!(duration>0||distance>0))return null;
-      const row={name,type:'cardio',duration,distance,distanceUnit:['km','mi','m'].includes(raw.distanceUnit)?raw.distanceUnit:'km'};
+      const row={name,type:'cardio',duration,distance,distanceUnit:['km','mi','m'].includes(raw.distanceUnit)?raw.distanceUnit:'km',...notes};
       if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);if(Number.isFinite(Number(raw.targetAvgHr??raw.avgHr))&&Number(raw.targetAvgHr??raw.avgHr)>0)row.targetAvgHr=Number(raw.targetAvgHr??raw.avgHr);return row;
     }
     const trackBy=raw.trackBy==='duration'?'duration':'reps',sets=(raw.sets||[]).map(set=>plannedSet(set,trackBy)).filter(Boolean);
-    if(!sets.length)return null;const row={name,type:'strength',trackBy,sets};if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);
+    if(!sets.length)return null;const row={name,type:'strength',trackBy,sets,...notes};if(raw.exerciseId)row.exerciseId=String(raw.exerciseId);
     if(raw.restSeconds!=null){if(!Number.isInteger(raw.restSeconds)||raw.restSeconds<60||raw.restSeconds>600)throw Error('Invalid planned rest allowance');row.restSeconds=raw.restSeconds;}
     if(raw.loadConvention!=null){if(!['total','per-hand','stack','added'].includes(raw.loadConvention))throw Error('Invalid planned load convention');row.loadConvention=raw.loadConvention;}
     return row;

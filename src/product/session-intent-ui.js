@@ -58,6 +58,7 @@ function prescriptionSourceLabel(plan){
   if(!plan)return 'No planned work recorded';const source=plan.source||{},fallback={manual:'Manual plan',template:'Template',program:'Program','repeated-workout':'Repeated workout'}[source.type]||'Recorded plan';return source.label?`${fallback} · ${source.label}`:fallback;
 }
 function renderPrescriptionSummary(){
+  renderPlannedExerciseNotes();
   window.LoadnoteTrainingTargetsUI?.current();
   const status=document.getElementById('session-timing-summary');if(status){const t=pendingSessionTiming,date=document.getElementById('wo-date')?.value;status.textContent=(t?.startedAt?'Recorded start: '+t.startedAt+(t.sessionDate!==date?' · workout date changed; timing unknown':''):'Start time not recorded')+' · Original plan: '+LoadnoteIntent.planTiming(pendingPrescription,date,t)+' · '+(t?.revisions.length||0)+' plan revisions';}
   const el=document.getElementById('planned-work-summary');if(!el)return;
@@ -68,3 +69,18 @@ function renderPrescriptionSummary(){
   document.getElementById('clear-planned-work').hidden=false;
   if(pendingSessionTiming?.revisions.length){const history=document.createElement('details');history.innerHTML='<summary>Plan changes · original retained</summary>'+pendingSessionTiming.revisions.map(r=>'<p>'+escapeHtml(r.recordedAt+' · '+(r.plan?LoadnoteIntent.planTiming(r.plan,document.getElementById('wo-date').value,pendingSessionTiming):'Plan removed'))+'</p>'+(r.plan?'<p>'+escapeHtml(r.plan.plannedExercises.map(e=>e.name+': '+(e.sets||[]).map(s=>toDisplay(s.weight)+' '+unitLabel()+' × '+(s.reps||s.duration)).join(' / ')).join('; '))+'</p>':'')).join('');el.append(history);}
 }
+function renderPlannedExerciseNotes(){
+  const program=(data.customPrograms||[]).find(p=>p.id===pendingPrescription?.source?.referenceId);
+  const original=program?.sessions.find(s=>pendingScheduledSession?.id==='custom:'+program.id+':'+s.key);
+  for(const row of document.querySelectorAll('#exercise-rows > div')){
+    const name=row.querySelector('.ex-name')?.value.trim().toLowerCase(),type=row.dataset.type==='cardio'?'cardio':'strength';
+    const matches=(pendingPrescription?.plannedExercises||[]).filter(e=>e.name.toLowerCase()===name&&e.type===type);
+    const planned=matches.length===1?matches[0]:null;
+    const originalMatches=planned&&!Object.hasOwn(planned,'notes')?(original?.exercises||[]).filter(e=>e.name===planned.name&&e.type===planned.type):[];
+    const notes=planned?.notes||(originalMatches.length===1?originalMatches[0].notes:'');let host=row.querySelector('.planned-exercise-notes');
+    if(!notes){host?.remove();continue;}
+    if(!host){host=document.createElement('p');host.className='planned-exercise-notes more-hint';row.insertBefore(host,row.children[1]||null);}
+    const message='Program cue: '+notes;if(host.textContent!==message)host.textContent=message;
+  }
+}
+document.addEventListener('input',event=>{if(event.target.matches?.('#exercise-rows .ex-name'))renderPlannedExerciseNotes();});
