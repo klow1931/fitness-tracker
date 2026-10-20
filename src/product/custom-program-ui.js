@@ -148,7 +148,7 @@
        a.notes.map(x=>'<p class="more-hint">'+esc(x)+'</p>').join('')+
        (a.sharedReasons.length?'<h4>Edit explanations shared with Coach</h4>'+a.sharedReasons.map(x=>'<p>'+esc(x.category+(x.detail?' · '+x.detail:''))+'</p>').join(''):'')+
        (a.privateReasonCount?'<p class="more-hint">'+a.privateReasonCount+' edited revision(s) have private reasons; Coach cannot use them.</p>':'')+
-       '<h4>Linked workout evidence</h4><p>'+r.completed+'/'+r.planned+' sessions completed · '+r.skipped+' skipped · '+r.unconfirmed+' unconfirmed · '+r.matchedSets+'/'+r.linkedSets+' exact comparable planned strength sets.</p><h4>Recurring movements</h4>'+
+       '<h4>Linked workout evidence</h4><p>'+r.completed+'/'+r.planned+' sessions completed · '+r.skipped+' skipped · '+r.unconfirmed+' unconfirmed · '+r.matchedSets+'/'+r.linkedSets+' exact comparable planned strength sets.</p><h4>Recurring movements from your plan</h4>'+
        r.patterns.map(x=>'<p>'+esc(x.name)+' · '+x.exposures+' exposures in '+x.weeks+' weeks · '+x.sets+' programmed sets'+(x.firstLoadKg!==null?' · first/last specified load '+x.firstLoadKg+'/'+x.lastLoadKg+' kg':'')+'</p>').join('')+
        (r.differences||[]).map(x=>'<p>'+esc(x)+'</p>').join('')+r.notes.map(x=>'<p class="more-hint">'+esc(x)+'</p>').join('')+'<p class="more-hint">'+esc(a.notice)+'</p></div>';
    }catch(e){host.textContent=e.message;}
