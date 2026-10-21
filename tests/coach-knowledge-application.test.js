@@ -41,7 +41,7 @@ assert.equal(app.profile.avoidedExercises,1);
 let answer=Knowledge.answer(withProfile,'How does that apply for me?',{...opts,history:[{role:'user',content:'Explain training frequency'}]});
 assert.match(answer.text,/3 available day/);
 assert.match(answer.text,/Available training days describe your schedule, not verified adherence/);
-assert.equal(answer.evidenceCards.length,2);
+assert(answer.evidenceCards.length>=2&&answer.evidenceCards.length<=3,'Profile and logs remain present; reviewed program evidence is optional');
 assert.match(answer.evidenceCards[0].limitation,/do not establish adherence/);
 assert(answer.citations.length>0);
 const future={...withProfile,programmingProfiles:Profile.save(withProfile.programmingProfiles,{...raw,availableDays:[0,1,2,3,4],experience:'advanced'},{id:'profile-b',now:'2026-10-01T12:00:00.000Z'})};
