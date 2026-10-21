@@ -12,6 +12,19 @@
  const follow=q=>/^(and|what about) (my |the )?(equipment|goals?|schedule|training days|available days|exclusions|preferred exercises|session time)\??$/i.test(q);
  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
  // Chat can propose a future setting only when the athlete explicitly names the days.
+ function naturalDays(question,record){
+  if(!record)return null;const q=clean(question);
+  if(!/\b(?:i (?:train|work out|can train)|my (?:training|available) days? (?:are|is)|i(?:'m| am) available)\b/i.test(q))return null;
+  const found=days.flatMap((day,i)=>new RegExp('\\b'+day+'\\b','i').test(q)?[i]:[]);
+  return found.length?{kind:'training-days',availableDays:found,baseRevisionId:record.id}:null;
+ }
+ function naturalMinutes(question,record){
+  if(!record)return null;const q=clean(question);
+  if(!/\b(?:i (?:only )?have|i(?:'ve| have) (?:only |just )?got|my (?:workouts?|sessions?) (?:are|last)|i(?:'m| am) limited to|i can train for)\b/i.test(q))return null;
+  const matches=[...q.matchAll(/\b(\d{1,3})\s*(?:minutes?|mins?)\b/gi)];
+  if(matches.length!==1)return null;const n=Number(matches[0][1]);
+  return n>=30&&n<=240?{kind:'profile-fields',changes:{sessionMinutes:n},baseRevisionId:record.id}:null;
+ }
  function dayProposal(question,record){
   const q=clean(question),match=q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(?:my\s+)?(?:training|available)\s+days\s+(?:to|as)\s+(.+?)[.!?]?$/i)
    ||q.match(/^(?:please\s+)?(?:use|set|change|make)\s+(.+?)\s+as\s+(?:my|your)\s+(?:training|available)\s+days[.!?]?$/i);
@@ -44,7 +57,7 @@
   const q=clean(question);
   if(!q||Support.health(String(question||'')))return null;
   let saved=null;try{saved=Profile.current(state.programmingProfiles||[],asOf?asOf+'T23:59:59.999Z':undefined);}catch{/* The existing explicit setup-query error route below explains invalid saved data. */}
-  const proposed=dayProposal(q,saved)||fieldProposal(q,saved);
+  const proposed=dayProposal(q,saved)||fieldProposal(q,saved)||naturalDays(q,saved)||naturalMinutes(q,saved);
   if(proposed){const change=proposed.kind==='training-days'?{key:'availableDays',old:saved.context.availableDays,value:proposed.availableDays,label:'training days',format:rows=>rows.map(i=>days[i]).join(', ')}:
    Object.hasOwn(proposed.changes,'equipment')?{key:'equipment',old:[...saved.context.equipment,...(saved.context.accessoryEquipment||[])],value:[...proposed.changes.equipment,...proposed.changes.accessoryEquipment],label:'equipment',format:rows=>rows.join(', ')||'none'}:
    Object.hasOwn(proposed.changes,'sessionMinutes')?{key:'sessionMinutes',old:saved.context.sessionMinutes,value:proposed.changes.sessionMinutes,label:'session time',format:n=>n+' minutes'}:

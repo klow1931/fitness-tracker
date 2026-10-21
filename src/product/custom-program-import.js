@@ -4,7 +4,7 @@
  else root.LoadnoteCustomProgramImport=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
- const HEADERS={week:['week','wk','training week'],day:['day','weekday','training day'],exercise:['exercise','movement','lift','exercise name'],sets:['sets','set count'],reps:['reps','repetitions','rep count'],weight:['weight','load','weight (kg)','weight (lb)','load (kg)','load (lb)'],unit:['unit','units','weight unit'],rpe:['rpe','target rpe','effort'],rest:['rest','rest seconds','rest (sec)'],type:['type','training type'],minutes:['minutes','duration','duration (min)','cardio minutes'],notes:['notes','description']};
+ const HEADERS={week:['week','wk','training week'],day:['day','weekday','training day'],exercise:['exercise','movement','lift','exercise name'],sets:['sets','set count'],reps:['reps','repetitions','rep count'],weight:['weight','load','weight (kg)','weight (lb)','load (kg)','load (lb)'],unit:['unit','units','weight unit'],percent:['percent','percentage','intensity %','%1rm','%tm'],percentBasis:['percent basis','percentage basis','basis','max basis'],reference:['reference','reference load','reference max'],referenceUnit:['reference unit','max unit'],roundTo:['round to','rounding','plate increment'],rpe:['rpe','target rpe','effort'],rest:['rest','rest seconds','rest (sec)'],type:['type','training type'],minutes:['minutes','duration','duration (min)','cardio minutes'],notes:['notes','description']};
  const alias=Object.fromEntries(Object.entries(HEADERS).flatMap(([k,rows])=>rows.map(x=>[x,k])));
  function parseDelimited(text,separator=','){
    const rows=[];let row=[],cell='',quoted=false;const input=String(text||'').replace(/^\uFEFF/,'');
@@ -22,7 +22,7 @@
    if(!Array.isArray(table)||!table.length)throw Error('No table rows found in the file');
    const head=table[0].map(x=>String(x??'').trim().toLowerCase().replace(/\s+/g,' ')),columns=head.map(h=>alias[h]||null);
    if(!['week','day','exercise'].every(k=>columns.includes(k)))throw Error('Expected header columns Week, Day and Exercise. Download or follow the Loadnote CSV format.');
-   const unknownTargets=head.filter((h,i)=>h&&!columns[i]&&/\b(sets?|reps?|repetitions?|weight|loads?|rpe|rest|duration|minutes)\b/i.test(h));
+   const unknownTargets=head.filter((h,i)=>h&&!columns[i]&&/\b(sets?|reps?|repetitions?|weight|loads?|rpe|rest|duration|minutes|percentage|percent|reference|rounding)\b/i.test(h));
    if(unknownTargets.length)throw Error('Unrecognized training target column(s): '+unknownTargets.join(', ')+'. Rename to the Loadnote example headers so prescriptions are not silently discarded.');
    const result=[],warnings=[];
    if(!columns.includes('type')&&(!columns.includes('sets')||!columns.includes('reps')))throw Error('Expected Sets and Reps columns for strength programs');
@@ -31,7 +31,7 @@
    for(let i=1;i<table.length;i++){
      const cells=table[i];if(!cells?.some(x=>String(x??'').trim()))continue;
      const row={};for(let k=0;k<columns.length;k++)if(columns[k])row[columns[k]]=String(cells[k]??'').trim();
-     if(!row.unit&&weightHeader.includes('(kg)'))row.unit='kg';if(!row.unit&&weightHeader.includes('(lb)'))row.unit='lb';
+     if(!row.unit&&weightHeader.includes('(kg)'))row.unit='kg';if(!row.unit&&weightHeader.includes('(lb)'))row.unit='lb';if(/^\d+(?:\.\d+)?\s*%$/.test(row.weight||'')){if(row.percent)throw Error('Row '+(i+1)+': choose a single percentage target');row.percent=row.weight.replace(/\s*%/,'');row.weight='';}
      result.push(row);
    }
    if(result.length>1500)throw Error('Uploaded program exceeds 1500 exercise rows');
@@ -50,17 +50,20 @@
      const w=line.match(WEEK);if(w){week=Number(w[1]);continue;}
      const d=line.match(DAY);if(d){day=d[1];continue;}
      const e=line.match(EXERCISE);if(e&&day){
-       const tail=e[4];
-       if(/^\s*(?:[-–—/]\s*\d|to\s+\d|\+|[.,]\d)/i.test(tail)||/\d\s*(?:%|percent\b)|\d\s*[-–—]\s*\d|\bAMRAP\b|(?:@|RPE|rest)\s*-\s*\d/i.test(tail))
-         throw Error('Line '+(i+1)+': rep/load ranges, AMRAP (+) and percentage targets need an explicit fixed reps/load choice before import. Original: '+line.slice(0,160));
-       const load=tail.match(/@?\s*(\d+(?:\.\d+)?)\s*(kg|lbs?)\b/i),rpe=tail.match(/\bRPE\s*[:@]?\s*(\d+(?:\.\d+)?)/i),rest=tail.match(/\brest\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b/i);
-       let notes=tail;for(const target of [load,rpe,rest])if(target)notes=notes.replace(target[0],'');
-       notes=notes.replace(/^[\s,;:@|–—-]+|[\s,;|]+$/g,'').trim();
-       rows.push({week,day,exercise:e[1],sets:e[2],reps:e[3],weight:load?.[1]||'',unit:load?.[2]||'',rpe:rpe?.[1]||'',...(rest?{rest:String(Number(rest[1])*(/^m/i.test(rest[2])?60:1))}:{}),notes});
+       const originalTail=e[4],range=originalTail.match(/^\s*(?:[-–—]\s*|to\s+)(\d{1,2})(?!\d)/i);
+        const reps=range?e[3]+'-'+range[1]:e[3],tail=range?originalTail.slice(range[0].length):originalTail;
+        if(/^\s*(?:[-–—/]\s*\d|to\s+\d|\+|[.,]\d)/i.test(tail)||/\d\s*[-–—]\s*\d+\s*(?:kg|lbs?)\b|\bAMRAP\b|(?:@|RPE|rest)\s*-\s*\d|^\s*\+\b/i.test(tail))
+          throw Error('Line '+(i+1)+': unsupported AMRAP, negative load or load range. Use a fixed load or a reviewed rep range (e.g. 3x8-12). Original: '+line.slice(0,160));
+        const percent=tail.match(/(?:@|\bat\b)?\s*(\d+(?:\.\d+)?)\s*(?:%|percent\b)/i);
+        const load=percent?null:tail.match(/@?\s*(\d+(?:\.\d+)?)\s*(kg|lbs?)\b/i);
+        const rpe=tail.match(/\bRPE\s*[:@]?\s*(\d+(?:\.\d+)?)/i),rest=tail.match(/\brest\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b/i);
+        let notes=tail;for(const target of [percent,load,rpe,rest])if(target)notes=notes.replace(target[0],'');
+        notes=notes.replace(/^[\s,;:@|–—-]+|[\s,;|]+$/g,'').trim();
+        rows.push({week,day,exercise:e[1],sets:e[2],reps,weight:load?.[1]||'',unit:load?.[2]||'',percent:percent?.[1]||'',rpe:rpe?.[1]||'',...(rest?{rest:String(Number(rest[1])*(/^m/i.test(rest[2])?60:1))}:{}),notes});
      }else ignored.push('Line '+(i+1)+': '+line.slice(0,80));
    }
    if(!rows.length)throw Error('No recognizable exercise rows. Use Week 1 / Monday headings and lines like Squat 4x5 @ 225 lb RPE 7, or import a CSV spreadsheet.');
-   return {rows,source:'txt',warnings:ignored.length?['Could not interpret '+ignored.length+' line(s): '+ignored.slice(0,6).join('; ')+'. Verify against your original file.']:[]};
+   return {rows,source:'txt',warnings:[...(rows.some(r=>r.percent)?['Percentage rows need a confirmed training-max or tested-1RM basis, reference load, units and rounding in Studio before approval.']:[]),...(ignored.length?['Could not interpret '+ignored.length+' line(s): '+ignored.slice(0,6).join('; ')+'. Verify against your original file.']:[])]};
  }
  function json(text){
    let p;try{p=JSON.parse(text);}catch{throw Error('Invalid program JSON');}

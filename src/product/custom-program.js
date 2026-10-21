@@ -25,15 +25,36 @@
    const type=String(row.type||'strength').trim().toLowerCase();if(!['strength','cardio'].includes(type))throw Error('Training type must be strength or cardio');
    const notes=String(row.notes||'').trim();if(notes.length>500)throw Error('Notes must be 500 characters or less');
    if(type==='cardio')return {week,weekday,name,type,minutes:number(row.minutes??row.duration,'Cardio minutes',{min:1,max:360}),notes};
-   const sets=number(row.sets,'Sets',{min:1,max:12,integer:true}),reps=number(row.reps,'Reps',{min:1,max:50,integer:true});
+   const sets=number(row.sets,'Sets',{min:1,max:12,integer:true});
+   const rawReps=String(row.reps??'').trim(),range=rawReps.replace(/[–—]/g,'-').match(/^(\d{1,2})\s*(?:-|to)\s*(\d{1,2})$/i);
+   const reps=number(range?range[1]:row.reps,'Reps',{min:1,max:50,integer:true});
+   const minReps=range?reps:row.minReps==null?null:number(row.minReps,'Minimum reps',{min:1,max:50,integer:true});
+   const maxReps=range?number(range[2],'Maximum reps',{min:1,max:50,integer:true}):row.maxReps==null?null:number(row.maxReps,'Maximum reps',{min:1,max:50,integer:true});
+   if((minReps===null)!==(maxReps===null)||minReps!==null&&(minReps>=maxReps||reps<minReps||reps>maxReps))throw Error('Rep range must be ascending, e.g. 8–12');
    const rpe=number(row.rpe??row.targetRpe,'RPE',{min:1,max:10,optional:true});
    const rest=number(row.rest??row.restSeconds,'Rest seconds',{min:60,max:600,integer:true,optional:true});
-   const load=number(row.weight??row.load,'Load',{min:0,max:2205,optional:true});
-   const loadUnit=String(row.unit||unit||'').trim().toLowerCase();
-   if(load!==null&&!['kg','lb','lbs'].includes(loadUnit))throw Error('Load unit must be explicitly reviewed as kg or lb');
-   const weightKg=load===null?null:Math.round((loadUnit==='kg'?load:load/2.20462262185)*100)/100;
+   const inputWeight=row.weight??row.load,percentToken=typeof inputWeight==='string'&&/^\d+(?:\.\d+)?\s*%$/.test(inputWeight.trim());
+   const percent=number(percentToken?inputWeight.replace(/\s*%/,''):row.percent,'Percentage',{min:1,max:100,optional:true});
+   const loadUnit=String(row.unit||unit||'').trim().toLowerCase().replace(/^lbs$/,'lb');
+   let weightKg=null,percentageFields={};
+   if(percent!==null){
+     if(!percentToken&&inputWeight!==null&&inputWeight!==undefined&&String(inputWeight).trim()!=='')throw Error('Choose either a fixed load or a percentage, not both');
+     const percentBasis=String(row.percentBasis||'').trim().toLowerCase();
+     if(!['training-max','tested-1rm'].includes(percentBasis))throw Error('Choose percentage basis: training max or tested 1RM');
+     const reference=number(row.reference,'Percentage reference load',{min:1,max:2205});
+     const referenceUnit=String(row.referenceUnit||loadUnit).trim().toLowerCase().replace(/^lbs$/,'lb');
+     if(!['kg','lb'].includes(referenceUnit))throw Error('Choose percentage reference unit: kg or lb');
+     const roundTo=number(row.roundTo===''||row.roundTo==null?(referenceUnit==='lb'?5:2.5):row.roundTo,'Plate rounding increment',{min:0.1,max:25});
+     const calculated=Math.round((reference*percent/100+1e-8)/roundTo)*roundTo;
+     weightKg=Math.round((referenceUnit==='kg'?calculated:calculated/2.20462262185)*100)/100;
+     percentageFields={percent,percentBasis,reference,referenceUnit,roundTo};
+   }else{
+     const load=number(inputWeight,'Load',{min:0,max:2205,optional:true});
+     if(load!==null&&!['kg','lb'].includes(loadUnit))throw Error('Load unit must be explicitly reviewed as kg or lb');
+     weightKg=load===null?null:Math.round((loadUnit==='kg'?load:load/2.20462262185)*100)/100;
+   }
    if(weightKg!==null&&weightKg>1000)throw Error('Load exceeds the 1000 kg safety limit');
-   return {week,weekday,name,type,sets,reps,weightKg,rpe,rest,notes};
+   return {week,weekday,name,type,sets,reps,weightKg,rpe,rest,notes,...(minReps!==null?{minReps,maxReps}:{}),...percentageFields};
  }
  function config(raw){
    const name=String(raw?.name||'').trim(),weeks=number(raw?.weeks,'Program length',{min:1,max:52,integer:true}),startDate=raw?.startDate;
@@ -55,7 +76,7 @@
      const catalog=Integrity.resolveExercise(state.exerciseCatalog||[],entry.name);
      const target={name:entry.name,exerciseId:catalog?.id||null,type:entry.type,notes:entry.notes};
      if(entry.type==='cardio')target.duration=entry.minutes;
-     else {target.sets=Array.from({length:entry.sets},()=>{const s={reps:entry.reps};if(entry.weightKg!==null)s.weight=entry.weightKg;if(entry.rpe!==null)s.targetRpe=entry.rpe;return s;});if(entry.rest!==null)target.restSeconds=entry.rest;}
+     else {target.sets=Array.from({length:entry.sets},()=>{const s={reps:entry.reps};if(entry.minReps!=null){s.minReps=entry.minReps;s.maxReps=entry.maxReps;}if(entry.percent!=null){s.percent=entry.percent;s.percentBasis=entry.percentBasis;s.referenceKg=Math.round((entry.referenceUnit==='lb'?entry.reference/2.20462262185:entry.reference)*100)/100;s.roundTo=entry.roundTo;s.roundUnit=entry.referenceUnit;}if(entry.weightKg!==null)s.weight=entry.weightKg;if(entry.rpe!==null)s.targetRpe=entry.rpe;return s;});if(entry.rest!==null)target.restSeconds=entry.rest;}
      group.exercises.push(target);groups.set(key,group);
    }
    const sessions=[...groups.values()].sort((a,b)=>a.date.localeCompare(b.date));
@@ -71,6 +92,22 @@
  }
  // Editor operations are pure and never touch an approved program or Calendar.
  // In particular, a movement swap cannot inherit the old exercise's load/RPE.
+ // Bulk editor is draft-only: a separate preview/confirmation is required in the UI.
+ function bulkEditDraftRows(rows,selected,changes){
+  if(!Array.isArray(rows)||rows.length>1500||!Array.isArray(selected)||!selected.length||selected.length>rows.length||!changes||typeof changes!=='object')throw Error('Select valid draft exercise rows');
+  const indexes=new Set(selected);if(indexes.size!==selected.length||[...indexes].some(i=>!Number.isInteger(i)||i<0||i>=rows.length))throw Error('Invalid exercise selection');
+  const keys=Object.keys(changes);if(!keys.length||keys.some(k=>!['sets','reps','rpe','rest','minutes'].includes(k)))throw Error('Choose supported targets to update');
+  for(const [key,value] of Object.entries(changes))if(value===null||value===undefined||String(value).trim()==='')throw Error('Enter a value for '+key);
+  const result=copy(rows);for(const i of indexes){
+   const row=result[i],cardio=row.type==='cardio';
+   for(const [key,value] of Object.entries(changes)){
+    if(cardio!== (key==='minutes'))throw Error('Select only compatible '+(cardio?'cardio':'strength')+' rows for this edit');
+    const allowed={sets:[1,12],reps:[1,50],rpe:[1,10],rest:[60,600],minutes:[1,360]}[key],n=Number(value);
+    if(!Number.isFinite(n)||n<allowed[0]||n>allowed[1]||key!=='rpe'&&!Number.isInteger(n))throw Error('Invalid '+key+' target');
+    row[key]=String(n);
+   }
+  }return {rows:result,changed:indexes.size,affected:selected.map(i=>({row:i+1,week:rows[i].week,day:rows[i].day,exercise:rows[i].exercise,type:rows[i].type}))};
+ }
  function copyDraftWeek(rows,fromWeek,toWeek){
    if(!Array.isArray(rows)||rows.length>1500||![fromWeek,toWeek].every(n=>Number.isInteger(n)&&n>=1&&n<=52)||fromWeek===toWeek)throw Error('Choose two different valid program weeks');
    const originals=rows.filter(r=>Number(r.week)===fromWeek);
@@ -115,7 +152,7 @@
      for(let i=0;i<Math.max(old.length,fresh.length);i++){
        const a=old[i],b=fresh[i],r=a||b,label='Week '+r.week+' '+dayNames[r.weekday]+' · '+r.name;
        if(!a||!b){add((a?'Removed ':'Added ')+label,'exercise');continue;}
-       const fields=r.type==='cardio'?[['minutes','minutes']]:[['sets','sets'],['reps','reps'],['weightKg','load (kg)'],['rpe','RPE'],['rest','rest (sec)']];
+       const fields=r.type==='cardio'?[['minutes','minutes']]:[['sets','sets'],['reps','reps'],['minReps','minimum reps'],['maxReps','maximum reps'],['weightKg','load (kg)'],['percent','percentage'],['percentBasis','percentage basis'],['reference','reference'],['referenceUnit','reference unit'],['roundTo','rounding'],['rpe','RPE'],['rest','rest (sec)']];
        const edits=fields.filter(([field])=>a[field]!==b[field]).map(([field,name])=>name+': '+(a[field]??'unspecified')+' → '+(b[field]??'unspecified'));
        if(a.notes!==b.notes)edits.push('exercise notes edited');
        if(edits.length)add(label+' — '+edits.join(', '),'exercise');
@@ -139,7 +176,7 @@
  function save(state,proposal,{confirmed=false,notes='',source={kind:'manual',name:''},now=new Date().toISOString(),id,parentId=null,reason=null}={}){
    if(!confirmed||!iso(now)||typeof notes!=='string'||notes.length>1000)throw Error('Review and confirm the exact program before saving');
    if(!source||!['manual','csv','tsv','txt','xlsx','pdf','json'].includes(source.kind)||typeof source.name!=='string'||source.name.length>180)throw Error('Invalid import source');
-   const rows=proposal?.entries?.map(r=>r.type==='cardio'?{week:r.week,day:String(r.weekday+1),exercise:r.name,type:'cardio',minutes:r.minutes,notes:r.notes}:{week:r.week,day:String(r.weekday+1),exercise:r.name,type:'strength',sets:r.sets,reps:r.reps,weight:r.weightKg,unit:'kg',rpe:r.rpe,rest:r.rest,notes:r.notes});
+   const rows=proposal?.entries?.map(r=>r.type==='cardio'?{week:r.week,day:String(r.weekday+1),exercise:r.name,type:'cardio',minutes:r.minutes,notes:r.notes}:{week:r.week,day:String(r.weekday+1),exercise:r.name,type:'strength',sets:r.sets,reps:r.minReps!=null?r.minReps+'-'+r.maxReps:r.reps,weight:r.percent!=null?'':r.weightKg,unit:r.percent!=null?r.referenceUnit:'kg',rpe:r.rpe,rest:r.rest,notes:r.notes,...(r.percent!=null?{percent:r.percent,percentBasis:r.percentBasis,reference:r.reference,referenceUnit:r.referenceUnit,roundTo:r.roundTo}:{})});
    const fresh=build(state,{...proposal?.config,rows,unit:'kg'});
    if(JSON.stringify(fresh.entries)!==JSON.stringify(proposal.entries)||JSON.stringify(fresh.sessions)!==JSON.stringify(proposal.sessions))throw Error('Program preview is stale; review it again');
    let revision;
@@ -206,10 +243,10 @@
      for(const exercise of s.prescription?.plannedExercises||[]){if(exercise.type!=='strength')continue;
        const match=(w.exercises||[]).find(e=>exercise.exerciseId&&e.exerciseId===exercise.exerciseId||String(e.name||'').toLowerCase()===exercise.name.toLowerCase());
        if(!match){differences.push(s.date+' · '+exercise.name+' not logged');continue;}
-       for(let i=0;i<exercise.sets.length;i++){linkedSets++;const target=exercise.sets[i],actual=match.sets?.[i];if(actual&&actual.reps===target.reps&&(target.weight==null||Math.abs(Number(actual.weight)-Number(target.weight))<=0.01))matchedSets++;}
+       for(let i=0;i<exercise.sets.length;i++){linkedSets++;const target=exercise.sets[i],actual=match.sets?.[i];if(actual&&(target.minReps!=null?Number.isInteger(actual.reps)&&actual.reps>=target.minReps&&actual.reps<=target.maxReps:actual.reps===target.reps)&&(target.weight==null||Math.abs(Number(actual.weight)-Number(target.weight))<=0.01))matchedSets++;}
      }
    }
    return {status:'ready',name:p.config.name,revision:p.revision||null,planned:rows.length,completed:rows.filter(s=>s.state==='completed').length,skipped:rows.filter(s=>s.state==='skipped').length,unconfirmed:rows.filter(s=>s.state==='unconfirmed').length,linkedSets,matchedSets,patterns,differences:differences.slice(0,8),notes:[...(p.revision&&p.sessions.length!==rows.length?['Only future sessions of this edited program were adopted; earlier dates remain with the original program.']:[]),'Only Calendar-linked workouts provide exact planned-versus-actual comparisons.','These observations can guide a review; they do not demonstrate a program caused a result or authorize automatic changes.']};
  }
- return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow,copyDraftWeek,swapDraftMovement,weeklyOverview};
+ return {dayNames,REASONS,build,compare,validate,save,schedule,replacementPreview,replaceFuture,insights,normalizeRow,copyDraftWeek,bulkEditDraftRows,swapDraftMovement,weeklyOverview};
 });

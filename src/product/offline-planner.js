@@ -23,10 +23,13 @@
   if(rejected.length===1){const others=matches.filter(m=>m!==rejected[0]);if(new Set(others.map(m=>m[1])).size===1)return {value:Number(others[0][1]),ambiguous:false};}
   return {value:null,ambiguous:true};
  }
+  const weekNames=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+ // Named availability is kept in the reviewed draft; chat never edits saved preferences.
+ function mentionedDays(q){return weekNames.flatMap((day,i)=>new RegExp('\\b'+day+'\\b').test(q)?[i]:[]);}
  function parse(question,previous=null){
   const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),meetRequest=/\b(?:meet prep|meet preparation|meet cycle|peaking cycle)\b/.test(q),changePrior=previous&&/^(?:actually,?\s+)?(?:make|change|switch) (?:it|this) (?:to |a |an )?/i.test(q),start=!blocked&&!changePrior&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||meetRequest&&/\b(build|create|write|make|design|generate|draft|plan|want|need)\b/.test(q));
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
-  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q));
+  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q)||mentionedDays(q).length>0);
   if(!start&&!follow)return null;
   const r=start?{version:1,kind:/\b(workout|session)\b/.test(q)&&!/\b(program|routine|\d+\s*week)\b/.test(q)&&!meetRequest?'daily':'program',goal:null,weeks:null,frequency:null,minutes:null,equipment:[],focus:null,priority:null,periodization:null,excluded:[],tomorrow:false}:copy(previous);
   if(/\b(powerlifting|strength|get stronger|stronger)\b/.test(q))r.goal='strength';
@@ -37,6 +40,8 @@
   const frequency=dayChoice.value??(dayChoice.ambiguous?null:n(/\b(\d+)\s*x\s*(?:per|a|\/)?\s*week\b/));
   const minutes=minuteChoice.value??(minuteChoice.ambiguous?null:n(/\b(\d+)\s*hours?\b/)!=null?n(/\b(\d+)\s*hours?\b/)*60:/\bhalf an hour\b/.test(q)?30:null);
   if(weeks!==null)r.weeks=weeks;if(frequency!==null)r.frequency=frequency;if(minutes!==null)r.minutes=minutes;
+  const named=mentionedDays(q);if(named.length&&/\b(?:train|workout|available|days?)\b/.test(q)){r.days=named;r.frequency=named.length;r.frequencyUnclear=false;}
+  else if(frequency!==null&&Array.isArray(r.days)&&r.days.length!==frequency)delete r.days;
   // Don't carry a previous answer through an explicitly ambiguous correction.
   if(dayChoice.ambiguous){r.frequency=null;r.frequencyUnclear=true;}
   else if(dayChoice.value!==null||frequency!==null)r.frequencyUnclear=false;
@@ -87,6 +92,7 @@
   if(r.kind==='program'&&!r.goal)out.push('Should this be a strength/powerlifting program or a muscle-growth program?');
   if(r.kind==='program'&&r.weeks==null)out.push('How many weeks should the program last?');
   if(r.kind==='program'&&r.frequency==null)out.push('How many training days per week do you want? Availability alone does not set frequency.');
+  if(r.kind==='program'&&Array.isArray(r.days)&&p&&r.days.some(d=>!p.availableDays.includes(d)))out.unshift('Your requested training days differ from saved availability. Review Training setup first; nothing has changed.');
   if(r.minutes==null)out.push('How many minutes do you have per workout?');
   if(!r.equipment.length)out.push('What equipment can you use: dumbbells, bodyweight, barbell, cable, or machines?');
   if(r.kind==='daily'&&!r.focus)out.push('Do you want full-body, upper-body, or lower-body training?');
@@ -97,7 +103,7 @@
   if(p&&Intake.active(p.intake))out.unshift('Your saved intake requires a training review. Review it with a qualified professional; I cannot draft a new training dose as medical clearance.');
   return out;
  }
- function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+(r.meet?' meet-prep':'')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
+ function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+(r.meet?' meet-prep':'')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,Array.isArray(r.days)&&r.days.length?r.days.map(d=>weekNames[d]).join(', '):null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
  function answer(state,question,{history=[]}={}){
   if(Support.kind(question)==='health'||Support.kind(question)==='urgent-support')return null;
   // Reading a previously reviewed personal plan is not a request to create a

@@ -3,17 +3,41 @@ test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-10-18T18:00:00Z')});await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
 });
 async function studio(page){await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});await page.locator('#custom-studio-open').click();}
-test('unsupported text targets leave the current draft intact; rest and cues survive supported import',async({page})=>{
+test('unsafe text targets leave the current draft intact; rest and cues survive supported import',async({page})=>{
  await studio(page);await page.locator('[data-custom-row="0"] [data-field="exercise"]').fill('Keep this draft');
- for(const target of ['3x8–12 @ 100 kg','3x5 @ 75% RPE 8']){
+ for(const target of ['3x8+ @ 100 kg','3x5 @ -100 kg','3x5 @ 80–100 kg']){
   await page.locator('#custom-upload').setInputFiles({name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('Week 1\nMonday\nSquat '+target)});
-  await expect(page.locator('#custom-error')).toContainText('Line 3');await expect(page.locator('#custom-error')).toContainText('explicit fixed');
+  await expect(page.locator('#custom-error')).toContainText('Line 3');await expect(page.locator('#custom-error')).toContainText('unsupported');
   await expect(page.locator('[data-custom-row="0"] [data-field="exercise"]')).toHaveValue('Keep this draft');
  }
  await page.locator('#custom-upload').setInputFiles({name:'supported.txt',mimeType:'text/plain',buffer:Buffer.from('Week 1\nMonday\nBench 1x5 @ 100 kg RPE 8 rest 90s; Pause each rep for two seconds')});
  await expect(page.locator('[data-field="rest"]')).toHaveValue('90');await expect(page.locator('[data-field="notes"]')).toHaveValue('Pause each rep for two seconds');
  expect(await page.evaluate(()=>data.customPrograms.length)).toBe(0);
 });
+
+test('reviewed rep ranges and percentages keep exact targets without inventing a max',async({page})=>{
+ await studio(page);
+ await page.locator('#custom-upload').setInputFiles({name:'ranges.txt',mimeType:'text/plain',buffer:Buffer.from('Week 1\nMonday\nSquat 3x8–12 @ 100 kg RPE 8')});
+ await expect(page.locator('[data-custom-row="0"] [data-field="reps"]')).toHaveValue('8-12');
+ await page.locator('#custom-start').fill('2026-10-19');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-preview-result')).toContainText('8–12');
+ await page.locator('#custom-upload').setInputFiles({name:'percent.txt',mimeType:'text/plain',buffer:Buffer.from('Week 1\nMonday\nBench 5x3 @ 75% RPE 8')});
+ await expect(page.locator('[data-custom-row="0"] [data-field="percent"]')).toHaveValue('75');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-error')).toContainText('percentage basis');
+ await expect(page.locator('#custom-preview-result')).toBeEmpty();
+ await page.locator('[data-custom-row="0"] [data-field="percentBasis"]').selectOption('training-max');
+ await page.locator('[data-custom-row="0"] [data-field="reference"]').fill('400');
+ await page.locator('[data-custom-row="0"] [data-field="referenceUnit"]').selectOption('lb');
+ await page.locator('[data-custom-row="0"] [data-field="roundTo"]').fill('5');
+ await page.locator('#custom-unit').selectOption('lb');
+ await page.locator('#custom-preview').click();
+ await expect(page.locator('#custom-preview-result')).toContainText('300 lb');
+ await expect(page.locator('#custom-preview-result')).toContainText('75% training max');
+ expect(await page.evaluate(()=>({programs:data.customPrograms.length,calendar:data.scheduledSessions.length}))).toEqual({programs:0,calendar:0});
+});
+
 test('training demo retains cues through draft recovery and Coach advances after actual completion',async({page})=>{
  await studio(page);
  const csv='Week,Day,Exercise,Sets,Reps,Weight,Unit,RPE,Notes\n1,Monday,Competition Bench,1,5,100,kg,8,Pause each rep for two seconds\n2,Monday,Competition Bench,1,5,102.5,kg,8,';
