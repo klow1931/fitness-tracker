@@ -44,13 +44,19 @@
  // Prior assistant messages are untrusted, and independent questions
  // terminate the old knowledge topic rather than resurrecting older turns.
  function anchor(history=[]){
-  const rows=(Array.isArray(history)?history:[]).slice(-8);
-  const row=rows.filter(r=>r&&r.role==='user').at(-1);
-  const q=String(row?.content||'').trim();
-  if(!q||follow(q)||sourcesFollow(q)||freshTopic(q)||protectedTopic(q)||!education(q))return '';
-  // Other training domains (including the logger and exercise evidence)
-  // cannot become a cited general-knowledge referent just by sharing tags.
-  return retrieve(q).length?q:'';
+  const rows=(Array.isArray(history)?history:[]).slice(-8).filter(r=>r?.role==='user');
+  for(let i=rows.length-1;i>=0;i--){
+   const q=String(rows[i].content||'').trim();
+   if(!q||freshTopic(q))return '';
+   // Short follow-ups can carry one existing topic, never a new claim or source.
+   if(follow(q)||sourcesFollow(q))continue;
+   if(protectedTopic(q)||!education(q))return '';
+   if(/\b(?:what (?:is|does)|define|how (?:do|should) i (?:record|log))\b.{0,55}\b(?:rpe|rir|rate of perceived exertion)\b/i.test(q))return '';
+   // Explicit history, revised targets and medical guidance belong to
+   // existing workout, review and safety modules.
+   return retrieve(q).length?q:'';
+  }
+  return '';
  }
  function query(question,history=[]){
   if(!follow(question)&&!sourcesFollow(question))return String(question||'');
