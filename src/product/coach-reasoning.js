@@ -12,7 +12,7 @@
  'use strict';
  const clean=text=>String(text??'').replace(/\s+/g,' ').trim().slice(0,500);
  const lifts=[['bench',/\bbench(?: press)?\b/i],['squat',/\bsquat(?:ting)?\b/i],['deadlift',/\b(?:deadlift|sumo)\b/i]];
- const blocked=/\b(?:build|create|generate|draft|write|design)\b.{0,70}\b(?:program|plan|workout|session)\b|\b(?:set|save|update|replace|remove|cancel|delete|change)\b.{0,70}\b(?:my (?:preferences|equipment|schedule|program)|training days|my profile)\b/i;
+ const blocked=/\b(?:build|create|generate|draft|write|design|make)\b.{0,70}\b(?:program|plan|workout|session)\b|\b(?:set|save|update|replace|remove|cancel|delete|change)\b.{0,70}\b(?:my (?:preferences|equipment|schedule|program)|training days|my profile)\b/i;
  const handlers=[
   {kind:'performance',label:'Performance',test:q=>/\b(?:stall(?:ed|ing)?|plateau(?:ed|ing)?|stagnat(?:e|ed|ing|ion)|not improv(?:ing|ed)|not (?:getting|becoming) stronger)\b/i.test(q)},
   {kind:'weekly',label:'Weekly training',test:q=>/\b(?:how did (?:my |this |last )?week go|weekly (?:review|coaching|training)|review (?:my |this |last )?week|what should i do next week)\b/i.test(q)},
