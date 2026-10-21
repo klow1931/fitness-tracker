@@ -1,3 +1,11 @@
+# v3.77.0 — Reviewed Training Evidence and Transparent Coach Options
+
+- Add concise source-labeled, read-only evidence summaries to combined Coach answers, with missing data and contradictory training signals clearly identified.
+- Display at most three expandable evidence summaries in Companion and full Coach, using text-only content for safety and mobile readability.
+- Compare keeping the current approved program to *existing* Decisions review options; never invent load changes or apply a new prescription from chat.
+- Test missing RPE, sparse trends, ambiguous/unavailable program reviews, unapproved changes and training data immutability.
+- Synchronize version 3.77.0 and unsigned native build 33700; schema 34 and stored kg unchanged. See [release notes](docs/releases-v3.77.md).
+
 # v3.76.0 — Bounded Coach Dialogue and Release Consistency
 
 - Continue merged v3.75's read-only multi-evidence Coach foundation with bounded athlete-authored follow-ups, focused topic selections and one-question clarifications when a lift or workout date is ambiguous.
