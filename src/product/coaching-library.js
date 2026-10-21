@@ -1,5 +1,5 @@
 /* Original educational summaries with explicit provenance. No book text or model weights. */
-(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./athlete-intake'),require('./program-edit'));else root.LoadnoteCoachingLibrary=factory(root.LoadnoteProgrammingProfile,root.LoadnoteAthleteIntake,root.LoadnoteProgramEdit);})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Intake,Edits){
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./athlete-intake'),require('./program-edit'),require('./coach-knowledge-application'));else root.LoadnoteCoachingLibrary=factory(root.LoadnoteProgrammingProfile,root.LoadnoteAthleteIntake,root.LoadnoteProgramEdit,root.LoadnoteCoachKnowledgeApplication);})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Intake,Edits,Application){
  'use strict';
  const VERSION='coaching-library-v2',REVIEWED='2026-10-06',copy=x=>JSON.parse(JSON.stringify(x));
  const SOURCES={
@@ -49,7 +49,7 @@
    const q=String(rows[i].content||'').trim();
    if(!q||freshTopic(q))return '';
    // Short follow-ups can carry one existing topic, never a new claim or source.
-   if(follow(q)||sourcesFollow(q))continue;
+   if(follow(q)||sourcesFollow(q)||Application?.applicationQuestion(q))continue;
    if(protectedTopic(q)||!education(q))return '';
    if(/\b(?:what (?:is|does)|define|how (?:do|should) i (?:record|log))\b.{0,55}\b(?:rpe|rir|rate of perceived exertion)\b/i.test(q))return '';
    // Explicit history, revised targets and medical guidance belong to
@@ -59,7 +59,7 @@
   return '';
  }
  function query(question,history=[]){
-  if(!follow(question)&&!sourcesFollow(question))return String(question||'');
+  if(!follow(question)&&!sourcesFollow(question)&&!Application?.applicationQuestion(question))return String(question||'');
   return anchor(history);
  }
  function profile(state,asOf,knownAt){return Profile.current(state.programmingProfiles||[],knownAt||(asOf?asOf+'T23:59:59.999Z':undefined))?.context||null;}
@@ -74,6 +74,24 @@
   return text.join(' ');
  }
  function answer(state,question,{asOf,history=[]}={}){
+  // Only a previously confirmed education topic can be applied personally.
+  // General source guidance stays separate from verified profile/log evidence.
+  if(Application?.applicationQuestion(question)){
+   const prior=query(question,history),eligible=prior&&!protectedTopic(prior)&&education(prior),matched=eligible?retrieve(prior):[];
+   if(!matched.length)return {text:'Which training principle would you like to connect to your own training? Ask about the topic first, such as training frequency or dynamic effort.',source:'Shared coaching · clarification',readOnly:true,evidence:[],actions:[{kind:'library',label:'Explore coaching references'}]};
+   // Preserve the same bounded educational topics and public-source coverage
+   // as the original v3.80 reply. Only the primary topic is individually
+   // applied using verified saved training; related cards stay general.
+   const selectedCards=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(prior)?matched:matched.slice(0,2);
+   const selected=selectedCards[0],review=Application.answer(state,{asOf,card:selected}),
+    sources=[...new Set(selectedCards.flatMap(c=>c.sources))];
+   return {...review,text:selectedCards.map(c=>c.title+': '+c.summary).join('\n\n')+'\n\nFor your training: '+selected.title+'. '+review.text,
+    source:'Shared coaching · referenced knowledge',
+    citations:sources.map(id=>({id,...copy(SOURCES[id])})),knowledgeIds:selectedCards.map(c=>c.id),
+    intent:{topic:'knowledge-application',referenceQuestion:prior},
+    clarification:selected.question,
+    followUps:['What sources support that?','How did this week go?']};
+  }
   // A source request is about the most recent eligible education topic only.
   // Without that topic, ask instead of presenting unrelated book references.
   if(sourcesFollow(question)){
