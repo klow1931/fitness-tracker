@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.79.0 · Development build.**  
+**v3.80.0 · Development build.**  
+[Coach v3.80 release notes](docs/releases-v3.80.md): Offline curated training knowledge now keeps bounded follow-up topic continuity and answers “What sources support that?” using only references relevant to the most recent eligible educational question. Unrelated user turns reset that topic, and factual training decisions remain governed by existing verified engines.
+
+**Earlier v3.79 fallback-resilience milestone.**  
 [Coach v3.79 release notes](docs/releases-v3.79.md): Online Coach failures preserve available local evidence, source links and reviewed actions; experimental on-device model failures fall back to deterministic guidance without changing user consent or contacting the server. Workout data and programming policy are unchanged.
 
 **Earlier v3.78 approved-outcome milestone.**

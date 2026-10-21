@@ -1,3 +1,11 @@
+# v3.80.0 — Coach Knowledge Continuity and Focused Source Provenance
+
+- Resolve short offline educational follow-ups only from the most recent eligible athlete-authored knowledge topic; assistant messages cannot supply source evidence.
+- Provide source-specific replies to “What sources support that?”, “Where did that come from?” and similar questions, with curated public-reference links and coverage limits.
+- Expire knowledge context after a new independent question, safety concern, program-change request, greeting, or session-history expiration.
+- Keep medical screening, RPE definitions, verified workout history and reviewed programming handlers authoritative; all knowledge conversations remain read-only.
+- Add focused regression evaluation and mobile browser checks for source accuracy, bounded context, no writes, and iPhone WebKit. Version 3.80.0, beta 34000; schema 34 and internal kg units unchanged. See [release notes](docs/releases-v3.80.md).
+
 # v3.79.0 — Reliable Coach Fallback and Source Continuity
 
 - Keep offline Coach evidence panels, reference citations and reviewed workflow actions available when an online Coach request fails.

@@ -36,7 +36,32 @@
   return CARDS.map((c,index)=>({c,index,score:c.tags.reduce((s,t)=>s+(new RegExp('(?:^|\\W)'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:$|\\W)','i').test(q)?t.split(' ').length+(t===c.tags[0]?2:0):0),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,Math.max(1,Math.min(3,limit))).map(x=>copy(x.c));
  }
  const follow=q=>/^(why\??|how so\??|tell me more\.?|explain (that|more)\.?|how (would|does) (that|this) (apply|work)( for me)?\??)$/i.test(q);
- function query(question,history=[]){if(!follow(question))return String(question||'');const prior=history.slice(-8).filter(r=>r.role==='user').at(-1);return prior?String(prior.content):'';}
+ const sourcesFollow=q=>/^(?:what (?:sources|references) (?:support|back up) (?:that|this)|where (?:did|does) (?:that|this) come from|show (?:me )?(?:the )?(?:sources|references) (?:for|behind) (?:that|this)|can you cite (?:that|this))\??$/i.test(q);
+ const education=q=>/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|why.*(?:stuck|plateau|deload|taper|vary)|get bigger|getting bigger|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q);
+ const protectedTopic=q=>/\b(pain|hurt|injur\w*|rehab|tendinitis|tendinopathy|diagnos\w*|intake|edit|remove|swap|cancel|progress|training max|my.*(?:sets|load|workout)|why (?:this|my) (?:set|load))\b/i.test(q);
+ const freshTopic=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
+ // A short follow-up belongs to exactly the most recent athlete question.
+ // Prior assistant messages are untrusted, and independent questions
+ // terminate the old knowledge topic rather than resurrecting older turns.
+ function anchor(history=[]){
+  const rows=(Array.isArray(history)?history:[]).slice(-8).filter(r=>r?.role==='user');
+  for(let i=rows.length-1;i>=0;i--){
+   const q=String(rows[i].content||'').trim();
+   if(!q||freshTopic(q))return '';
+   // Short follow-ups can carry one existing topic, never a new claim or source.
+   if(follow(q)||sourcesFollow(q))continue;
+   if(protectedTopic(q)||!education(q))return '';
+   if(/\b(?:what (?:is|does)|define|how (?:do|should) i (?:record|log))\b.{0,55}\b(?:rpe|rir|rate of perceived exertion)\b/i.test(q))return '';
+   // Explicit history, revised targets and medical guidance belong to
+   // existing workout, review and safety modules.
+   return retrieve(q).length?q:'';
+  }
+  return '';
+ }
+ function query(question,history=[]){
+  if(!follow(question)&&!sourcesFollow(question))return String(question||'');
+  return anchor(history);
+ }
  function profile(state,asOf,knownAt){return Profile.current(state.programmingProfiles||[],knownAt||(asOf?asOf+'T23:59:59.999Z':undefined))?.context||null;}
  function personal(state,{asOf,knownAt}={}){
   const p=profile(state,asOf,knownAt);if(!p)return 'Your programming setup is missing. Review training experience, goal, availability and equipment before choosing a method.';
@@ -49,14 +74,26 @@
   return text.join(' ');
  }
  function answer(state,question,{asOf,history=[]}={}){
+  // A source request is about the most recent eligible education topic only.
+  // Without that topic, ask instead of presenting unrelated book references.
+  if(sourcesFollow(question)){
+   const prior=query(question,history);
+   if(!prior)return {text:'Which training principle would you like sources for? Ask about the topic first, such as dynamic effort or training frequency.',source:'Shared coaching · clarification',readOnly:true,evidence:[],actions:[{kind:'library',label:'Explore coaching references'}]};
+   const cards=retrieve(prior),selected=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(prior)?cards:cards.slice(0,2);
+   const ids=[...new Set(selected.flatMap(c=>c.sources))];
+   return {text:'Sources for '+selected.map(c=>c.title).join(' and ')+'. These are the existing curated public references; book listings are further reading, not imported chapters or proof of personal progress. Exact athlete observations come from logged training data, not these articles.',
+    source:'Shared coaching · referenced knowledge',readOnly:true,evidence:[],knowledgeIds:selected.map(c=>c.id),
+    citations:ids.map(id=>({id,...copy(SOURCES[id])})),actions:[{kind:'library',label:'Explore coaching references'}],
+    intent:{topic:'knowledge',referenceQuestion:prior}};
+  }
   if(/\b(what|which|show|list)\b.*\b(books|sources|references|knowledge base)\b/i.test(question))return {text:'The coaching library lists NSCA Essentials (fifth edition) and Louie Simmons’ Book of Methods as further reading. Original summaries use public NSCA material, Westside articles and a hypertrophy position stand. Full book text has not been imported and model weights have not been trained on either book.',source:'Shared coaching · referenced knowledge',readOnly:true,evidence:[],citations:Object.entries(SOURCES).map(([id,s])=>({id,...copy(s)})),actions:[{kind:'library',label:'Explore coaching references'}]};
   const q=query(question,history);
   // Existing RPE/effort definitions must remain canonical. A broad knowledge
   // card is not an alternative calculation of logged or prescribed effort.
   if(/\b(?:what (?:is|does)|define|how (?:do|should) i (?:record|log))\b.{0,55}\b(?:rpe|rir|rate of perceived exertion)\b/i.test(q))return null;
-  const cards=retrieve(q);if(!cards.length||!/(?:explain|what (?:is|are|does)|how.*(?:work|differ|apply)|why.*(?:stuck|plateau|deload|taper|vary)|get bigger|getting bigger|teach|learn|compare|principle|method|nsca|westside|louie|simmons|essentials|textbook)/i.test(q))return null;
+  const cards=retrieve(q);if(!cards.length||!education(q))return null;
   // Existing personal evidence, medical and action handlers retain priority.
-  if(/\b(pain|hurt|injur\w*|rehab|tendinitis|tendinopathy|diagnos\w*|intake|edit|remove|swap|cancel|progress|training max|my.*(?:sets|load|workout)|why (?:this|my) (?:set|load))\b/i.test(q))return null;
+  if(protectedTopic(q))return null;
   const selected=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(q)?cards:cards.slice(0,2),ids=[...new Set(selected.flatMap(c=>c.sources))];
   return {text:selected.map(c=>c.title+': '+c.summary+' '+c.application).join('\n\n')+'\n\n'+personal(state,{asOf}),source:'Shared coaching · referenced knowledge',readOnly:true,citations:ids.map(id=>({id,...copy(SOURCES[id])})),knowledgeIds:selected.map(c=>c.id),evidence:[],followUps:selected.slice(0,2).map(c=>'Explain '+c.tags[0]),clarification:selected[0].question,actions:[{kind:'library',label:'Explore coaching references'}],intent:{topic:'knowledge',referenceQuestion:q}};
  }
