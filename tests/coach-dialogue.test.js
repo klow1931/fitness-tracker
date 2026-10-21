@@ -64,6 +64,18 @@ assert.equal(Reasoning.plan('Bench', [{role:'user',content:'Is my bench RPE high
 
 const conflict=Reasoning.plan("Why has my bench stalled, and explain tomorrow's workout and next week workout?");
 assert.equal(conflict.status,'clarification');assert.match(conflict.clarification,/tomorrow.*next week/);
+const dateHistory=[{role:'user',content:"Why has my bench stalled, and explain tomorrow's workout and next week workout?"},{role:'assistant',content:'Please choose date.'}];
+p=Reasoning.plan('Tomorrow',dateHistory);
+assert.equal(p.status,'ready');assert.equal(p.tomorrow,true);assert.equal(p.nextWeek,false);assert.equal(p.lift,'bench');
+assert.deepEqual(p.kinds,['performance','upcoming']);
+a=Coach.answer(state,'Tomorrow',{...opts,history:dateHistory});
+assert.equal(a.intent.lift,'bench');
+const nextDate=Reasoning.plan('Next week',dateHistory);assert.equal(nextDate.nextWeek,true);
+const afterDateChoice=[...dateHistory,{role:'user',content:'Tomorrow'},{role:'assistant',content:'Not authoritative'}];
+assert.equal(Reasoning.plan('Why?',afterDateChoice).tomorrow,true);
+const missingLiftDate=[{role:'user',content:"My bench and squat stalled and explain tomorrow's workout and next week workout"},{role:'assistant',content:'Which time?'}];
+assert.match(Reasoning.plan('Tomorrow',missingLiftDate).clarification,/Which lift/);
+
 const multi=Reasoning.plan('My bench and squat have stalled, and explain my next workout');
 assert.equal(multi.status,'clarification');assert.match(multi.clarification,/Which lift/);
 
