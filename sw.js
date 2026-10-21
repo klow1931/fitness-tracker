@@ -28,6 +28,7 @@ const ASSETS = [
   './src/product/session-options-ui.js',
   './src/product/exercise-library.js',
   './src/product/exercise-library-ui.js',
+  './src/product/coach-knowledge-application.js',
   './src/product/coaching-library.js',
   './src/product/local-coach-models.js',
   './src/product/local-coach-ai.js',
