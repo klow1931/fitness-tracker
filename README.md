@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.73.1 · Development build.**
+**v3.76.0 · Development build.**
+Coach 2.0 dialogue update: [v3.76 release notes](docs/releases-v3.76.md). Bound short athlete-authored follow-ups can now focus multi-evidence conversations on the named lift or upcoming workout, and ambiguous referents require explicit clarification. All training recommendations remain deterministic, read-only unless separately approved. Schema remains 34; internal training loads remain kg. Previous v3.75 Coach evidence orchestration is preserved.
+
+**Historical v3.73.1 reference.**
 
 Program review corrections: [v3.73.1 release notes](docs/releases-v3.73.1.md). Text/PDF imports stop for unsupported rep/load ranges and percentage prescriptions, retain supported rest and exercise cues, and leave the current draft intact on failure. Coach advances past logged custom sessions; weekly feedback flags even one above-cap set. Program cues survive scheduling and workout draft recovery and display separately from personal notes. Schema remains 34.
 
