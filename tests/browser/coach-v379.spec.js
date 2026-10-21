@@ -18,7 +18,7 @@ test('v3.79 online failure retains local evidence, source links and read-only co
   const original=LoadnoteCoachConversation.answer;
   LoadnoteCoachConversation.answer=(state,q,options)=>q==='Explain my previous training evidence'?
    {text:'Recorded workout history is available from the local Coach.',
-    source:'Recorded workout history',readOnly:true,
+    source:'Descriptive training evidence',readOnly:true,
     evidenceCards:[{title:'Recorded sessions',status:'observed',observed:'Two saved workouts with actual reps and RPE.',limitation:'Not an approved progression.',source:'Recorded workout history'}],
     citations:[{id:'nsca',title:'NSCA public training reference',url:'https://www.nsca.com/education/articles/kinetic-select/preparatory-period/',kind:'Public excerpt',coverage:'General guidance only; not personal training evidence.'}],
     actions:[]}:original(state,q,options);
@@ -72,4 +72,22 @@ test('v3.79 rejected reference-only explanation keeps source citations and conve
  await expect(reply).toContainText('local AI unavailable');
  await expect(reply.locator('details').filter({hasText:'Sources and coverage'})).toHaveCount(1);
  await expect(page.locator('#cc-input')).toBeEnabled();
+});
+
+
+test('v3.79 authenticated Coach keeps exact history and corrected lift evidence local',async({page})=>{
+ let remoteCalls=0;
+ await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(authenticated)}));
+ await page.route('**/api/coach',route=>{remoteCalls++;return route.fulfill({status:200,contentType:'application/json',body:'{"coach":{"summary":"Remote reply should not replace logged evidence."}}'});});
+ const {fixture}=require('../fixtures/program-review');
+ await page.goto('/');
+ await expect.poll(()=>page.evaluate(()=>LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
+ await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});},fixture());
+ await page.locator('#coach-companion-launcher').click();
+ const history=await submit(page,'How did my bench training change across my last three workouts?');
+ await expect(history).toContainText('Last 3 recorded workouts');
+ await expect(history).not.toContainText('Remote reply should not replace');
+ const evidence=await submit(page,'How is my squat progress?');
+ await expect(evidence).toContainText('Current corrected evidence');
+ expect(remoteCalls).toBe(0,'Verified logged and corrected lift evidence must not be routed to generative online Coach');
 });
