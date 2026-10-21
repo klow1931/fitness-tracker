@@ -219,7 +219,7 @@
   let modelUnavailable=false;
   // An optional on-device model must never prevent a deterministic reply.
   // Keep local conversation consent selected during a model failure.
-  if(localMode&&!local?.planning){
+  if(localMode&&!local?.planning&&!local?.applicationReview){
    try{
     const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
     const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
@@ -227,7 +227,7 @@
     if(generated)local={...(local||{}),readOnly:true,text:'Local AI conversation (experimental): '+generated+(local?.text?'\n\nReviewed guidance: '+local.text:''),source:'Local AI · on-device conversation'};
     else modelUnavailable=true;
    }catch{modelUnavailable=true;}
-  }else if(local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){
+  }else if(!local?.applicationReview&&local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){
    try{
     const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);
     if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};
