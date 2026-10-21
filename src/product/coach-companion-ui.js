@@ -88,6 +88,8 @@
   .cc-msg:has(.cc-clarity){max-width:96%}.cc-clarity p{margin:3px 0 9px}.cc-clarity b{font-size:12px}.cc-clarity details{border-top:1px solid #cbd5e1;padding-top:7px}.cc-clarity details p{white-space:pre-wrap;overflow-wrap:anywhere}.cc-clarity summary{cursor:pointer;font-weight:700}
   .cc-quick{display:flex;flex:0 0 auto;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
   .cc-form{display:flex;flex:0 0 auto;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
+  .cc-evidence{margin-top:9px;border-top:1px solid #cbd5e1;padding-top:7px;font-size:12px}.cc-evidence summary{cursor:pointer;font-weight:700}.cc-evidence article{margin-top:8px;padding:8px;border:1px solid #cbd5e1;border-radius:9px;overflow-wrap:anywhere}.cc-evidence article b{display:block}.cc-evidence article p{margin:4px 0;white-space:pre-wrap}.cc-evidence article small{display:block;margin-top:4px}.cc-evidence-status{display:inline-block;font-size:11px;margin-top:3px;opacity:.85}
+  body.dark .cc-evidence,body.dark .cc-evidence article{border-color:#475569}
   body.dark .cc-head{background:#0f172a;border-color:#334155}body.dark .cc-head small{color:#94a3b8}body.dark .cc-close:hover{background:#1e293b}
   body.dark .cc-context,body.dark .cc-form{border-color:#334155}body.dark .cc-chip{background:#312e81;color:#e0e7ff}body.dark .cc-chip.live{background:#064e3b;color:#d1fae5}
   body.dark .cc-msg{background:#1e293b;color:#e2e8f0}body.dark .cc-msg small{color:#94a3b8}body.dark .cc-msg.user{background:#3730a3;color:#fff}body.dark .cc-msg.user small{color:#c7d2fe}
@@ -128,6 +130,21 @@
      const detail=document.createElement('details'),summary=document.createElement('summary'),explanation=document.createElement('p');summary.textContent='Evidence and limitations';explanation.textContent=String(reply.text||'');detail.append(summary,explanation);box.append(detail);host.append(box);
      const source=document.createElement('small');source.textContent=reply.source||'Built-in Coach';host.append(source);
     }
+   }
+   // Read-only, bounded evidence cards stay collapsed on a gym floor.
+   // All content is inserted as text, never parsed from model output or HTML.
+   if(host&&reply?.readOnly!==false&&Array.isArray(reply?.evidenceCards)&&reply.evidenceCards.length){
+    const details=document.createElement('details');details.className='cc-evidence';
+    const summary=document.createElement('summary');summary.textContent='Evidence at a glance';details.append(summary);
+    for(const card of reply.evidenceCards.slice(0,3)){
+     if(!card||!card.title||!['observed','limited','unavailable'].includes(card.status))continue;
+     const article=document.createElement('article'),heading=document.createElement('b'),status=document.createElement('span'),observed=document.createElement('p'),limitation=document.createElement('p'),source=document.createElement('small');
+     heading.textContent=String(card.title).slice(0,100);status.className='cc-evidence-status';status.textContent=card.status==='observed'?'Recorded evidence':card.status==='limited'?'Limited evidence':'Unavailable';
+     observed.textContent=String(card.observed||'').slice(0,280);limitation.textContent=String(card.limitation||'').slice(0,280);
+     source.textContent=String(card.source||'').slice(0,150);
+     article.append(heading,status,observed,limitation,source);details.append(article);
+    }
+    if(details.querySelector('article'))host.append(details);
    }
    window.LoadnoteSmartCoachUI?.attach?.(host,reply,q=>void serialAsk(q));window.LoadnoteCoachingLibraryUI?.attach?.(host,reply);
    // Include appended actions in the final scroll. Otherwise WebKit can move
