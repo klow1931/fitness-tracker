@@ -22,7 +22,7 @@
  // Follow-ups are resolved from a short sequence of athlete-authored turns.
  // No assistant reply, model completion or unsaved preference becomes evidence.
  const followLift=q=>lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
- const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
  const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
@@ -55,6 +55,8 @@
   const liftOnly=/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q);
   const upcoming=/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q);
   const vague=/^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+  const chosen={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];
+  if(chosen&&full.includes(chosen))return {status:'ready',question:q,kinds:[chosen],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:chosen==='upcoming'&&!!anchor.tomorrow};
   if((questionIsLift||liftOnly)&&hasPerformance){
    if(names.length!==1)return null;
    return {status:'ready',question:q,kinds:liftOnly?['performance']:full.slice(0,3),
