@@ -22,12 +22,12 @@
  // Follow-ups are resolved from a short sequence of athlete-authored turns.
  // No assistant reply, model completion or unsaved preference becomes evidence.
  const followLift=q=>lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
- const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
  const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
   if(!bounded.length)return null;
-  let narrowedLift=null,focusedKind=null,nextWeekFocus=false;
+  let narrowedLift=null,focusedKind=null,nextWeekFocus=false,tomorrowFocus=false;
   for(let i=bounded.length-1;i>=0;i--){
    const q=clean(bounded[i].content);
    if(!q||neutralReset(q)||Support.health(q)||Support.kind(q)==='urgent-support')return null;
@@ -35,7 +35,7 @@
    if(!simpleFollow(q)){
     const anchor=plan(q,[]);
     if(!anchor||!['ready','clarification'].includes(anchor.status))return null;
-    return {anchor,preferredLift:narrowedLift,focusedKind,nextWeekFocus};
+    return {anchor,preferredLift:narrowedLift,focusedKind,nextWeekFocus,tomorrowFocus};
    }
    const names=followLift(q);
    if(names.length===1&&narrowedLift===null)narrowedLift=names[0];
@@ -43,6 +43,8 @@
    if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q))focusedKind='upcoming';
    if(focusedKind===null){const selected={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];if(selected)focusedKind=selected;}
    if(focusedKind==='upcoming'&&/\bnext week\b/i.test(q))nextWeekFocus=true;
+   if(focusedKind===null&&/^(?:tomorrow|next week)[.!?]?$/i.test(q))focusedKind='upcoming';
+   if(focusedKind==='upcoming'&&/^tomorrow[.!?]?$/i.test(q))tomorrowFocus=true;
   }
   return null;
  }
@@ -50,14 +52,24 @@
   const q=clean(question);
   if(!simpleFollow(q))return null;
   const prior=lastCompound(history);if(!prior)return null;
-  const {anchor,preferredLift,focusedKind,nextWeekFocus}=prior,names=followLift(q);
+  const {anchor,preferredLift,focusedKind,nextWeekFocus,tomorrowFocus}=prior,names=followLift(q);
   const full=anchor.kinds||[],hasPerformance=full.includes('performance');
   const questionIsLift=/^(?:bench|squat|deadlift|sumo)[.!?]?$/i.test(q);
   const liftOnly=/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q);
   const upcoming=/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q);
   const vague=/^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+  // A question with two explicit date windows needs an athlete selection.
+  // Re-check lift ambiguity after the date is selected; never pick a lift silently.
+  const dateChoice=/^(?:tomorrow|next week)[.!?]?$/i.test(q)?(/^tomorrow/i.test(q)?'tomorrow':'next-week'):null;
+  if(dateChoice&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||'')&&full.includes('upcoming')){
+   const roots=followLift(anchor.question);
+   if(full.includes('performance')&&roots.length!==1)return {status:'clarification',question:q,kinds:full,
+    clarification:'Which lift should I review first: squat, bench, or deadlift?'};
+   return {status:'ready',question:q,kinds:full.slice(0,3),lift:roots[0]||null,follow:true,
+    nextWeek:dateChoice==='next-week',tomorrow:dateChoice==='tomorrow'};
+  }
   const chosen={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];
-  if(chosen&&full.includes(chosen))return {status:'ready',question:q,kinds:[chosen],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:chosen==='upcoming'&&!!anchor.tomorrow};
+  if(chosen&&full.includes(chosen))return {status:'ready',question:q,kinds:[chosen],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:chosen==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
   if((questionIsLift||liftOnly)&&hasPerformance){
    if(names.length!==1)return null;
    return {status:'ready',question:q,kinds:liftOnly?['performance']:full.slice(0,3),
@@ -65,7 +77,7 @@
   }
   if(upcoming&&full.includes('upcoming'))return {status:'ready',question:q,kinds:['upcoming'],lift:null,
    follow:true,nextWeek:/next week/i.test(q)};
-  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek)};
+  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
   if(vague&&full.length>1){
    const labels=full.map(kind=>handlers.find(h=>h.kind===kind)?.label).filter(Boolean);
    return {status:'clarification',question:q,kinds:full,follow:true,
