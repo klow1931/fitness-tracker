@@ -30,7 +30,7 @@ let result=Review.compare(weekly);
 assert.equal(result.status,'ready');assert.equal(result.options[0].id,'keep');
 assert.equal(result.options[1].status,'review-available');assert.equal(result.changesPreviewed,2);
 assert.match(result.options[1].reason,/2 future session/);
-assert.match(result.explanation,/not auto-selected/);
+assert.match(result.explanation,/No option is auto-selected/i);
 assert.deepEqual(Review.compare({...weekly,proposal:{status:'review',changes:[]}}).options.map(x=>x.id),['keep','evidence']);
 assert.equal(Review.compare({...weekly,proposal:{status:'phase-review',changes:[]}}).options[1].id,'phase-review');
 assert.equal(Review.compare({...weekly,proposal:{status:'approved',changes:[]}}).options[1].id,'already-approved');
