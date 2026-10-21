@@ -1,3 +1,18 @@
+# v3.76.0 — Bounded Coach Dialogue and Release Consistency
+
+- Continue merged v3.75's read-only multi-evidence Coach foundation with bounded athlete-authored follow-ups, focused topic selections and one-question clarifications when a lift or workout date is ambiguous.
+- Use fresh saved workout and programming evidence for every response; keep earlier assistant replies untrusted, preserve injury/crisis screening and require athlete approval for changes.
+- Align core runtime version, package metadata, app footer, PWA cache and Android/iOS beta build with v3.76.0 (native build 33600). Data schema remains 34 and internal weights remain kg.
+- Add deterministic dialogue regression tests and mobile/browser release checks. See [v3.76 release notes](docs/releases-v3.76.md).
+
+# v3.75 — Unified Coach Evidence Foundation (merged)
+
+- Combine existing validated training-trend, weekly review, scheduled workout and training-recap analyses for supported compound Coach questions, without adding unapproved targets or writes. See [Coach foundation](docs/coach-2-foundation.md).
+
+# v3.74 — Coach, Program Studio and Prescription Fidelity (merged)
+
+- Improve conversational planning, program-editing workflows and reviewed rep-range and percentage prescription import. Earlier release metadata was not updated when these milestones merged.
+
 # v3.73.1 — Program Import, Feedback & Workout Cue Corrections
 
 - Block unsupported ranges and percentage targets in text/PDF imports with the source line and a correction message. Preserve supported rest allowances and trailing exercise instructions.

@@ -12,33 +12,101 @@
  'use strict';
  const clean=text=>String(text??'').replace(/\s+/g,' ').trim().slice(0,500);
  const lifts=[['bench',/\bbench(?: press)?\b/i],['squat',/\bsquat(?:ting)?\b/i],['deadlift',/\b(?:deadlift|sumo)\b/i]];
- const blocked=/\b(?:build|create|generate|draft|write|design)\b.{0,70}\b(?:program|plan|workout|session)\b|\b(?:set|save|update|replace|remove|cancel|delete|change)\b.{0,70}\b(?:my (?:preferences|equipment|schedule|program)|training days|my profile)\b/i;
+ const blocked=/\b(?:build|create|generate|draft|write|design|make)\b.{0,70}\b(?:program|plan|workout|session)\b|\b(?:set|save|update|replace|remove|cancel|delete|change)\b.{0,70}\b(?:my (?:preferences|equipment|schedule|program)|training days|my profile)\b/i;
  const handlers=[
   {kind:'performance',label:'Performance',test:q=>/\b(?:stall(?:ed|ing)?|plateau(?:ed|ing)?|stagnat(?:e|ed|ing|ion)|not improv(?:ing|ed)|not (?:getting|becoming) stronger)\b/i.test(q)},
   {kind:'weekly',label:'Weekly training',test:q=>/\b(?:how did (?:my |this |last )?week go|weekly (?:review|coaching|training)|review (?:my |this |last )?week|what should i do next week)\b/i.test(q)},
   {kind:'upcoming',label:'Next scheduled workout',test:q=>/\b(?:next (?:planned )?(?:workout|session)|next week(?:'s)? workout|tomorrow(?:'s)? workout)\b/i.test(q)},
   {kind:'recap',label:'Recent training',test:q=>/\b(?:training recap|summari[sz]e my training|my recent training overview)\b/i.test(q)}
  ];
+ // Follow-ups are resolved from a short sequence of athlete-authored turns.
+ // No assistant reply, model completion or unsaved preference becomes evidence.
+ const followLift=q=>lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
+ const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
+ function lastCompound(history){
+  const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
+  if(!bounded.length)return null;
+  let narrowedLift=null,focusedKind=null,nextWeekFocus=false,tomorrowFocus=false;
+  for(let i=bounded.length-1;i>=0;i--){
+   const q=clean(bounded[i].content);
+   if(!q||neutralReset(q)||Support.health(q)||Support.kind(q)==='urgent-support')return null;
+   // A new independent athlete question terminates the previous referent.
+   if(!simpleFollow(q)){
+    const anchor=plan(q,[]);
+    if(!anchor||!['ready','clarification'].includes(anchor.status))return null;
+    return {anchor,preferredLift:narrowedLift,focusedKind,nextWeekFocus,tomorrowFocus};
+   }
+   const names=followLift(q);
+   if(names.length===1&&narrowedLift===null)narrowedLift=names[0];
+   if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q))focusedKind='performance';
+   if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q))focusedKind='upcoming';
+   if(focusedKind===null){const selected={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];if(selected)focusedKind=selected;}
+   if(focusedKind==='upcoming'&&/\bnext week\b/i.test(q))nextWeekFocus=true;
+   if(focusedKind===null&&/^(?:tomorrow|next week)[.!?]?$/i.test(q))focusedKind='upcoming';
+   if(focusedKind==='upcoming'&&/^tomorrow[.!?]?$/i.test(q))tomorrowFocus=true;
+  }
+  return null;
+ }
+ function followPlan(question,history){
+  const q=clean(question);
+  if(!simpleFollow(q))return null;
+  const prior=lastCompound(history);if(!prior)return null;
+  const {anchor,preferredLift,focusedKind,nextWeekFocus,tomorrowFocus}=prior,names=followLift(q);
+  const full=anchor.kinds||[],hasPerformance=full.includes('performance');
+  const questionIsLift=/^(?:bench|squat|deadlift|sumo)[.!?]?$/i.test(q);
+  const liftOnly=/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q);
+  const upcoming=/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q);
+  const vague=/^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+  // A question with two explicit date windows needs an athlete selection.
+  // Re-check lift ambiguity after the date is selected; never pick a lift silently.
+  const dateChoice=/^(?:tomorrow|next week)[.!?]?$/i.test(q)?(/^tomorrow/i.test(q)?'tomorrow':'next-week'):null;
+  if(dateChoice&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||'')&&full.includes('upcoming')){
+   const roots=followLift(anchor.question);
+   if(full.includes('performance')&&roots.length!==1)return {status:'clarification',question:q,kinds:full,
+    clarification:'Which lift should I review first: squat, bench, or deadlift?'};
+   return {status:'ready',question:q,kinds:full.slice(0,3),lift:roots[0]||null,follow:true,
+    nextWeek:dateChoice==='next-week',tomorrow:dateChoice==='tomorrow'};
+  }
+  const chosen={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];
+  if(chosen&&full.includes(chosen))return {status:'ready',question:q,kinds:[chosen],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:chosen==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  if((questionIsLift||liftOnly)&&hasPerformance){
+   if(names.length!==1)return null;
+   return {status:'ready',question:q,kinds:liftOnly?['performance']:full.slice(0,3),
+    lift:names[0],follow:true,focus:liftOnly?'performance':'clarification'};
+  }
+  if(upcoming&&full.includes('upcoming'))return {status:'ready',question:q,kinds:['upcoming'],lift:null,
+   follow:true,nextWeek:/next week/i.test(q)};
+  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  if(vague&&full.length>1){
+   const labels=full.map(kind=>handlers.find(h=>h.kind===kind)?.label).filter(Boolean);
+   return {status:'clarification',question:q,kinds:full,follow:true,
+    clarification:'Which part should I explain: '+labels.join(' or ')+'?'};
+  }
+  if(vague&&full.length===1&&anchor.status==='ready')return {status:'ready',question:q,
+   kinds:full,lift:preferredLift||anchor.lift||null,follow:true};
+  return null;
+ }
  function plan(question,history=[]){
   // The original, untruncated message must be checked before planning.
   if(typeof question!=='string'||!question.trim()||Support.health(question)||Support.kind(question)==='urgent-support')return null;
   const q=clean(question),found=handlers.filter(row=>row.test(q)).map(row=>row.kind);
-  if(found.length<2||blocked.test(q))return null;
+  if(blocked.test(q))return null;
+  if(found.length<2)return followPlan(q,history);
   const liftMatches=lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
+  if(found.includes('upcoming')&&/\btomorrow\b/i.test(q)&&/\bnext week\b/i.test(q))return {status:'clarification',question:q,kinds:found,clarification:'Should I review tomorrow’s workout or next week’s workout first?'};
   if(found.includes('performance')&&liftMatches.length!==1)
    return {status:'clarification',question:q,kinds:found,clarification:liftMatches.length?'Which lift should I review first: squat, bench, or deadlift?':'Which lift appears stalled: squat, bench, or deadlift?'};
-  // Conversation is never used as evidence. Future work can add referents that
-  // are explicitly resolved from the most recent athlete request.
-  return {status:'ready',question:q,kinds:found.slice(0,3),lift:liftMatches[0]||null};
+  return {status:'ready',question:q,kinds:found.slice(0,3),lift:liftMatches[0]||null,nextWeek:/\bnext week(?:'s)? workout\b/i.test(q),tomorrow:/\btomorrow(?:'s)? workout\b/i.test(q)};
  }
- function query(kind,lift){
+ function query(kind,lift,plan){
   if(kind==='performance')return 'Why has my '+lift+' stalled?';
   if(kind==='weekly')return 'How did this week go?';
-  if(kind==='upcoming')return 'Explain my next workout';
+  if(kind==='upcoming')return plan?.nextWeek?"Explain next week's workout":plan?.tomorrow?"Explain tomorrow's workout":'Explain my next workout';
   return 'Summarize my training';
  }
- function response(kind,state,{asOf,unit,now,history},lift){
-  const q=query(kind,lift),options={asOf,unit,now,history};
+ function response(kind,state,{asOf,unit,now,history},lift,plan){
+  const q=query(kind,lift,plan),options={asOf,unit,now,history};
   if(kind==='performance')return Trends.answer(state,q,options);
   if(kind==='weekly')return Weekly.answer(state,q,options);
   if(kind==='upcoming')return Workout.answer(state,q,options);
@@ -55,7 +123,7 @@
   const sections=[],evidence=[],actions=[];
   for(const kind of p.kinds){
    let row=null;
-   try{row=response(kind,state,{asOf,unit,now,history},p.lift);}catch{/* A failed evidence engine must not fabricate facts. */}
+   try{row=response(kind,state,{asOf,unit,now,history},p.lift,p);}catch{/* A failed evidence engine must not fabricate facts. */}
    const handler=handlers.find(h=>h.kind===kind),label=handler.label;
    if(!row||typeof row.text!=='string'||!row.text.trim()){
     sections.push({kind,label,source:'Unavailable',text:'The saved evidence could not be validated. Review the underlying records before changing your plan.'});
@@ -68,12 +136,12 @@
    // Only expose navigation/inspection actions; no mutation or draft approval.
    for(const action of row.actions||[])if(['progress','weekly-coaching','workout-brief'].includes(action?.kind)&&!actions.some(a=>a.kind===action.kind))actions.push(action);
   }
-  if(sections.length<2)return null;
+  if(sections.length<2&&!p.follow)return null;
   const next='Next: review the exact training records and your existing approved targets. Any programming adjustment must go through Decisions and athlete approval.';
   return {
    text:sections.map(s=>s.label+': '+s.text).join('\n\n')+'\n\n'+next,
    source:'Offline Coach · combined validated evidence',readOnly:true,
-   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null},
+   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} )},
    reasoning:{version:1,asOf,sections:sections.map(({kind,label,source})=>({kind,label,source})),notice:'Each section comes from an existing read-only Loadnote engine; no new loads or recovery judgments were generated.'},
    evidence:evidence.slice(0,3),actions:actions.slice(0,3),
    followUps:['Review my exact workout history','Explain my next workout']
