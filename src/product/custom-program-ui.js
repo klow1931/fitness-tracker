@@ -140,9 +140,18 @@
  let excelLoading=null;
  function loadExcel(){if(excelLoading)return excelLoading;excelLoading=new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=new URL('assets/vendor/jszip.min.js',document.baseURI).href;el.onload=()=>window.JSZip?resolve():reject(Error('Excel reader did not initialize'));el.onerror=()=>reject(Error('Excel reader is not cached. Connect briefly to load the offline reader, then try again.'));document.head.append(el);}).catch(e=>{excelLoading=null;throw e;});return excelLoading;}
  function fullSessionPreview(proposal,unit){
+   // Round percent loads in the chosen plate unit before display to avoid
+   // a 300 lb prescription showing as 300.01 lb after the kg storage round-trip.
+   const displayWeight=set=>{
+     if(set.percent!=null&&set.roundUnit===unit&&set.roundTo>0){
+       const reference=set.referenceKg*(unit==='lb'?2.20462262185:1);
+       return Math.round(Math.round(reference*set.percent/100/set.roundTo)*set.roundTo*100)/100;
+     }
+     return unit==='lb'?Math.round(set.weight*2.20462262185*100)/100:set.weight;
+   };
    const byWeek=new Map();for(const session of proposal.sessions){const list=byWeek.get(session.week)||[];list.push(session);byWeek.set(session.week,list);}
    const exercise=e=>e.type==='strength'?e.name+' · '+e.sets.length+' × '+(e.sets[0].minReps!=null?e.sets[0].minReps+'–'+e.sets[0].maxReps:e.sets[0].reps)+
-     (e.sets[0].weight==null?' · load unspecified':' @ '+(unit==='lb'?Math.round(e.sets[0].weight*2.20462262185*100)/100:e.sets[0].weight)+' '+unit)+
+     (e.sets[0].weight==null?' · load unspecified':' @ '+displayWeight(e.sets[0])+' '+unit)+
      (e.sets[0].percent!=null?' · '+e.sets[0].percent+'% '+(e.sets[0].percentBasis==='training-max'?'training max':'tested 1RM')+' ('+(e.sets[0].roundUnit==='lb'?Math.round(e.sets[0].referenceKg*2.20462262185*100)/100:e.sets[0].referenceKg)+' '+e.sets[0].roundUnit+' reference, rounded to '+e.sets[0].roundTo+' '+e.sets[0].roundUnit+')':'')+(e.sets[0].targetRpe==null?' · RPE unspecified':' · RPE '+e.sets[0].targetRpe):e.name+' · '+e.duration+' min';
    return '<div class="custom-program-week-review"><h4>Review every week ('+byWeek.size+' with sessions)</h4><p class="more-hint">Expand every week to compare the full prescription with your original. Nothing is filled in automatically.</p>'+
      [...byWeek].map(([week,sessions],i)=>'<details class="more-details" '+(i===0?'open':'')+'><summary>Week '+week+' · '+sessions.length+' session(s) · '+sessions.reduce((n,s)=>n+s.exercises.length,0)+' exercise row(s)</summary>'+
