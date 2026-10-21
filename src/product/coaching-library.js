@@ -85,7 +85,7 @@
    const selectedCards=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(prior)?matched:matched.slice(0,2);
    const selected=selectedCards[0],review=Application.answer(state,{asOf,card:selected}),
     sources=[...new Set(selectedCards.flatMap(c=>c.sources))];
-   return {...review,text:selectedCards.map(c=>c.title+': '+c.summary).join('\n\n')+'\n\nFor your training ('+selected.title+'): '+review.text,
+   return {...review,text:selectedCards.map(c=>c.title+': '+c.summary).join('\n\n')+'\n\nFor your training: '+selected.title+'. '+review.text,
     source:'Shared coaching · referenced knowledge',
     citations:sources.map(id=>({id,...copy(SOURCES[id])})),knowledgeIds:selectedCards.map(c=>c.id),
     intent:{topic:'knowledge-application',referenceQuestion:prior},
