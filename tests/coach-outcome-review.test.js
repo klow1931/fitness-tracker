@@ -9,6 +9,7 @@ const asOf='2026-11-08',now='2026-11-08T23:00:00.000Z';
 assert.equal(Review.intent('What happened after my last bench change?').lifts[0],'bench');
 assert.equal(Review.intent('Have my past squat adjustments helped?').kind,'latest');
 assert.equal(Review.intent('Do load increases usually work after my approved deadlift changes?').kind,'pattern');
+assert.equal(Review.intent('What have we learned from my past squat adjustments?').kind,'pattern');
 assert.equal(Review.intent('What have we learned from my program changes?'),null,'General history stays with longitudinal Coach');
 assert.equal(Review.intent('Why did I change my imported bench program?'),null,'Personal edit reasons belong to custom program studio');
 assert.equal(Review.intent('My knee hurts after the last bench adjustment'),null,'Safety queries precede outcome history');
