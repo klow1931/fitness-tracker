@@ -5,10 +5,10 @@
 (function(root,factory){
  if(typeof module==='object'&&module.exports)module.exports=factory(
   require('./coach-support'),require('./coach-performance-insights'),
-  require('./weekly-coaching'),require('./workout-brief'),require('./coach-evidence-brief')
+  require('./weekly-coaching'),require('./workout-brief'),require('./coach-evidence-brief'),require('./coach-evidence-options')
  );
- else root.LoadnoteCoachReasoning=factory(root.LoadnoteCoachSupport,root.LoadnoteCoachPerformanceInsights,root.LoadnoteWeeklyCoaching,root.LoadnoteWorkoutBrief,root.LoadnoteCoachEvidenceBrief);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Support,Trends,Weekly,Workout,Recap){
+ else root.LoadnoteCoachReasoning=factory(root.LoadnoteCoachSupport,root.LoadnoteCoachPerformanceInsights,root.LoadnoteWeeklyCoaching,root.LoadnoteWorkoutBrief,root.LoadnoteCoachEvidenceBrief,root.LoadnoteCoachEvidenceOptions);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Support,Trends,Weekly,Workout,Recap,EvidenceOptions){
  'use strict';
  const clean=text=>String(text??'').replace(/\s+/g,' ').trim().slice(0,500);
  const lifts=[['bench',/\bbench(?: press)?\b/i],['squat',/\bsquat(?:ting)?\b/i],['deadlift',/\b(?:deadlift|sumo)\b/i]];
@@ -120,11 +120,12 @@
    evidence:[],readOnly:true,actions:[],intent:{topic:'unified-evidence',needsClarification:true,kinds:p.kinds}
   };
   if(!/^\d{4}-\d{2}-\d{2}$/.test(asOf||''))return null;
-  const sections=[],evidence=[],actions=[];
+  const sections=[],evidence=[],actions=[],engineReplies={};
   for(const kind of p.kinds){
    let row=null;
    try{row=response(kind,state,{asOf,unit,now,history},p.lift,p);}catch{/* A failed evidence engine must not fabricate facts. */}
    const handler=handlers.find(h=>h.kind===kind),label=handler.label;
+   engineReplies[kind]=row;
    if(!row||typeof row.text!=='string'||!row.text.trim()){
     sections.push({kind,label,source:'Unavailable',text:'The saved evidence could not be validated. Review the underlying records before changing your plan.'});
     continue;
@@ -137,13 +138,15 @@
    for(const action of row.actions||[])if(['progress','weekly-coaching','workout-brief'].includes(action?.kind)&&!actions.some(a=>a.kind===action.kind))actions.push(action);
   }
   if(sections.length<2&&!p.follow)return null;
+  const evidenceCards=p.kinds.map(kind=>EvidenceOptions?.summarize(kind,engineReplies[kind],asOf)).filter(Boolean).slice(0,3);
+  const evidenceWarnings=EvidenceOptions?.differences(evidenceCards,engineReplies)||[];
   const next='Next: review the exact training records and your existing approved targets. Any programming adjustment must go through Decisions and athlete approval.';
   return {
-   text:sections.map(s=>s.label+': '+s.text).join('\n\n')+'\n\n'+next,
+       text:sections.map(s=>s.label+': '+s.text).join('\n\n')+(evidenceWarnings.length?'\n\nDifferent signals: '+evidenceWarnings.join(' '):'')+'\n\n'+next,
    source:'Offline Coach · combined validated evidence',readOnly:true,
    intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} )},
    reasoning:{version:1,asOf,sections:sections.map(({kind,label,source})=>({kind,label,source})),notice:'Each section comes from an existing read-only Loadnote engine; no new loads or recovery judgments were generated.'},
-   evidence:evidence.slice(0,3),actions:actions.slice(0,3),
+   evidence:evidence.slice(0,3),evidenceCards,evidenceWarnings,actions:actions.slice(0,3),
    followUps:['Review my exact workout history','Explain my next workout']
   };
  }

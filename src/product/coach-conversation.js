@@ -43,6 +43,10 @@
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
+  // Exact supported options come from the already reviewed weekly engine.
+  // Never create or apply a prescription in conversational comparison.
+  const options=(typeof module==='object'&&module.exports?require('./coach-evidence-options'):globalThis.LoadnoteCoachEvidenceOptions)?.answer(state,question,{asOf,now});
+  if(options)return options;
   // Only compound informational questions go through the new coordinator.
   // Existing single-topic rules, planner drafts, medical and crisis safeguards stay first.
   const combined=(typeof module==='object'&&module.exports?require('./coach-reasoning'):globalThis.LoadnoteCoachReasoning)?.answer(state,question,{asOf,unit,now,history});

@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.76.0 · Development build.**
+**v3.77.0 · Development build.**
+Coach 2.0 evidence and options update: [v3.77 release notes](docs/releases-v3.77.md). Compound offline Coach answers expose at most three concise source-labeled evidence cards, with missing and inconsistent training signals called out. “Compare my options for next week” distinguishes keeping saved targets from *existing* Decisions review pathways without auto-selecting an adjustment. The athlete's review and approval are still required; no data migration and internal loads remain kg.
+
+**Earlier v3.76 dialogue milestone.**
 Coach 2.0 dialogue update: [v3.76 release notes](docs/releases-v3.76.md). Bound short athlete-authored follow-ups can now focus multi-evidence conversations on the named lift or upcoming workout, and ambiguous referents require explicit clarification. All training recommendations remain deterministic, read-only unless separately approved. Schema remains 34; internal training loads remain kg. Previous v3.75 Coach evidence orchestration is preserved.
 
 **Historical v3.73.1 reference.**
