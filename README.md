@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.81.0 · Development build.**  
+**v3.82.0 · Development build.**  
+[Coach v3.82 release notes](docs/releases-v3.82.md): The offline Coach connects vetted training principles with the athlete's selected reviewed program and exact Calendar resolutions, separating completed/skipped sessions from unknown attendance. It keeps all programming decisions read-only until athlete approval.
+
+**Earlier v3.81 grounded-context milestone.**  
 [Coach v3.81 release notes](docs/releases-v3.81.md): The offline Coach can connect a recent vetted training principle to the athlete's validated saved setup and latest 28-day workout records. It distinguishes missing RPE, unknown setup and incomplete evidence from genuine observations. The personalized explanation is deterministic; optional local AI does not rewrite athlete facts or approve training changes.
 
 **Earlier v3.80 knowledge-continuity milestone.**  

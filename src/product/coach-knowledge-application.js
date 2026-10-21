@@ -1,10 +1,10 @@
-/* v3.81 — explain an educational concept against verified personal context.
+/* v3.82 — connect a vetted concept to verified setup, logs and reviewed program.
  * This is a read-only explanation layer, never a training-dose calculator.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./coach-evidence-brief'),require('./schedule'),require('./athlete-intake'));
- else root.LoadnoteCoachKnowledgeApplication=factory(root.LoadnoteProgrammingProfile,root.LoadnoteCoachEvidenceBrief,root.LoadnoteSchedule,root.LoadnoteAthleteIntake);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Brief,Schedule,Intake){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./programming-profile'),require('./coach-evidence-brief'),require('./schedule'),require('./athlete-intake'),require('./progress-story'));
+ else root.LoadnoteCoachKnowledgeApplication=factory(root.LoadnoteProgrammingProfile,root.LoadnoteCoachEvidenceBrief,root.LoadnoteSchedule,root.LoadnoteAthleteIntake,root.LoadnoteProgressStory);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Brief,Schedule,Intake,Story){
  'use strict';
  const SOURCE='Shared coaching · training context';
  const clean=v=>String(v??'').replace(/\s+/g,' ').trim().slice(0,230);
@@ -12,7 +12,7 @@
  const next='Any change to your future workouts must use the reviewed Decisions workflow and your approval.';
  const applicationQuestion=q=>/^(?:how (?:does|would|could) (?:that|this) apply (?:for|to) (?:me|my training)|how (?:can|should) i apply (?:that|this)(?: to my training)?|what does (?:that|this) mean for (?:me|my training))\??$/i.test(String(q||'').trim());
  function inspect(state,{asOf,card}={}){
-  if(!Schedule?.date(asOf))return {status:'unavailable',reason:'The training review date is invalid.',asOf:asOf||null,profile:null,observed:null,topic:null};
+  if(!Schedule?.date(asOf))return {status:'unavailable',reason:'The training review date is invalid.',asOf:asOf||null,profile:null,observed:null,program:null,topic:null};
   if(!card||typeof card.id!=='string'||!card.id)return {status:'unavailable',reason:'No confirmed educational topic was provided.',asOf,profile:null,observed:null,topic:null};
   let p=null,profileStatus='missing';
   try{
@@ -27,7 +27,19 @@
   const profile=p?{goal:clean(Profile.GOALS[p.goal]||p.goal),experience:clean(p.experience),consistency:clean(p.consistency),
    availableDays:count(p.availableDays?.length),sessionMinutes:count(p.sessionMinutes),
    avoidedExercises:count(p.avoidedExerciseIds?.length),symptomHold:!!Intake?.active(p.intake)}:null;
-  return {version:1,status:observed||profile?'ready':'limited',asOf,topic:card.id,profileStatus,profile,observed,
+  // Use the canonical Progress Story program selector. Only resolved Calendar
+  // outcomes permit an adherence denominator; mere availability never does.
+  let selected=null;
+  try{selected=Story?.selectedProgram(state,{asOf}.asOf);}catch{}
+  const c=selected?.counts||{},completed=count(c.completed),skipped=count(c.skipped),resolved=count(selected?.resolved);
+  const program=selected&&typeof selected.id==='string'&&selected.id&&typeof selected.name==='string'&&
+   completed!==null&&skipped!==null&&resolved===completed+skipped&&
+   (resolved===0||Number.isFinite(selected.adherence)&&selected.adherence>=0&&selected.adherence<=100)?
+   {id:selected.id,name:clean(selected.name),phase:clean(selected.progress?.phaseLabel||''),
+    week:count(selected.progress?.week),totalWeeks:count(selected.progress?.totalWeeks),
+    completed,skipped,resolved,adherence:resolved?selected.adherence:null,
+    unconfirmed:count(c.unconfirmed),cancelled:count(c.cancelled)}:null;
+  return {version:2,status:observed||profile||program?'ready':'limited',asOf,topic:card.id,profileStatus,profile,observed,program,
    notice:'Saved preferences and training logs are not proof of medical readiness, cause of progress, or an appropriate new training dose.'};
  }
  function explain(review){
@@ -44,6 +56,12 @@
    lines.push('Your logs show '+o.sessions+' workout(s) and '+o.sets+' eligible strength set(s) in the most recent 28 days, with actual RPE on '+o.rpeSets+' set(s).');
    if(o.missingRpeSets)lines.push(o.missingRpeSets+' strength set(s) have no recorded actual RPE; their effort is unknown.');
   }else lines.push('I cannot verify a recent training recap from the saved records. That is missing evidence, not proof that you did not train.');
+  if(review.program){
+   const v=review.program,phase=v.phase?' in '+v.phase:'',week=v.week&&v.totalWeeks?' (week '+v.week+' of '+v.totalWeeks+')':'';
+   lines.push('Your reviewed program '+v.name+phase+week+' has '+v.completed+' completed and '+v.skipped+' explicitly skipped resolved Calendar session(s) as of '+review.asOf+'. '+
+    (v.resolved?'Adherence among its '+v.resolved+' resolved sessions is '+v.adherence+'%. ':'There are no resolved sessions from which to calculate adherence. ')+
+    'Unconfirmed, upcoming and cancelled sessions are not counted as failures; this does not show that every planned session was completed.');
+  }
   const topic=review.topic;
   if(topic==='training-frequency'){
    lines.push('Available training days describe your schedule, not verified adherence. Compare the exact scheduled sessions with completed logs in Progress and Decisions before considering frequency.');
@@ -70,9 +88,17 @@
   if(review.observed)result.push({title:'Recent logged training',status:'observed',
     observed:review.observed.sessions+' workouts · '+review.observed.sets+' strength sets · '+review.observed.rpeSets+' sets with recorded RPE in 28 days.',
     limitation:'Missing actual RPE remains unknown. A logged session is not proof of readiness.',source:'Progress story · dated workout logs'});
+  if(review.program){
+   const p=review.program;
+   result.push({title:'Reviewed program and Calendar',status:'observed',
+    observed:p.name+(p.phase?' · '+p.phase:'')+' · '+p.completed+' completed / '+p.resolved+' resolved session(s)'+
+     (p.adherence===null?' · adherence unknown':' · '+p.adherence+'% resolved-session adherence'),
+    limitation:'Only exact completed and explicitly skipped Calendar sessions enter the denominator; availability, upcoming and unconfirmed sessions do not.',
+    source:'Progress story · reviewed program and resolved Calendar sessions'});
+  }
   if(!result.length)result.push({title:'Personal training evidence',status:'unavailable',observed:'Saved profile or recent workout evidence could not be verified.',
    limitation:'No individualized programming inference is supported.',source:SOURCE});
-  return result.slice(0,2);
+  return result.slice(0,3);
  }
  function answer(state,{asOf,card}={}){
   const report=inspect(state,{asOf,card});
