@@ -236,7 +236,9 @@
   }
   const offline=local?.text||Core()?.offlineReply(live,text);
   const source=String(local?.source||'');
-  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
+  // Exact logged and corrected-lift evidence must not be replaced by an online
+  // model answer, even when an authenticated session is available.
+  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Recorded workout history')||source.startsWith('Current corrected lift evidence')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
   const client=authoritative||localMode?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
