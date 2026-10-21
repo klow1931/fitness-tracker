@@ -1,3 +1,11 @@
+# v3.79.0 — Reliable Coach Fallback and Source Continuity
+
+- Keep offline Coach evidence panels, reference citations and reviewed workflow actions available when an online Coach request fails.
+- Contain failed or empty experimental on-device conversation and reference-model responses so canonical local training guidance remains usable, and local-only consent never silently switches to the server.
+- Clearly indicate that a response is local fallback rather than presenting a model failure as an AI-generated answer.
+- Add desktop/mobile browser tests for failed online requests, rejected device-model generations, continuing conversations, source visibility and non-mutation of workout state; include coverage in iPhone WebKit CI.
+- Move version, PWA cache and unsigned Android/iOS beta to 3.79.0 / build 33900. Schema 34 and internal kg storage unchanged. See [release notes](docs/releases-v3.79.md).
+
 # v3.78.0 — Coach Reviews Outcomes of Approved Changes
 
 - Explain the latest athlete-approved squat, bench or deadlift change using existing, exact-linked logged sessions and the descriptive adaptation-outcome engine.
