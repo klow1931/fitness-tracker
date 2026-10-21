@@ -79,10 +79,15 @@
   if(Application?.applicationQuestion(question)){
    const prior=query(question,history),eligible=prior&&!protectedTopic(prior)&&education(prior),matched=eligible?retrieve(prior):[];
    if(!matched.length)return {text:'Which training principle would you like to connect to your own training? Ask about the topic first, such as training frequency or dynamic effort.',source:'Shared coaching · clarification',readOnly:true,evidence:[],actions:[{kind:'library',label:'Explore coaching references'}]};
-   const selected=matched[0],review=Application.answer(state,{asOf,card:selected}),sources=[...new Set(selected.sources)];
-   return {...review,text:selected.title+': '+selected.summary+'\n\nFor your training: '+review.text,
+   // Preserve the same bounded educational topics and public-source coverage
+   // as the original v3.80 reply. Only the primary topic is individually
+   // applied using verified saved training; related cards stay general.
+   const selectedCards=/\b(nsca|essentials|books?|sources?|references?|textbooks?)\b/i.test(prior)?matched:matched.slice(0,2);
+   const selected=selectedCards[0],review=Application.answer(state,{asOf,card:selected}),
+    sources=[...new Set(selectedCards.flatMap(c=>c.sources))];
+   return {...review,text:selectedCards.map(c=>c.title+': '+c.summary).join('\n\n')+'\n\nFor your training ('+selected.title+'): '+review.text,
     source:'Shared coaching · referenced knowledge',
-    citations:sources.map(id=>({id,...copy(SOURCES[id])})),knowledgeIds:[selected.id],
+    citations:sources.map(id=>({id,...copy(SOURCES[id])})),knowledgeIds:selectedCards.map(c=>c.id),
     intent:{topic:'knowledge-application',referenceQuestion:prior},
     clarification:selected.question,
     followUps:['What sources support that?','How did this week go?']};
