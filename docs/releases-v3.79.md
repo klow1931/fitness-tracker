@@ -7,7 +7,8 @@ The v3.75–v3.78 Coach can explain validated training records, sustain bounded 
 - If an authenticated online Coach request fails, the existing local reply remains available **with its supporting evidence, reference links and review controls**. Before v3.79, only the plain text was rendered, discarding useful source details and action links.
 - A rejected or empty local WebGPU model conversation response no longer breaks the chat. Where there is supported deterministic guidance, the Coach presents it as built-in guidance and indicates that the optional model was unavailable.
 - A failed optional model *reference explanation* similarly falls back to the existing cited public coaching guidance. The coach composer and subsequent questions remain usable.
-- Consent to private local AI conversation remains local-only even if model generation fails: no automatic online server fallback. The app does not persist generated text as athlete evidence and never approves a training change.
+- Consent to private local AI conversation remains local-only even if model generation fails: no automatic online server fallback.
+- Verified recorded-workout history and corrected-lift evidence remain authoritative local responses for signed-in athletes, not optional online paraphrases. The app does not persist generated text as athlete evidence and never approves a training change.
 
 ## Limits
 No general LLM upgrade, web browsing or new model runtime. This is not evidence that the optional local model's answers are always accurate. Source references are the existing curated Coaching Library, with its documented coverage restrictions. A local reply reports only what existing training systems can validate, not physiological recovery, medical clearance, or new targets.

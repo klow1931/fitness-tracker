@@ -1,6 +1,7 @@
 # v3.79.0 — Reliable Coach Fallback and Source Continuity
 
 - Keep offline Coach evidence panels, reference citations and reviewed workflow actions available when an online Coach request fails.
+- Preserve verified recorded workout history and corrected lift evidence as authoritative local answers even when a user is signed in; these records are not replaced by generated online text.
 - Contain failed or empty experimental on-device conversation and reference-model responses so canonical local training guidance remains usable, and local-only consent never silently switches to the server.
 - Clearly indicate that a response is local fallback rather than presenting a model failure as an AI-generated answer.
 - Add desktop/mobile browser tests for failed online requests, rejected device-model generations, continuing conversations, source visibility and non-mutation of workout state; include coverage in iPhone WebKit CI.
