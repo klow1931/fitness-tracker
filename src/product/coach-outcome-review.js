@@ -19,7 +19,7 @@
   if(!q.trim()||Support.health(q)||Support.kind(q)==='urgent-support')return null;
   if(/\b(?:uploaded|imported|custom|athlete.authored)\b.{0,28}\b(?:program|plan)\b/i.test(q))return null;
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
-  if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
+  if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|do|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
   if(!/\b(?:after|last|past|previous|approved|helped|worked|respond|learned|outcome|usually|pattern|result)\b/i.test(q))return null;
   const selected=liftMatches(q);
   // Do not steal general "what did Loadnote learn?" questions from the
