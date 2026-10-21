@@ -80,10 +80,10 @@
   const host=d.querySelector('#custom-error');host.textContent=message;
   d.querySelectorAll('.custom-program-inline-error').forEach(el=>el.remove());
   d.querySelectorAll('[data-custom-row] [aria-invalid="true"]').forEach(el=>el.removeAttribute('aria-invalid'));
-  const match=/\\bRow (\\d+):/.exec(message),index=match?Number(match[1])-1:-1;
+  const match=/\bRow (\d+):/.exec(message),index=match?Number(match[1])-1:-1;
   if(index<0||index>=rows.length)return;
   const detail=message.split(':').slice(1).join(':').toLowerCase();
-  const mapping=[[/percentage basis/,'percentBasis'],[/percentage reference|reference load/,'reference'],[/percentage reference unit/,'referenceUnit'],[/rounding/,'roundTo'],[/rep range|minimum reps|maximum reps|\\breps\\b/,'reps'],[/\\bsets\\b/,'sets'],[/\\brpe\\b/,'rpe'],[/rest/,'rest'],[/cardio minutes|\\bminutes\\b/,'minutes'],[/load unit/,'unit'],[/\\bload\\b/,'weight'],[/\\bweek\\b/,'week'],[/\\bday\\b/,'day'],[/exercise name/,'exercise']];
+  const mapping=[[/percentage basis/,'percentBasis'],[/percentage reference unit/,'referenceUnit'],[/percentage reference|reference load/,'reference'],[/rounding/,'roundTo'],[/rep range|minimum reps|maximum reps|\\breps\\b/,'reps'],[/\bsets\b/,'sets'],[/\brpe\b/,'rpe'],[/rest/,'rest'],[/cardio minutes|\\bminutes\\b/,'minutes'],[/load unit/,'unit'],[/\bload\b/,'weight'],[/\bweek\b/,'week'],[/\bday\b/,'day'],[/exercise name/,'exercise']];
   const target=mapping.find(([pattern])=>pattern.test(detail))?.[1]||'exercise';
   const locate=()=>{
     const card=d.querySelector('[data-custom-row="'+index+'"]');
