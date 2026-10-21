@@ -19,6 +19,14 @@ assert.equal(p.status,'clarification');
 assert.match(p.clarification,/Performance or Next scheduled workout/);
 a=Coach.answer(state,'Why?',{...opts,history:h});
 assert.equal(a.intent.needsClarification,true);assert.equal(a.actions.length,0);
+const picking=[...h,{role:'user',content:'Why?'},{role:'assistant',content:'Which part do you mean?'}];
+p=Reasoning.plan('Performance',picking);
+assert.equal(p.status,'ready');assert.deepEqual(p.kinds,['performance']);assert.equal(p.lift,'bench');
+a=Coach.answer(state,'Performance',{...opts,history:picking});
+assert.equal(a.intent.lift,'bench');assert.deepEqual(a.intent.kinds,['performance']);
+const afterPicking=[...picking,{role:'user',content:'Performance'},{role:'assistant',content:'Untrusted'}];
+assert.deepEqual(Reasoning.plan('Tell me more',afterPicking).kinds,['performance']);
+
 const focused=[...h,{role:'user',content:'What about squat?'},{role:'assistant',content:'Not authoritative'}];
 p=Reasoning.plan('Tell me more',focused);
 assert.equal(p.status,'ready');assert.deepEqual(p.kinds,['performance']);assert.equal(p.lift,'squat');
@@ -37,6 +45,13 @@ assert.equal(p.status,'ready');assert.deepEqual(p.kinds,['upcoming']);assert.equ
 a=Coach.answer(state,'What about next week?',{...opts,history:h});
 assert.deepEqual(a.intent.kinds,['upcoming']);assert.match(a.text,/Next scheduled workout/);
 assert.equal(a.actions.every(action=>action.kind==='workout-brief'),true);
+const carriedWeek=[...h,{role:'user',content:'What about next week?'},{role:'assistant',content:'No trusted schedule here'}];
+p=Reasoning.plan('Why?',carriedWeek);
+assert.equal(p.nextWeek,true);assert.deepEqual(p.kinds,['upcoming']);
+assert.match(Coach.answer(state,'Why?',{...opts,history:carriedWeek}).text,/Next scheduled workout/);
+p=Reasoning.plan("Why has my bench stalled and explain tomorrow's workout?");
+assert.equal(p.tomorrow,true);
+
 
 for(const phrase of ['Hello','My Achilles hurts','Who won the election?','Start over']){
  const blocked=[...h,{role:'user',content:phrase}];
