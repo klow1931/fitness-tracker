@@ -30,7 +30,7 @@
   // Use the canonical Progress Story program selector. Only resolved Calendar
   // outcomes permit an adherence denominator; mere availability never does.
   let selected=null;
-  try{selected=Story?.selectedProgram(state,{asOf}.asOf);}catch{}
+  try{selected=Story?.selectedProgram(state,asOf);}catch{}
   const c=selected?.counts||{},completed=count(c.completed),skipped=count(c.skipped),resolved=count(selected?.resolved);
   const program=selected&&typeof selected.id==='string'&&selected.id&&typeof selected.name==='string'&&
    completed!==null&&skipped!==null&&resolved===completed+skipped&&
