@@ -18,6 +18,16 @@
   const q=String(question||'');
   if(!q.trim()||Support.health(q)||Support.kind(q)==='urgent-support')return null;
   if(/\b(?:uploaded|imported|custom|athlete.authored)\b.{0,28}\b(?:program|plan)\b/i.test(q))return null;
+  // Preserve the existing exercise-history route: "how did my bench training
+  // change across my last three workouts?" compares logged sessions, not
+  // athlete-approved prescription changes.
+  // A bare verb "change" is not evidence that a Decisions review was approved.
+  const explicitApproval=/\b(?:approved|athlete.approved)\b/i.test(q);
+  const namedAdjustment=/\b(?:adjustments?|approved decisions?|load increases?|load reductions?|reduced loads?|increased loads?)\b/i.test(q);
+  const retrospectiveChange=/\bafter\b.{0,100}\b(?:last|past|previous)\b.{0,75}\b(?:changes?|adjustments?)\b/i.test(q)||
+   /\b(?:last|past|previous)\b.{0,40}\b(?:squat|bench|deadlift|sumo)\b.{0,35}\b(?:changes?|adjustments?)\b/i.test(q);
+  if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
+
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
   if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|do|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
   if(!/\b(?:after|last|past|previous|approved|helped|worked|respond|learned|outcome|usually|pattern|result)\b/i.test(q))return null;
