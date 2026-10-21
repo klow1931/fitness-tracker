@@ -41,6 +41,7 @@
    if(names.length===1&&narrowedLift===null)narrowedLift=names[0];
    if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q))focusedKind='performance';
    if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q))focusedKind='upcoming';
+   if(focusedKind===null){const selected={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];if(selected)focusedKind=selected;}
    if(focusedKind==='upcoming'&&/\bnext week\b/i.test(q))nextWeekFocus=true;
   }
   return null;
