@@ -29,7 +29,9 @@ test('v3.79 online failure retains local evidence, source links and read-only co
  await expect(reply).toContainText('Online Coach unavailable.');
  await expect(reply).toContainText('Recorded workout history is available');
  await expect(reply.locator('.cc-evidence article')).toHaveCount(1);
- await expect(reply.locator('details').filter({hasText:'Sources and coverage'})).toHaveCount(1);
+ const sources=reply.locator('details').filter({hasText:'Sources and coverage'});
+ await expect(sources).toHaveCount(1);
+ await sources.locator('summary').click();
  await expect(reply.getByRole('link',{name:'NSCA public training reference'})).toHaveAttribute('href',/^https:\/\/www\.nsca\.com\//);
  await expect(page.locator('#chat-messages .assistant').last().locator('.cc-evidence article')).toHaveCount(1);
  await expect(reply).toContainText('Online request failed · showing available local guidance');
