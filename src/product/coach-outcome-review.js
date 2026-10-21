@@ -17,6 +17,7 @@
  function intent(question){
   const q=String(question||'');
   if(!q.trim()||Support.health(q)||Support.kind(q)==='urgent-support')return null;
+  if(/\b(?:uploaded|imported|custom|athlete.authored)\b.{0,28}\b(?:program|plan)\b/i.test(q))return null;
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
   if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
   if(!/\b(?:after|last|past|previous|approved|helped|worked|respond|learned|outcome|usually|pattern|result)\b/i.test(q))return null;
@@ -57,7 +58,7 @@
    const groups=report.patterns;
    const lines=groups.length?groups.slice(0,3).map(p=>p.action+': '+p.observed+'/'+p.recorded+
     ' exact follow-ups; '+(p.observed>=3?'improved '+p.counts.improved+', stable '+p.counts.stable+', declined '+p.counts.declined+
-    '; median RPE-aware estimate change '+percentage(p.medianCapacityChangePct??0)+'. '+p.description:
+    (finite(p.medianCapacityChangePct)?'; median RPE-aware estimate change '+percentage(p.medianCapacityChangePct):'; median change unavailable')+'. '+p.description:
     'fewer than three observed follow-ups. No repeated personal pattern is established.')).join(' '):
     'No reviewed lift-action group is available.';
    return head+' '+lines+' '+LIMIT+' Next: inspect the linked workouts in Progress and keep any future decision inside Decisions.';
