@@ -1,3 +1,11 @@
+# v3.78.0 — Coach Reviews Outcomes of Approved Changes
+
+- Explain the latest athlete-approved squat, bench or deadlift change using existing, exact-linked logged sessions and the descriptive adaptation-outcome engine.
+- Distinguish observed RPE-aware estimated capacity comparisons from incomplete, missing-RPE or revised-session follow-ups; show repeated lift/action patterns only when at least three exact observations exist.
+- Add brief, source-labeled evidence details and refer back to Progress/Decisions for any new programming decision. No autonomous prescriptions, causal attribution, or writes to athlete data.
+- Validate historical date cutoffs, missing effort, ambiguous lift references, program-edit separation and mobile layout with new Node and iPhone WebKit/Chromium regression tests.
+- Version 3.78.0, unsigned native beta build 33800; schema 34 and internal weight units kg unchanged. See [release notes](docs/releases-v3.78.md).
+
 # v3.77.0 — Reviewed Training Evidence and Transparent Coach Options
 
 - Add concise source-labeled, read-only evidence summaries to combined Coach answers, with missing data and contradictory training signals clearly identified.

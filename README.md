@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.77.0 · Development build.**
+**v3.78.0 · Development build.**
+Personal outcome explanations for approved training changes: [v3.78 release notes](docs/releases-v3.78.md). Ask the offline Coach what happened after your last approved bench, squat or deadlift adjustment. Responses use exact linked training evidence and distinguish observed from unverified follow-up; repeated patterns require adequate observations and never auto-apply a change. No saved training data migration; internal weights remain kg.
+
+**Earlier v3.77 reviewed evidence milestone.**
 Coach 2.0 evidence and options update: [v3.77 release notes](docs/releases-v3.77.md). Compound offline Coach answers expose at most three concise source-labeled evidence cards, with missing and inconsistent training signals called out. “Compare my options for next week” distinguishes keeping saved targets from *existing* Decisions review pathways without auto-selecting an adjustment. The athlete's review and approval are still required; no data migration and internal loads remain kg.
 
 **Earlier v3.76 dialogue milestone.**
