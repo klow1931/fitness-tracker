@@ -14,6 +14,9 @@ assert.equal(Review.intent('What have we learned from my program changes?'),null
 assert.equal(Review.intent('Why did I change my imported bench program?'),null,'Personal edit reasons belong to custom program studio');
 assert.equal(Review.intent('My knee hurts after the last bench adjustment'),null,'Safety queries precede outcome history');
 assert.equal(Review.intent('Create a new bench program'),null,'Program drafting must remain separate');
+assert.equal(Review.intent('How did my bench training change across my last three workouts?'),null,'Logged workout history must not be intercepted by approved-outcome reviews');
+assert.equal(Review.intent('Compare my squat training changes between the previous three workouts'),null,'Across-session training changes are not approved Decisions adaptations');
+assert.equal(Review.intent('How did my squat change from last session?'),null,'Single-workout comparisons remain in the recorded-history flow');
 let empty=basic(),before=JSON.stringify(empty);
 let reply=Coach.answer(empty,'What happened after my last bench change?',{asOf,now,unit:'lb'});
 assert.equal(reply.source,'Offline Coach · approved training outcomes');
