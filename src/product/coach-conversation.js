@@ -51,6 +51,10 @@
   // Existing single-topic rules, planner drafts, medical and crisis safeguards stay first.
   const combined=(typeof module==='object'&&module.exports?require('./coach-reasoning'):globalThis.LoadnoteCoachReasoning)?.answer(state,question,{asOf,unit,now,history});
   if(combined)return combined;
+  // Athlete-specific retrospective outcomes of exact approved Decisions changes.
+  // Excludes custom-program editing, new prescriptions, and current dose advice.
+  const outcomeReview=(typeof module==='object'&&module.exports?require('./coach-outcome-review'):globalThis.LoadnoteCoachOutcomeReview)?.answer(state,question,{asOf,now});
+  if(outcomeReview)return outcomeReview;
   // Phase 3: explain apparent plateaus from the same read-only Progress trends.
   // Safety and confirmed movement references have already been checked.
   const trendReply=(typeof module==='object'&&module.exports?require('./coach-performance-insights'):globalThis.LoadnoteCoachPerformanceInsights)?.answer(state,q,{asOf,unit,history});
