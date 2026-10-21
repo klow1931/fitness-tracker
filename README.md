@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.78.0 · Development build.**
+**v3.79.0 · Development build.**  
+[Coach v3.79 release notes](docs/releases-v3.79.md): Online Coach failures preserve available local evidence, source links and reviewed actions; experimental on-device model failures fall back to deterministic guidance without changing user consent or contacting the server. Workout data and programming policy are unchanged.
+
+**Earlier v3.78 approved-outcome milestone.**
 Personal outcome explanations for approved training changes: [v3.78 release notes](docs/releases-v3.78.md). Ask the offline Coach what happened after your last approved bench, squat or deadlift adjustment. Responses use exact linked training evidence and distinguish observed from unverified follow-up; repeated patterns require adequate observations and never auto-apply a change. No saved training data migration; internal weights remain kg.
 
 **Earlier v3.77 reviewed evidence milestone.**

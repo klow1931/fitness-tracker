@@ -216,22 +216,36 @@
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
+  let modelUnavailable=false;
+  // An optional on-device model must never prevent a deterministic reply.
+  // Keep local conversation consent selected during a model failure.
   if(localMode&&!local?.planning){
-   const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
-   const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
-   const generated=await ai.respond(text,{context,history,cards,canonical:local});
-   if(generated)local={...(local||{}),readOnly:true,text:'Local AI conversation (experimental): '+generated+(local?.text?'\n\nReviewed guidance: '+local.text:''),source:'Local AI · on-device conversation'};
-  }else if(local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};}
+   try{
+    const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
+    const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
+    const generated=await ai.respond(text,{context,history,cards,canonical:local});
+    if(generated)local={...(local||{}),readOnly:true,text:'Local AI conversation (experimental): '+generated+(local?.text?'\n\nReviewed guidance: '+local.text:''),source:'Local AI · on-device conversation'};
+    else modelUnavailable=true;
+   }catch{modelUnavailable=true;}
+  }else if(local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){
+   try{
+    const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);
+    if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};
+    else modelUnavailable=true;
+   }catch{modelUnavailable=true;}
+  }
   const offline=local?.text||Core()?.offlineReply(live,text);
   const source=String(local?.source||'');
-  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
+  // Exact logged and corrected-lift evidence must not be replaced by an online
+  // model answer, even when an authenticated session is available.
+  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Recorded workout history')||source.startsWith('Current corrected lift evidence')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
   const client=authoritative||localMode?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   const message=append(reply,'assistant',local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion'));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   const message=append(reply,'assistant',modelUnavailable?'Built-in coaching · local AI unavailable':(local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion')));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
@@ -240,7 +254,14 @@
    history.push({role:'user',content:text},{role:'assistant',content:reply});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }catch(error){
    let reply=offline;try{if(!reply&&typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
-   reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');append(reply,'assistant','Local fallback');history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');const message=append(reply,'assistant','Local fallback · '+(local?.source||'Built-in Coach'));
+   // An online error must not discard reviewed actions, evidence, or sources.
+   attachReply(message,local);
+   for(const host of [message,message?.fullView])if(host){
+    const status=document.createElement('small');
+    status.textContent='Online request failed · showing available local guidance';host.append(status);
+   }
+   history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
  }
  function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
