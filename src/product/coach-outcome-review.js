@@ -27,7 +27,7 @@
   if(!selected.length&&!/\b(?:last|past|previous)\s+approved\s+(?:training|program|load)\s+(?:change|adjustment)\b/i.test(q))return null;
   const filter=/\b(?:load increases?|increased? loads?|increasing loads?)\b/i.test(q)?'increase-load':
    /\b(?:load reductions?|reduced? loads?|decreasing loads?)\b/i.test(q)?'reduce-load':null;
-  return {kind:/\b(?:usually|pattern|repeated|over time|history|past (?:few|several)|previous (?:few|several))\b/i.test(q)?'pattern':'latest',lifts:selected,action:filter};
+  return {kind:/\b(?:usually|pattern|repeated|over time|history|learned|past (?:few|several)|previous (?:few|several))\b/i.test(q)?'pattern':'latest',lifts:selected,action:filter};
  }
  function inspect(state,{asOf,now=new Date().toISOString(),lift,action=null}={}){
   if(!Schedule.date(asOf)||!Number.isFinite(Date.parse(now))||new Date(now).toISOString()!==now||!lifts.includes(lift))throw Error('Valid date and one confirmed competition lift required');
