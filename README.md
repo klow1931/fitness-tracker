@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.80.0 · Development build.**  
+**v3.81.0 · Development build.**  
+[Coach v3.81 release notes](docs/releases-v3.81.md): The offline Coach can connect a recent vetted training principle to the athlete's validated saved setup and latest 28-day workout records. It distinguishes missing RPE, unknown setup and incomplete evidence from genuine observations. The personalized explanation is deterministic; optional local AI does not rewrite athlete facts or approve training changes.
+
+**Earlier v3.80 knowledge-continuity milestone.**  
 [Coach v3.80 release notes](docs/releases-v3.80.md): Offline curated training knowledge now keeps bounded follow-up topic continuity and answers “What sources support that?” using only references relevant to the most recent eligible educational question. Unrelated user turns reset that topic, and factual training decisions remain governed by existing verified engines.
 
 **Earlier v3.79 fallback-resilience milestone.**  

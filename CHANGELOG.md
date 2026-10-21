@@ -1,3 +1,12 @@
+# v3.81.0 — Grounded Personal Application of Coaching Knowledge
+
+- Apply a recently cited training principle to validated athlete-specific training setup and recorded 28-day training evidence, answering “How does that apply for me?” without guessing from assistant messages or stale topics.
+- Surface missing programming context, incomplete logged RPE and unavailable training history explicitly; never treat user availability as adherence or set counts as physiological readiness.
+- Keep source-specific public knowledge references while showing separate saved-profile and logged-work evidence cards, both collapsed by default on mobile.
+- Protect deterministic athlete context from optional on-device language-model paraphrasing; programming targets and logging remain athlete-approved and unchanged.
+- Add Node and mobile WebKit/Chromium regression fixtures for as-of profile cutoffs, missing RPE, no topic, no writes and source boundaries.
+- Update app and PWA to **3.81.0**, unsigned native beta **34100**. Schema **34** and internal kg storage unchanged. See [release notes](docs/releases-v3.81.md).
+
 # v3.80.0 — Coach Knowledge Continuity and Focused Source Provenance
 
 - Resolve short offline educational follow-ups only from the most recent eligible athlete-authored knowledge topic; assistant messages cannot supply source evidence.
