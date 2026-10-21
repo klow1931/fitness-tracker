@@ -14,8 +14,8 @@ android {
         applicationId "app.loadnote.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33481
-        versionName "3.73.1"
+        versionCode 33600
+        versionName "3.76.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
