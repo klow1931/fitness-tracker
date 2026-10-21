@@ -27,7 +27,7 @@
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
   if(!bounded.length)return null;
-  let narrowedLift=null;
+  let narrowedLift=null,focusedKind=null;
   for(let i=bounded.length-1;i>=0;i--){
    const q=clean(bounded[i].content);
    if(!q||neutralReset(q)||Support.health(q)||Support.kind(q)==='urgent-support')return null;
@@ -35,10 +35,12 @@
    if(!simpleFollow(q)){
     const anchor=plan(q,[]);
     if(!anchor||!['ready','clarification'].includes(anchor.status))return null;
-    return {anchor,preferredLift:narrowedLift};
+    return {anchor,preferredLift:narrowedLift,focusedKind};
    }
    const names=followLift(q);
    if(names.length===1&&narrowedLift===null)narrowedLift=names[0];
+   if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q))focusedKind='performance';
+   if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q))focusedKind='upcoming';
   }
   return null;
  }
@@ -46,7 +48,7 @@
   const q=clean(question);
   if(!simpleFollow(q))return null;
   const prior=lastCompound(history);if(!prior)return null;
-  const {anchor,preferredLift}=prior,names=followLift(q);
+  const {anchor,preferredLift,focusedKind}=prior,names=followLift(q);
   const full=anchor.kinds||[],hasPerformance=full.includes('performance');
   const questionIsLift=/^(?:bench|squat|deadlift|sumo)[.!?]?$/i.test(q);
   const liftOnly=/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q);
@@ -59,6 +61,7 @@
   }
   if(upcoming&&full.includes('upcoming'))return {status:'ready',question:q,kinds:['upcoming'],lift:null,
    follow:true,nextWeek:/next week/i.test(q)};
+  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true};
   if(vague&&full.length>1){
    const labels=full.map(kind=>handlers.find(h=>h.kind===kind)?.label).filter(Boolean);
    return {status:'clarification',question:q,kinds:full,follow:true,
@@ -75,6 +78,7 @@
   if(blocked.test(q))return null;
   if(found.length<2)return followPlan(q,history);
   const liftMatches=lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
+  if(found.includes('upcoming')&&/\btomorrow\b/i.test(q)&&/\bnext week\b/i.test(q))return {status:'clarification',question:q,kinds:found,clarification:'Should I review tomorrow’s workout or next week’s workout first?'};
   if(found.includes('performance')&&liftMatches.length!==1)
    return {status:'clarification',question:q,kinds:found,clarification:liftMatches.length?'Which lift should I review first: squat, bench, or deadlift?':'Which lift appears stalled: squat, bench, or deadlift?'};
   return {status:'ready',question:q,kinds:found.slice(0,3),lift:liftMatches[0]||null};
