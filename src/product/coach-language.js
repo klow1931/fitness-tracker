@@ -1,4 +1,4 @@
-/* v3.86 — bounded linguistic aliases and user-only conversational references.
+/* v3.87 — bounded multi-turn context, explicit corrections and dialogue follow-ups.
  * Every interpretation is revalidated by existing offline coaching evidence routes.
  * No training, preferences or conversation is written to persistent storage.
  */
@@ -47,33 +47,52 @@
   if(/\b(?:progress|improving|progressing)\b/i.test(q)&&/\b(?:how|is my|am i doing)\b/i.test(q))return {kind:'progress',lift};
   return null;
  }
- const switchLift=q=>/^(?:(?:and|what about)\s+)(?:my |the )?(squat|bench|deadlift)(?: press)?\s*[?.!]*$/i.exec(q);
+ // A short topic switch or correction must name the new lift. Elliptical
+ // explanations stay limited to verified accepted decisions and outcomes.
+ const switchLift=q=>/^(?:(?:and|what about|how about|now)\s+)(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q);
+ const correctLift=q=>/^(?:(?:actually|sorry|no),?\s*)?(?:i meant|i mean|make that)\s+(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q)||
+  /^(?:actually|sorry|no),?\s+(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q);
  const outcomeFollow=q=>/^(?:did that (?:help|work)|did it (?:help|work)|what happened afterwards?|what happened after that)\s*[?.!]*$/i.test(q);
+ const rationaleFollow=q=>/^(?:why was (?:that|it) approved|why was that change made)\s*[?.!]*$/i.test(q);
+ const phrasing=(kind,lift)=>{
+  if(kind==='rationale')return 'Why did Loadnote change my '+lift+'?';
+  if(kind==='outcome')return 'What happened after my last '+lift+' change?';
+  if(kind==='history')return 'How did my '+lift+' training change across my last three workouts?';
+  if(kind==='training-max')return 'What is my '+lift+' training max?';
+  if(kind==='progress')return 'How is my '+lift+' progress?';
+  return null;
+ };
+ function advance(prior,question){
+  if(!prior)return null;
+  const pivot=switchLift(question)||correctLift(question);
+  if(pivot)return {...prior,lift:pivot[1].toLowerCase()};
+  if(outcomeFollow(question)&&prior.kind==='rationale')return {...prior,kind:'outcome'};
+  if(rationaleFollow(question)&&prior.kind==='outcome')return {...prior,kind:'rationale'};
+  return null;
+ }
+ // Walk only eight recent message rows, accepting user questions as context
+ // but never assistant claims. An unrelated topic or safety report resets.
+ // Three short replies is the maximum between complete training questions.
+ function fromHistory(history){
+  let prior=null,hops=0;
+  const recent=(Array.isArray(history)?history:[]).slice(-8);
+  for(const row of recent){
+   if(row?.role!=='user')continue;
+   const raw=String(row.content??'');
+   if(!raw.trim()||unsafe(raw)){prior=null;hops=0;continue;}
+   const q=normalize(raw),root=priorKind(q);
+   if(root){prior=root;hops=0;continue;}
+   const next=hops<3?advance(prior,q):null;
+   if(next){prior=next;hops++;}else{prior=null;hops=0;}
+  }
+  return hops<3?prior:null;
+ }
  function interpret(question,history=[]){
   const original=clean(question);
   if(!original||unsafe(String(question??'')))return {question:original,changed:false,reason:'safety-or-empty'};
-  const normalized=normalize(original);
-  const users=(Array.isArray(history)?history:[]).slice(-8).filter(row=>row?.role==='user'&&typeof row.content==='string');
-  let prior=users.length?priorKind(users.at(-1).content):null;
-  // Support exactly one explicitly named follow-up after a grounded question.
-  if(!prior&&users.length>=2&&switchLift(normalize(users.at(-1).content))){
-   const ancestor=priorKind(users.at(-2).content);
-   if(ancestor)prior={...ancestor,lift:onlyLift(normalize(users.at(-1).content))};
-  }
-  const pivot=switchLift(normalized);
-  let resolved=normalized,reason='vocabulary';
-  if(pivot&&prior){
-   const lift=pivot[1].toLowerCase();
-   if(prior.kind==='rationale')resolved='Why did Loadnote change my '+lift+'?';
-   if(prior.kind==='outcome')resolved='What happened after my last '+lift+' change?';
-   if(prior.kind==='history')resolved='How did my '+lift+' training change across my last three workouts?';
-   if(prior.kind==='training-max')resolved='What is my '+lift+' training max?';
-   if(prior.kind==='progress')resolved='How is my '+lift+' progress?';
-   reason='explicit-lift-follow-up';
-  }else if(outcomeFollow(normalized)&&prior?.kind==='rationale'){
-   resolved='What happened after my last '+prior.lift+' change?';
-   reason='approved-change-follow-up';
-  }
+  const normalized=normalize(original),prior=fromHistory(history),next=advance(prior,normalized);
+  const resolved=next?phrasing(next.kind,next.lift):normalized;
+  const reason=next?(switchLift(normalized)?'explicit-lift-follow-up':correctLift(normalized)?'explicit-correction':outcomeFollow(normalized)?'approved-change-follow-up':'original-approval-follow-up'):'vocabulary';
   return {question:resolved,changed:resolved!==original,reason};
  }
  return {normalize,onlyLift,priorKind,interpret};
