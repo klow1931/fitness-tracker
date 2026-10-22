@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.86.0 · Development build.**  
+**v3.87.0 · Development build.**  
+[Coach v3.87 release notes](docs/releases-v3.87.md): Athlete conversation can retain an explicit lift and question type for several short replies, understand deliberate corrections, and navigate between an accepted Decisions explanation and its exact recorded outcome.
+
+**Earlier v3.86 language milestone.**  
 [Coach v3.86 release notes](docs/releases-v3.86.md): Natural progress questions, common lifting-word typos and athlete-only follow-up context route to existing, validated evidence. No new programming policy or unapproved change.
 
 **Earlier v3.85 approval-rationale milestone.**  

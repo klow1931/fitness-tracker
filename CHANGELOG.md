@@ -1,3 +1,11 @@
+# v3.87.0 — Longer Offline Coach Dialogues and Explicit Corrections
+
+- Extend the existing bounded offline language adapter through at most three named or context-grounded user follow-ups within the most recent eight message rows.
+- Handle explicit corrections such as “I meant bench,” alternate movement references such as “How about deadlift instead?”, and switches between an approved-change reason, a verified follow-up outcome, and the original frozen approval rationale.
+- Preserve original full-question safety routing, reset on unrelated topics, refuse ambiguous movements, never accept assistant dialogue as actual training evidence or edit prescriptions.
+- Regression tests cover multi-turn context, correction, follow-up expiry, topic reset, actual browser chat, no writes, and kg/lb display integrity.
+- Release **3.87.0**, beta **34700**, schema **34** unchanged. No data migration.
+
 # v3.86.0 — Bounded Offline Coach Language Understanding
 
 - Normalize high-confidence strength-training typos, common plurals and natural progress questions through the new coach-language.js module; no broad fuzzy substitutions.
