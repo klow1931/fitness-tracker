@@ -1,3 +1,11 @@
+# v3.90.0 — Evidence Sources and Missing-Data Coach Dialogues
+
+- Respond to natural follow-up questions such as "Where did that come from?", "What data is that based on?", "What's missing?" and "What are the limitations?" after a multi-part verified training conversation.
+- Reuse exact validated evidence cards for read-only source attribution, evidence status, observed data, and remaining limitations. Never treat a previous assistant answer as new training data.
+- Honor athlete-selected sections and ask for clarification when missing lift identity or conflicting workout dates remain unresolved; safety checks still inspect the original full user text.
+- Add Node and browser regressions for source/coverage routing, time cutoffs, kg/lb data integrity, safety, expiration, and immutable workout history.
+- Release **3.90.0**, unsigned native beta **35000**, schema **34** unchanged; no migration.
+
 # v3.89.0 — Concise, Attributed Offline Coach Conversation
 
 - Natural short-answer follow-ups, including "Give me the short version", "What's the takeaway?", "Can you put that more simply?" and "In plain English", after a combined training question.
