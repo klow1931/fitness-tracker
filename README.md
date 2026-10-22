@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.84.0 · Development build.**  
+**v3.85.0 · Development build.**  
+[Coach v3.85 release notes](docs/releases-v3.85.md): Explain *why* a saved, athlete-approved squat, bench or deadlift adjustment was made using the original frozen phase/meet review; compare against exact follow-up evidence without claiming causation or revising a future workout.
+
+**Earlier v3.84 evidence-coverage milestone.**  
 [Coach v3.84 release notes](docs/releases-v3.84.md): The offline Coach explains which approved squat, bench and deadlift adjustment outcomes have verified linked follow-ups and why other comparisons cannot yet be validated, without guessing causes or prescribing changes.
 
 **Earlier v3.83 athlete-choice-history milestone.**  

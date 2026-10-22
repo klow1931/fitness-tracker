@@ -1,3 +1,11 @@
+# v3.85.0 — Original Approved Programming Reasons in Offline Coach
+
+- Offline Coach can answer **“Why did Loadnote change my squat?”** and **“Why was my approved bench load reduced?”** from validated, frozen accepted Decisions reviews, not a regenerated rationale.
+- Exact approved-phase review records supply the original policy and saved finding reason. Meet-cycle reviews supply the saved, choice-specific eligibility rationale. Both are linked to eligible historical approvals via the existing Adaptive Outcome Learning engine.
+- Clarify the difference between a *recorded approval rationale*, a subsequently *observed association*, and *unknown follow-up*. No new fatigue inference, load prescription, exercise swap or automatic progressions.
+- Preserve safety routing and standalone workout history, historical cutoffs, immutable workout records, existing kg and actual RPE rules. No data migration.
+- Version **3.85.0**, unsigned beta **34500**, schema **34**. See [release notes](docs/releases-v3.85.md).
+
 # v3.84.0 — Explain Missing Approved-Change Evidence
 
 - Offline Coach can answer “Why are my approved squat adjustments missing comparable evidence?” with a bounded audit of accepted Decisions outcomes, without inventing workout performance.
