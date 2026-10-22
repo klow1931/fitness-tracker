@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.82.0 · Development build.**  
+**v3.83.0 · Development build.**  
+[Coach v3.83 release notes](docs/releases-v3.83.md): Offline Coach separates confirmed exercise preferences from repeated athlete-authored Calendar swaps. Historical questions respect known-at cutoffs, and observed edits remain suggestions until explicit confirmation. No automatic workout or preference changes.
+
+**Earlier v3.82 program-context milestone.**  
 [Coach v3.82 release notes](docs/releases-v3.82.md): The offline Coach connects vetted training principles with the athlete's selected reviewed program and exact Calendar resolutions, separating completed/skipped sessions from unknown attendance. It keeps all programming decisions read-only until athlete approval.
 
 **Earlier v3.81 grounded-context milestone.**  
