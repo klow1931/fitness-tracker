@@ -1,4 +1,4 @@
-/* v3.88 — bounded read-only multi-evidence Coach orchestration and natural clarification.
+/* v3.89 — deterministic, evidence-grounded short conversation follow-ups.
  * Single-topic requests retain their established handlers. The coordinator
  * invokes existing validated analyses; it never creates a training dose.
  */
@@ -35,7 +35,10 @@
   if(m[1]&&kind!=='performance')return null;
   return {kind,lift:m[1]||null};
  }
- const simpleFollow=q=>!!focusPart(q)||/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ // Brief requests refer only to recent athlete-authored compound questions.
+ // No stored assistant answer is summarized, and no new training facts are made up.
+ const briefFollow=q=>/^(?:give me (?:the |a )?(?:short version|quick summary|main takeaway)|(?:what(?:'s| is) (?:the )?(?:takeaway|main point|bottom line))|(?:can you )?(?:put (?:that|it) (?:more )?simply|explain (?:that|it) (?:more )?simply)|(?:sum(?:marize|marise) (?:that|it))|(?:in plain english)|(?:tl;?dr))[.!?]*$/i.test(q);
+ const simpleFollow=q=>briefFollow(q)||!!focusPart(q)||/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
  const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
@@ -71,6 +74,7 @@
   const liftOnly=/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q);
   const upcoming=/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q);
   const vague=/^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+  const brief=briefFollow(q);
   // A question with two explicit date windows needs an athlete selection.
   // Re-check lift ambiguity after the date is selected; never pick a lift silently.
   const dateChoice=/^(?:tomorrow|next week)[.!?]?$/i.test(q)?(/^tomorrow/i.test(q)?'tomorrow':'next-week'):null;
@@ -102,7 +106,25 @@
   }
   if(upcoming&&full.includes('upcoming'))return {status:'ready',question:q,kinds:['upcoming'],lift:null,
    follow:true,nextWeek:/next week/i.test(q)};
-  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  if(brief){
+   const kinds=focusedKind&&full.includes(focusedKind)?[focusedKind]:full.slice(0,3);
+   const named=followLift(anchor.question);
+   const lift=preferredLift||anchor.lift||(named.length===1?named[0]:null);
+   if(kinds.includes('performance')&&(!lift||named.length!==1&&!preferredLift))
+    return {status:'clarification',question:q,kinds,
+     clarification:'Which lift should I review first: squat, bench, or deadlift?'};
+   if(kinds.includes('upcoming')&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||''))
+    return {status:'clarification',question:q,kinds,
+     clarification:'Should I review tomorrow’s workout or next week’s workout first?'};
+   return {status:'ready',question:q,kinds,lift,follow:true,brief:true,
+    nextWeek:kinds.includes('upcoming')&&(nextWeekFocus||!!anchor.nextWeek),
+    tomorrow:kinds.includes('upcoming')&&(tomorrowFocus||!!anchor.tomorrow)};
+  }
+  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,
+   // Once the athlete chose a topic, an elliptical meaning question gets a
+   // short sourced restatement. A multi-topic question still clarifies below.
+   brief:/^(?:what does that mean|explain that|how so)\??$/i.test(q),
+   nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
   if(vague&&full.length>1){
    const labels=full.map(kind=>handlers.find(h=>h.kind===kind)?.label).filter(Boolean);
    return {status:'clarification',question:q,kinds:full,follow:true,
@@ -165,11 +187,18 @@
   if(sections.length<2&&!p.follow)return null;
   const evidenceCards=p.kinds.map(kind=>EvidenceOptions?.summarize(kind,engineReplies[kind],asOf)).filter(Boolean).slice(0,3);
   const evidenceWarnings=EvidenceOptions?.differences(evidenceCards,engineReplies)||[];
+  // Compact replies are rendered from freshly validated evidence cards. A
+  // missing card stays unavailable; no assistant text or inferred cause used.
+  const briefText=p.brief?sections.map(section=>{
+   const card=EvidenceOptions?.summarize(section.kind,engineReplies[section.kind],asOf);
+   return section.label+': '+(card?.observed||'Evidence unavailable.')+' '+(card?.limitation||'No validated conclusion available.')+
+    ' Source: '+(card?.source||section.source)+'.';
+  }).join('\n'):null;
   const next='Next: review the exact training records and your existing approved targets. Any programming adjustment must go through Decisions and athlete approval.';
   return {
-       text:sections.map(s=>s.label+': '+s.text).join('\n\n')+(evidenceWarnings.length?'\n\nDifferent signals: '+evidenceWarnings.join(' '):'')+'\n\n'+next,
+       text:(p.brief?'Short version from saved records:\n'+briefText:sections.map(s=>s.label+': '+s.text).join('\n\n'))+(evidenceWarnings.length?'\n\nDifferent signals: '+evidenceWarnings.join(' '):'')+'\n\n'+next,
    source:'Offline Coach · combined validated evidence',readOnly:true,
-   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} )},
+   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} ),...(p.brief?{brief:true}:{})},
    reasoning:{version:1,asOf,sections:sections.map(({kind,label,source})=>({kind,label,source})),notice:'Each section comes from an existing read-only Loadnote engine; no new loads or recovery judgments were generated.'},
    evidence:evidence.slice(0,3),evidenceCards,evidenceWarnings,actions:actions.slice(0,3),
    followUps:['Review my exact workout history','Explain my next workout']

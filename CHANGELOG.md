@@ -1,3 +1,11 @@
+# v3.89.0 — Concise, Attributed Offline Coach Conversation
+
+- Natural short-answer follow-ups, including "Give me the short version", "What's the takeaway?", "Can you put that more simply?" and "In plain English", after a combined training question.
+- Reuse already validated multi-evidence cards to provide compact, source-attributed observations and limitations; preserve athlete-only topic context and read-only evidence semantics.
+- Keep explicit clarifications for unresolved lift identity or conflicting workout dates. Never infer prescription, medical readiness, causes or assistant-generated workout facts.
+- Add Node and browser regression tests for natural phrasing, focused follow-ups, historical cutoffs, unit/data integrity, safety and session-context expiry.
+- Release **3.89.0**, unsigned beta **34900**, schema **34** unchanged; no migration.
+
 # v3.88.0 — Natural Clarification in Offline Coach
 
 - Extend existing `coach-reasoning.js` multi-evidence coordinator to understand natural follow-up phrases (“Just the performance part”, “Focus on the workout”, “Only bench progress”, “The weekly section”, “Only the training recap”) instead of requiring exact label choices.
