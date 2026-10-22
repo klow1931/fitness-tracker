@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.87.0 · Development build.**  
+**v3.88.0 · Development build.**  
+[Coach v3.88 release notes](docs/releases-v3.88.md): Follow up naturally on multi-part training questions with “Just the performance part,” “Focus on the workout,” or “Only bench progress” while preserving athlete-controlled clarifications for ambiguous lifts and dates.
+
+**Earlier v3.87 dialogue milestone.**  
 [Coach v3.87 release notes](docs/releases-v3.87.md): Athlete conversation can retain an explicit lift and question type for several short replies, understand deliberate corrections, and navigate between an accepted Decisions explanation and its exact recorded outcome.
 
 **Earlier v3.86 language milestone.**  

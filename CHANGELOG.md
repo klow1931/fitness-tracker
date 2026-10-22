@@ -1,3 +1,11 @@
+# v3.88.0 — Natural Clarification in Offline Coach
+
+- Extend existing `coach-reasoning.js` multi-evidence coordinator to understand natural follow-up phrases (“Just the performance part”, “Focus on the workout”, “Only bench progress”, “The weekly section”, “Only the training recap”) instead of requiring exact label choices.
+- Every selected section is resolved by the existing validated, read-only performance, weekly, upcoming-workout or recap engine; no new policy, progression or diagnosis.
+- Selecting a section cannot silently resolve missing lift evidence or an ambiguous tomorrow/next-week time window. Preserve athlete clarification and original-question safety routing.
+- Add Node and real-browser regression coverage for multi-turn intent, ambiguous lift/date selection, unrelated conversation resets, historical cutoffs, kg/lb display, and workout-history immutability.
+- Release **3.88.0**, unsigned beta **34800**, schema **34** unchanged; no migration.
+
 # v3.87.0 — Longer Offline Coach Dialogues and Explicit Corrections
 
 - Extend the existing bounded offline language adapter through at most three named or context-grounded user follow-ups within the most recent eight message rows.
