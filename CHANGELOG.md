@@ -1,3 +1,12 @@
+# v3.86.0 — Bounded Offline Coach Language Understanding
+
+- Normalize high-confidence strength-training typos, common plurals and natural progress questions through the new coach-language.js module; no broad fuzzy substitutions.
+- Preserve the type of a recent athlete question when the athlete asks about an explicitly named different lift. Follow up on approved changes using validated historical outcomes, not assistant assertions.
+- Keep ambiguity unresolved and run the original health and urgent-support safety checks before interpreting language. No writes, automatic program changes or new fatigue inferences.
+- Add regression tests for phrasing, context expiry and reset, user-only history, unit integrity and read-only Coach behavior.
+- Repair the v3.85 post-merge Chromium smoke provisioning failure by using the pinned preinstalled Playwright image while preserving the same browser acceptance and security audit.
+- Version **3.86.0**, beta **34600**, schema **34** unchanged; no migration.
+
 # v3.85.0 — Original Approved Programming Reasons in Offline Coach
 
 - Offline Coach can answer **“Why did Loadnote change my squat?”** and **“Why was my approved bench load reduced?”** from validated, frozen accepted Decisions reviews, not a regenerated rationale.
