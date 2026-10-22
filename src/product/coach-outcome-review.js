@@ -1,4 +1,4 @@
-/* v3.78 — precise, read-only explanations of approved change outcomes.
+/* v3.84 — audit coverage of exact follow-ups for athlete-approved changes.
  * This module interprets only Learning's exact linked workout evidence.
  * It does not invent causes, preferences, programming doses, or a new policy.
  */
@@ -13,6 +13,35 @@
  const clean=v=>String(v??'').replace(/\s+/g,' ').trim().slice(0,400);
  const finite=n=>typeof n==='number'&&Number.isFinite(n);
  const percentage=n=>(n>0?'+':'')+Math.round(n*10)/10+'%';
+ // These classifications describe only what the existing Learning engine
+ // could validate. They are not diagnoses, causal conclusions, or new rules
+ // for deciding whether to progress training.
+ const reasons={
+  'baseline-incomplete':'Baseline linked sessions are incomplete',
+  'followup-incomplete':'Follow-up linked sessions are incomplete',
+  'baseline-estimate-missing':'Baseline RPE-aware estimate is unavailable',
+  'followup-estimate-missing':'Follow-up RPE-aware estimate is unavailable',
+  'comparison-unavailable':'Comparable before-and-after result is unavailable'
+ };
+ const validPair=x=>Number.isInteger(x?.expected)&&x.expected>0&&Number.isInteger(x?.matched)&&x.matched>=0&&x.matched<=x.expected;
+ function classifyEvidence(row){
+  if(row?.status==='observed'&&finite(row.capacityChangePct))return 'observed';
+  if(validPair(row?.baseline)&&row.baseline.matched<row.baseline.expected)return 'baseline-incomplete';
+  if(validPair(row?.followup)&&row.followup.matched<row.followup.expected)return 'followup-incomplete';
+  if(!finite(row?.baseline?.capacityKg)||row.baseline.capacityKg<=0)return 'baseline-estimate-missing';
+  if(!finite(row?.followup?.capacityKg)||row.followup.capacityKg<=0)return 'followup-estimate-missing';
+  return 'comparison-unavailable';
+ }
+ function coverageOf(rows){
+  const gaps=Object.fromEntries(Object.keys(reasons).map(k=>[k,0])),list=Array.isArray(rows)?rows:[];
+  for(const row of list){const status=classifyEvidence(row);if(Object.hasOwn(gaps,status))gaps[status]++;}
+  const missing=Object.entries(gaps).filter(([,count])=>count>0).map(([code,count])=>({code,count,label:reasons[code]}));
+  return {version:1,recorded:list.length,observed:list.length-missing.reduce((sum,x)=>sum+x.count,0),
+   unobserved:missing.reduce((sum,x)=>sum+x.count,0),missing,
+   latest:list.length?{reason:classifyEvidence(list[0]),label:reasons[classifyEvidence(list[0])]||'Exact follow-up comparison available',
+    baseline:validPair(list[0]?.baseline)?{matched:list[0].baseline.matched,expected:list[0].baseline.expected}:null,
+    followup:validPair(list[0]?.followup)?{matched:list[0].followup.matched,expected:list[0].followup.expected}:null}:null};
+ }
  const liftMatches=q=>lifts.filter(l=>new RegExp('\\b'+(l==='deadlift'?'(?:deadlift|sumo)':l)+'\\b','i').test(q));
  function intent(question){
   const q=String(question||'');
@@ -27,6 +56,12 @@
   const retrospectiveChange=/\bafter\b.{0,100}\b(?:last|past|previous)\b.{0,75}\b(?:changes?|adjustments?)\b/i.test(q)||
    /\b(?:last|past|previous)\b.{0,40}\b(?:squat|bench|deadlift|sumo)\b.{0,35}\b(?:changes?|adjustments?)\b/i.test(q);
   if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
+  // Explicit questions about *missing approved outcomes* are routed to a
+  // coverage explanation, not an invented cause or fresh programming advice.
+  const coverageAsk=/\b(?:why|what|which|show|explain|review|how)\b/i.test(q)&&
+   /\b(?:missing|incomplete|unknown|unobserved|not (?:observed|comparable)|(?:no|not enough) (?:comparable )?(?:evidence|follow-?ups?))\b/i.test(q)&&
+   /\b(?:approved|adjustments?|decisions?|follow-?ups?|programming changes?)\b/i.test(q);
+  if(coverageAsk)return {kind:'coverage',lifts:liftMatches(q),action:null};
 
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
   if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|do|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
@@ -48,12 +83,13 @@
   const patterns=(learning.summary?.patterns||[]).filter(p=>p.lift===lift&&(!action||p.action===action));
   const latest=rows[0]||null;
   const observed=rows.filter(r=>r.status==='observed'&&finite(r.capacityChangePct));
-  const missing=rows.length-observed.length;
+  const missing=rows.length-observed.length,coverage=coverageOf(rows);
   return {version:1,asOf,lift,action,kind:'approved-outcomes',recorded:rows.length,observed:observed.length,unobserved:missing,
    latest:latest?{acceptedAt:latest.acceptedAt,scope:latest.scope,programName:clean(latest.programName),action:clean(latest.action),
      status:latest.status,baseline:{status:latest.baseline?.status||null,matched:latest.baseline?.matched??null,expected:latest.baseline?.expected??null},
      followup:{status:latest.followup?.status||null,matched:latest.followup?.matched??null,expected:latest.followup?.expected??null},
      capacityChangePct:latest.status==='observed'&&finite(latest.capacityChangePct)?latest.capacityChangePct:null}:null,
+   coverage,
    patterns:patterns.map(p=>({action:p.action,recorded:p.recorded,observed:p.observed,unobserved:p.unobserved,
      counts:{...p.counts},medianCapacityChangePct:p.observed>=3&&finite(p.medianCapacityChangePct)?p.medianCapacityChangePct:null,
      evidence:p.evidence,description:clean(p.pattern)})).slice(0,4),notice:LIMIT};
@@ -64,6 +100,18 @@
    '. There is no verified personal response to compare. Use Decisions to review actual logged evidence rather than assuming a change worked.';
   const head=report.observed+' of '+report.recorded+' approved '+lift+' changes have usable exact linked follow-ups; '+
    report.unobserved+' have no validated comparison. Missing RPE, incomplete logging or later revised targets remain unknown.';
+  if(kind==='coverage'){
+   if(!report.unobserved)return head+' All eligible approved changes have exact comparable follow-up in the current saved evidence. '+LIMIT;
+   const list=report.coverage.missing.map(x=>x.count+' '+x.label.toLowerCase()).join('; ');
+   const recent=report.coverage.latest,latestDetail=recent?.reason!=='observed'?
+    ' For the latest approval: '+recent.label+'.'+
+    (recent.baseline?' Baseline matched '+recent.baseline.matched+'/'+recent.baseline.expected+' linked sessions.':'')+
+    (recent.followup?' Follow-up matched '+recent.followup.matched+'/'+recent.followup.expected+' linked sessions.':''):
+    ' The latest approval has a comparable outcome; earlier approvals may still have gaps.';
+   return head+' Evidence gaps: '+list+'.'+latestDetail+
+    ' A missing estimate or unmatched session can have more than one cause; this review cannot attribute it to a particular missed workout or absent RPE. '+
+    LIMIT+' Next: inspect the exact saved workout and approved target in Progress and Decisions.';
+  }
   if(kind==='pattern'){
    const groups=report.patterns;
    const lines=groups.length?groups.slice(0,3).map(p=>p.action+': '+p.observed+'/'+p.recorded+
@@ -76,10 +124,11 @@
   const status=latest.status==='observed'&&finite(latest.capacityChangePct)?
    'The comparable RPE-aware capacity estimate changed '+percentage(latest.capacityChangePct)+' after approval.':
    'No exact comparable follow-up is established for this approval.';
+  const gap=latest.status==='observed'?'':' Evidence gap: '+report.coverage.latest.label+'.';
   const counts=Number.isInteger(latest.followup?.expected)&&Number.isInteger(latest.followup?.matched)?
    ' '+latest.followup.matched+'/'+latest.followup.expected+' follow-up sessions are validated.':'';
   return head+' The latest approved change was '+clean(latest.action)+' for '+(latest.programName||'a reviewed program')+
-   ' on '+latest.acceptedAt.slice(0,10)+'. '+status+counts+' '+LIMIT+
+   ' on '+latest.acceptedAt.slice(0,10)+'. '+status+counts+gap+' '+LIMIT+
    ' Next: inspect the saved workout evidence in Progress; any future change still requires the Decisions approval flow.';
  }
  function answer(state,question,{asOf,now}={}){
@@ -94,11 +143,11 @@
    evidenceCards:[{title:'Approved '+report.lift+' follow-ups',status:report.observed?'observed':report.recorded?'limited':'unavailable',
      observed:report.observed+' of '+report.recorded+' approved changes have exact comparable linked follow-up.',
      limitation:'Unobserved changes cannot be graded; observed changes do not establish causality.',source:SOURCE}],
-   insight:{version:1,lift:report.lift,scope:ask.kind,recorded:report.recorded,observed:report.observed,
+   insight:{version:2,lift:report.lift,scope:ask.kind,recorded:report.recorded,observed:report.observed,coverage:report.coverage,
      latest:report.latest,patterns:ask.kind==='pattern'?report.patterns:[]},
    intent:{topic:'approved-outcomes',lift:report.lift,scope:ask.kind},
    actions:[{kind:'progress',label:'Review recorded lift history'}],
-   followUps:['What have we learned from my program changes?','How did this week go?']};
+   followUps:['Which '+report.lift+' adjustments have missing comparable evidence?','What have we learned from my program changes?']};
  }
- return {intent,inspect,explain,answer,LIMIT};
+ return {intent,inspect,explain,answer,classifyEvidence,coverageOf,LIMIT};
 });

@@ -14,7 +14,29 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/vendor-program-readers.js
       - name: Dependency vulnerability gate
-        run: npm audit --audit-level=moderate
+        shell: bash
+        run: |
+          # A dependency advisory must block the release. Retry only transient
+          # registry failures (not a reported vulnerability) and fail closed.
+          for attempt in 1 2 3; do
+            audit_log="$(mktemp)"
+            if npm audit --audit-level=moderate --fetch-timeout=90000 --fetch-retries=1 >"$audit_log" 2>&1; then
+              cat "$audit_log"
+              rm -f "$audit_log"
+              exit 0
+            fi
+            cat "$audit_log"
+            if ! grep -Eiq 'audit (5[0-9][0-9]|endpoint returned an error)|503 Service Unavailable|EAI_AGAIN|ETIMEDOUT|ECONNRESET' "$audit_log"; then
+              rm -f "$audit_log"
+              exit 1
+            fi
+            rm -f "$audit_log"
+            if [ "$attempt" -eq 3 ]; then
+              echo 'Security audit unavailable after three attempts; failing closed.'
+              exit 1
+            fi
+            sleep 10
+          done
       - run: npm run check
       - run: npm test
       - run: npm run check:mobile
@@ -148,7 +170,13 @@ jobs:
   webkit:
     name: iPhone WebKit intake and first week
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Keep the official WebKit browsers and Linux system libraries matched to
+    # package-lock's Playwright 1.62.1. The container avoids repeated apt
+    # dependency-resolution stalls on ephemeral GitHub-hosted runners.
+    # Pin the published OCI digest as well as the readable image version.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -156,7 +184,9 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/vendor-program-readers.js
-      - run: npx playwright install --with-deps webkit
+      - name: Verify pinned WebKit is installed
+        run: |
+          node -e "const fs=require('node:fs');const p=require('playwright');const lock=require('./package-lock.json');if(p.chromium===undefined||lock.packages['node_modules/playwright'].version!=='1.62.1'||!fs.existsSync(p.webkit.executablePath()))process.exit(1)"
       - run: npx playwright test tests/browser/program-review-fixes.spec.js tests/browser/coach-v381.spec.js tests/browser/coach-v380.spec.js tests/browser/coach-v379.spec.js tests/browser/coach-v378.spec.js tests/browser/coach-v377.spec.js tests/browser/coach-clarity.spec.js tests/browser/native-restore.spec.js tests/browser/first-week.spec.js tests/browser/mobile-navigation.spec.js tests/browser/guided-programming-ux.spec.js tests/browser/coach-action-navigation.spec.js tests/browser/calendar-day-actions.spec.js tests/browser/iphone-interface.spec.js tests/browser/offline-planning.spec.js tests/browser/appearance.spec.js --project=mobile-webkit --workers=2
         env:
           LOADNOTE_WEBKIT: '1'

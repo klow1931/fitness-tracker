@@ -3,7 +3,7 @@
   "appId": "app.loadnote.mobile",
   "androidBetaAppId": "app.loadnote.mobile.beta",
   "androidBetaChannel": "debug-development",
-  "buildNumber": 34300,
+  "buildNumber": 34400,
   "services": "local-only",
   "storeReady": false
 }
