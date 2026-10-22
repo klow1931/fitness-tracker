@@ -26,7 +26,8 @@ test('v3.81 Coach connects educational guidance to verified setup and training w
  await expect(reply).toContainText('3 available day(s) per week and 60 minutes per session');
  await expect(reply).toContainText('Your logs show');
  await expect(reply).toContainText('not verified adherence');
- await expect(reply.locator('.cc-evidence article')).toHaveCount(2);
+ const expectedCards=await page.evaluate(()=>LoadnoteProgressStory.selectedProgram(data,'2026-09-24')?3:2);
+ await expect(reply.locator('.cc-evidence article')).toHaveCount(expectedCards);
  await expect(reply.locator('.cc-evidence')).not.toHaveAttribute('open','');
  await reply.locator('.cc-evidence summary').click();
  await expect(reply.locator('.cc-evidence')).toContainText('Recent logged training');

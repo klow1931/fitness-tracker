@@ -1,3 +1,11 @@
+# v3.82.0 — Reviewed Program Context in Offline Coach
+
+- Extend “How does that apply for me?” with the canonical selected reviewed program, phase/week context and exact resolved Calendar attendance when a program can be validated.
+- Explain that completed/(completed + explicitly skipped) is resolved-session adherence only. Missing, unconfirmed, future and cancelled sessions are not automatically failed workouts, and available training days are not adherence evidence.
+- Add a separate source-labeled program evidence card to the existing saved profile and 28-day workout cards; keep optional device AI from altering athlete facts.
+- Add Node regression tests for verified program attendance, zero resolved sessions, absent program, immutable training records and source consistency.
+- Keep this change read-only and preserve the existing programming, RPE and kg/lb rules. Version 3.82.0, unsigned beta 34200, schema 34 unchanged. See [release notes](docs/releases-v3.82.md).
+
 # v3.81.0 — Grounded Personal Application of Coaching Knowledge
 
 - Apply a recently cited training principle to validated athlete-specific training setup and recorded 28-day training evidence, answering “How does that apply for me?” without guessing from assistant messages or stale topics.
