@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.83.0 · Development build.**  
+**v3.84.0 · Development build.**  
+[Coach v3.84 release notes](docs/releases-v3.84.md): The offline Coach explains which approved squat, bench and deadlift adjustment outcomes have verified linked follow-ups and why other comparisons cannot yet be validated, without guessing causes or prescribing changes.
+
+**Earlier v3.83 athlete-choice-history milestone.**  
 [Coach v3.83 release notes](docs/releases-v3.83.md): Offline Coach separates confirmed exercise preferences from repeated athlete-authored Calendar swaps. Historical questions respect known-at cutoffs, and observed edits remain suggestions until explicit confirmation. No automatic workout or preference changes.
 
 **Earlier v3.82 program-context milestone.**  

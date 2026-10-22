@@ -1,3 +1,11 @@
+# v3.84.0 — Explain Missing Approved-Change Evidence
+
+- Offline Coach can answer “Why are my approved squat adjustments missing comparable evidence?” with a bounded audit of accepted Decisions outcomes, without inventing workout performance.
+- Reuses the canonical approved-outcome learning engine; groups unverifiable comparisons as incomplete baseline/follow-up links, unavailable RPE-aware estimates or other incomparable evidence.
+- Names exact validated session coverage only when present in saved outcomes. Does not label an absent comparison as a missed workout, missing RPE, injury, recovery concern or training failure.
+- Preserves existing approval-first future changes, no-data clarification, medical routing, kg internals, RPE logic, immutable history, no model-dependent assertions and no storage migration.
+- Version **3.84.0**, unsigned beta **34400**, schema **34**. See [release notes](docs/releases-v3.84.md).
+
 # v3.83.0 — Confirmed and Repeated Exercise Choices in Offline Coach
 
 - Coach answers “What exercise swaps have I repeated?” using validated athlete-authored Calendar edit history and explicit saved exercise preferences.
