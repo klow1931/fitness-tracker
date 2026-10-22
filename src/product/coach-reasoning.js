@@ -108,8 +108,9 @@
    follow:true,nextWeek:/next week/i.test(q)};
   if(brief){
    const kinds=focusedKind&&full.includes(focusedKind)?[focusedKind]:full.slice(0,3);
-   const lift=preferredLift||anchor.lift||null;
-   if(kinds.includes('performance')&&(!lift||followLift(anchor.question).length!==1&&!preferredLift))
+   const named=followLift(anchor.question);
+   const lift=preferredLift||anchor.lift||(named.length===1?named[0]:null);
+   if(kinds.includes('performance')&&(!lift||named.length!==1&&!preferredLift))
     return {status:'clarification',question:q,kinds,
      clarification:'Which lift should I review first: squat, bench, or deadlift?'};
    if(kinds.includes('upcoming')&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||''))
