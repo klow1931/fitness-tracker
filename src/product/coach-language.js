@@ -85,7 +85,7 @@
    const next=hops<3?advance(prior,q):null;
    if(next){prior=next;hops++;}else{prior=null;hops=0;}
   }
-  return prior;
+  return hops<3?prior:null;
  }
  function interpret(question,history=[]){
   const original=clean(question);
