@@ -55,7 +55,6 @@
   const namedAdjustment=/\b(?:adjustments?|approved decisions?|load increases?|load reductions?|reduced loads?|increased loads?)\b/i.test(q);
   const retrospectiveChange=/\bafter\b.{0,100}\b(?:last|past|previous)\b.{0,75}\b(?:changes?|adjustments?)\b/i.test(q)||
    /\b(?:last|past|previous)\b.{0,40}\b(?:squat|bench|deadlift|sumo)\b.{0,35}\b(?:changes?|adjustments?)\b/i.test(q);
-  if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
   // Explicit questions about *missing approved outcomes* are routed to a
   // coverage explanation, not an invented cause or fresh programming advice.
   const coverageAsk=/\b(?:why|what|which|show|explain|review|how)\b/i.test(q)&&
@@ -68,6 +67,9 @@
     /\b(?:change(?:s|d)?|adjustment(?:s)?|reduc(?:e|ed|tion)|increas(?:e|ed)|sets?|loads?|weights?)\b/i.test(q)&&
     !/\b(?:what happened after|how did .* (?:respond|work)|did .* help|missing|incomplete|unknown|unobserved|usually|pattern)\b/i.test(q);
   if(whyApproved)return {kind:'rationale',lifts:liftMatches(q),action:null};
+  // Keep the historic approval gate for every other retrospective request.
+  // Questions naming Loadnote itself explicitly are handled above.
+  if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
 
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
   if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|do|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
