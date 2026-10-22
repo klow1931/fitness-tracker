@@ -44,6 +44,9 @@ const response=Coach.answer(state,q,{asOf,now});
 assert.equal(response.intent.scope,'coverage');
 assert.equal(response.readOnly,true);
 assert.equal(response.insight.coverage.unobserved,1);
+assert.equal(Review.intent(response.followUps[0]).kind,'coverage','Suggested question must route to the read-only evidence explanation');
+assert(response.followUps.every(label=>!/Approve|Apply|Save target/i.test(label)),
+ 'Informational Coach follow-up controls must not look like approve/apply/save actions');
 assert.match(response.text,/Evidence gaps:/);
 assert.match(response.text,/cannot attribute it to a particular missed workout or absent RPE/);
 assert.match(response.text,/not proof that the change caused them/);
