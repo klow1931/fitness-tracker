@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.88.0 · Development build.**  
+**v3.89.0 · Development build.**  
+[Coach v3.89 release notes](docs/releases-v3.89.md): Short, plain-language, evidence-grounded follow-ups for combined Coach answers. Supports “Give me the short version” and “What's the takeaway?” while keeping original sources and limitations.
+
+**Earlier v3.88 natural clarification milestone.**  
 [Coach v3.88 release notes](docs/releases-v3.88.md): Follow up naturally on multi-part training questions with “Just the performance part,” “Focus on the workout,” or “Only bench progress” while preserving athlete-controlled clarifications for ambiguous lifts and dates.
 
 **Earlier v3.87 dialogue milestone.**  
