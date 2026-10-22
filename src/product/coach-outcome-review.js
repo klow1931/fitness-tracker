@@ -147,7 +147,7 @@
      latest:report.latest,patterns:ask.kind==='pattern'?report.patterns:[]},
    intent:{topic:'approved-outcomes',lift:report.lift,scope:ask.kind},
    actions:[{kind:'progress',label:'Review recorded lift history'}],
-   followUps:['Why are my approved '+report.lift+' adjustments missing comparable evidence?','What have we learned from my program changes?']};
+   followUps:['Which '+report.lift+' adjustments have missing comparable evidence?','What have we learned from my program changes?']};
  }
  return {intent,inspect,explain,answer,classifyEvidence,coverageOf,LIMIT};
 });
