@@ -14,7 +14,29 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/vendor-program-readers.js
       - name: Dependency vulnerability gate
-        run: npm audit --audit-level=moderate
+        shell: bash
+        run: |
+          # A dependency advisory must block the release. Retry only transient
+          # registry failures (not a reported vulnerability) and fail closed.
+          for attempt in 1 2 3; do
+            audit_log="$(mktemp)"
+            if npm audit --audit-level=moderate --fetch-timeout=90000 --fetch-retries=1 >"$audit_log" 2>&1; then
+              cat "$audit_log"
+              rm -f "$audit_log"
+              exit 0
+            fi
+            cat "$audit_log"
+            if ! grep -Eiq 'audit (5[0-9][0-9]|endpoint returned an error)|503 Service Unavailable|EAI_AGAIN|ETIMEDOUT|ECONNRESET' "$audit_log"; then
+              rm -f "$audit_log"
+              exit 1
+            fi
+            rm -f "$audit_log"
+            if [ "$attempt" -eq 3 ]; then
+              echo 'Security audit unavailable after three attempts; failing closed.'
+              exit 1
+            fi
+            sleep 10
+          done
       - run: npm run check
       - run: npm test
       - run: npm run check:mobile
