@@ -1,4 +1,4 @@
-# v3.87.0 — Offline Coach Conversation Continuity
+# Loadnote v3.87.0 — Offline Coach Conversation Continuity
 
 ## Behavior
 This incremental update lets the deterministic offline Coach retain a clearly stated lift and question type over a short, bounded conversation, without guessing unspoken movements.
