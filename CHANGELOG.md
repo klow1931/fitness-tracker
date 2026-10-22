@@ -1,3 +1,11 @@
+# v3.83.0 — Confirmed and Repeated Exercise Choices in Offline Coach
+
+- Coach answers “What exercise swaps have I repeated?” using validated athlete-authored Calendar edit history and explicit saved exercise preferences.
+- Separates confirmed preferred/avoided exercises from unconfirmed repeated removal suggestions; repeats require two distinct edited sessions and are not automatically adopted.
+- Historical answers exclude future revisions (including later same-day changes). Neither edited exercise choices nor subsequent outcomes prove that a swap improved performance.
+- Extend the established longitudinal Coach without new app surfaces or programming engines. No writes, data migrations or changes to kg/RPE logic.
+- Version **3.83.0**, unsigned mobile beta **34300**, schema **34** unchanged. See [release notes](docs/releases-v3.83.md).
+
 # v3.82.0 — Reviewed Program Context in Offline Coach
 
 - Extend “How does that apply for me?” with the canonical selected reviewed program, phase/week context and exact resolved Calendar attendance when a program can be validated.

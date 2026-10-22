@@ -1,10 +1,10 @@
-/* Phase 5 — read-only longitudinal coaching from established training engines.
+/* v3.83 — longitudinal coaching with read-only athlete exercise-choice evidence.
  * No independent progression policy, inferred medical readiness or hidden writes.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./program-lifecycle'),require('./adaptive-outcome-learning'),require('./programming-profile'),require('./adaptive-handoff'),require('./schedule'));
- else root.LoadnoteLongitudinalCoach=factory(root.LoadnoteProgramLifecycle,root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteProgrammingProfile,root.LoadnoteAdaptiveHandoff,root.LoadnoteSchedule);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Lifecycle,Learning,Profile,Handoff,Schedule){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./program-lifecycle'),require('./adaptive-outcome-learning'),require('./programming-profile'),require('./adaptive-handoff'),require('./schedule'),require('./program-edit'));
+ else root.LoadnoteLongitudinalCoach=factory(root.LoadnoteProgramLifecycle,root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteProgrammingProfile,root.LoadnoteAdaptiveHandoff,root.LoadnoteSchedule,root.LoadnoteProgramEdit);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Lifecycle,Learning,Profile,Handoff,Schedule,Edits){
  'use strict';
  const clean=x=>String(x||'').trim().replace(/\s+/g,' ').slice(0,500);
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -14,6 +14,7 @@
  const types={
   journey:/\b(where am i in (?:my |the )?(?:training |current )?(?:program|cycle|block)|what phase am i in|how far (?:am i|along) in my (?:training )?(?:program|cycle)|what comes after (?:this|my) (?:training )?(?:phase|block)|where is my training heading)\b/i,
   outcomes:/\b(what (?:have we|has loadnote) learned from (?:my |our )?(?:program|training|adaptation|progression) changes|how (?:have|did) my (?:program|training|adaptation) changes work|have my (?:past )?adjustments helped|what worked from (?:past|previous) (?:program|training) changes)\b/i,
+  choices:/\b(?:what (?:have i|has loadnote) (?:learned|changed) (?:from|about) (?:my )?(?:exercise swaps?|exercise edits?|exercise choices)|what (?:exercise swaps?|exercise edits?|exercise choices) (?:have i|has loadnote) (?:made|noticed|recorded|repeated)|what have i (?:swapped|changed|replaced|removed) repeatedly|which exercises have i (?:swapped|changed|replaced|removed) repeatedly|have my (?:exercise swaps?|exercise edits?) become (?:saved|confirmed) preferences)\b/i,
   memory:/\b(what do you remember about my training|what (?:have you|has loadnote) saved about my training preferences|which (?:exercise|training) preferences (?:have i|are) saved|what are my saved coaching preferences)\b/i,
   next:/\b(should (?:we|i|my coach) (?:adapt|change|modify|adjust) (?:my |the )?next workout|should (?:my|the) next workout (?:adapt|change)|how (?:will|should) (?:my |the )?next workout adapt|what changes are proposed for (?:my |the )?next (?:workout|session)|what does (?:my|the) last workout mean for (?:my|the) next|what is the next reviewed coaching action)\b/i
  };
@@ -31,6 +32,25 @@
     setup=p?{status:'confirmed',recordedAt:record.recordedAt,goal:p.goal||null,experience:p.experience||null,consistency:p.consistency||null,
       availableDays:[...(p.availableDays||[])],sessionMinutes:p.sessionMinutes??null,equipment:[...(p.equipment||[])],preferredMovements:movementNames(p.preferredExerciseIds),excludedMovements:movementNames(p.avoidedExerciseIds)}
      :{status:'unconfirmed',recordedAt:null,goal:null,availableDays:[],equipment:[],preferredMovements:[],excludedMovements:[]};
+  // The existing Program Edit engine validates exact athlete-authored Calendar
+  // revisions and repeated-removal candidates. Neither is a saved preference.
+  let choices=null,choiceIssue=null;
+  try{
+   const review=Edits.learning(state,{asOf:snapshotDate}),all=review.events||[];
+   const events=all.filter(e=>iso(e.recordedAt)&&e.recordedAt<=cutoff);
+   const reasons={preference:0,equipment:0,time:0,symptoms:0,coach:0,other:0};
+   for(const event of events)if(Object.hasOwn(reasons,event.reason))reasons[event.reason]++;
+   const futureSameDay=all.some(e=>iso(e.recordedAt)&&e.recordedAt>cutoff);
+   // A suggestion based on a future edit is unsafe. Suppress suggestions
+   // until all revisions included by the edit engine are in the known window.
+   const pending=futureSameDay?[]:(review.suggestions||[]).filter(s=>
+     typeof s.exerciseId==='string'&&Number.isInteger(s.count)&&s.count>=2&&
+     !p?.avoidedExerciseIds?.includes(s.exerciseId))
+     .slice(0,4).map(s=>({name:clean(s.name),count:s.count}));
+   choices={edits:events.length,reasons,pending,cutoffLimited:futureSameDay,
+    preferred:setup.status==='confirmed'?setup.preferredMovements.length:null,
+    excluded:setup.status==='confirmed'?setup.excludedMovements.length:null};
+  }catch{choiceIssue='Saved exercise edit history could not be validated.';}
   let life=null,lifecycleIssue=null;
   try{life=Lifecycle.inspect(state,{asOf:snapshotDate,draft:null,draftOpen:false});}catch(e){lifecycleIssue='Program lifecycle could not be validated: '+e.message;}
   const program=life?.program?{id:life.program.id,kind:life.program.kind,name:life.program.name,startDate:life.program.startDate,endDate:life.program.endDate,
@@ -62,13 +82,26 @@
     }
    }catch(e){handoffIssue='Saved workout handoff could not be validated: '+e.message;}
   }
-  return {version:1,asOf:snapshotDate,knownAt:cutoff,readOnly:true,setup,program,nextAction,nextSession,learning,handoff,
+  return {version:1,asOf:snapshotDate,knownAt:cutoff,readOnly:true,setup,program,nextAction,nextSession,learning,handoff,choices,
    conflicts:life?.status==='ambiguous'?life.candidates||[]:[],
-   unavailable:[lifecycleIssue,learningIssue,handoffIssue].filter(Boolean),
+   unavailable:[lifecycleIssue,learningIssue,handoffIssue,choiceIssue].filter(Boolean),
    notice:'Saved preferences are explicit athlete settings, not inferred memory. Repeated observed responses are associations, not proof of cause. Any next-workout change requires the existing review and athlete approval; the Coach never changes a schedule from this report.'};
  }
  function explain(report,kind='journey'){
   const p=report.program,a=report.nextAction,o=report.learning,m=report.setup;
+  if(kind==='choices'){
+   const c=report.choices;
+   if(!c)return 'I could not validate your saved exercise edits. Review Calendar history and training setup; no preference is inferred.';
+   const tally=Object.entries(c.reasons).filter(([,n])=>n>0).map(([reason,n])=>n+' '+reason).join(', ');
+   const confirmed=c.preferred===null?'There is no confirmed training setup to establish exercise preferences.':
+    'Your saved training setup contains '+c.preferred+' preferred and '+c.excluded+' excluded exercise(s).';
+   const suggestions=c.pending.length?'Repeated removals worth reviewing: '+c.pending.map(s=>s.name+' ('+s.count+' distinct edited sessions)').join('; ')+'. ':
+    'No unconfirmed repeated removal suggestion can be established from the eligible revisions. ';
+   return 'Through '+report.knownAt.slice(0,10)+', the Calendar records '+c.edits+' athlete-authored exercise edit(s)'+
+    (tally?' ('+tally+'). ':'. ')+confirmed+' '+suggestions+
+    (c.cutoffLimited?'Later same-day edits were excluded from this historical review. ':'')+
+    'Edits describe choices, not proof that an alternative improved performance. A repeated change is never a saved exclusion until you explicitly confirm it through the existing preference review.';
+  }
   if(kind==='memory'){
    if(m.status!=='confirmed')return 'I have no confirmed saved training setup at this date. Review Profile → Training setup before I rely on goals, equipment or schedule preferences.';
    return 'Saved training setup (confirmed '+m.recordedAt.slice(0,10)+'): goal '+m.goal+'; experience '+(m.experience||'unconfirmed')+
@@ -76,7 +109,8 @@
     '; session length '+(m.sessionMinutes??'unconfirmed')+' minutes; equipment '+(m.equipment.join(', ')||'unconfirmed')+
     '; preferred exercises '+(m.preferredMovements.join(', ')||'none confirmed')+
     '; excluded exercises '+(m.excludedMovements.join(', ')||'none confirmed')+
-    '. These are confirmed saved preferences, not memories inferred from chat. Update them in Profile before future programming.';
+    '. These are confirmed saved preferences, not memories inferred from chat. Update them in Profile before future programming.'+
+    (report.choices?.edits?' '+report.choices.edits+' athlete-authored Calendar edit(s) were recorded, but do not automatically change these preferences.':'');
   }
   if(kind==='outcomes'){
    if(!o)return 'Accepted adaptation history could not be validated. Review Decision Performance rather than inferring what worked.';
@@ -113,9 +147,10 @@
    return {text:explain(report,kind)+'\n\n'+report.notice,clarity,
     source:'Offline Coach · longitudinal training',readOnly:true,
     intent:{topic:'longitudinal-training',kind},evidence:[report],
-    actions:kind==='memory'?[]:[{kind:'lifecycle',label:'Review current program'}],
+    actions:['memory','choices'].includes(kind)?[]:[{kind:'lifecycle',label:'Review current program'}],
     followUps:kind==='journey'?['What have we learned from my program changes?','Should my next workout adapt?']:
       kind==='outcomes'?['Where am I in my program?','Should my next workout adapt?']:
+      kind==='choices'?['What are my saved coaching preferences?','What have we learned from my program changes?']:
       ['Where am I in my program?']};
   }catch{return {text:'I could not validate the saved training timeline. Review your program, training history and dates; no prescription was changed.',
    source:'Offline Coach · longitudinal training unavailable',readOnly:true,evidence:[]};}
