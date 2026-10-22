@@ -1,4 +1,4 @@
-/* v3.75 — bounded read-only multi-evidence Coach orchestration.
+/* v3.88 — bounded read-only multi-evidence Coach orchestration and natural clarification.
  * Single-topic requests retain their established handlers. The coordinator
  * invokes existing validated analyses; it never creates a training dose.
  */
@@ -22,7 +22,20 @@
  // Follow-ups are resolved from a short sequence of athlete-authored turns.
  // No assistant reply, model completion or unsaved preference becomes evidence.
  const followLift=q=>lifts.filter(([,rx])=>rx.test(q)).map(([name])=>name);
- const simpleFollow=q=>/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ // Athlete section selection is a closed vocabulary of existing evidence
+ // engines. It cannot invent a new topic, athlete preference or programming action.
+ function focusPart(question){
+  const q=clean(question);
+  const m=/^(?:(?:just|only|please)\s+(?:the\s+)?|the\s+|(?:can we|could we|let's)\s+(?:focus on|look at)\s+(?:the\s+)?|(?:focus on|talk about)\s+(?:the\s+)?)?(?:(bench|squat|deadlift)\s+)?(performance|progress|stall|plateau|weekly training|weekly review|week|next scheduled workout|upcoming workout|next workout|workout|recent training|training recap|recap)(?:\s+(?:part|section|one))?\s*[.!?]*$/i.exec(q);
+  if(!m)return null;
+  const word=m[2].toLowerCase();
+  const kind=/^(?:performance|progress|stall|plateau)$/.test(word)?'performance':
+   /^(?:weekly training|weekly review|week)$/.test(word)?'weekly':
+   /^(?:next scheduled workout|upcoming workout|next workout|workout)$/.test(word)?'upcoming':'recap';
+  if(m[1]&&kind!=='performance')return null;
+  return {kind,lift:m[1]||null};
+ }
+ const simpleFollow=q=>!!focusPart(q)||/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
  const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
@@ -41,7 +54,7 @@
    if(names.length===1&&narrowedLift===null)narrowedLift=names[0];
    if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo)\??$/i.test(q))focusedKind='performance';
    if(focusedKind===null&&/^(?:(?:what|how) about|and) (?:my |the )?(?:next (?:workout|session)|next week)\??$/i.test(q))focusedKind='upcoming';
-   if(focusedKind===null){const selected={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];if(selected)focusedKind=selected;}
+   if(focusedKind===null){const selected=focusPart(q)?.kind||{performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];if(selected)focusedKind=selected;}
    if(focusedKind==='upcoming'&&/\bnext week\b/i.test(q))nextWeekFocus=true;
    if(focusedKind===null&&/^(?:tomorrow|next week)[.!?]?$/i.test(q))focusedKind='upcoming';
    if(focusedKind==='upcoming'&&/^tomorrow[.!?]?$/i.test(q))tomorrowFocus=true;
@@ -68,8 +81,20 @@
    return {status:'ready',question:q,kinds:full.slice(0,3),lift:roots[0]||null,follow:true,
     nextWeek:dateChoice==='next-week',tomorrow:dateChoice==='tomorrow'};
   }
-  const chosen={performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];
-  if(chosen&&full.includes(chosen))return {status:'ready',question:q,kinds:[chosen],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:chosen==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  const focus=focusPart(q);
+  const chosen=focus?.kind||{performance:'performance','weekly training':'weekly','recent training':'recap','next scheduled workout':'upcoming'}[q.replace(/[.!?]+$/,'').toLowerCase()];
+  if(chosen&&full.includes(chosen)){
+   const selectedLift=focus?.lift||preferredLift||anchor.lift||null;
+   // Picking a section does not resolve a missing or conflicting lift.
+   if(chosen==='performance'&&!selectedLift)return {status:'clarification',question:q,kinds:[chosen],
+    clarification:'Which lift should I review first: squat, bench, or deadlift?'};
+   // A section choice does not silently decide between two date windows.
+   if(chosen==='upcoming'&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||''))
+    return {status:'clarification',question:q,kinds:[chosen],clarification:'Should I review tomorrow’s workout or next week’s workout first?'};
+   return {status:'ready',question:q,kinds:[chosen],lift:selectedLift,follow:true,
+    nextWeek:chosen==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),
+    tomorrow:chosen==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  }
   if((questionIsLift||liftOnly)&&hasPerformance){
    if(names.length!==1)return null;
    return {status:'ready',question:q,kinds:liftOnly?['performance']:full.slice(0,3),
