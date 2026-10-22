@@ -120,7 +120,11 @@
     nextWeek:kinds.includes('upcoming')&&(nextWeekFocus||!!anchor.nextWeek),
     tomorrow:kinds.includes('upcoming')&&(tomorrowFocus||!!anchor.tomorrow)};
   }
-  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
+  if(vague&&focusedKind&&full.includes(focusedKind))return {status:'ready',question:q,kinds:[focusedKind],lift:preferredLift||anchor.lift||null,follow:true,
+   // Once the athlete chose a topic, an elliptical meaning question gets a
+   // short sourced restatement. A multi-topic question still clarifies below.
+   brief:/^(?:what does that mean|explain that|how so)\??$/i.test(q),
+   nextWeek:focusedKind==='upcoming'&&(nextWeekFocus||!!anchor.nextWeek),tomorrow:focusedKind==='upcoming'&&(tomorrowFocus||!!anchor.tomorrow)};
   if(vague&&full.length>1){
    const labels=full.map(kind=>handlers.find(h=>h.kind===kind)?.label).filter(Boolean);
    return {status:'clarification',question:q,kinds:full,follow:true,
