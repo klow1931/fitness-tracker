@@ -8,7 +8,7 @@ test('v3.87 Coach keeps the corrected lift across three athlete chat turns',asyn
  for(const [ask,expected] of [
   ["How's my squats doing?",'Competition Squat'],
   ['What about bench?','Competition Bench'],
-  ['Actually, I meant deadlift','Competition Deadlift']
+  ['Actually, I meant deadlift','Competition Sumo Deadlift']
  ]){
   await page.locator('#chat-input').fill(ask);
   await page.locator('#chat-send-btn').click();
