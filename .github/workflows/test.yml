@@ -144,7 +144,12 @@ jobs:
   browser:
     name: Browser regressions (shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Shards run the full browser suite. Avoid runner apt stalls that can
+    # consume the 20-minute cap before all 252 tests finish. WebKit already
+    # validates this same pinned browser+system dependency image.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -156,7 +161,9 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/vendor-program-readers.js
-      - run: npx playwright install --with-deps chromium
+      - name: Verify pinned Chromium is installed
+        run: |
+          node -e "const fs=require('node:fs');const p=require('playwright');const lock=require('./package-lock.json');if(lock.packages['node_modules/playwright'].version!=='1.62.1'||!fs.existsSync(p.chromium.executablePath()))process.exit(1)"
       - name: Full browser coverage shard
         run: npx playwright test --shard=${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
