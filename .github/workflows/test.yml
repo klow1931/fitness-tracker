@@ -5,6 +5,10 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    # Chromium's Ubuntu apt dependency source returned 403 on the v3.85
+    # post-merge smoke run; use the pinned image already used by browser shards.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +46,9 @@ jobs:
       - run: npm run check:mobile
       - run: npm run check:native
       - run: npm run check:beta
-      - run: npx playwright install --with-deps chromium
+      - name: Verify pinned Chromium is installed
+        run: |
+          node -e "const fs=require('node:fs');const p=require('playwright');const lock=require('./package-lock.json');if(lock.packages['node_modules/playwright'].version!=='1.62.1'||!fs.existsSync(p.chromium.executablePath()))process.exit(1)"
       - name: Audit completion and fresh meet-setup regressions
         run: npx playwright test tests/browser/audit-regressions.spec.js
       - uses: actions/upload-artifact@v4

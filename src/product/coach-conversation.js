@@ -5,6 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(Readiness,Intelligence,Knowledge,Workload,Sport,Hyp,Planner,Unified,Smart,Cancellation){
  'use strict';
  const Support=typeof module==='object'&&module.exports?require('./coach-support'):globalThis.LoadnoteCoachSupport;
+ const Language=typeof module==='object'&&module.exports?require('./coach-language'):globalThis.LoadnoteCoachLanguage;
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
@@ -38,22 +39,24 @@
   const safetyKind=Support?.kind(String(question||''));
   if(safetyKind==='urgent-support')return Support.answer(question,{history,live});
   if(Support?.health(String(question||'')))return {text:'I cannot diagnose pain or decide that an injured area is safe to load from your log. Do not use this chat as clearance to continue training through symptoms. Describe the location, onset and what aggravates it to a qualified clinician. If symptoms are severe or you may be in immediate danger, contact local emergency services now. I will not prescribe injury rehabilitation or a substitute training dose.',source:'Shared coaching · capability limit',readOnly:true,evidence:[],intent:{topic:'health'},actions:[{kind:'intake',label:'Review athlete intake'}]};
-  const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(question,history);
+  // Original text was screened for safety above, before any interpretation.
+  const understood=Language?.interpret(question,history).question||question;
+  const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
-  const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,question,{history});if(planning)return planning;
-  const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,question,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
+  const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
+  const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,understood,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   // Exact supported options come from the already reviewed weekly engine.
   // Never create or apply a prescription in conversational comparison.
-  const options=(typeof module==='object'&&module.exports?require('./coach-evidence-options'):globalThis.LoadnoteCoachEvidenceOptions)?.answer(state,question,{asOf,now});
+  const options=(typeof module==='object'&&module.exports?require('./coach-evidence-options'):globalThis.LoadnoteCoachEvidenceOptions)?.answer(state,understood,{asOf,now});
   if(options)return options;
   // Only compound informational questions go through the new coordinator.
   // Existing single-topic rules, planner drafts, medical and crisis safeguards stay first.
-  const combined=(typeof module==='object'&&module.exports?require('./coach-reasoning'):globalThis.LoadnoteCoachReasoning)?.answer(state,question,{asOf,unit,now,history});
+  const combined=(typeof module==='object'&&module.exports?require('./coach-reasoning'):globalThis.LoadnoteCoachReasoning)?.answer(state,understood,{asOf,unit,now,history});
   if(combined)return combined;
   // Athlete-specific retrospective outcomes of exact approved Decisions changes.
   // Excludes custom-program editing, new prescriptions, and current dose advice.
-  const outcomeReview=(typeof module==='object'&&module.exports?require('./coach-outcome-review'):globalThis.LoadnoteCoachOutcomeReview)?.answer(state,question,{asOf,now});
+  const outcomeReview=(typeof module==='object'&&module.exports?require('./coach-outcome-review'):globalThis.LoadnoteCoachOutcomeReview)?.answer(state,understood,{asOf,now});
   if(outcomeReview)return outcomeReview;
   // Phase 3: explain apparent plateaus from the same read-only Progress trends.
   // Safety and confirmed movement references have already been checked.
@@ -61,7 +64,7 @@
   if(trendReply)return {...trendReply,intent:{...intent,...(trendReply.intent||{})}};
   // Explicit 'why this lift direction?' questions get fresh deterministic evidence,
   // not a new recommendation or an LLM-generated explanation.
-  const explainedDecision=(typeof module==='object'&&module.exports?require('./decision-explanation'):globalThis.LoadnoteDecisionExplanation)?.answer(state,question,{asOf,unit});
+  const explainedDecision=(typeof module==='object'&&module.exports?require('./decision-explanation'):globalThis.LoadnoteDecisionExplanation)?.answer(state,understood,{asOf,unit});
   if(explainedDecision)return explainedDecision;
   // Athlete-authored program questions use their exact reviewed rows, not a
   // general training answer or a guessed prescription. Private edit reasons
@@ -69,7 +72,7 @@
   const customProgram=(typeof module==='object'&&module.exports?require('./custom-program-coach'):globalThis.LoadnoteCustomProgramCoach)?.answer(state,q,{asOf,unit});
   if(customProgram)return customProgram;
   // Saved athlete preferences can be recalled without inventing cross-session memories.
-  const trainingProfile=(typeof module==='object'&&module.exports?require('./coach-training-profile'):globalThis.LoadnoteCoachTrainingProfile)?.answer(state,question,{asOf,history});
+  const trainingProfile=(typeof module==='object'&&module.exports?require('./coach-training-profile'):globalThis.LoadnoteCoachTrainingProfile)?.answer(state,understood,{asOf,history});
   if(trainingProfile)return trainingProfile;
   // Recorded performance comparison is not an approved-program-change review.
   if(intent.topic==='history'){
@@ -99,7 +102,7 @@
    if(exercise)return {...exercise,intent};
    // Lower-priority read-only history: never supersedes accessory/plan reviews
    // or exercise-specific guidance, which may have approved target context.
-   const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,question,{asOf,unit,history});
+   const exerciseHistory=(typeof module==='object'&&module.exports?require('./coach-training-history'):globalThis.LoadnoteCoachTrainingHistory)?.answer(state,understood,{asOf,unit,history});
    if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
