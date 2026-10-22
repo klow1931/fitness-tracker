@@ -3,6 +3,7 @@ const Review=require('../src/product/coach-outcome-review');
 const Coach=require('../src/product/coach-conversation');
 const PhaseReview=require('../src/product/phase-review');
 const {fixture,args}=require('./fixtures/phase-review');
+const {fixture:emptyFixture}=require('./fixtures/program-review');
 
 const sample={lift:'squat',status:'unobserved',capacityChangePct:null,baseline:{capacityKg:120},followup:{capacityKg:125}};
 const examples=[
@@ -51,7 +52,9 @@ assert.equal(JSON.stringify(state),original,'Coach cannot mutate any saved worko
 
 const earliest=Review.inspect(state,{asOf:'2026-10-17',now:'2026-10-17T23:00:00.000Z',lift:'squat'});
 assert.equal(earliest.recorded,0,'Later approved changes do not leak backwards');
-const empty=Coach.answer({...state,phasePrograms:[],meetCycles:[]},q,{asOf,now});
+// Start with a genuinely empty athlete history; deleting only program records
+// from a state that still has reviewed decision events is not an empty fixture.
+const empty=Coach.answer(emptyFixture(),q,{asOf,now});
 assert.match(empty.text,/No eligible athlete-approved squat programming changes/);
 assert.equal(empty.insight.coverage.unobserved,0);
 const ambiguous=Coach.answer(state,'Why are my approved changes missing comparable evidence?',{asOf,now});
