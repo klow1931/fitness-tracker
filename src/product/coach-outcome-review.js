@@ -64,7 +64,7 @@
   if(coverageAsk)return {kind:'coverage',lifts:liftMatches(q),action:null};
   // Only requests for a *past approved* adjustment use frozen review reasons.
   // Live proposals continue through Decisions; workout history stays separate.
-  const whyApproved=/\b(?:why|reason|explain)\b/i.test(q)&&/\bapproved\b/i.test(q)&&
+  const whyApproved=/\b(?:why|reason|explain)\b/i.test(q)&&/\b(?:approved|loadnote)\b/i.test(q)&&
     /\b(?:change(?:s|d)?|adjustment(?:s)?|reduc(?:e|ed|tion)|increas(?:e|ed)|sets?|loads?|weights?)\b/i.test(q)&&
     !/\b(?:what happened after|how did .* (?:respond|work)|did .* help|missing|incomplete|unknown|unobserved|usually|pattern)\b/i.test(q);
   if(whyApproved)return {kind:'rationale',lifts:liftMatches(q),action:null};
