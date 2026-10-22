@@ -1,11 +1,11 @@
-/* v3.84 — audit coverage of exact follow-ups for athlete-approved changes.
+/* v3.85 — explain approved change provenance and exact follow-up coverage.
  * This module interprets only Learning's exact linked workout evidence.
  * It does not invent causes, preferences, programming doses, or a new policy.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./adaptive-outcome-learning'),require('./coach-support'),require('./schedule'));
- else root.LoadnoteCoachOutcomeReview=factory(root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteCoachSupport,root.LoadnoteSchedule);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Learning,Support,Schedule){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./adaptive-outcome-learning'),require('./coach-support'),require('./schedule'),require('./phase-review'),require('./cycle-review'));
+ else root.LoadnoteCoachOutcomeReview=factory(root.LoadnoteAdaptiveOutcomeLearning,root.LoadnoteCoachSupport,root.LoadnoteSchedule,root.LoadnotePhaseReview,root.LoadnoteCycleReview);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Learning,Support,Schedule,PhaseReview,CycleReview){
  'use strict';
  const SOURCE='Offline Coach · approved training outcomes';
  const LIMIT='Results after an approved change are descriptive associations, not proof that the change caused them. They do not authorize a new load, set count, or automatic progression.';
@@ -55,13 +55,21 @@
   const namedAdjustment=/\b(?:adjustments?|approved decisions?|load increases?|load reductions?|reduced loads?|increased loads?)\b/i.test(q);
   const retrospectiveChange=/\bafter\b.{0,100}\b(?:last|past|previous)\b.{0,75}\b(?:changes?|adjustments?)\b/i.test(q)||
    /\b(?:last|past|previous)\b.{0,40}\b(?:squat|bench|deadlift|sumo)\b.{0,35}\b(?:changes?|adjustments?)\b/i.test(q);
-  if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
   // Explicit questions about *missing approved outcomes* are routed to a
   // coverage explanation, not an invented cause or fresh programming advice.
   const coverageAsk=/\b(?:why|what|which|show|explain|review|how)\b/i.test(q)&&
    /\b(?:missing|incomplete|unknown|unobserved|not (?:observed|comparable)|(?:no|not enough) (?:comparable )?(?:evidence|follow-?ups?))\b/i.test(q)&&
    /\b(?:approved|adjustments?|decisions?|follow-?ups?|programming changes?)\b/i.test(q);
   if(coverageAsk)return {kind:'coverage',lifts:liftMatches(q),action:null};
+  // Only requests for a *past approved* adjustment use frozen review reasons.
+  // Live proposals continue through Decisions; workout history stays separate.
+  const whyApproved=/\b(?:why|reason|explain)\b/i.test(q)&&/\b(?:approved|loadnote)\b/i.test(q)&&
+    /\b(?:change(?:s|d)?|adjustment(?:s)?|reduc(?:e|ed|tion)|increas(?:e|ed)|sets?|loads?|weights?)\b/i.test(q)&&
+    !/\b(?:what happened after|how did .* (?:respond|work)|did .* help|missing|incomplete|unknown|unobserved|usually|pattern)\b/i.test(q);
+  if(whyApproved)return {kind:'rationale',lifts:liftMatches(q),action:null};
+  // Keep the historic approval gate for every other retrospective request.
+  // Questions naming Loadnote itself explicitly are handled above.
+  if(!explicitApproval&&!namedAdjustment&&!retrospectiveChange)return null;
 
   if(!/\b(?:change(?:s|d)?|adjustment(?:s)?|decision(?:s)?|progression|increase(?:s|d)?|reduction(?:s)?|reduce(?:d)?|outcome(?:s)?)\b/i.test(q))return null;
   if(!/\b(?:what happened|how (?:did|has|have)|have|has|did|do|what (?:have|has)|show|review|explain|did those|after|usually|pattern|result)\b/i.test(q))return null;
@@ -93,6 +101,52 @@
    patterns:patterns.map(p=>({action:p.action,recorded:p.recorded,observed:p.observed,unobserved:p.unobserved,
      counts:{...p.counts},medianCapacityChangePct:p.observed>=3&&finite(p.medianCapacityChangePct)?p.medianCapacityChangePct:null,
      evidence:p.evidence,description:clean(p.pattern)})).slice(0,4),notice:LIMIT};
+ }
+ // The Learning engine establishes eligible saved approvals and their exact
+ // review IDs. Validation of the original frozen review is the authority for
+ // the action and rationale, not a fresh decision or inferred cause.
+ function rationale(state,{asOf,now=new Date().toISOString(),lift}={}){
+  if(!Schedule.date(asOf)||!Number.isFinite(Date.parse(now))||new Date(now).toISOString()!==now||!lifts.includes(lift))throw Error('Valid historical rationale date and lift required');
+  const cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
+  const rows=Learning.analyze(state,{asOf,now:cutoff}).rows.filter(r=>r.lift===lift&&r.acceptedAt<=cutoff)
+   .sort((a,b)=>String(b.acceptedAt).localeCompare(String(a.acceptedAt))||String(a.reviewId).localeCompare(String(b.reviewId)));
+  if(!rows.length)return {version:1,lift,status:'none',asOf,knownAt:cutoff,readOnly:true,reason:null};
+  const chosen=rows[0];
+  let event=null,reason=null,policy=null,reviewType=null;
+  if(chosen.scope==='phase'){
+   event=PhaseReview.validate(state.phaseReviews||[]).find(r=>r.id===chosen.reviewId&&r.programId===chosen.programId);
+   if(event&&event.choices[lift]===chosen.action){reason=event.findings[lift]?.reason;policy=event.policy;reviewType='completed '+event.phase+' phase';}
+  }else if(chosen.scope==='cycle'){
+   const cycles=CycleReview.validate(state);
+   event=cycles.find(c=>c.id===chosen.programId)?.weeklyReviews?.find(r=>r.id===chosen.reviewId);
+   if(event&&event.choices[lift]===chosen.action){
+    const f=event.report?.findings?.[lift]||{};
+    reason=chosen.action==='reduce-one'?f.setReason:chosen.action==='reduce-load'?f.loadReason:
+     chosen.action==='increase-load'?f.increaseReason:null;
+    policy=event.policy;reviewType='week '+event.week+' meet-cycle';
+   }
+  }
+  // In historical policies a reason may not have been persisted. Do not
+  // substitute today's policy or construct a hypothetical explanation.
+  const verified=event&&event.createdAt===chosen.acceptedAt&&typeof reason==='string'&&reason.trim().length>0;
+  return {version:1,lift,status:verified?'verified':'unavailable',asOf,knownAt:cutoff,readOnly:true,reviewId:chosen.reviewId,
+    approvedAt:chosen.acceptedAt,scope:chosen.scope,reviewType:verified?reviewType:null,programName:clean(chosen.programName),
+    action:clean(chosen.action),policy:verified?clean(policy):null,reason:verified?clean(reason):null,
+    followup:chosen.status==='observed'&&finite(chosen.capacityChangePct)?
+     {status:'observed',capacityChangePct:chosen.capacityChangePct}:{status:'unobserved',capacityChangePct:null},
+    notice:'This is the rationale recorded at approval, not proof of the athlete’s motive or that the change caused the subsequent performance. No future prescription was altered.'};
+ }
+ function explainRationale(report){
+  if(report.status==='none')return 'No eligible saved athlete-approved '+report.lift+' adjustment was recorded through '+report.asOf+
+   '. I cannot explain an approval that is not in the validated history. Review Decisions if you expected one.';
+  if(report.status!=='verified')return 'The latest saved '+report.lift+' adjustment exists, but its original approved reason could not be validated. I will not substitute a current recommendation or guess its rationale.';
+  const observed=report.followup.status==='observed'?
+   'An exact linked RPE-aware follow-up estimate changed '+percentage(report.followup.capacityChangePct)+' after the approval. This is descriptive, not causal.':
+   'An exact comparable follow-up outcome is not established; the effect is unknown.';
+  return 'Your latest athlete-approved '+report.lift+' change was '+report.action+' on '+report.approvedAt.slice(0,10)+
+   ' for '+(report.programName||'a reviewed program')+' ('+report.reviewType+'). The saved review stated: '+report.reason+
+   ' This was recorded under '+report.policy+'. '+observed+' '+report.notice+
+   ' Review its original accepted decision and linked sessions in Decisions and Progress.';
  }
  function explain(report,kind){
   const lift=report.lift,latest=report.latest;
@@ -135,6 +189,17 @@
   const ask=intent(question);if(!ask)return null;
   if(ask.lifts.length!==1)return {text:ask.lifts.length?'Which lift should I review first: squat, bench or deadlift?':'Which competition lift should I review: squat, bench or deadlift?',
    source:SOURCE,readOnly:true,evidence:[],actions:[],intent:{topic:'approved-outcomes',needsClarification:true}};
+  if(ask.kind==='rationale'){
+   let original;
+   try{original=rationale(state,{asOf,now,lift:ask.lifts[0]});}
+   catch{return {text:'I could not validate the saved approved-change history. Open Decisions to review it; nothing was changed.',source:SOURCE,readOnly:true,evidence:[],actions:[],intent:{topic:'approved-rationale',unavailable:true}};}
+   return {text:explainRationale(original),source:SOURCE,readOnly:true,evidence:[original],
+    evidenceCards:[{title:'Saved approved '+original.lift+' rationale',status:original.status==='verified'?'observed':'unavailable',
+      observed:original.status==='verified'?original.action+' · '+original.approvedAt.slice(0,10)+' · '+original.reviewType:'No verifiable original rationale.',
+      limitation:'Approval-time evidence is not proof of a training benefit or a fresh programming decision.',source:'Accepted Decisions review · frozen policy'}],
+    intent:{topic:'approved-rationale',lift:original.lift},actions:[{kind:'progress',label:'Review recorded lift history'}],
+    followUps:['What happened after my last '+original.lift+' adjustment?']};
+  }
   let report;try{report=inspect(state,{asOf,now,lift:ask.lifts[0],action:ask.action});}
   catch{return {text:'I could not validate the exact approved adjustment history for that lift. Review Decisions and the linked workouts; no change was made.',
    source:SOURCE,readOnly:true,evidence:[],actions:[],intent:{topic:'approved-outcomes',lift:ask.lifts[0],unavailable:true}};}
@@ -149,5 +214,5 @@
    actions:[{kind:'progress',label:'Review recorded lift history'}],
    followUps:['Which '+report.lift+' adjustments have missing comparable evidence?','What have we learned from my program changes?']};
  }
- return {intent,inspect,explain,answer,classifyEvidence,coverageOf,LIMIT};
+ return {intent,inspect,rationale,explainRationale,explain,answer,classifyEvidence,coverageOf,LIMIT};
 });
