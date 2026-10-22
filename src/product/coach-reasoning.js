@@ -26,11 +26,11 @@
  // engines. It cannot invent a new topic, athlete preference or programming action.
  function focusPart(question){
   const q=clean(question);
-  const m=/^(?:(?:just|only|please)\s+(?:the\s+)?|the\s+|(?:can we|could we|let's)\s+(?:focus on|look at)\s+(?:the\s+)?|(?:focus on|talk about)\s+(?:the\s+)?)?(?:(bench|squat|deadlift)\s+)?(performance|progress|stall|plateau|weekly training|weekly review|week|next scheduled workout|upcoming workout|next workout|workout|recent training|training recap|recap)(?:\s+(?:part|section|one))?\s*[.!?]*$/i.exec(q);
+  const m=/^(?:(?:just|only|please)\s+(?:the\s+)?|the\s+|(?:can we|could we|let's)\s+(?:focus on|look at)\s+(?:the\s+)?|(?:focus on|talk about)\s+(?:the\s+)?)?(?:(bench|squat|deadlift)\s+)?(performance|progress|stall|plateau|weekly training|weekly review|weekly|week|next scheduled workout|upcoming workout|next workout|workout|recent training|training recap|recap)(?:\s+(?:part|section|one))?\s*[.!?]*$/i.exec(q);
   if(!m)return null;
   const word=m[2].toLowerCase();
   const kind=/^(?:performance|progress|stall|plateau)$/.test(word)?'performance':
-   /^(?:weekly training|weekly review|week)$/.test(word)?'weekly':
+   /^(?:weekly training|weekly review|weekly|week)$/.test(word)?'weekly':
    /^(?:next scheduled workout|upcoming workout|next workout|workout)$/.test(word)?'upcoming':'recap';
   if(m[1]&&kind!=='performance')return null;
   return {kind,lift:m[1]||null};
