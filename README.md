@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.89.0 · Development build.**  
+**v3.90.0 · Development build.**  
+[Coach v3.90 release notes](docs/releases-v3.90.md): The offline Coach can now answer follow-ups about where multi-part training evidence came from and what saved data is missing or limited, without inventing outcomes.
+
+**Earlier v3.89 concise explanations milestone.**  
 [Coach v3.89 release notes](docs/releases-v3.89.md): Short, plain-language, evidence-grounded follow-ups for combined Coach answers. Supports “Give me the short version” and “What's the takeaway?” while keeping original sources and limitations.
 
 **Earlier v3.88 natural clarification milestone.**  

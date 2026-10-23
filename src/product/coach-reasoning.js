@@ -1,4 +1,4 @@
-/* v3.89 — deterministic, evidence-grounded short conversation follow-ups.
+/* v3.90 — deterministic, attributed evidence-source and coverage follow-ups.
  * Single-topic requests retain their established handlers. The coordinator
  * invokes existing validated analyses; it never creates a training dose.
  */
@@ -38,7 +38,11 @@
  // Brief requests refer only to recent athlete-authored compound questions.
  // No stored assistant answer is summarized, and no new training facts are made up.
  const briefFollow=q=>/^(?:give me (?:the |a )?(?:short version|quick summary|main takeaway)|(?:what(?:'s| is) (?:the )?(?:takeaway|main point|bottom line))|(?:can you )?(?:put (?:that|it) (?:more )?simply|explain (?:that|it) (?:more )?simply)|(?:sum(?:marize|marise) (?:that|it))|(?:in plain english)|(?:tl;?dr))[.!?]*$/i.test(q);
- const simpleFollow=q=>briefFollow(q)||!!focusPart(q)||/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
+ // Source and coverage requests are never resolved from an assistant reply.
+ // They require a prior athlete-asked multi-evidence review in the last 8 rows.
+ const sourceFollow=q=>/^(?:where did (?:that|this) come from|what (?:data|records|evidence) (?:is|are) (?:that|this) based on|(?:show(?: me)? (?:the )?(?:data sources|evidence sources|sources))|what (?:source|sources) (?:did you use|are you using))[.!?]*$/i.test(q);
+ const gapFollow=q=>/^(?:what(?:'s| is) missing|what (?:data|evidence|information) (?:is|are) missing|what (?:do|don't) (?:we|you) (?:know|have)|is (?:there|anything) (?:enough|missing)|what (?:are|is) the (?:gaps|limitations))[.!?]*$/i.test(q);
+ const simpleFollow=q=>sourceFollow(q)||gapFollow(q)||briefFollow(q)||!!focusPart(q)||/^(?:(?:what|how) about|and) (?:my |the )?(?:bench|squat|deadlift|sumo|next (?:workout|session)|next week)\??$|^(?:bench|squat|deadlift|sumo|performance|weekly training|recent training|next scheduled workout|tomorrow|next week)[.!?]?$|^(?:why|how so|explain that|tell me more|what does that mean)\??$/i.test(q);
  const neutralReset=q=>/^(?:hello|hi|hey|thanks|thank you|new topic|start over)[.!?]*$/i.test(q);
  function lastCompound(history){
   const bounded=(Array.isArray(history)?history:[]).slice(-8).filter(t=>t&&t.role==='user');
@@ -106,6 +110,18 @@
   }
   if(upcoming&&full.includes('upcoming'))return {status:'ready',question:q,kinds:['upcoming'],lift:null,
    follow:true,nextWeek:/next week/i.test(q)};
+  const evidenceProbe=sourceFollow(q)?'source':gapFollow(q)?'coverage':null;
+  if(evidenceProbe){
+   const kinds=focusedKind&&full.includes(focusedKind)?[focusedKind]:full.slice(0,3);
+   const named=followLift(anchor.question),lift=preferredLift||anchor.lift||(named.length===1?named[0]:null);
+   if(kinds.includes('performance')&&(!lift||named.length!==1&&!preferredLift))
+    return {status:'clarification',question:q,kinds,clarification:'Which lift should I review first: squat, bench, or deadlift?'};
+   if(kinds.includes('upcoming')&&anchor.status==='clarification'&&/tomorrow.*next week/i.test(anchor.clarification||''))
+    return {status:'clarification',question:q,kinds,clarification:'Should I review tomorrow’s workout or next week’s workout first?'};
+   return {status:'ready',question:q,kinds,lift,follow:true,probe:evidenceProbe,
+    nextWeek:kinds.includes('upcoming')&&(nextWeekFocus||!!anchor.nextWeek),
+    tomorrow:kinds.includes('upcoming')&&(tomorrowFocus||!!anchor.tomorrow)};
+  }
   if(brief){
    const kinds=focusedKind&&full.includes(focusedKind)?[focusedKind]:full.slice(0,3);
    const named=followLift(anchor.question);
@@ -194,11 +210,21 @@
    return section.label+': '+(card?.observed||'Evidence unavailable.')+' '+(card?.limitation||'No validated conclusion available.')+
     ' Source: '+(card?.source||section.source)+'.';
   }).join('\n'):null;
+  // Ask the existing evidence-card validator again, never summarize a previous
+  // assistant message or infer that an observation proves causality.
+  const probeText=p.probe?sections.map(section=>{
+   const card=EvidenceOptions?.summarize(section.kind,engineReplies[section.kind],asOf);
+   if(!card)return section.label+': The evidence card could not be validated.';
+   if(p.probe==='source')return section.label+': Source: '+card.source+'. Evidence: '+card.observed+
+    ' Status: '+card.status+'. Limit: '+card.limitation;
+   return section.label+': Evidence status: '+card.status+'. What is established: '+card.observed+
+    ' Remaining limitation: '+card.limitation;
+  }).join('\n'):null;
   const next='Next: review the exact training records and your existing approved targets. Any programming adjustment must go through Decisions and athlete approval.';
   return {
-       text:(p.brief?'Short version from saved records:\n'+briefText:sections.map(s=>s.label+': '+s.text).join('\n\n'))+(evidenceWarnings.length?'\n\nDifferent signals: '+evidenceWarnings.join(' '):'')+'\n\n'+next,
+       text:(p.probe?(p.probe==='source'?'Evidence sources from saved records:\n':'Evidence coverage from saved records:\n')+probeText:p.brief?'Short version from saved records:\n'+briefText:sections.map(s=>s.label+': '+s.text).join('\n\n'))+(evidenceWarnings.length?'\n\nDifferent signals: '+evidenceWarnings.join(' '):'')+'\n\n'+next,
    source:'Offline Coach · combined validated evidence',readOnly:true,
-   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} ),...(p.brief?{brief:true}:{})},
+   intent:{topic:'unified-evidence',kinds:p.kinds,lift:p.lift||null,...(p.follow?{follow:true}:{} ),...(p.brief?{brief:true}:{}),...(p.probe?{probe:p.probe}:{})},
    reasoning:{version:1,asOf,sections:sections.map(({kind,label,source})=>({kind,label,source})),notice:'Each section comes from an existing read-only Loadnote engine; no new loads or recovery judgments were generated.'},
    evidence:evidence.slice(0,3),evidenceCards,evidenceWarnings,actions:actions.slice(0,3),
    followUps:['Review my exact workout history','Explain my next workout']
