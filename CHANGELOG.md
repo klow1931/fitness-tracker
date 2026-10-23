@@ -1,3 +1,11 @@
+# v3.92.0 — Beginner First Workout Experience
+
+- Make **Start my first workout** the primary new-user action, keeping program creation and import accessible underneath.
+- Default Simple Home for genuinely fresh athletes only. Preserve explicit preferences and existing saved training or dismissed onboarding; no data migration.
+- The guide now follows actual exercise choice, set entry, and workout review; it never completes or saves anything. Save remains an explicit action with clear review reminder.
+- Add beginner unit and real-browser regression tests for the first-run choice, prior-user compatibility, safe review, and successful-save integrity.
+- Release **3.92.0**, unsigned native beta **35200**, schema **34** unchanged.
+
 # v3.91.1 — Studio and Coach Review Fixes
 
 - Clear fixed loads, percentage targets, reference maxes, rounding and RPE caps when replacing a strength movement. Unchanged rows and Undo retain their exact original prescriptions.
