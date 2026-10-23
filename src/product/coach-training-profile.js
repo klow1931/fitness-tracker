@@ -14,13 +14,19 @@
  // Chat can propose a future setting only when the athlete explicitly names the days.
  function naturalDays(question,record){
   if(!record)return null;const q=clean(question);
-  if(!/\b(?:i (?:train|work out|can train)|my (?:training|available) days? (?:are|is)|i(?:'m| am) available)\b/i.test(q))return null;
-  const found=days.flatMap((day,i)=>new RegExp('\\b'+day+'\\b','i').test(q)?[i]:[]);
+  const match=q.match(/\b(?:i (?:train|work out|can train|cannot train|can't train)|my (?:training|available) days? (?:are|is)|i(?:'m| am) available)\s+(.+?)[.!?]*$/i);
+  if(!match||!days.some(day=>new RegExp('\\b'+day+'\\b','i').test(q)))return null;
+  const remainder=match[1].replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi,'')
+   .replace(/\bfor\s+\d{1,3}\s*(?:minutes?|mins?)\b/i,'');
+  // Alternatives, exclusions and conditional availability need clarification.
+  // Never turn every mentioned weekday into an affirmative preference.
+  if(/\b(?:not|never|except|unless|or|cannot|can't)\b/i.test(q)||!/^[\s,&]*(?:and[\s,&]*)*$/i.test(remainder))return {needsClarification:true};
+  const found=days.flatMap((day,i)=>new RegExp('\\b'+day+'\\b','i').test(match[1])?[i]:[]);
   return found.length?{kind:'training-days',availableDays:found,baseRevisionId:record.id}:null;
  }
  function naturalMinutes(question,record){
   if(!record)return null;const q=clean(question);
-  if(!/\b(?:i (?:only )?have|i(?:'ve| have) (?:only |just )?got|my (?:workouts?|sessions?) (?:are|last)|i(?:'m| am) limited to|i can train for)\b/i.test(q))return null;
+  if(!/\b(?:i (?:only )?have|i(?:'ve| have) (?:only |just )?got|my (?:workouts?|sessions?) (?:are|last)|i(?:'m| am) limited to|i can train for|i (?:train|work out|can train) .+? for)\b/i.test(q))return null;
   const matches=[...q.matchAll(/\b(\d{1,3})\s*(?:minutes?|mins?)\b/gi)];
   if(matches.length!==1)return null;const n=Number(matches[0][1]);
   return n>=30&&n<=240?{kind:'profile-fields',changes:{sessionMinutes:n},baseRevisionId:record.id}:null;
@@ -57,7 +63,13 @@
   const q=clean(question);
   if(!q||Support.health(String(question||'')))return null;
   let saved=null;try{saved=Profile.current(state.programmingProfiles||[],asOf?asOf+'T23:59:59.999Z':undefined);}catch{/* The existing explicit setup-query error route below explains invalid saved data. */}
-  const proposed=dayProposal(q,saved)||fieldProposal(q,saved)||naturalDays(q,saved)||naturalMinutes(q,saved);
+  const requestedDays=dayProposal(q,saved)||naturalDays(q,saved),requestedMinutes=naturalMinutes(q,saved);
+  if(requestedDays?.needsClarification)return {text:'Which exact days should I use? List only the days you want to train, for example: "I train Monday and Wednesday". I will not treat excluded days or alternatives as confirmed availability. Nothing was changed.',source:'Saved training preferences · clarification',readOnly:true,evidence:[],intent:{topic:'training-preferences'},actions:[]};
+  const proposed=requestedDays&&requestedMinutes?{kind:'profile-fields',changes:{availableDays:requestedDays.availableDays,sessionMinutes:requestedMinutes.changes.sessionMinutes},baseRevisionId:saved.id}:requestedDays||fieldProposal(q,saved)||requestedMinutes;
+  if(proposed?.changes?.availableDays){
+   const changes=proposed.changes;
+   return {text:'Review requested training days: '+changes.availableDays.map(i=>days[i]).join(', ')+'. Requested session time: '+changes.sessionMinutes+' minutes. Current saved training days: '+saved.context.availableDays.map(i=>days[i]).join(', ')+'. Current session time: '+saved.context.sessionMinutes+' minutes. Nothing has changed. Review both settings and explicitly save. Existing scheduled workouts stay unchanged.',source:'Saved training preferences · proposed change',readOnly:true,evidence:[{field:'availableDays',before:saved.context.availableDays,proposed:changes.availableDays},{field:'sessionMinutes',before:saved.context.sessionMinutes,proposed:changes.sessionMinutes}],intent:{topic:'training-preferences'},actions:[{kind:'profile-review',label:'Review training days and session time before saving',proposal:proposed}]};
+  }
   if(proposed){const change=proposed.kind==='training-days'?{key:'availableDays',old:saved.context.availableDays,value:proposed.availableDays,label:'training days',format:rows=>rows.map(i=>days[i]).join(', ')}:
    Object.hasOwn(proposed.changes,'equipment')?{key:'equipment',old:[...saved.context.equipment,...(saved.context.accessoryEquipment||[])],value:[...proposed.changes.equipment,...proposed.changes.accessoryEquipment],label:'equipment',format:rows=>rows.join(', ')||'none'}:
    Object.hasOwn(proposed.changes,'sessionMinutes')?{key:'sessionMinutes',old:saved.context.sessionMinutes,value:proposed.changes.sessionMinutes,label:'session time',format:n=>n+' minutes'}:

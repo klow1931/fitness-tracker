@@ -16,13 +16,13 @@
     if(proposal){
       const keys=Object.keys(proposal.changes||{});
       if(proposal.kind==='training-days')proposalChanges={availableDays:proposal.availableDays};
-      else if(proposal.kind==='profile-fields'&&(keys.length===1&&['sessionMinutes','priorities'].includes(keys[0])||keys.length===2&&keys.includes('equipment')&&keys.includes('accessoryEquipment')))proposalChanges=proposal.changes;
+      else if(proposal.kind==='profile-fields'&&(keys.length===1&&['sessionMinutes','priorities'].includes(keys[0])||keys.length===2&&(keys.includes('equipment')&&keys.includes('accessoryEquipment')||keys.includes('availableDays')&&keys.includes('sessionMinutes'))))proposalChanges=proposal.changes;
       try{if(!base||proposal.baseRevisionId!==base.id||!proposalChanges)throw Error('Stale or invalid proposal');LoadnoteProgrammingProfile.context({...base.context,...proposalChanges});}
       catch{showToast('Training setup changed or the proposal is invalid. Ask Coach again or review Profile directly.','error');return;}
     }
     const p=base?{...base.context}:{goal:'general',eventDate:null,experience:'unknown',consistency:'unknown',availableDays:[0,2,4],sessionMinutes:60,equipment:[],preferredExerciseIds:[],avoidedExerciseIds:[],priorities:'',notes:''};
     if(initial&&!LoadnoteProgrammingProfile.current(data.programmingProfiles||[]))Object.assign(p,initial);
-    const previousDays=base?.context.availableDays||[];if(proposalChanges)Object.assign(p,proposalChanges);
+    if(proposalChanges)Object.assign(p,proposalChanges);
     const select=(id,label,values,value)=>`<label>${label}<select class="input" id="profile-${id}">${Object.entries(values).map(([k,v])=>`<option value="${esc(k)}" ${k===value?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
     const catalog=new Map((data.exerciseCatalog||[]).map(e=>[e.id,e.name]));for(const id of [...p.preferredExerciseIds,...p.avoidedExerciseIds])if(!catalog.has(id))catalog.set(id,'Unavailable exercise: '+id);
     dialog.innerHTML=`<form><h2>Training setup</h2>${notice?`<p role="status">${esc(notice)}</p>`:''}${select('goal','Primary programming goal',LoadnoteProgrammingProfile.GOALS,p.goal)}<label>Optional event date<input class="input" type="date" id="profile-event" value="${esc(p.eventDate||'')}"></label><p class="more-hint">Used as a default when starting meet prep. A reviewed cycle can use a different event date without forcing you to rewrite the profile.</p>${select('experience','Self-reported experience',{unknown:'Not recorded',beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced'},p.experience)}${select('consistency','Recent training consistency',{unknown:'Not recorded',returning:'Returning after time away',inconsistent:'Inconsistent lately',consistent:'Consistent lately'},p.consistency)}<fieldset><legend>Available days (not a required training frequency)</legend>${days.map((d,i)=>`<label><input type="checkbox" data-profile-day value="${i}" ${p.availableDays.includes(i)?'checked':''}> ${d}</label>`).join('')}</fieldset><label>Maximum minutes per session<input class="input" type="number" id="profile-minutes" min="30" max="240" step="1" value="${p.sessionMinutes}"></label><fieldset><legend>Equipment you can actually access</legend>${Object.entries(LoadnoteProgrammingProfile.EQUIPMENT).map(([k,v])=>`<label><input type="checkbox" data-profile-equipment value="${k}" ${p.equipment.includes(k)?'checked':''}> ${esc(v)}</label>`).join('')}</fieldset><fieldset><legend>Accessory equipment</legend><p>Choose available tools for suggestions. Confirm the exact setup when reviewing a movement.</p>${Object.entries(LoadnoteExerciseReference.EQUIPMENT).map(([k,v])=>`<label><input type="checkbox" data-profile-accessory-equipment value="${k}" ${(p.accessoryEquipment||['bodyweight',...(p.equipment.includes('barbell')?['barbell']:[])]).includes(k)?'checked':''}> ${esc(v)}</label>`).join('')}</fieldset><details><summary>Exercise preferences</summary><p>Stable exercise identities are used. Preferred accessories are context only in the current competition-lift builder.</p>${[...catalog].map(([id,name])=>`<label>${esc(name)}<select class="input" data-profile-exercise="${esc(id)}"><option value="neutral">No preference</option><option value="preferred" ${p.preferredExerciseIds.includes(id)?'selected':''}>Preferred</option><option value="avoided" ${p.avoidedExerciseIds.includes(id)?'selected':''}>Avoid in generated programs</option></select></label>`).join('')||'<p>Confirm exercise identities in Decisions first.</p>'}</details><label>Athlete/coach-reported priorities<textarea class="input" id="profile-priorities" maxlength="1000">${esc(p.priorities)}</textarea></label><label>Additional constraints or notes<textarea class="input" id="profile-notes" maxlength="1000">${esc(p.notes)}</textarea></label><p>Free-text notes are context, not enforced rules. Use availability, equipment and avoided exercises for hard constraints. The Program planner offers supported reviewed plans; meet prep requires lift setup and a separately reviewed timeline.</p><button class="btn-primary" type="submit">Save programming profile</button><button class="btn-secondary" type="button" id="profile-close">Close</button><p id="profile-error" role="alert"></p></form>`;
@@ -31,13 +31,19 @@
     if(proposal){
       const card=document.createElement('section');card.className='cycle-controller-summary';card.setAttribute('aria-label','Review coaching preference');
       const title=document.createElement('b');title.textContent='Review before saving';
-      const field=Object.keys(proposalChanges)[0],label=field==='equipment'?'equipment':field==='sessionMinutes'?'session time':field==='priorities'?'training priority':'training days';
-      const format=(value)=>field==='availableDays'?value.map(n=>days[n]).join(', '):field==='equipment'?value.join(', ')||'none':field==='sessionMinutes'?value+' minutes':value||'none';
-      const value=source=>field==='equipment'?[...(source.equipment||[]),...(source.accessoryEquipment||[])]:source[field];
-      const previous=document.createElement('p');previous.textContent='Current'+(field==='availableDays'?'': ' '+label)+': '+format(field==='availableDays'?previousDays:value(base.context));
-      const requested=document.createElement('p');requested.textContent='Requested'+(field==='availableDays'?'': ' '+label)+': '+format(value(p));
-      const explanation=document.createElement('p');explanation.textContent='This changes '+label+' for future planning only. Existing programs and workouts are not edited. Any other edits you make in this form also require Save. Nothing is saved until you choose Save below.';
-      card.append(title,previous,requested,explanation);dialog.querySelector('h2').after(card);
+      card.append(title);
+      const fields=Object.keys(proposalChanges).filter(field=>field!=='accessoryEquipment');
+      const labels={equipment:'equipment',sessionMinutes:'session time',priorities:'training priority',availableDays:'training days'};
+      for(const field of fields){
+       const label=labels[field];
+       const format=value=>field==='availableDays'?value.map(n=>days[n]).join(', '):field==='equipment'?value.join(', ')||'none':field==='sessionMinutes'?value+' minutes':value||'none';
+       const value=source=>field==='equipment'?[...(source.equipment||[]),...(source.accessoryEquipment||[])]:source[field];
+       const previous=document.createElement('p');previous.textContent='Current'+(field==='availableDays'?'': ' '+label)+': '+format(value(base.context));
+       const requested=document.createElement('p');requested.textContent='Requested'+(field==='availableDays'?'': ' '+label)+': '+format(value(p));
+       card.append(previous,requested);
+      }
+      const explanation=document.createElement('p');explanation.textContent='This changes '+fields.map(field=>labels[field]).join(' and ')+' for future planning only. Existing programs and workouts are not edited. Any other edits you make in this form also require Save. Nothing is saved until you choose Save below.';
+      card.append(explanation);dialog.querySelector('h2').after(card);
       const form=dialog.querySelector('form');form.addEventListener('submit',event=>{
         if(LoadnoteProgrammingProfile.current(data.programmingProfiles||[])?.id!==base.id){event.preventDefault();event.stopImmediatePropagation();dialog.querySelector('#profile-error').textContent='Saved preferences changed. Reopen this review to see the latest settings.';}
       },{capture:true});

@@ -124,8 +124,9 @@
    const result=copy(rows).map(r=>{
      if(Number(r.week)<firstWeek||Number(r.week)>lastWeek||String(r.exercise||'').trim().replace(/\s+/g,' ').toLowerCase()!==oldName.toLowerCase())return r;
      changed++;
-     const previous=String(r.weight??'').trim()!==''||String(r.rpe??'').trim()!=='';
-     if(r.type!=='cardio'){r.weight='';r.rpe='';if(previous)clearedTargets++;}
+     const targets=['weight','rpe','percent','percentBasis','reference','referenceUnit','roundTo'];
+     const previous=targets.some(key=>String(r[key]??'').trim()!=='');
+     if(r.type!=='cardio'){for(const key of targets)r[key]='';if(previous)clearedTargets++;}
      r.exercise=newName;return r;
    });
    if(!changed)throw Error('No matching exercise rows were found in those weeks');

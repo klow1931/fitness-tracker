@@ -1,6 +1,7 @@
 # Loadnote
 
-**v3.91.0 · Development build.**  
+**v3.91.1 · Development build.**
+[Review fixes](docs/releases-v3.91.1.md): Clear percentage references on movement replacement, clarify ambiguous availability, review days and duration together, and preserve concise two-lift follow-ups.
 [Coach v3.91 release notes](docs/releases-v3.91.md): Compare two named competition lifts against each lift's own RPE-aware history; ask about missing data or switch the lift pair without equating raw squat and bench loads.
 
 **Earlier v3.90 evidence-transparency milestone.**  
