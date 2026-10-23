@@ -1,3 +1,12 @@
+# v3.93.0 — Beginner Program Builder
+
+- “Help me create a plan” leads to three choices: training goal, available days (two or three), and equipment.
+- Create a four-week editable full-body starter plan using the existing Custom Program proposal and review engine. Review names, sets, reps and dates; loads and RPE are deliberately unspecified and no automatic progression is claimed.
+- Require separate athlete confirmation to save an unscheduled plan and then to schedule it in Calendar; preserve conflict checks, unfinished workout drafts and existing training records.
+- Keep the older advanced programming profile, Decisions, meet prep and Custom Program Studio available from their established routes.
+- Add Node/browser regression coverage for beginner choices, validation, review, unsaved previews, failed persistence and data integrity.
+- Release **3.93.0**, unsigned mobile beta **35300**, schema **34** unchanged.
+
 # v3.92.0 — Beginner First Workout Experience
 
 - Make **Start my first workout** the primary new-user action, keeping program creation and import accessible underneath.

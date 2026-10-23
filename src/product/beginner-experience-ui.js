@@ -32,9 +32,7 @@
   const simple=document.getElementById('beginner-simple-choice')?.checked;
   if(!change({entry,view:simple?'simple':'full'}))return;
   if(entry==='log'){window.openFastStartLogger?.({compact:true});renderGuide();return;}
-  if(entry==='help'){
-   window.openProgrammingProfile?.({guided:true,notice:'Start with your goal, available days and equipment. Leave unknown experience as unknown. Review suggested programs before scheduling.',onSaved:()=>window.LoadnoteTrainingHubUI?.plan?.()});return;
-  }
+  if(entry==='help'){window.LoadnoteBeginnerProgramUI?.open();return;}
   window.showTab?.('coach');window.showSubTab?.('coach','co-programs');
   window.renderCustomProgramStudio?.();window.LoadnoteCustomProgramUI?.open();
  }

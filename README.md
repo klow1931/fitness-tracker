@@ -1,5 +1,9 @@
 # Loadnote
 
+**v3.93.0 · Development build.**
+[Beginner Program Builder v3.93 release notes](docs/releases-v3.93.md): A three-question first plan with editable four-week sessions, blank starting loads and separate athlete-approved saving and Calendar scheduling.
+
+**Earlier v3.92 first-workout milestone.**
 **v3.92.0 · Development build.**
 [Beginner First Workout v3.92 release notes](docs/releases-v3.92.md): One clear workout entry, Simple Home for new users, and contextual logging guidance through review and explicit save.
 
