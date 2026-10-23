@@ -11,7 +11,7 @@ async function seed(page,meet=false){await page.evaluate(async ({state,meet})=>{
 },{state:phaseFixture().state,meet});}
 const next=dialog=>dialog.locator('[data-wizard-action=next]').click();
 test('guided profile preserves answers, points to missing days and survives a failed save',async({page})=>{
- await page.locator('[data-beginner-entry=help]').click();const d=page.locator('#programming-profile-dialog');
+ await page.evaluate(()=>openProgrammingProfile({guided:true}));const d=page.locator('#programming-profile-dialog');
  await expect(d.locator('.program-wizard-progress')).toContainText('Step 1 of 4');await expect(d.locator('#profile-experience')).toHaveValue('unknown');
  await next(d);for(const checkbox of await d.locator('[data-profile-day]').all())await checkbox.uncheck();await next(d);
  await expect(d.locator('[data-field-error]')).toContainText('at least one day');await expect(d.locator('[data-profile-day]').first()).toBeFocused();

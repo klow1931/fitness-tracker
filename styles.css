@@ -2116,3 +2116,15 @@ body.dark .weekly-target{border-color:#475569}
 .beginner-secondary-choices .onboard-tip{min-height:68px;width:100%;text-align:left}
 .beginner-review-tip{padding:.8rem;border:1px solid var(--border,#94a3b8);border-radius:.7rem}
 @media(max-width:520px){.beginner-secondary-choices{grid-template-columns:1fr}}
+
+/* v3.93: concise beginner program draft without burying first workout CTA. */
+.beginner-program-dialog{width:min(680px,calc(100vw - 1rem));max-height:calc(100dvh - 1rem);overflow-y:auto}
+.beginner-program-dialog form{display:grid;gap:.8rem}
+.beginner-program-dialog label{display:grid;gap:.3rem}
+.beginner-program-dialog fieldset{min-width:0;border:1px solid var(--border,#94a3b8);padding:.65rem;border-radius:.65rem;display:grid;gap:.4rem}
+#starter-days{grid-template-columns:repeat(2,minmax(0,1fr))}
+#starter-days legend{grid-column:1/-1}
+#starter-days label{display:flex;gap:.45rem;align-items:center;min-height:40px}
+.starter-exercise-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(65px,1fr) minmax(65px,1fr);gap:.4rem;margin:.5rem 0}
+.starter-exercise-row input{min-width:0}
+@media(max-width:400px){.starter-exercise-row{grid-template-columns:1fr 1fr}.starter-exercise-row label:first-child{grid-column:1/-1}#starter-days{grid-template-columns:1fr}}
