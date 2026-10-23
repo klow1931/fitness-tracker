@@ -19,6 +19,9 @@
  function apply(){
   const p=load();
   document.body.classList.toggle('loadnote-simple-view',p.view==='simple');
+  // Fresh installs default to a calm presentation, but do not remove
+  // established Home routes before an athlete explicitly chooses first logging.
+  document.body.classList.toggle('loadnote-first-workout',p.entry==='log');
   const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=p.view!=='simple';
   const choice=document.getElementById('beginner-simple-choice');if(choice)choice.checked=p.view==='simple';
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
