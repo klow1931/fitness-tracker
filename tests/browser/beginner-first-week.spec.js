@@ -26,7 +26,7 @@ test('v3.94 first-week next scheduled session is shown as planned, with Calendar
  await page.locator('#starter-close').click();
  await page.evaluate(()=>{
   const prescription=LoadnoteIntent.createPrescription([{name:'Goblet Squat',type:'strength',sets:[{weight:null,reps:8,targetRpe:null}]}],{type:'manual',label:'Starter'});
-  data.scheduledSessions=LoadnoteSchedule.create([],{name:'Future full body',date:'2026-10-26',role:'general',prescription},{id:'starter-future'});
+  data.scheduledSessions=LoadnoteSchedule.create([],{name:'Future full body',date:'2026-10-26',role:'mixed',prescription},{id:'starter-future'});
   renderDashboard();
  });
  await expect(page.locator('#beginner-first-week')).toContainText('2026-10-26');
