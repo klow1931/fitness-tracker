@@ -32,11 +32,14 @@ body.dark .program-field-error{color:#fca5a5}
 .beginner-guide p{margin:.5rem 0}
 .beginner-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}
 .beginner-actions button,.beginner-guide button{min-height:44px}
-body.loadnote-simple-view #home-details,
-body.loadnote-simple-view #calm-home-secondary,
-body.loadnote-simple-view #home-empty,
-body.loadnote-simple-view #panel-dashboard [data-training-hub],
-body.loadnote-simple-view #training-blocks{display:none!important}
+/* Keep the existing Home training hub and advanced routes reachable during
+   onboarding and program setup. Reduce Home only after explicitly entering
+   the first-workout logger; a stored Full view still overrides this. */
+body.loadnote-simple-view.loadnote-first-workout #home-details,
+body.loadnote-simple-view.loadnote-first-workout #calm-home-secondary,
+body.loadnote-simple-view.loadnote-first-workout #home-empty,
+body.loadnote-simple-view.loadnote-first-workout #panel-dashboard [data-training-hub],
+body.loadnote-simple-view.loadnote-first-workout #training-blocks{display:none!important}
 .more-page { --measure-surface:#fff; --measure-line:#dbe4ef; --measure-muted:#64748b; display:grid; gap:1.25rem; color:#17233b; }
 .more-page.hidden { display:none; }
 .more-page .card { border:1px solid var(--measure-line); border-radius:1rem; padding:1.3rem; min-width:0; background:var(--measure-surface); box-shadow:none; }
