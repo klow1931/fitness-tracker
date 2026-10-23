@@ -85,7 +85,7 @@
     q('exercises').querySelectorAll('input').forEach(e=>e.disabled=true);
     for(const el of [q('goal'),q('equipment'),...d.querySelectorAll('[data-starter-day]')])el.disabled=true;
     q('preview-btn').hidden=true;q('review-label').hidden=true;q('save').hidden=true;q('schedule-panel').hidden=false;
-    message('Reviewed plan saved. No workouts were logged or scheduled.');
+    message('Reviewed plan saved, not scheduled. No workouts were logged. Select Calendar scheduling separately if desired.');
    }catch(error){message(error.message);}finally{busy=false;}
   };
   q('schedule').onclick=async()=>{

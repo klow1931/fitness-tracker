@@ -31,7 +31,7 @@ test('guided setup keeps unknown experience and opens planning without creating 
  await page.locator('[data-beginner-entry=help]').click();await expect(page.locator('#beginner-program-dialog')).toBeVisible();
  await expect(page.locator('#starter-days [data-starter-day]')).toHaveCount(7);
  await page.locator('#starter-close').click();
- await page.evaluate(()=>openProgrammingProfile({guided:true}));await expect(page.locator('#programming-profile-dialog')).toBeVisible();
+ await page.evaluate(()=>openProgrammingProfile({guided:true,onSaved:()=>window.LoadnoteTrainingHubUI?.plan?.()}));await expect(page.locator('#programming-profile-dialog')).toBeVisible();
  await expect(page.locator('#profile-experience')).toHaveValue('unknown');
  for(let step=0;step<3;step++)await page.locator('#programming-profile-dialog [data-wizard-action=next]').click();
  await page.locator('#programming-profile-dialog button[type=submit]').click();

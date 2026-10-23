@@ -49,7 +49,9 @@ test('v3.93 unsaved or failed-review plan cannot modify athlete training',async(
 test('v3.93 unavailable days, edits and missing exercise review are blocked',async({page})=>{
  await page.locator('[data-beginner-entry=help]').click();
  const d=page.locator('#beginner-program-dialog');
- for(const el of await d.locator('[data-starter-day]:checked').all())await el.uncheck();
+ // Uncheck by stable value: the :checked locator shrinks after each click.
+ for(const value of await d.locator('[data-starter-day]:checked').evaluateAll(nodes=>nodes.map(node=>node.value)))
+  await d.locator('[data-starter-day][value="'+value+'"]').uncheck();
  await d.locator('#starter-preview-btn').click();
  await expect(d.locator('#starter-status')).toContainText('Choose two or three');
  await d.locator('[data-starter-day][value="0"]').check();await d.locator('[data-starter-day][value="3"]').check();

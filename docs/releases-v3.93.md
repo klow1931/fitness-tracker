@@ -14,3 +14,6 @@ After v3.92 made the first workout easy to log, v3.93 helps a beginner who does 
 Node tests for all goal/equipment/day combinations, review/save/schedule boundaries, unknown loads and RPE, unchanged history and invalid inputs. Browser tests for first-run choices, draft invalidation, explicit save, failed storage, no automatic scheduling, responsive form and the existing advanced routes. Complete static, Node, security, Chromium, iPhone WebKit and unsigned native checks before merge.
 
 **v3.93.0**, unsigned beta **35300**, schema **34** unchanged. v3.92.0 stays the rollback.
+
+## v3.93 CI follow-up
+Restored the legacy guided-profile onboarding test's explicit post-save navigation callback; the separate starter-plan path remains its own three-question dialog. The starter save confirmation now says **not scheduled** until the athlete separately approves Calendar scheduling. The validation test unchecks saved training days by stable checkbox value so a changing checked selector cannot target a different element. No change to saved workouts, training targets, or scheduling permissions.
