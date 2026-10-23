@@ -1,6 +1,9 @@
 # Loadnote
 
-**v3.90.0 · Development build.**  
+**v3.91.0 · Development build.**  
+[Coach v3.91 release notes](docs/releases-v3.91.md): Compare two named competition lifts against each lift's own RPE-aware history; ask about missing data or switch the lift pair without equating raw squat and bench loads.
+
+**Earlier v3.90 evidence-transparency milestone.**  
 [Coach v3.90 release notes](docs/releases-v3.90.md): The offline Coach can now answer follow-ups about where multi-part training evidence came from and what saved data is missing or limited, without inventing outcomes.
 
 **Earlier v3.89 concise explanations milestone.**  

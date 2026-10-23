@@ -1,3 +1,11 @@
+# v3.91.0 — Deterministic Two-Lift Coach Conversations
+
+- Compare two explicitly named competition lifts using each movement's existing mapped, RPE-aware ProgressStory windows; do not compare raw kg/lb numbers across different lifts.
+- Support short named-pair follow-ups and questions about missing/underlying comparison data. Athlete-authored recent context only; reset on unrelated or health-sensitive turns.
+- Require clarification for one-lift or three-lift comparison requests. Unmapped or insufficient histories remain visibly limited; never claim physiological causality or apply a programming change.
+- Add Node and real-browser regression coverage, include new module in both HTML and PWA offline cache, update release metadata.
+- Release **3.91.0**, unsigned beta **35100**, schema **34** unchanged and no migration.
+
 # v3.90.0 — Evidence Sources and Missing-Data Coach Dialogues
 
 - Respond to natural follow-up questions such as "Where did that come from?", "What data is that based on?", "What's missing?" and "What are the limitations?" after a multi-part verified training conversation.
