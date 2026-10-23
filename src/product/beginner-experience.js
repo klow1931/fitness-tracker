@@ -17,11 +17,23 @@
   storage.setItem(KEY,JSON.stringify(next));
   return next;
  }
+ // Only new users without saved training or an explicit setting start Simple.
+ function isNewAthlete(state){
+  const s=state&&typeof state==='object'?state:{};
+  if(s.onboardingDismissed)return false;
+  return !['workouts','programmingProfiles','reviewedPrograms','phasePrograms',
+   'meetCycles','programs','sportPrograms','customPrograms','scheduledSessions',
+   'trainingBlocks'].some(key=>Array.isArray(s[key])&&s[key].length>0);
+ }
+ // Visual-only milestones: these do not complete a set or persist a workout.
+ function guideStage({namedExercise=false,enteredSet=false,reviewOpen=false}={}){
+  return reviewOpen?3:!namedExercise?0:!enteredSet?1:2;
+ }
  const steps=[
   {title:'1. Choose your exercise',body:'Add an exercise you plan to do, or use a template. You do not need a program or a one-rep max to keep a workout log.'},
   {title:'2. Record what you actually did',body:'Targets are the plan, not proof of completed work. Enter your actual weight and reps (or duration). RPE means effort on a 1–10 scale; leave it blank if you are unsure. Never guess a max just to get started.'},
-  {title:'3. Complete work, then rest',body:'For a planned workout, mark only the sets or cardio you actually completed as done. Unfinished planned work is not saved as completed. In an empty workout, entered actuals can be saved without the checklist. Rest controls are optional; check the timer before continuing.'},
+  {title:'3. Review the work you did',body:'When finished, choose Review workout or Finish. For planned sessions, mark only the work you completed as done. Rest controls are optional. Opening review does not save anything.'},
   {title:'4. Review, then save',body:'Choose Review workout (or Finish). Check the date, exercises and actual work, then choose Save workout in the review. Opening review does not save. Wait for the saved confirmation; if saving fails, keep this page open and retry.'}
  ];
- return {KEY,normalize,read,write,steps};
+ return {KEY,normalize,read,write,steps,isNewAthlete,guideStage};
 });

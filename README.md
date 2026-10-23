@@ -1,5 +1,9 @@
 # Loadnote
 
+**v3.92.0 · Development build.**
+[Beginner First Workout v3.92 release notes](docs/releases-v3.92.md): One clear workout entry, Simple Home for new users, and contextual logging guidance through review and explicit save.
+
+**Earlier v3.91.1 cleanup.**
 **v3.91.1 · Development build.**
 [Review fixes](docs/releases-v3.91.1.md): Clear percentage references on movement replacement, clarify ambiguous availability, review days and duration together, and preserve concise two-lift follow-ups.
 [Coach v3.91 release notes](docs/releases-v3.91.md): Compare two named competition lifts against each lift's own RPE-aware history; ask about missing data or switch the lift pair without equating raw squat and bench loads.

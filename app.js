@@ -2687,6 +2687,7 @@ async function initApp() {
       window.LoadnoteAppearance?.listen(()=>{applyDark();});
       maybeAutoGymMode();
       applyGymMode();
+      window.LoadnoteBeginnerUI?.initialize?.(data);
       updateOnboardingUI();
       const checkToggle = document.getElementById('gym-checklist-toggle');
       if (checkToggle) checkToggle.checked = !!data.checklistMode;

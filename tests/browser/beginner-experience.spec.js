@@ -4,10 +4,12 @@ test.beforeEach(async({page})=>{
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
  await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);
 });
-test('three paths, opt-in Simple view and Full view survive reload without changing training',async({page})=>{
+test('three paths, beginner-first Simple view and reversible Full view preserve training',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify({profiles:data.programmingProfiles,workouts:data.workouts,roles:data.exerciseRoles}));
- await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('#beginner-simple-choice')).toBeChecked();
  await expect(page.locator('[data-beginner-entry]')).toHaveCount(3);
+ await expect(page.locator('[data-beginner-entry=log]')).toContainText('Start my first workout');
  await page.locator('#beginner-simple-choice').check();await page.locator('[data-beginner-entry=log]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();await expect(page.locator('#beginner-workout-guide')).toBeInViewport();
  await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
@@ -34,21 +36,30 @@ test('guided setup keeps unknown experience and opens planning without creating 
  expect(await page.evaluate(()=>LoadnoteProgrammingProfile.current(data.programmingProfiles).context.experience)).toBe('unknown');
  expect(await page.evaluate(()=>data.scheduledSessions.length+data.workouts.length+data.programs.length)).toBe(0);
 });
-test('guide next, hide and replay never enter or complete work; narrow screen stays usable',async({page})=>{
+test('guided first workout follows actual input, review never saves, and tips can be replayed',async({page})=>{
  await page.locator('[data-beginner-entry=log]').click();const guide=page.locator('#beginner-workout-guide');
- const before=await page.evaluate(()=>{const d=captureLoggerDraft();delete d.updatedAt;return d;});
- for(let i=0;i<3;i++)await guide.locator('[data-guide=next]').click();
- await expect(guide).toContainText('Opening review does not save');
- expect(await page.evaluate(()=>{const d=captureLoggerDraft();delete d.updatedAt;return d;})).toEqual(before);
+ await expect(guide).toContainText('1. Choose your exercise');
+ await page.locator('#exercise-rows .ex-name').first().fill('Bench Press');
+ await expect(guide).toContainText('2. Record what you actually did');
+ await page.locator('#exercise-rows .set-weight').first().fill('40');
+ await page.locator('#exercise-rows .set-reps').first().fill('5');
+ await expect(guide).toContainText('3. Review the work you did');
+ await page.evaluate(()=>{reviewWorkout();LoadnoteBeginnerUI.renderGuide();});
+ await expect(page.locator('#workout-review')).toBeVisible();
+ await expect(page.locator('#beginner-review-tip')).toBeVisible();
+ await expect(page.locator('#beginner-review-tip')).toContainText('has not saved');
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
+ await page.locator('#back-to-workout').click();
  await guide.locator('[data-guide=skip]').click();await expect(guide).toBeHidden();
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
- await page.evaluate(()=>showTab('profile'));await page.locator('#profile-replay-guide').click();await expect(guide).toBeVisible();await expect(guide).toContainText('1. Choose your exercise');
+ await page.evaluate(()=>showTab('profile'));await page.locator('#profile-replay-guide').click();
+ await expect(guide).toBeVisible();
  await page.setViewportSize({width:320,height:844});expect(await guide.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
 });
 test('failed preference write keeps view and entry unchanged',async({page})=>{
  await page.evaluate(()=>{window.originalSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='loadnote.experience.v1')throw Error('quota');return window.originalSet.call(this,k,v);};});
  await page.locator('#beginner-simple-choice').check();await page.locator('[data-beginner-entry=log]').click();
- await expect(page.locator('#onboarding-card')).toBeVisible();await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('#onboarding-card')).toBeVisible();await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
  expect(await page.evaluate(()=>LoadnoteBeginnerUI.selected())).toBe(false);
 });
 test('only a successfully persisted new workout finishes the guide; blank effort stays unknown',async({page})=>{
@@ -61,4 +72,36 @@ test('only a successfully persisted new workout finishes the guide; blank effort
  expect(await page.evaluate(()=>LoadnoteBeginnerExperience.read(localStorage).guide)).toBe('complete');
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].rpe)).toBeFalsy();
  await expect(page.locator('#beginner-workout-guide')).toBeHidden();
+});
+
+test('existing on-device user without view preference retains Full view',async({page})=>{
+ await page.evaluate(async()=>{
+  data.onboardingDismissed=true;
+  await persistNow(data);
+  localStorage.removeItem(LoadnoteBeginnerExperience.KEY);
+ });
+ await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
+ await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('#onboarding-card')).toBeHidden();
+});
+
+
+test('automatic first-run Simple view preserves Home routes until chosen, while explicit Simple stays simple',async({page})=>{
+ await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('body')).not.toHaveClass(/loadnote-first-workout/);
+ await expect(page.locator('[data-training-hub="full"]')).toBeVisible();
+ await expect(page.locator('#athlete-home-command')).toBeVisible();
+ await expect(page.locator('#home-details')).toBeVisible();
+ // The start action intentionally removes Home clutter only after selection.
+ await page.locator('[data-beginner-entry="log"]').click();
+ await expect(page.locator('body')).toHaveClass(/loadnote-first-workout/);
+ await page.evaluate(()=>showTab('dashboard'));
+ await expect(page.locator('#home-details')).toBeHidden();
+ await page.locator('#simple-show-all').click();
+ await expect(page.locator('#home-details')).toBeVisible();
+ await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await page.evaluate(()=>showTab('profile'));
+ await page.locator('#profile-simple-view').click();
+ await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('body')).toHaveClass(/loadnote-first-workout/);
 });

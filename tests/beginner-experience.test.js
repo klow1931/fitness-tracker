@@ -21,3 +21,15 @@ const current=B.normalize();assert.throws(()=>B.write({setItem(){throw Error('qu
 assert.equal(current.view,'full');
 assert.equal(B.steps.length,4);assert(B.steps[1].body.includes('leave it blank'));assert(B.steps[3].body.includes('does not save'));
 console.log('Beginner view preference normalization, persistence, failure and non-mutation tests passed');
+
+assert.equal(B.isNewAthlete({}),true);
+assert.equal(B.isNewAthlete({exerciseCatalog:[{id:'seed'}]}),true,'Seed exercises do not constitute training history');
+for(const key of ['workouts','programmingProfiles','reviewedPrograms','programs','scheduledSessions','sportPrograms'])
+ assert.equal(B.isNewAthlete({[key]:[{id:'existing'}]}),false,key+' must preserve established user view');
+assert.equal(B.isNewAthlete({onboardingDismissed:true}),false);
+assert.equal(B.guideStage(),0);
+assert.equal(B.guideStage({namedExercise:true}),1);
+assert.equal(B.guideStage({namedExercise:true,enteredSet:true}),2);
+assert.equal(B.guideStage({namedExercise:true,enteredSet:true,reviewOpen:true}),3);
+assert.equal(B.guideStage({reviewOpen:true}),3,'Review is visual only; not proof of saved work');
+console.log('v3.92 first-use eligibility and read-only logging milestones passed');

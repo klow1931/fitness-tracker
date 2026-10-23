@@ -93,26 +93,24 @@
     <div id="onboarding-card" class="card onboarding-card hidden mb-4">
       <div class="flex items-start justify-between gap-3 mb-2">
         <div>
-          <h2 class="font-semibold">Set up Loadnote</h2>
-          <p class="text-xs text-slate-500">Choose where to start. No account or one-rep max needed to log a workout.</p>
+          <h2 class="font-semibold">Welcome to Loadnote</h2>
+          <p class="text-xs text-slate-500">Start with one workout. You can set up a training program later.</p>
         </div>
         <button onclick="dismissOnboarding()" class="btn-secondary text-xs py-1 px-2">Dismiss</button>
       </div>
-      <div class="grid sm:grid-cols-3 gap-2 text-sm">
+      <button type="button" class="onboard-tip beginner-first-workout" data-beginner-entry="log">
+        <span aria-hidden="true">▶</span>
+        <span><b>Start my first workout</b><span class="beginner-entry-desc">Add an exercise, enter your sets, and save. No program or max required.</span></span>
+      </button>
+      <div class="beginner-secondary-choices">
         <button type="button" class="onboard-tip" data-beginner-entry="help">
-          <span class="onboard-num">1</span>
-          <span><b>Help me get started</b><br><span class="text-slate-500 text-xs">Choose a goal, schedule and equipment, then review a plan</span></span>
+          <span><b>Help me create a plan</b><span class="beginner-entry-desc">Choose your goal, days, and equipment</span></span>
         </button>
         <button type="button" class="onboard-tip" data-beginner-entry="program">
-          <span class="onboard-num">2</span>
-          <span><b>I already have a program</b><br><span class="text-slate-500 text-xs">Write it, upload it, or log your own sessions</span></span>
-        </button>
-        <button type="button" class="onboard-tip" data-beginner-entry="log">
-          <span class="onboard-num">3</span>
-          <span><b>Just log a workout</b><br><span class="text-slate-500 text-xs">Start an empty log with step-by-step tips</span></span>
+          <span><b>I already have a program</b><span class="beginner-entry-desc">Bring your own sessions</span></span>
         </button>
       </div>
-      <label class="beginner-simple-choice"><input type="checkbox" id="beginner-simple-choice"> Use Simple view — fewer Home panels, with all tools still available</label>
+      <label class="beginner-simple-choice"><input type="checkbox" id="beginner-simple-choice"> Keep Home simple — all training tools remain available</label>
       <button id="onboarding-account" type="button" class="btn-secondary" onclick="showTab('profile'); document.getElementById('profile-account-card')?.scrollIntoView({block:'start'})"><b>Account is optional</b><span class="text-slate-500"> · backup and sync</span></button>
     </div>
 
@@ -2028,6 +2026,7 @@
   <dialog id="workout-review" aria-labelledby="workout-review-title" class="session-review">
     <h2 id="workout-review-title">Review your workout</h2>
     <div id="workout-review-content"></div>
+    <p id="beginner-review-tip" class="beginner-review-tip" hidden>Check your actual exercises and sets, then choose <b>Save workout</b>. Opening this review has not saved your session.</p>
     <p id="workout-save-status" role="status"></p>
     <div class="session-review-actions">
       <button id="back-to-workout" type="button" class="btn-secondary" data-workout-action="review-back">Back to workout</button>

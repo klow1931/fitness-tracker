@@ -32,11 +32,14 @@ body.dark .program-field-error{color:#fca5a5}
 .beginner-guide p{margin:.5rem 0}
 .beginner-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}
 .beginner-actions button,.beginner-guide button{min-height:44px}
-body.loadnote-simple-view #home-details,
-body.loadnote-simple-view #calm-home-secondary,
-body.loadnote-simple-view #home-empty,
-body.loadnote-simple-view #panel-dashboard [data-training-hub],
-body.loadnote-simple-view #training-blocks{display:none!important}
+/* Keep the existing Home training hub and advanced routes reachable during
+   onboarding and program setup. Reduce Home only after explicitly entering
+   the first-workout logger; a stored Full view still overrides this. */
+body.loadnote-simple-view.loadnote-first-workout #home-details,
+body.loadnote-simple-view.loadnote-first-workout #calm-home-secondary,
+body.loadnote-simple-view.loadnote-first-workout #home-empty,
+body.loadnote-simple-view.loadnote-first-workout #panel-dashboard [data-training-hub],
+body.loadnote-simple-view.loadnote-first-workout #training-blocks{display:none!important}
 .more-page { --measure-surface:#fff; --measure-line:#dbe4ef; --measure-muted:#64748b; display:grid; gap:1.25rem; color:#17233b; }
 .more-page.hidden { display:none; }
 .more-page .card { border:1px solid var(--measure-line); border-radius:1rem; padding:1.3rem; min-width:0; background:var(--measure-surface); box-shadow:none; }
@@ -2103,3 +2106,13 @@ body.dark .weekly-target{border-color:#475569}
 .custom-program-percent > summary { cursor:pointer; min-height:44px; font-weight:600; padding:.5rem; }
 .custom-program-percent > label { display:block; margin:.5rem 0; }
 .custom-program-row [data-custom-field="reps"] input { min-width:0; }
+
+/* v3.92 first workout entry prioritizes training while keeping all paths. */
+.beginner-first-workout{display:flex;width:100%;min-height:76px;align-items:center;gap:.8rem;text-align:left;padding:1rem 1.2rem;margin:.85rem 0;border:2px solid var(--accent,#6366f1);border-radius:1rem;background:var(--surface-soft,#eef2ff);cursor:pointer}
+.beginner-first-workout > span:first-child{flex:0 0 1.6rem;font-size:1.35rem}
+.beginner-first-workout b{display:block;font-size:1.1rem}
+.beginner-entry-desc{display:block;margin-top:.2rem;font-size:.84rem;line-height:1.45}
+.beginner-secondary-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.beginner-secondary-choices .onboard-tip{min-height:68px;width:100%;text-align:left}
+.beginner-review-tip{padding:.8rem;border:1px solid var(--border,#94a3b8);border-radius:.7rem}
+@media(max-width:520px){.beginner-secondary-choices{grid-template-columns:1fr}}
