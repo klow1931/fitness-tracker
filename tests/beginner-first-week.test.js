@@ -7,7 +7,7 @@ const Schedule=require('../src/product/schedule');
 const asOf='2026-10-23';
 const logged=(id,date)=>({id,date,exercises:[{name:'Goblet Squat',type:'strength',sets:[{weight:15,reps:8,rpe:null}]}]});
 const plan=Intent.createPrescription([{name:'Goblet Squat',type:'strength',sets:[{weight:null,reps:8,targetRpe:null}]}],{type:'manual',label:'Starter'});
-const session=(date,id='starter')=>Schedule.create([],{name:'Starter full body',date,role:'general',prescription:plan},{id,now:'2026-10-20T12:00:00.000Z'});
+const session=(date,id='starter')=>Schedule.create([],{name:'Starter full body',date,role:'mixed',prescription:plan},{id,now:'2026-10-20T12:00:00.000Z'});
 const state={workouts:[],scheduledSessions:[]};
 const before=JSON.stringify(state);
 function observe(s,day=asOf,draft=null,entry='log'){
