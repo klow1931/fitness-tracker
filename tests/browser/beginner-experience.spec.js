@@ -84,3 +84,24 @@ test('existing on-device user without view preference retains Full view',async({
  await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
  await expect(page.locator('#onboarding-card')).toBeHidden();
 });
+
+
+test('automatic first-run Simple view preserves Home routes until chosen, while explicit Simple stays simple',async({page})=>{
+ await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('body')).not.toHaveClass(/loadnote-first-workout/);
+ await expect(page.locator('[data-training-hub="full"]')).toBeVisible();
+ await expect(page.locator('#athlete-home-command')).toBeVisible();
+ await expect(page.locator('#home-details')).toBeVisible();
+ // The start action intentionally removes Home clutter only after selection.
+ await page.locator('[data-beginner-entry="log"]').click();
+ await expect(page.locator('body')).toHaveClass(/loadnote-first-workout/);
+ await page.evaluate(()=>showTab('dashboard'));
+ await expect(page.locator('#home-details')).toBeHidden();
+ await page.locator('#simple-show-all').click();
+ await expect(page.locator('#home-details')).toBeVisible();
+ await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await page.evaluate(()=>showTab('profile'));
+ await page.locator('#profile-simple-view').click();
+ await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+ await expect(page.locator('body')).toHaveClass(/loadnote-first-workout/);
+});
