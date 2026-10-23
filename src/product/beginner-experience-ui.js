@@ -2,17 +2,18 @@
 (function(){
  'use strict';
  const model=window.LoadnoteBeginnerExperience;
- let preference=model.normalize(),loaded=false;
+ let preference=model.normalize(),loaded=false,viewIsExplicit=false;
  function load(){if(!loaded){try{preference=model.read(localStorage);}catch{}loaded=true;}return preference;}
  function initialize(state){
   try{
    const raw=localStorage.getItem(model.KEY);
+   viewIsExplicit=raw!==null;
    preference=raw===null&&model.isNewAthlete(state)?model.normalize({view:'simple'}):model.read(localStorage);
-  }catch{preference=model.normalize();}
+  }catch{preference=model.normalize();viewIsExplicit=false;}
   loaded=true;apply();
  }
  function change(patch){
-  try{preference=model.write(localStorage,load(),patch);}
+  try{preference=model.write(localStorage,load(),patch);viewIsExplicit=true;}
   catch{apply();window.showToast?.('Could not save your view preference on this device. Nothing was changed.','error');return false;}
   apply();return true;
  }
@@ -21,7 +22,7 @@
   document.body.classList.toggle('loadnote-simple-view',p.view==='simple');
   // Fresh installs default to a calm presentation, but do not remove
   // established Home routes before an athlete explicitly chooses first logging.
-  document.body.classList.toggle('loadnote-first-workout',p.entry==='log');
+  document.body.classList.toggle('loadnote-first-workout',p.entry==='log'||viewIsExplicit&&p.view==='simple');
   const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=p.view!=='simple';
   const choice=document.getElementById('beginner-simple-choice');if(choice)choice.checked=p.view==='simple';
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
