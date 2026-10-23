@@ -44,6 +44,10 @@
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
+  // Two named competition lifts can be reviewed independently; never compare
+  // absolute loads, infer a causal reason, or authorize a programming change.
+  const liftComparison=(typeof module==='object'&&module.exports?require('./coach-lift-comparison'):globalThis.LoadnoteCoachLiftComparison)?.answer(state,understood,{asOf,unit,history});
+  if(liftComparison)return liftComparison;
   const turn=(typeof module==='object'&&module.exports?require('./coach-turn-context'):globalThis.LoadnoteCoachTurnContext).resolve(state,understood,history),intent={...resolve(turn.question,history),question:clean(question),resolvedQuestion:turn.question,movement:turn.movement||null},q=turn.question;
   if(turn.clarification)return {text:turn.clarification,source:'Shared coaching · clarification',readOnly:true,evidence:[],intent};
   // Exact supported options come from the already reviewed weekly engine.
