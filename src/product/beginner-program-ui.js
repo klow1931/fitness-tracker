@@ -2,7 +2,7 @@
 (function(){
  'use strict';
  const B=()=>window.LoadnoteBeginnerProgram,C=()=>window.LoadnoteCustomProgram;
- const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&amp;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  // Never directly alter completed workouts or issue an automatic schedule.
  let busy=false;
  function open(){
@@ -68,7 +68,7 @@
     q('review-label').hidden=false;q('save').hidden=false;message('Review the plan and confirm to save. Nothing has been scheduled.');
    }catch(error){invalidate();message(error.message);}
   }
-  q('preview-btn').onclick=()=>{if(!edited)renderEdits();preview();};
+  q('preview-btn').onclick=preview;
   for(const el of [q('goal'),q('equipment'),...d.querySelectorAll('[data-starter-day]')])el.addEventListener('change',()=>{
    if(storedId)return;
    edited=null;q('exercises').hidden=true;q('exercises').replaceChildren();invalidate();
