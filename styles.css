@@ -2128,3 +2128,9 @@ body.dark .weekly-target{border-color:#475569}
 .starter-exercise-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(65px,1fr) minmax(65px,1fr);gap:.4rem;margin:.5rem 0}
 .starter-exercise-row input{min-width:0}
 @media(max-width:400px){.starter-exercise-row{grid-template-columns:1fr 1fr}.starter-exercise-row label:first-child{grid-column:1/-1}#starter-days{grid-template-columns:1fr}}
+
+/* v3.94: lightweight beginner handoff inside the existing Today card. */
+.beginner-first-week{margin-top:1rem;border-top:1px solid var(--border,#94a3b8);padding-top:1rem;display:grid;gap:.4rem;min-width:0}
+.beginner-first-week h3{font-size:1rem;font-weight:700;margin:0;overflow-wrap:anywhere}
+.beginner-first-week p{margin:0;overflow-wrap:anywhere;line-height:1.5}
+.beginner-first-week button{justify-self:start;min-height:44px;max-width:100%;white-space:normal}

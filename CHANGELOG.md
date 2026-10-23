@@ -1,3 +1,11 @@
+# v3.94.0 — Guided Beginner First Week
+
+- Add a read-only first-week Home handoff after an athlete selects the beginner logging or three-question program path; never show it to experienced athletes who haven't chosen that path.
+- Use existing Today, Continuity and Calendar evidence for the next action: resume an open draft, start today's already scheduled workout through its existing gate, review unresolved earlier Calendar sessions, view a scheduled future workout, or confirm saved training in History.
+- Do not infer attendance from scheduled plans, invent a training day, fill starting weights or RPE, or alter the log. Hide the guide after the first three confirmed actual workouts or more than one week after the first recorded session.
+- Add focused pure-model and browser tests covering fresh navigation, historical cutoff, missing RPE, unfinished drafts and immutable state; preserve current shell, offline caching and all existing training engines.
+- v3.94.0; unsigned native beta 35400; data schema 34 unchanged.
+
 # v3.93.0 — Beginner Program Builder
 
 - “Help me create a plan” leads to three choices: training goal, available days (two or three), and equipment.
