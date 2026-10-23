@@ -20,6 +20,8 @@ const ASSETS = [
   './src/product/edit-undo-ui.js',
   './src/product/draft-recovery.js',
   './src/product/beginner-experience.js',
+  './src/product/beginner-program.js',
+  './src/product/beginner-program-ui.js',
   './src/product/beginner-experience-ui.js',
   './privacy.html', './support.html', './delete-account.html', './src/product/plate-calculator.js', './src/product/decision-boundaries.js',
   './src/product/training-week.js',
