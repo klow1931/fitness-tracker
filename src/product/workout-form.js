@@ -237,7 +237,7 @@
         <span class="set-number" aria-label="Set number"></span>${checkHtml}
         ${measureInput}
         <span class="text-slate-400">${isDuration ? 'sec ×' : '×'}</span>
-        <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" title="Load (0 for bodyweight holds)" />
+        <input type="number" class="input set-weight w-24" placeholder="${unitLabel()}" min="0" step="0.5" value="${displayWeight}" title="Load used; enter 0 for bodyweight or no added load" />
         <input type="number" class="input set-rpe w-16" placeholder="RPE" min="1" max="10" step="0.5" value="${set.rpe || ''}" title="RPE 1-10" />
         <button type="button" aria-label="Remove set" data-workout-action="remove-set" class="text-red-500 text-sm">✕</button>
         <small class="set-target-note" hidden></small>

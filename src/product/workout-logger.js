@@ -82,6 +82,8 @@ function validateWorkoutForm() {
     for (const set of row.querySelectorAll('.sets-container > div')) {
       const measure = set.querySelector('.set-reps, .set-duration');
       if(!eligible(measure))continue;
+      const load=set.querySelector('.set-weight');
+      if(Number(measure.value)>0&&load&&load.value.trim()==='')return loggerValidationFailure(load,'Enter the load you used, or explicitly enter 0 for bodyweight / no added load. A blank load is unknown.');
       if ([...set.querySelectorAll('input[type=number]')].some(i => i.value !== '') && !measure.value) {
         return loggerValidationFailure(measure,'Enter reps or hold seconds for each filled set.');
       }

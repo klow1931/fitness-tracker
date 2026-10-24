@@ -59,6 +59,11 @@
     detail:'Next scheduled: '+next.date+' · '+String(next.name||'Workout')+
      '. That is a plan, not a completed session.'};
   }
+  if(!count||latest?.date<asOf){
+   let plans=[];try{const Starter=typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram;plans=Starter?.saved(state,{asOf,unscheduled:true})||[];}catch{}
+   if(plans.length)return {...status,action:'starter',label:'Review a workout from your saved plan',
+    detail:'Your starter plan is saved but not scheduled. Choose a workout to review, then load an unscheduled draft or explicitly add the plan to Calendar.'};
+  }
   if(count){
    // Avoid prompting two training sessions on the same day. If the last
    // confirmed workout was on a prior day and no session is scheduled,

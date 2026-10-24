@@ -1,6 +1,8 @@
 # Loadnote
 
-**v3.96.0 · Development build.**
+**v3.97.0 · Development build.**
+
+[Beginner review fixes](docs/releases-v3.97.md): Explicit performed loads, fresh cardio readings, supported duration clarification, saved-plan-to-workout review, equipment-compatible starter defaults, and practical offline beginner help.
 [First-week repeat v3.96 release notes](docs/releases-v3.96.md): A returning beginner can reuse the last verified workout as an editable starting point without copying completed sets or RPE into today's history.
 
 **Earlier v3.95 beginner-usability milestone.**
