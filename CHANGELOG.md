@@ -1,3 +1,18 @@
+# v3.98.0 — Near-Frictionless Gym-Floor Logging
+
+## Improvements
+- A quick-completed strength set now requires an explicit performed load, matching final Review: blank is unknown, zero is a valid bodyweight / no-added-load entry. An incomplete load keeps quick RPE and Done controls disabled with an explanatory cue.
+- Tapping an RPE value records that actual effort and checks the set in one action. "Done without RPE" clears any previously typed effort rather than recording it accidentally; Undo restores the prior typed effort without losing load or reps.
+- Same-set reuse requires a recorded source load and never treats an explicitly entered zero load in the destination as a blank row. Prior-session reuse requires a known load and never copies prior RPE or completion.
+- Reusing a target or previous set during an active rest period does not open the numeric keyboard. Existing next-set, timer, review, local draft and workout-history paths remain in place.
+
+## Regression tests and release controls
+- Adds unit and mobile-browser scenarios for missing/zero loads, one-tap RPE, intentionally missing RPE, Undo, bodyweight reuse and rest-time keyboard behavior. Adds the v3.98 browser spec to the mobile WebKit gate.
+- No workout schema changes, migrations, or changes to automatic progression or saved history. Internal weights remain kilograms; display-unit conversion remains owned by existing logging/session code.
+- Acceptance requires Node tests, syntax checks, mobile/native gates, browser CI and actual iPhone/Android interaction verification before store-quality signoff.
+
+Version **3.98.0**, unsigned development build **35800**, schema **34** unchanged. Physical-device and formal accessibility acceptance have not been claimed.
+
 # v3.97.0 — Beginner Review Fixes and Plan Handoff
 
 ## Fixes
