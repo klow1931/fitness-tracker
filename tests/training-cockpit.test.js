@@ -24,6 +24,8 @@ assert.deepEqual(Cockpit.targetSet(plan,{name:'Plank',trackBy:'duration'},0),{
  exercise:'name:plank',weight:0,reps:null,duration:30,targetRpe:6
 });
 assert.equal(Cockpit.targetSet(plan,{exerciseId:'bench',trackBy:'duration'},0),null);
+assert.deepEqual(Cockpit.targetSet({plannedExercises:[{name:'Blank target',sets:[{weight:null,reps:null}]}]},{name:'Blank target'},0),{exercise:'name:blank target',weight:null,reps:null,duration:null,targetRpe:null});
+assert.deepEqual(Cockpit.targetSet({plannedExercises:[{name:'Bodyweight target',sets:[{weight:0,reps:8}]}]},{name:'Bodyweight target'},0),{exercise:'name:bodyweight target',weight:0,reps:8,duration:null,targetRpe:null});
 
 assert.equal(Cockpit.transition(0,1),true);
 assert.equal(Cockpit.transition(1,1),false);
