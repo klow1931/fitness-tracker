@@ -62,3 +62,23 @@ test('v3.93 unavailable days, edits and missing exercise review are blocked',asy
  await expect(d.locator('#starter-status')).toContainText('valid exercise name');
  expect(await page.evaluate(()=>data.customPrograms.length)).toBe(0);
 });
+
+test('v3.95 beginner day selection communicates expected workouts without saving or scheduling',async({page})=>{
+ await page.locator('[data-beginner-entry=help]').click();
+ const d=page.locator('#beginner-program-dialog');
+ const hint=d.locator('#starter-days-hint');
+ await expect(hint).toContainText('3 days selected');
+ await expect(hint).toContainText('12 planned workouts');
+ const checked=await d.locator('[data-starter-day]:checked').evaluateAll(nodes=>nodes.map(el=>el.value));
+ for(const day of checked)await d.locator('[data-starter-day][value="'+day+'"]').uncheck();
+ await expect(hint).toContainText('0 days selected');
+ await expect(d.locator('#starter-days')).toHaveAttribute('aria-invalid','true');
+ await d.locator('[data-starter-day][value="1"]').check();
+ await d.locator('[data-starter-day][value="3"]').check();
+ await expect(hint).toContainText('8 planned workouts');
+ await expect(d.locator('#starter-days')).toHaveAttribute('aria-invalid','false');
+ expect(await page.evaluate(()=>data.customPrograms.length+data.scheduledSessions.length+data.workouts.length)).toBe(0);
+ await d.locator('#starter-preview-btn').click();
+ await expect(d.locator('#starter-plan-preview')).toContainText('8 sessions');
+ await expect(d.locator('#starter-status')).toContainText('Nothing has been scheduled');
+});

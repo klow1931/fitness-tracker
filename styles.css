@@ -2134,3 +2134,8 @@ body.dark .weekly-target{border-color:#475569}
 .beginner-first-week h3{font-size:1rem;font-weight:700;margin:0;overflow-wrap:anywhere}
 .beginner-first-week p{margin:0;overflow-wrap:anywhere;line-height:1.5}
 .beginner-first-week button{justify-self:start;min-height:44px;max-width:100%;white-space:normal}
+
+/* v3.95: compact secondary first-week history action and legible day selection. */
+.beginner-first-week [data-first-week-history]{font-weight:500}
+#starter-days-hint{margin:.35rem 0 0;line-height:1.5}
+#starter-days[aria-invalid="true"] #starter-days-hint{font-weight:600}

@@ -1,5 +1,9 @@
 # Loadnote
 
+**v3.95.0 · Development build.**
+[Beginner usability v3.95 release notes](docs/releases-v3.95.md): After a saved unscheduled workout, the beginner sees the next logging action on a later training day, alongside prior history. The three-choice starter program now explains selected days, projected sessions and invalid selections without saving or scheduling for the user.
+
+**Earlier v3.94 Guided First Week milestone.**
 **v3.94.0 · Development build.**
 [Guided First Week v3.94 release notes](docs/releases-v3.94.md): The existing Home Today card helps new lifters resume unfinished workouts, locate their next actual scheduled session, and recognize saved training without assuming attendance or advancing a plan.
 

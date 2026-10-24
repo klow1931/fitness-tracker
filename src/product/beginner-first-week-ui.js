@@ -12,7 +12,8 @@
   section.className='beginner-first-week';section.setAttribute('aria-label','Your first week');
   section.innerHTML='<p class="more-hint"><b>Your first week</b> · '+result.count+' saved workout'+(result.count===1?'':'s')+'</p>'+
    '<h3>'+esc(result.title)+'</h3><p>'+esc(result.detail)+'</p>'+
-   '<button type="button" class="btn-secondary" data-first-week-action>'+esc(result.label)+'</button>';
+   '<button type="button" class="btn-secondary" data-first-week-action>'+esc(result.label)+'</button>'+ 
+   (result.count>0&&result.action==='log'?'<button type="button" class="btn-secondary" data-first-week-history>See previous workout</button>':'');
   section.querySelector('[data-first-week-action]').addEventListener('click',()=>{
    switch(result.action){
     case 'resume':
@@ -24,10 +25,15 @@
       window.showTab?.('calendar');break;
     case 'history':
       window.showTab?.('workouts');window.showSubTab?.('workouts','wo-history');break;
+    case 'log':
+      window.openFastStartLogger?.({compact:true});break;
     default:
       (host.querySelector('[data-today-resume]')||window.openFastStartLogger)&&
        (host.querySelector('[data-today-resume]')?.click()||(!host.querySelector('[data-today-resume]')&&window.openFastStartLogger?.({compact:true})));
    }
+  });
+  section.querySelector('[data-first-week-history]')?.addEventListener('click',()=>{
+   window.showTab?.('workouts');window.showSubTab?.('workouts','wo-history');
   });
   host.append(section);
  }

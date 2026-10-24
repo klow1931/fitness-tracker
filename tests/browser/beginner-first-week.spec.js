@@ -38,3 +38,23 @@ test('v3.94 first-week next scheduled session is shown as planned, with Calendar
 test('v3.94 no extra first-week panel for an athlete outside guided beginner route',async({page})=>{
  await expect(page.locator('#beginner-first-week')).toHaveCount(0);
 });
+
+test('v3.95 after a saved workout on an earlier day, the beginner can reach the next log or history without auto-logging',async({page})=>{
+ await page.locator('[data-beginner-entry=log]').click();
+ await page.evaluate(()=>{fillWorkoutForm([{name:'Goblet Squat',type:'strength',trackBy:'reps',sets:[{weight:15,reps:8,rpe:''}]}],'',false);reviewWorkout();});
+ await page.locator('#confirm-workout-save').click();
+ await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
+ await page.clock.setSystemTime(new Date('2026-10-24T15:00:00.000Z'));
+ await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ const card=page.locator('#beginner-first-week');
+ await expect(card).toContainText('Log your next workout');
+ await expect(card).toContainText('no training day is assumed');
+ await expect(card.locator('[data-first-week-history]')).toBeVisible();
+ await card.locator('[data-first-week-history]').click();
+ await expect(page.locator('#panel-workouts')).toBeVisible();
+ await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
+ await card.locator('[data-first-week-action]').click();
+ await expect(page.locator('#workout-log-card')).toBeVisible();
+ expect(await page.evaluate(()=>data.workouts.length)).toBe(1);
+ expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets[0].rpe)).toBeFalsy();
+});

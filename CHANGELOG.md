@@ -1,3 +1,11 @@
+# v3.95.0 — Beginner Usability and First-Week Follow-Through
+
+- After a beginner saves a workout on a previous day with no next workout scheduled, give a direct **Log your next workout** route and a separate **See previous workout** action.
+- A workout saved today continues to show **See saved workout**, avoiding a second same-day training prompt. Unfinished drafts, scheduled sessions, unresolved calendar entries and historical cutoffs retain priority.
+- Beginner program day selection now announces its 2–3 day validity and projected number of workouts across four weeks, without automatically saving, confirming completion or scheduling.
+- Add unit and browser coverage for same-day vs later-day follow-through, read-only history, day-selection accessibility and intact review/save boundaries.
+- Release **3.95.0**, unsigned native beta **35500**, schema **34** unchanged. No migration.
+
 # v3.94.0 — Guided Beginner First Week
 
 - Add a read-only first-week Home handoff after an athlete selects the beginner logging or three-question program path; never show it to experienced athletes who haven't chosen that path.

@@ -13,9 +13,9 @@
   let proposal=null,storedId=null,edited=null,signature='';
   const catalog=(data.exerciseCatalog||[]).filter(e=>e&&typeof e.name==='string'&&e.name.length<=160).map(e=>e.name).sort((a,b)=>a.localeCompare(b));
   const choices=(arr)=>arr.map(([id,label])=>'<option value="'+esc(id)+'">'+esc(label)+'</option>').join('');
-  d.innerHTML='<form method="dialog"><h2>Build my first training plan</h2><p>Three choices. Review every workout before saving; nothing is scheduled automatically.</p>'+
+  d.innerHTML='<form method="dialog"><h2>Build my first training plan</h2><p>Choose a goal, training days, and equipment. Preview the workouts, then choose whether to save and schedule them. Nothing is scheduled automatically.</p>'+
    '<label>1. What is your goal?<select class="input" id="starter-goal">'+choices(goalOptions)+'</select></label>'+
-   '<fieldset id="starter-days"><legend>2. Which days can you train? Choose 2 or 3.</legend>'+model.DAY_NAMES.map((day,i)=>'<label><input type="checkbox" data-starter-day value="'+i+'" '+([0,2,4].includes(i)?'checked':'')+'> '+esc(day)+'</label>').join('')+'</fieldset>'+
+   '<fieldset id="starter-days" aria-describedby="starter-days-hint"><legend>2. Which days can you train? Choose 2 or 3.</legend>'+model.DAY_NAMES.map((day,i)=>'<label><input type="checkbox" data-starter-day value="'+i+'" '+([0,2,4].includes(i)?'checked':'')+'> '+esc(day)+'</label>').join('')+'<p id="starter-days-hint" class="more-hint" aria-live="polite"></p></fieldset>'+
    '<label>3. What equipment do you have?<select class="input" id="starter-equipment">'+choices(equipmentOptions)+'</select></label>'+
    '<p class="more-hint">Four weeks of editable full-body workouts. No one-rep max, training history, or login required. Suggested exercises may need substitutions based on your equipment and comfort.</p>'+
    '<button type="button" class="btn-primary" id="starter-preview-btn">Preview my four-week plan</button>'+
@@ -30,6 +30,13 @@
   const q=id=>d.querySelector('#starter-'+id);
   q('goal').value='fitness';q('equipment').value='gym';
   const read=()=>({goal:q('goal').value,equipment:q('equipment').value,days:[...d.querySelectorAll('[data-starter-day]:checked')].map(e=>Number(e.value))});
+  const updateDayHint=()=>{
+   const count=read().days.length,valid=count>=2&&count<=3,hint=d.querySelector('#starter-days-hint');
+   hint.textContent=valid?count+' days selected · '+(count*4)+' planned workouts over four weeks.':
+    count+' days selected · choose two or three to preview a plan.';
+   d.querySelector('#starter-days').setAttribute('aria-invalid',String(!valid));
+  };
+  updateDayHint();
   const fingerprint=()=>JSON.stringify({...read(),edits:edited});
   const message=s=>q('status').textContent=s||'';
   const invalidate=()=>{proposal=null;signature='';q('confirm').checked=false;q('review-label').hidden=true;q('save').hidden=true;q('plan-preview').replaceChildren();message('Preview again after changing choices. No program has been saved.');};
@@ -71,6 +78,7 @@
   q('preview-btn').onclick=preview;
   for(const el of [q('goal'),q('equipment'),...d.querySelectorAll('[data-starter-day]')])el.addEventListener('change',()=>{
    if(storedId)return;
+   updateDayHint();
    edited=null;q('exercises').hidden=true;q('exercises').replaceChildren();invalidate();
   });
   q('save').onclick=async()=>{

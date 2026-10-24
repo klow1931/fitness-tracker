@@ -21,9 +21,13 @@ assert.equal(observe(state,asOf,null,null),null);
 assert.deepEqual(state,JSON.parse(before));
 const saved={...state,workouts:[logged('one','2026-10-21')]};
 let r=observe(saved);
-assert.equal(r.count,1);assert.equal(r.action,'history');
+assert.equal(r.count,1);assert.equal(r.action,'log');assert.equal(r.label,'Log your next workout');
 assert.match(r.detail,/No next session is scheduled/);
+assert.equal(observe({...state,workouts:[logged('same-day',asOf)]}).action,'history','Do not prompt an extra same-day session');
 assert.equal(r.firstDate,'2026-10-21');
+assert.equal(observe({...state,workouts:[logged('older','2026-10-22'),logged('most-recent',asOf)]}).action,'history');
+assert.equal(observe(saved,asOf,{rows:[{name:'Goblet Squat',sets:[{reps:'8',weight:'15'}]}]}).action,'resume',
+ 'An unfinished draft outranks advice to log again');
 assert.equal(observe(saved,'2026-10-28'),null,'Guide expires after the first real training week');
 assert.equal(observe({...state,workouts:[logged('a','2026-10-21'),logged('b','2026-10-22'),logged('c',asOf)]}),null);
 const future={...state,workouts:[logged('future','2026-11-08')]};
