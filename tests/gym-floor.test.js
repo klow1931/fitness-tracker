@@ -10,6 +10,9 @@ assert.deepEqual(Gym.previousPayload({weight:100,reps:5,rpe:9},'reps'),{weight:1
 assert.deepEqual(Gym.previousPayload({weight:0,duration:30,rpe:8},'duration'),{weight:0,duration:30});
 assert.equal(Gym.previousPayload({weight:100,reps:0},'reps'),null);
 assert.equal(Gym.previousPayload(null,'reps'),null);
+assert.deepEqual(Gym.previousPayload({weight:null,reps:5},'reps'),{weight:null,reps:5},'Missing history load is not a zero-load set');
+assert.deepEqual(Gym.previousPayload({weight:'',reps:5},'reps'),{weight:null,reps:5},'Blank history load must remain unknown');
+assert.deepEqual(Gym.previousPayload({weight:'0',reps:5},'reps'),{weight:0,reps:5},'Explicit zero load remains valid');
 
 assert.equal(Gym.nextUnfinishedIndex([{done:true},{done:false},{done:false}],0),1);
 assert.equal(Gym.nextUnfinishedIndex([{done:true},{done:true},{done:false}],1),2);
