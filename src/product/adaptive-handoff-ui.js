@@ -36,6 +36,14 @@
   const explanation=window.LoadnoteAdaptationExplanationUI?.render?.(report.adaptation,{summary:'Why did this change?'})||'';
   return '<div class="adaptive-handoff-changes"><h4>Accepted prescription change</h4>'+rows+explanation+'</div>';
  }
+ function learningHtml(report){
+  const signal=report?.learning;if(!signal)return '';
+  const next=report.status==='updated'
+   ?'This workout alone did not authorize the change. The accepted review below explains which upcoming targets were revised.'
+   :signal.nextStep;
+  return '<div class="adaptive-handoff-learning" data-adaptive-learning><h4>'+esc(signal.heading)+'</h4>'+
+   '<p>'+esc(signal.summary)+'</p><p class="more-hint"><b>Why this next step:</b> '+esc(next)+'</p></div>';
+ }
  function actionLabel(report){
   const kind=report?.lifecycle?.nextAction?.kind;
   if(kind==='review-week')return 'Review week';
@@ -50,7 +58,7 @@
   const view=report.next?'<button type="button" class="'+(review?'btn-secondary':'btn-primary')+'" data-adaptive-next>View next workout</button>':'';
   const reason=report.lifecycle?.nextAction?.kind==='resolve-overdue'?report.reason:report.status==='review-available'?'No future prescription changes until you review and approve a supported choice.':report.status==='updated'?'Your approved changes are shown below.':report.status==='no-next'?'Saved to history. Schedule your next session when ready.':'Saved to history. Your next targets stay as scheduled.';
   return '<section class="adaptive-handoff '+statusClass+'" data-adaptive-handoff><div class="adaptive-handoff-head"><div><p class="eyebrow">NEXT STEP</p><h3>'+esc(report.label)+'</h3></div><span class="badge">'+esc(report.status==='updated'?'Updated':report.status==='review-available'?'Review':report.status==='unchanged'?'Unchanged':'Saved')+'</span></div>'+
-   '<p class="adaptive-handoff-reason">'+esc(reason)+'</p>'+next+'<div class="adaptive-handoff-actions">'+review+view+'<button type="button" class="btn-secondary" data-adaptive-done>Done</button></div>'+changesHtml(report)+'<details class="session-result-evidence"><summary>Training evidence</summary><p>'+esc(report.reason)+'</p>'+performanceHtml(report.performance)+'<p class="more-hint">'+esc(report.notice)+'</p></details></section>';
+   '<p class="adaptive-handoff-reason">'+esc(reason)+'</p>'+learningHtml(report)+next+'<div class="adaptive-handoff-actions">'+review+view+'<button type="button" class="btn-secondary" data-adaptive-done>Done</button></div>'+changesHtml(report)+'<details class="session-result-evidence"><summary>Training evidence</summary><p>'+esc(report.reason)+'</p>'+performanceHtml(report.performance)+'<p class="more-hint">'+esc(report.notice)+'</p></details></section>';
  }
  function bind(host,report,state){
   if(!host||!report)return;
@@ -63,5 +71,5 @@
   });
   host.querySelector('[data-adaptive-done]')?.addEventListener('click',()=>showTab('dashboard'));
  }
- window.LoadnoteAdaptiveHandoffUI={render,bind,performanceHtml,changesHtml};
+ window.LoadnoteAdaptiveHandoffUI={render,bind,performanceHtml,changesHtml,learningHtml};
 })();
