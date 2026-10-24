@@ -31,4 +31,15 @@ assert.equal(Cockpit.transition(1,3),false);
 assert.equal(Cockpit.elapsedMinutes('2026-10-01T12:00:00.000Z','2026-10-01T12:37:59.000Z'),37);
 assert.equal(Cockpit.elapsedMinutes('bad','2026-10-01T12:37:59.000Z'),null);
 
+const prior=[{weight:'102.5',reps:'5',rpe:'8',done:true},{weight:'',reps:'',rpe:'',done:false}];
+assert.deepEqual(Cockpit.repeatCompletedSet(prior,1),{weight:'102.5',measure:'5',fromSet:1});
+assert.equal(Cockpit.repeatCompletedSet(prior,0),null);
+assert.equal(Cockpit.repeatCompletedSet([{...prior[0],done:false},prior[1]],1),null);
+assert.equal(Cockpit.repeatCompletedSet([prior[0],{...prior[1],weight:'0'}],1),null,'Explicit zero must not be overwritten');
+assert.equal(Cockpit.repeatCompletedSet([prior[0],{...prior[1],rpe:'7.5'}],1),null,'Typed actual effort must not be overwritten');
+assert.equal(Cockpit.repeatCompletedSet([{weight:'',reps:'5',done:true},prior[1]],1),null,'Unknown source load is not zero');
+assert.equal(Cockpit.repeatCompletedSet([{weight:'105',reps:'3.5',done:true},prior[1]],1),null,'Fractional strength reps cannot be repeated');
+assert.deepEqual(Cockpit.repeatCompletedSet([{weight:'0',duration:'30',done:true},{weight:'',duration:'',rpe:'',done:false}],1,'duration'),{weight:'0',measure:'30',fromSet:1});
+assert.deepEqual(Cockpit.repeatCompletedSet([{weight:'85',reps:'4',done:true},{weight:'',reps:'',done:false},{weight:'90',reps:'5',done:true},{weight:'',reps:'',done:false}],3),{weight:'90',measure:'5',fromSet:3});
+
 console.log('v2.74 training cockpit preserves display-unit load steps, planned targets and exercise transitions');
