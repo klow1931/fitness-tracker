@@ -9,7 +9,9 @@
  }
  function previousPayload(set,trackBy='reps'){
   if(!set||typeof set!=='object')return null;
-  const weight=Number(set.weight);
+  // An absent load is unknown, not a performed zero-weight set.
+  const hasLoad=set.weight!=null&&String(set.weight).trim()!=='';
+  const weight=hasLoad?Number(set.weight):NaN;
   const measure=trackBy==='duration'?Number(set.duration):Number(set.reps);
   if(!(measure>0))return null;
   const out={weight:Number.isFinite(weight)&&weight>=0?weight:null};
