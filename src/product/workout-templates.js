@@ -2,6 +2,7 @@
     function fillWorkoutForm(exercises, notes, preserveRpe = false, intentOptions = {}) {
       if((exercises||[]).some(e=>e.type==='practice')){showToast('Use the dedicated sport session recorder from Calendar; practice is not strength work.','info');return false;}
       if (loggerHasContent() && !confirm('Replace the current workout draft?')) return false;
+      if(intentOptions.source?.type==='repeated-workout')exercises=exercises.map(e=>{const copy={...e};if(copy.type==='cardio'){delete copy.avgHr;delete copy.targetAvgHr;}return copy;});
       window.LoadnoteEditUndoUI?.clear('logger');
       clearWorkoutRecap();
       pendingProgramSession = null;
@@ -18,7 +19,7 @@
             duration: ex.duration,
             distance: ex.distance,
             distanceUnit: ex.distanceUnit || 'km',
-            avgHr: ex.avgHr, cardioDone: preserveRpe
+            avgHr: preserveRpe ? ex.avgHr : '', cardioDone: preserveRpe
           });
         } else {
           addExerciseRow({

@@ -26,6 +26,8 @@
       window.showTab?.('calendar');break;
     case 'history':
       window.showTab?.('workouts');window.showSubTab?.('workouts','wo-history');break;
+    case 'starter':
+      window.LoadnoteBeginnerProgramUI?.openSaved?.();break;
     case 'log':
       window.openFastStartLogger?.({compact:true});break;
     case 'repeat':

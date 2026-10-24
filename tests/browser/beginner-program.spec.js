@@ -14,6 +14,7 @@ test('v3.93 first-time athlete reviews a three-question program before save and 
  await expect(dialog.locator('#starter-plan-preview')).toContainText('12 sessions');
  await expect(dialog.locator('#starter-plan-preview')).toContainText('Starting weights and RPE targets are blank');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,customPrograms:data.customPrograms,scheduledSessions:data.scheduledSessions}))).toBe(before);
+ await dialog.locator('#starter-edit-details summary').click();
  await dialog.locator('[data-starter-name="0-0"]').fill('Goblet Squat');
  await expect(dialog.locator('#starter-plan-preview')).toBeEmpty();
  await expect(dialog.locator('#starter-save')).toBeHidden();
@@ -57,6 +58,7 @@ test('v3.93 unavailable days, edits and missing exercise review are blocked',asy
  await d.locator('[data-starter-day][value="0"]').check();await d.locator('[data-starter-day][value="3"]').check();
  await d.locator('#starter-preview-btn').click();
  await expect(d.locator('#starter-plan-preview')).toContainText('8 sessions');
+ await d.locator('#starter-edit-details summary').click();
  await d.locator('[data-starter-name="0-1"]').fill('');
  await d.locator('#starter-refresh').click();
  await expect(d.locator('#starter-status')).toContainText('valid exercise name');

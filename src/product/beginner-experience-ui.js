@@ -28,9 +28,9 @@
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
   renderGuide();
  }
- function enter(entry){
+ function enter(entry,{preserveView=false}={}){
   const simple=document.getElementById('beginner-simple-choice')?.checked;
-  if(!change({entry,view:simple?'simple':'full'}))return;
+  if(!change({entry,view:preserveView?load().view:simple?'simple':'full'}))return;
   if(entry==='log'){window.openFastStartLogger?.({compact:true});renderGuide();return;}
   if(entry==='help'){window.LoadnoteBeginnerProgramUI?.open();return;}
   window.showTab?.('coach');window.showSubTab?.('coach','co-programs');
@@ -89,7 +89,7 @@
   });
  }
  function saved({editing=false}={}){if(!editing&&load().guide==='active')change({guide:'complete'});}
- window.LoadnoteBeginnerUI={apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,selected:()=>!!load().entry,entry:()=>load().entry};
+ window.LoadnoteBeginnerUI={start:entry=>enter(entry,{preserveView:true}),apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,selected:()=>!!load().entry,entry:()=>load().entry};
  document.addEventListener('DOMContentLoaded',()=>{
   apply();
   document.querySelectorAll('[data-beginner-entry]').forEach(b=>b.addEventListener('click',()=>enter(b.dataset.beginnerEntry)));
