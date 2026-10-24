@@ -45,9 +45,10 @@
   if(!set)return null;
   return {
    exercise:exerciseIdentity(exercise),
-   weight:Number.isFinite(Number(set.weight))?Number(set.weight):null,
-   reps:Number.isFinite(Number(set.reps))?Number(set.reps):null,
-   duration:Number.isFinite(Number(set.duration))?Number(set.duration):null,
+   // Missing prescription fields are unknown, never zero by coercion.
+   weight:set.weight!=null&&String(set.weight).trim()!==''&&Number.isFinite(Number(set.weight))?Number(set.weight):null,
+   reps:set.reps!=null&&String(set.reps).trim()!==''&&Number.isFinite(Number(set.reps))?Number(set.reps):null,
+   duration:set.duration!=null&&String(set.duration).trim()!==''&&Number.isFinite(Number(set.duration))?Number(set.duration):null,
    targetRpe:Number(set.targetRpe)>=1&&Number(set.targetRpe)<=10?Number(set.targetRpe):null
   };
  }
