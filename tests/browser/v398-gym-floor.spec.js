@@ -47,6 +47,7 @@ test('v3.98 Done without RPE clears typed effort, and undo retains actual load/r
 
 test('v3.98 same-set quick fill never replaces explicitly entered zero',async({page})=>{
  await page.evaluate(()=>{
+  data.gymMode=true;data.gymModeUserSet=true;
   const row=document.querySelector('#exercise-rows > div');
   row.querySelector('.ex-name').value='Bodyweight Hold';
   row.querySelector('.set-weight').value='0';
