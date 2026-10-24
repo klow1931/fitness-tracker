@@ -1,3 +1,16 @@
+# v4.0.0 — Explainable Adaptive Training Loop
+
+## Post-workout learning
+- After saving, the existing adaptive handoff summarizes what is verified in the logged workout against its pre-training prescription: matched loads/reps, known actual-versus-target RPE, effort above cap, and meaningful missing or changed evidence.
+- The handoff explicitly distinguishes unverified timing, no plan, and non-comparable work. Unknown RPE is never inferred and a one-session result is not presented as automatic programming authority.
+- The existing weekly/phase review and approved Calendar revision remain the sole paths for changing future targets. Accepted changes retain their original before/after history and evidence-based explanation.
+- The workout-feedback module now initializes before the adaptive handoff so the existing verified comparison is shared rather than duplicated.
+
+## Validation and safety
+- New deterministic unit and browser acceptance cases cover exact comparison, above-cap effort, missing RPE, changed work, bad timing, free workouts and zero-weight sets. Include v4 browser acceptance in selected iPhone WebKit checks.
+- No data migration, changes to stored workout records, kg/lb conversion, e1RM, progression rules, or training-max policies. Schema **34** unchanged.
+- Version **4.0.0**, unsigned build **36000**. Physical-device checks remain separate from automated CI.
+
 # v3.99.0 — Faster Between-Set Logging and Mobile Undo
 
 ## Logging improvements
