@@ -101,3 +101,27 @@ test('v3.99 narrow phone shows accessible Undo without horizontal overflow',asyn
  await dock.locator('[data-gym-undo]').click();
  await expect(page.locator('.set-done-check').first()).not.toBeChecked();
 });
+
+test('v3.99 unknown previous load is visible as context but cannot be reused as zero',async({page})=>{
+ await page.evaluate(()=>{
+  data.unit='kg';updateUnitToggle();
+  data.workouts=[{id:'prior',date:'2026-01-01',exercises:[{name:'Bench Press',type:'strength',trackBy:'reps',sets:[{weight:null,reps:5,rpe:8}]}]}];
+  const name=document.querySelector('.ex-name');
+  name.value='Bench Press';name.dispatchEvent(new Event('input',{bubbles:true}));
+  refreshGymFloorUI();refreshTrainingCockpit();
+ });
+ const cockpit=page.locator('#training-cockpit');
+ await expect(cockpit).toContainText('Last');
+ await expect(cockpit).not.toContainText('0 kg');
+ await expect(cockpit.locator('[data-cockpit-previous]')).toHaveCount(0);
+ await expect(page.locator('[data-gym-use-last]')).toHaveCount(0);
+ await page.evaluate(()=>{
+  data.workouts[0].exercises[0].sets[0].weight=0;
+  refreshGymFloorUI();refreshTrainingCockpit();
+ });
+ await expect(cockpit).toContainText('0 kg');
+ await expect(cockpit.locator('[data-cockpit-previous]')).toBeVisible();
+ await cockpit.locator('[data-cockpit-previous]').click();
+ await expect(page.locator('.set-weight').first()).toHaveValue('0');
+ await expect(page.locator('.set-rpe').first()).toHaveValue('');
+});
