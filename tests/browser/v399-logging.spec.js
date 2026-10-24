@@ -83,7 +83,13 @@ test('v3.99 dock Undo is one tap, restores effort, preserves load and removes st
  expect(await page.evaluate(()=>LoadnoteRestTimer.snapshot().active)).toBe(false);
  await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
  await expect(dock.locator('[data-gym-undo]')).toBeVisible();
- await page.locator('.set-reps').first().fill('10');
+ // Completed exercises collapse in execution mode. Reopen the set through
+ // the visible workout UI before editing it to invalidate the Undo checkpoint.
+ const completedRow=page.locator('#exercise-rows > div').first();
+ await expect(completedRow).toHaveClass(/training-collapsed/);
+ await completedRow.getByRole('button',{name:'Show sets',exact:true}).click();
+ await expect(completedRow).not.toHaveClass(/training-collapsed/);
+ await completedRow.locator('.set-reps').first().fill('10');
  await expect(dock.locator('[data-gym-undo]')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
