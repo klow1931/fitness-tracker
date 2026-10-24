@@ -120,6 +120,12 @@
   };
  }
  function changed(input){input?.dispatchEvent(new Event('input',{bubbles:true}));}
+ function focusForEntry(input,select=false){
+  // Rest is for recovery, not an instruction to reopen the numeric keyboard.
+  if(window.LoadnoteRestTimer?.snapshot?.().active)return;
+  input?.focus({preventScroll:true});
+  if(select)try{input?.select();}catch{}
+ }
  function useTarget(){
   const ctx=current(),value=target(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx);
@@ -127,12 +133,12 @@
   const amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
   if(inputs.measure&&amount!=null){inputs.measure.value=String(amount);changed(inputs.measure);}
   saveLoggerDraft();window.updateTrainingFlow?.();render();
-  inputs.rpe?.focus({preventScroll:true});
+  focusForEntry(inputs.rpe);
  }
  function adjust(delta){
   const ctx=current(),input=activeInputs(ctx).weight;if(!input)return;
   const next=H()?.adjustDisplayWeight(input.value,delta);if(next==null)return;
-  input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();input.focus({preventScroll:true});try{input.select();}catch{}
+  input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();focusForEntry(input,true);
  }
  function usePrevious(){
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
@@ -141,7 +147,7 @@
   if((inputs.weight?.value!==''||inputs.measure?.value!=='')&&!confirm('Replace this set’s load and reps or duration with the previous session? Effort and completion stay unchanged.'))return;
   if(inputs.weight){inputs.weight.value=String(Math.round(toDisplay(value.weight)*100)/100);changed(inputs.weight);}
   if(inputs.measure){inputs.measure.value=String(amount);changed(inputs.measure);}
-  saveLoggerDraft();window.updateTrainingFlow?.();render();inputs.rpe?.focus({preventScroll:true});
+  saveLoggerDraft();window.updateTrainingFlow?.();render();focusForEntry(inputs.rpe);
  }
  function focusSet(set){
   if(!set)return;

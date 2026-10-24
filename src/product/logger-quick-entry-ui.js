@@ -32,6 +32,12 @@
  function setState(set,active){
   set.classList.toggle('logger-active-set',active);
   const host=bar(set);host.hidden=!(active&&H().entered(snapshot(set)));
+  const needsLoad=set.querySelector('.set-weight')?.value.trim()==='';
+  const label=host.querySelector('.quick-set-label');
+  const nextLabel=needsLoad?'Enter load (0 for bodyweight) to log':'Log set · tap RPE';
+  // Avoid redundant DOM writes: the logger observes these rows for changes.
+  if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;
+  host.querySelectorAll('[data-quick-rpe],[data-quick-done]').forEach(button=>{if(button.disabled!==needsLoad)button.disabled=needsLoad;});
  }
  function rows(){return [...document.querySelectorAll('#exercise-rows .sets-container > div')];}
  function activeSet(){
@@ -46,12 +52,14 @@
  function complete(set,rpe){
   if(!set?.isConnected||set.querySelector('.set-done-check')?.checked)return false;
   const row=set.closest('#exercise-rows > div'),name=row?.querySelector('.ex-name');
-  const values={...snapshot(set),name:name?.value||'',trackBy:row?.dataset.trackBy,weight:set.querySelector('.set-weight')?.value??'',rpe:rpe??set.querySelector('.set-rpe')?.value??''};
+  // Null is the explicit 'Done without RPE' action; undefined retains typed effort.
+  const effort=rpe===null?'':rpe===undefined?(set.querySelector('.set-rpe')?.value??''):rpe;
+  const values={...snapshot(set),name:name?.value||'',trackBy:row?.dataset.trackBy,weight:set.querySelector('.set-weight')?.value??'',rpe:effort};
   const invalid=H().completionError(values);
   if(invalid){loggerValidationFailure(invalid.field==='name'?name:set.querySelector('.set-'+invalid.field),invalid.message);return false;}
   window.LoadnoteAccessibility?.clearErrors();
   const entry={set,rpe:set.querySelector('.set-rpe')?.value||'',restBefore:window.LoadnoteRestTimer?.checkpoint?.()};
-  const input=set.querySelector('.set-rpe');if(rpe!=null&&input){input.value=String(H().normalizeRpe(rpe));input.dispatchEvent(new Event('input',{bubbles:true}));}
+  const input=set.querySelector('.set-rpe');if(rpe!==undefined&&input){input.value=rpe===null?'':String(H().normalizeRpe(rpe));input.dispatchEvent(new Event('input',{bubbles:true}));}
   const check=ensureCheck(set);check.checked=true;check.dispatchEvent(new Event('change',{bubbles:true}));
   entry.restAfter=window.LoadnoteRestTimer?.checkpoint?.();entry.after=fingerprint(set);lastCompletion=entry;
   if(window.LoadnoteRestTimer?.snapshot?.().active&&document.activeElement?.matches?.('#exercise-rows input'))document.activeElement.blur();

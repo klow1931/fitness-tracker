@@ -39,7 +39,7 @@
  function currentSetPayload(set,trackBy){
   if(!set)return null;
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
-  if(!(Number(measure?.value)>0))return null;
+  if(!(Number(measure?.value)>0)||weight?.value==null||weight.value.trim()==='')return null;
   return {measure:measure.value,weight:weight?.value??''};
  }
  function copyCurrentSet(from,to,trackBy){
@@ -54,8 +54,9 @@
   if(!host){host=document.createElement('div');host.className='gym-set-history';set.appendChild(host);}
   const prior=previous?.exercise?.sets?.[index],label=previousLabel(prior,trackBy),same=currentSetPayload(priorSet,trackBy);
   const measure=set.querySelector(trackBy==='duration'?'.set-duration':'.set-reps'),weight=set.querySelector('.set-weight');
-  const blank=!(Number(measure?.value)>0)&&!(Number(weight?.value)>0);
-  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label),signature=[previous?.date,label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
+  // An explicit zero is an entered load, never a blank field to overwrite.
+  const blank=measure?.value.trim()===''&&weight?.value.trim()==='';
+  const canCopySame=!!(blank&&same),canUseLast=!!(blank&&label&&H()?.previousPayload(prior,trackBy)?.weight!=null),signature=[previous?.date,label,blank,currentUnit(),canCopySame,same?.weight,same?.measure].join('|');
   if(host._gymSignature===signature){host.hidden=!(label||canCopySame);return;}
   host._gymSignature=signature;
   if(!label&&!canCopySame){host.hidden=true;host.replaceChildren();return;}
@@ -68,7 +69,7 @@
   host.querySelector('[data-gym-copy-prior]')?.addEventListener('click',()=>{
     if(!copyCurrentSet(priorSet,set,trackBy))return;
     saveLoggerDraft();updateTrainingFlow();refresh();
-    set.querySelector('.set-rpe')?.focus({preventScroll:true});
+    if(!window.LoadnoteRestTimer?.snapshot?.().active)set.querySelector('.set-rpe')?.focus({preventScroll:true});
   });
   host.querySelector('[data-gym-use-last]')?.addEventListener('click',()=>{
     const payload=H()?.previousPayload(prior,trackBy);if(!payload)return;
@@ -79,7 +80,7 @@
       const reps=set.querySelector('.set-reps');if(reps&&payload.reps!=null){reps.value=String(payload.reps);reps.dispatchEvent(new Event('input',{bubbles:true}));}
     }
     saveLoggerDraft();updateTrainingFlow();refresh();
-    set.querySelector('.set-rpe')?.focus({preventScroll:true});
+    if(!window.LoadnoteRestTimer?.snapshot?.().active)set.querySelector('.set-rpe')?.focus({preventScroll:true});
   });
  }
  function decorateRows(){

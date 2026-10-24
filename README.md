@@ -1,6 +1,10 @@
 # Loadnote
 
-**v3.97.0 · Development build.**
+**v3.98.0 · Development build.**
+
+[Gym-floor logging v3.98 release notes](docs/releases-v3.98.md): Unified quick-completion load validation, explicit no-RPE logging, zero-load-safe set reuse, and keyboard handling while resting. Measured browser acceptance and physical-device review remain release gates.
+
+**Earlier v3.97 beginner review fixes.**
 
 [Beginner review fixes](docs/releases-v3.97.md): Explicit performed loads, fresh cardio readings, supported duration clarification, saved-plan-to-workout review, equipment-compatible starter defaults, and practical offline beginner help.
 [First-week repeat v3.96 release notes](docs/releases-v3.96.md): A returning beginner can reuse the last verified workout as an editable starting point without copying completed sets or RPE into today's history.
