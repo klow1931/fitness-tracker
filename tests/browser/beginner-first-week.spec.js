@@ -83,7 +83,7 @@ test('v3.96 repeating workout two preserves historical data, leaves effort unkno
  await expect(page.locator('#exercise-rows .set-done-check').first()).not.toBeChecked();
  expect(await page.evaluate(()=>data.workouts.length)).toBe(1);
  expect(await page.evaluate(()=>JSON.stringify(data.workouts))).toBe(before);
- const expectedSource=await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.source?.referenceId);
+ const expectedSource=await page.evaluate(()=>readLoggerDraft()?.sessionIntent?.prescription?.source?.referenceId);
  expect(expectedSource===sourceId||String(expectedSource)===sourceId).toBe(true);
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Goblet Squat');
