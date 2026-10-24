@@ -1,5 +1,9 @@
 # Loadnote
 
+**v3.96.0 · Development build.**
+[First-week repeat v3.96 release notes](docs/releases-v3.96.md): A returning beginner can reuse the last verified workout as an editable starting point without copying completed sets or RPE into today's history.
+
+**Earlier v3.95 beginner-usability milestone.**
 **v3.95.0 · Development build.**
 [Beginner usability v3.95 release notes](docs/releases-v3.95.md): After a saved unscheduled workout, the beginner sees the next logging action on a later training day, alongside prior history. The three-choice starter program now explains selected days, projected sessions and invalid selections without saving or scheduling for the user.
 

@@ -34,11 +34,23 @@
       else if(intentOptions.source)setPrescriptionFromExercises(exercises,intentOptions.source,intentOptions);
     }
 
-    function repeatLastWorkout() {
-      if (!data.workouts.length) return alert('No previous workouts found.');
-      const last = data.workouts[0]; // already sorted newest first
-      if (fillWorkoutForm(last.exercises, last.notes ? 'Repeat of ' + formatDate(last.date) : '', false, {source:{type:'repeated-workout',referenceId:last.id,label:formatDate(last.date)},role:last.sessionIntent?.role,goal:last.sessionIntent?.goal}) === false) return;
-      alert('Loaded last workout. Adjust weights/reps or hold times as needed, then Save.');
+    function repeatLastWorkout(options={}) {
+      // Optional exact ID is for first-week handoff. Default continues to
+      // repeat the newest saved workout, retaining the established Train flow.
+      const id=options?.sourceId;
+      const last=id==null?data.workouts[0]:
+       (data.workouts||[]).find(w=>String(w.id)===String(id));
+      if(!last){if(!options?.quiet)alert('No previous workouts found.');return false;}
+      if(fillWorkoutForm(last.exercises,last.notes?'Repeat of '+formatDate(last.date):'',false,{
+       source:{type:'repeated-workout',referenceId:last.id,label:formatDate(last.date)},
+       role:last.sessionIntent?.role,goal:last.sessionIntent?.goal
+      })===false)return false;
+      // Copied sets are editable, NOT completed. Only the real Save workout
+      // workflow may create a historical training record.
+      saveLoggerDraft();
+      if(options?.quiet)showToast('Previous sets loaded as a starting point. Check today’s work and mark only sets completed.','info');
+      else alert('Loaded last workout. Adjust weights/reps or hold times as needed, then Save.');
+      return true;
     }
 
     function saveCurrentAsTemplate() {

@@ -21,10 +21,21 @@ assert.equal(observe(state,asOf,null,null),null);
 assert.deepEqual(state,JSON.parse(before));
 const saved={...state,workouts:[logged('one','2026-10-21')]};
 let r=observe(saved);
-assert.equal(r.count,1);assert.equal(r.action,'log');assert.equal(r.label,'Log your next workout');
-assert.match(r.detail,/No next session is scheduled/);
+assert.equal(r.count,1);assert.equal(r.action,'repeat');assert.equal(r.label,'Repeat last workout');assert.equal(r.repeatSourceId,'one');
+assert.match(r.detail,/No training day is assumed/);
 assert.equal(observe({...state,workouts:[logged('same-day',asOf)]}).action,'history','Do not prompt an extra same-day session');
 assert.equal(r.firstDate,'2026-10-21');
+assert.equal(observe({...state,workouts:[logged('a','2026-10-21'),logged('b','2026-10-22')]}).repeatSourceId,'b',
+ 'Repeat button should use latest recorded workout regardless of array order');
+assert.equal(observe({...state,workouts:[logged('older','2026-10-21'),logged('newer','2026-10-22')]}).repeatSourceId,'newer');
+const pastUnrepeatable={...state,workouts:[{...logged('sport','2026-10-22'),
+ exercises:[{type:'practice',name:'Practice',sets:[{reps:3}]}]}]};
+assert.equal(observe(pastUnrepeatable).action,'log','Practice-only records must not pass through the strength repeat workflow');
+const anonymous={...state,workouts:[{...logged('id','2026-10-22'),id:null}]};
+assert.equal(observe(anonymous).action,'log','Never guess an unidentified history source');
+assert.equal(observe({...state,workouts:[logged('past','2026-10-22'),logged('future','2026-12-30')]}).repeatSourceId,'past',
+ 'A future workout is never selected for an as-of repeat');
+
 assert.equal(observe({...state,workouts:[logged('older','2026-10-22'),logged('most-recent',asOf)]}).action,'history');
 assert.equal(observe(saved,asOf,{rows:[{name:'Goblet Squat',sets:[{reps:'8',weight:'15'}]}]}).action,'resume',
  'An unfinished draft outranks advice to log again');
