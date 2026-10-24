@@ -140,6 +140,20 @@
   const next=H()?.adjustDisplayWeight(input.value,delta);if(next==null)return;
   input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();focusForEntry(input,true);
  }
+ function repeatLastCompletedSet(){
+  const ctx=current();if(!ctx?.set||!ctx.row)return false;
+  const sets=setRows(ctx.row),mode=ctx.row.dataset.trackBy==='duration'?'duration':'reps';
+  const snapshot=sets.map(s=>({weight:s.querySelector('.set-weight')?.value??'',reps:s.querySelector('.set-reps')?.value??'',duration:s.querySelector('.set-duration')?.value??'',rpe:s.querySelector('.set-rpe')?.value??'',done:setDone(s)}));
+  const candidate=H()?.repeatCompletedSet(snapshot,ctx.setIndex,mode);
+  if(!candidate)return false;
+  const fields=activeInputs(ctx);
+  if(!fields.weight||!fields.measure)return false;
+  fields.weight.value=candidate.weight;changed(fields.weight);
+  fields.measure.value=candidate.measure;changed(fields.measure);
+  saveLoggerDraft();window.updateTrainingFlow?.();render();
+  // RPE chips are the next action; never open the numeric keyboard automatically.
+  return true;
+ }
  function usePrevious(){
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
@@ -215,7 +229,15 @@
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
   const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
+  const repeat=ctx.set?H()?.repeatCompletedSet(setRows(ctx.row).map(s=>({
+    weight:s.querySelector('.set-weight')?.value??'',
+    reps:s.querySelector('.set-reps')?.value??'',
+    duration:s.querySelector('.set-duration')?.value??'',
+    rpe:s.querySelector('.set-rpe')?.value??'',
+    done:setDone(s)
+   })),ctx.setIndex,ctx.row.dataset.trackBy):null;
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
+    (repeat?'<button type="button" class="btn-secondary" data-cockpit-repeat>Repeat set '+repeat.fromSet+'</button>':'')+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
     (prior?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
     '<button type="button" data-cockpit-adjust="'+(-steps.large)+'">−'+steps.large+'</button>'+
@@ -235,6 +257,7 @@
   refreshSaveStatus();
   host.querySelector('[data-cockpit-undo]')?.addEventListener('click',()=>window.LoadnoteQuickCompletionUndo?.undo?.());
   host.querySelector('[data-cockpit-retry-save]')?.addEventListener('click',()=>{saveLoggerDraft();refreshSaveStatus();});
+  host.querySelector('[data-cockpit-repeat]')?.addEventListener('click',repeatLastCompletedSet);
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelector('[data-cockpit-previous]')?.addEventListener('click',usePrevious);
   host.querySelector('[data-cockpit-swap]')?.addEventListener('click',()=>{const button=ctx.row?.querySelector('[data-workout-action="swap-exercise"]');if(button)openExerciseSwap(button);});
