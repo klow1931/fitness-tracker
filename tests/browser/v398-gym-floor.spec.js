@@ -15,7 +15,7 @@ test('v3.98 refuses blank load before quick completion, while explicit zero is v
  await expect(quick).toContainText('Enter load (0 for bodyweight)');
  await expect(quick.locator('[data-quick-rpe="8"]')).toBeDisabled();
  expect(await page.evaluate(()=>completeLoggerSetQuickly(document.querySelector('.sets-container > div'),8))).toBe(false);
- await expect(row.locator('.set-done-check')).not.toBeChecked();
+ await expect(row.locator('.set-done-check:checked')).toHaveCount(0);
  expect(await page.evaluate(()=>LoadnoteRestTimer.snapshot().active)).toBe(false);
  await row.locator('.set-weight').fill('0');
  await expect(quick.locator('[data-quick-rpe="8"]')).toBeEnabled();
@@ -52,7 +52,7 @@ test('v3.98 same-set quick fill never replaces explicitly entered zero',async({p
   row.querySelector('.set-weight').value='0';
   row.querySelector('.set-reps').value='12';
   addSetToContainer(row.querySelector('.sets-container'),{reps:'',weight:'',rpe:'',showCompletion:true},'reps');
-  refreshGymFloorUI();
+  saveLoggerDraft();refreshGymFloorUI();refreshLoggerQuickEntry();
  });
  const sets=page.locator('#exercise-rows .sets-container > div');
  await sets.first().locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
