@@ -53,8 +53,13 @@
      '. That is a plan, not a completed session.'};
   }
   if(count){
+   // Avoid prompting two training sessions on the same day. If the last
+   // confirmed workout was on a prior day and no session is scheduled,
+   // provide a direct next-log action plus access to past performance.
+   if(sorted.at(-1)<asOf)return {...status,action:'log',label:'Log your next workout',
+    detail:'Your last workout is saved in History. No next session is scheduled. When you are ready to train again, log your actual work; no training day is assumed.'};
    return {...status,action:'history',label:'See saved workout',
-    detail:'Your workout is in History. No next session is scheduled; choose your next training day when ready.'};
+    detail:'Your workout is saved in History. No next session is scheduled; choose your next training day when ready.'};
   }
   return status;
  }
