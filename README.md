@@ -1,5 +1,9 @@
 # Loadnote
 
+**v3.94.0 · Development build.**
+[Guided First Week v3.94 release notes](docs/releases-v3.94.md): The existing Home Today card helps new lifters resume unfinished workouts, locate their next actual scheduled session, and recognize saved training without assuming attendance or advancing a plan.
+
+**Earlier v3.93 starter-program milestone.**
 **v3.93.0 · Development build.**
 [Beginner Program Builder v3.93 release notes](docs/releases-v3.93.md): A three-question first plan with editable four-week sessions, blank starting loads and separate athlete-approved saving and Calendar scheduling.
 

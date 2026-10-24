@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v3.93.0';
+const CACHE = 'loadnote-v3.94.0';
 const ASSETS = [
   './src/product/custom-program.js',
   './src/product/custom-program-weekly-review.js',
@@ -23,6 +23,8 @@ const ASSETS = [
   './src/product/beginner-program.js',
   './src/product/beginner-program-ui.js',
   './src/product/beginner-experience-ui.js',
+  './src/product/beginner-first-week.js',
+  './src/product/beginner-first-week-ui.js',
   './privacy.html', './support.html', './delete-account.html', './src/product/plate-calculator.js', './src/product/decision-boundaries.js',
   './src/product/training-week.js',
   './src/product/training-hub.js',

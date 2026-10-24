@@ -89,7 +89,7 @@
   });
  }
  function saved({editing=false}={}){if(!editing&&load().guide==='active')change({guide:'complete'});}
- window.LoadnoteBeginnerUI={apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,selected:()=>!!load().entry};
+ window.LoadnoteBeginnerUI={apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,selected:()=>!!load().entry,entry:()=>load().entry};
  document.addEventListener('DOMContentLoaded',()=>{
   apply();
   document.querySelectorAll('[data-beginner-entry]').forEach(b=>b.addEventListener('click',()=>enter(b.dataset.beginnerEntry)));

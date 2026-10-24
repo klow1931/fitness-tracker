@@ -151,6 +151,7 @@
   host.querySelector('[data-today-resume]')?.addEventListener('click',goTrain);
   host.querySelector('[data-today-history]')?.addEventListener('click',()=>{showTab('workouts');showSubTab('workouts','wo-history');});
   host.querySelector('[data-today-calendar]')?.addEventListener('click',()=>showTab('calendar'));
+  window.LoadnoteBeginnerFirstWeekUI?.render?.(host,data,{asOf:today(),report,continuity});
  }
 
  document.addEventListener('click',event=>{if(event.target.closest?.('#tab-workouts,.mobile-nav-btn[data-tab="workouts"]'))requestTrainLauncher();},true);
