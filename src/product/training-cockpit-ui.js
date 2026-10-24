@@ -75,7 +75,7 @@
  }
  function previousText(ctx,value){
   if(!value)return 'No earlier matching set';
-  const load=Number.isFinite(Number(value.weight))?weightText(value.weight):'';
+  const load=value.weight!=null&&String(value.weight).trim()!==''&&Number.isFinite(Number(value.weight))?weightText(value.weight):'';
   const measure=ctx.row.dataset.trackBy==='duration'&&Number(value.duration)>0?value.duration+' sec':Number(value.reps)>0?String(value.reps):'';
   return [load,measure].filter(Boolean).join(' × ')+(Number(value.rpe)>=1&&Number(value.rpe)<=10?' @'+value.rpe:'');
  }
