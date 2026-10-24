@@ -34,8 +34,10 @@
   const host=bar(set);host.hidden=!(active&&H().entered(snapshot(set)));
   const needsLoad=set.querySelector('.set-weight')?.value.trim()==='';
   const label=host.querySelector('.quick-set-label');
-  if(label)label.textContent=needsLoad?'Enter load (0 for bodyweight) to log':'Log set · tap RPE';
-  host.querySelectorAll('[data-quick-rpe],[data-quick-done]').forEach(button=>{button.disabled=needsLoad;});
+  const nextLabel=needsLoad?'Enter load (0 for bodyweight) to log':'Log set · tap RPE';
+  // Avoid redundant DOM writes: the logger observes these rows for changes.
+  if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;
+  host.querySelectorAll('[data-quick-rpe],[data-quick-done]').forEach(button=>{if(button.disabled!==needsLoad)button.disabled=needsLoad;});
  }
  function rows(){return [...document.querySelectorAll('#exercise-rows .sets-container > div')];}
  function activeSet(){
