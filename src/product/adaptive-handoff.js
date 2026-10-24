@@ -6,13 +6,13 @@
 (function(root,factory){
  if(typeof module==='object'&&module.exports)module.exports=factory(
   require('./schedule'),require('./session-intent'),require('./training-continuity'),
-  require('./program-lifecycle'),require('./adaptation-explanation')
+  require('./program-lifecycle'),require('./adaptation-explanation'),require('./workout-feedback')
  );
  else root.LoadnoteAdaptiveHandoff=factory(
   root.LoadnoteSchedule,root.LoadnoteIntent,root.LoadnoteTrainingContinuity,
-  root.LoadnoteProgramLifecycle,root.LoadnoteAdaptationExplanation
+  root.LoadnoteProgramLifecycle,root.LoadnoteAdaptationExplanation,root.LoadnoteWorkoutFeedback
  );
-})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Intent,Continuity,Lifecycle,Explanation){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Schedule,Intent,Continuity,Lifecycle,Explanation,Feedback){
  'use strict';
  const copy=x=>x==null?x:JSON.parse(JSON.stringify(x));
  const round=(x,d=1)=>{const p=10**d;return Math.round(Number(x)*p)/p;};
@@ -68,6 +68,38 @@
   }
   return [...map.values()].filter(x=>JSON.stringify(x.before)!==JSON.stringify(x.after));
  }
+ // Explain the saved set-level evidence using the EXISTING planned-vs-actual
+ // contract. It verifies exercise identity, load/reps, chronology and effort.
+ // This is a training observation, never permission to edit future sessions.
+ function learning(workout){
+  const row=Feedback.compare(workout),matched=row.matchedSets,planned=row.plannedSets,effort=row.effortCompared,above=row.aboveCap;
+  const base={version:1,status:row.status,verified:['within-cap','above-cap','missing-effort','different-work'].includes(row.status),
+   plannedSets:planned,matchedSets:matched,effortCompared:effort,aboveCap:above,
+   heading:'What this workout tells Loadnote',summary:'',nextStep:'',reasons:copy(row.reasons||[])};
+  if(row.status==='within-cap'){
+   base.summary=matched+'/'+planned+' planned strength sets matched logged load and reps; '+effort+' had paired target and actual RPE, all at or below the planned cap.';
+   base.nextStep='This is adherence evidence, not proof that the next load should increase. Keep the scheduled targets until the normal review gate.';
+  }else if(row.status==='above-cap'){
+   base.summary=matched+'/'+planned+' planned strength sets matched logged load and reps; '+above+' of '+effort+' paired effort ratings exceeded target.';
+   base.nextStep='The higher effort is recorded for the next eligible weekly or phase review. No automatic reduction or medical fatigue claim.';
+  }else if(row.status==='missing-effort'){
+   base.summary=matched+'/'+planned+' sets matched the captured load and reps, but '+row.missingRpe+' matched set'+(row.missingRpe===1?'':'s')+' lacked comparable RPE.';
+   base.nextStep='Effort remains unknown for those sets. Enter actual RPE only when known; do not infer progression from the missing ratings.';
+  }else if(row.status==='different-work'){
+   base.summary=matched+'/'+planned+' planned strength sets matched recorded load and reps. Other work was changed, missing, or not directly comparable.';
+   base.nextStep='Keep the actual workout as logged. Review substitutions or incomplete work before drawing a program-progression conclusion.';
+  }else if(row.status==='unverified-timing'||row.status==='invalid-plan'){
+   base.summary='The saved prescription cannot be verified as a valid plan captured before this workout.';
+   base.nextStep='Preserve the session as history. Do not score this as prescribed effort or infer an adaptation from unverified plan timing.';
+  }else if(row.status==='no-prior-plan'){
+   base.summary='This workout has no saved pre-training prescription to compare against.';
+   base.nextStep='The performed training remains in history. Capture a plan before a future session for an exact comparison.';
+  }else{
+   base.summary='There is no supported strength-set comparison for this workout.';
+   base.nextStep='Keep the saved result. Other modalities and unverified work are not automatically treated as successful or failed strength prescriptions.';
+  }
+  return base;
+ }
  function lifecycle(state,asOf){
   try{return Lifecycle.inspect(state,{asOf,draft:null,draftOpen:false});}catch{return null;}
  }
@@ -75,7 +107,7 @@
   if(!Schedule.date(asOf))throw Error('Choose a valid adaptive-handoff date');
   const workout=(state?.workouts||[]).find(w=>String(w.id)===String(workoutId));
   if(!workout)throw Error('Choose a saved workout for adaptive handoff');
-  const continuity=Continuity.inspect(state,{asOf,workoutId:workout.id}),evidence=continuity.workoutEvidence,perf=performance(workout),life=lifecycle(state,asOf),next=continuity.next;
+  const continuity=Continuity.inspect(state,{asOf,workoutId:workout.id}),evidence=continuity.workoutEvidence,perf=performance(workout),signal=learning(workout),life=lifecycle(state,asOf),next=continuity.next;
   const linked=!!evidence?.linked,reviewKind=['review-week','review-phase'].includes(life?.nextAction?.kind)?life.nextAction.kind:null;
   const adaptation=next?Explanation.forSession(state,next.id):null;
   let status='unchanged',label='Next workout unchanged',reason='';
@@ -100,11 +132,11 @@
   const changes=next&&status==='updated'?changedRows(state,next.id):[];
   return {
    version:1,asOf,workoutId:workout.id,status,label,reason,
-   performance:perf,evidence:copy(evidence),next:copy(next),
+   performance:perf,learning:signal,evidence:copy(evidence),next:copy(next),
    lifecycle:life?{status:life.status,program:copy(life.program),progress:copy(life.progress),nextAction:copy(life.nextAction)}:null,
    adaptation:copy(adaptation),changes,
    notice:'Adaptive handoff reports saved training evidence and accepted schedule revisions. It does not diagnose recovery or change a prescription without the existing review and athlete-approval workflow.'
   };
  }
- return {inspect,performance,changedRows};
+ return {inspect,performance,learning,changedRows};
 });
