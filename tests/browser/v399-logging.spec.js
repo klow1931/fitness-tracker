@@ -44,12 +44,13 @@ test('v3.99 repeats the last actually completed set with one tap but not effort 
 
 test('v3.99 repeat does not replace a chosen target, partial performance or typed RPE',async({page})=>{
  await page.evaluate(()=>{
+  data.gymMode=true;data.gymModeUserSet=true;
   const row=document.querySelector('#exercise-rows > div');
   row.querySelector('.ex-name').value='Bench Press';
   row.querySelector('.set-weight').value='80';
   row.querySelector('.set-reps').value='5';
   addSetToContainer(row.querySelector('.sets-container'),{weight:'',reps:'',showCompletion:true},'reps');
-  document.querySelector('.set-done-check').checked=true;
+  completeLoggerSetQuickly(row.querySelector('.sets-container > div'),8);
   saveLoggerDraft();refreshTrainingCockpit();
  });
  const second=page.locator('#exercise-rows .sets-container > div').nth(1);
