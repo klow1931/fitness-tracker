@@ -1,3 +1,12 @@
+# v3.96.0 — First-Week Repeat Handoff
+
+- Allow unscheduled beginners with a prior verified saved workout to load it directly as an editable starting point for a subsequent session.
+- Reuse the existing repeat-workout mechanism and preserve exact source-workout identity. Prior loads and reps are only editable references; completion and RPE are cleared, and logging still requires explicit review/save.
+- Prioritize any unfinished draft, overdue Calendar review, or upcoming scheduled session over repeat. Show new-workout and previous-history alternatives; never repeat a future, practice-only, or unidentified record.
+- Persist the copied *draft only* to existing local recovery without creating a completed workout, training-max, or adaptive decision. Preserve all existing advanced repeat behavior.
+- Add Node and browser regression coverage for historical cutoffs, source accuracy, repeated draft recovery, unknown effort, scheduling precedence, read-only history and no silent logging.
+- Version **3.96.0**, unsigned beta **35600**, schema **34** unchanged; no migration.
+
 # v3.95.0 — Beginner Usability and First-Week Follow-Through
 
 - After a beginner saves a workout on a previous day with no next workout scheduled, give a direct **Log your next workout** route and a separate **See previous workout** action.

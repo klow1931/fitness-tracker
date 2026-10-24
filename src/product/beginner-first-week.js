@@ -23,6 +23,13 @@
     e?.type==='cardio'&&Number(e?.duration)>0
    ));
   const sorted=actual.map(w=>w.date).sort();
+  // Source the repeat button from the last ACTUALLY saved session, not the
+  // newest array item or a planned/future workout.
+  const latest=actual.slice().sort((a,b)=>b.date.localeCompare(a.date)||
+   String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0]||null;
+  const repeatId=latest?.id!=null&&String(latest.id).length>0&&
+   Array.isArray(latest.exercises)&&latest.exercises.length>0&&
+   latest.exercises.every(e=>e&&e.type!=='practice')?String(latest.id):null;
   // Stop showing onboarding after the first actual week, or when a lifter
   // has already logged three sessions; previously saved history is untouched.
   if(sorted.length>=3||sorted.length&&dayNumber(asOf)-dayNumber(sorted[0])>6)return null;
@@ -56,8 +63,12 @@
    // Avoid prompting two training sessions on the same day. If the last
    // confirmed workout was on a prior day and no session is scheduled,
    // provide a direct next-log action plus access to past performance.
-   if(sorted.at(-1)<asOf)return {...status,action:'log',label:'Log your next workout',
-    detail:'Your last workout is saved in History. No next session is scheduled. When you are ready to train again, log your actual work; no training day is assumed.'};
+   if(sorted.at(-1)<asOf){
+    if(repeatId)return {...status,action:'repeat',label:'Repeat last workout',repeatSourceId:repeatId,
+     detail:'Your previous workout can be reused as an editable starting point. Check today’s weights and reps, and mark only sets you complete. No training day is assumed.'};
+    return {...status,action:'log',label:'Log your next workout',
+     detail:'Your last workout is saved in History. No next session is scheduled. When you are ready to train again, log your actual work; no training day is assumed.'};
+   }
    return {...status,action:'history',label:'See saved workout',
     detail:'Your workout is saved in History. No next session is scheduled; choose your next training day when ready.'};
   }
