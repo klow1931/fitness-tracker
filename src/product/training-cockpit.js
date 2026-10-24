@@ -45,11 +45,27 @@
   if(!set)return null;
   return {
    exercise:exerciseIdentity(exercise),
-   weight:Number.isFinite(Number(set.weight))?Number(set.weight):null,
-   reps:Number.isFinite(Number(set.reps))?Number(set.reps):null,
-   duration:Number.isFinite(Number(set.duration))?Number(set.duration):null,
+   // Missing prescription fields are unknown, never zero by coercion.
+   weight:set.weight!=null&&String(set.weight).trim()!==''&&Number.isFinite(Number(set.weight))?Number(set.weight):null,
+   reps:set.reps!=null&&String(set.reps).trim()!==''&&Number.isFinite(Number(set.reps))?Number(set.reps):null,
+   duration:set.duration!=null&&String(set.duration).trim()!==''&&Number.isFinite(Number(set.duration))?Number(set.duration):null,
    targetRpe:Number(set.targetRpe)>=1&&Number(set.targetRpe)<=10?Number(set.targetRpe):null
   };
+ }
+ // Use only a preceding, explicitly completed set from the same exercise.
+ // Inputs are the athlete's current *display-unit* strings; no kg/lb conversion.
+ function repeatCompletedSet(sets,index,trackBy='reps'){
+  const list=Array.isArray(sets)?sets:[],target=list[index],field=trackBy==='duration'?'duration':'reps';
+  const entered=x=>x!=null&&String(x).trim()!=='';
+  if(!target||target.done||entered(target.weight)||entered(target[field])||entered(target.rpe))return null;
+  for(let i=index-1;i>=0;i--){
+   const previous=list[i];
+   if(!previous?.done||!entered(previous.weight)||!entered(previous[field]))continue;
+   const weight=Number(previous.weight),measure=Number(previous[field]);
+   if(!Number.isFinite(weight)||weight<0||!Number.isFinite(measure)||measure<=0||(field==='reps'&&!Number.isInteger(measure)))continue;
+   return {weight:String(previous.weight),measure:String(previous[field]),fromSet:i+1};
+  }
+  return null;
  }
  function transition(fromExerciseIndex,toExerciseIndex){
   const from=Number(fromExerciseIndex),to=Number(toExerciseIndex);
@@ -61,5 +77,5 @@
   const missing=sets.length-known;
   return {logged:sets.length+' strength set'+(sets.length===1?'':'s')+' recorded.',watch:!sets.length?'Cardio recorded; no strength-effort comparison.':missing?missing+(missing===1?' set has':' sets have')+' no recorded RPE; effort comparisons are limited.':'Effort recorded for every strength set; recovery is still separate.',next:'Keep scheduled targets until a supported change is reviewed.'};
  }
- return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,transition,workoutTakeaway};
+ return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,repeatCompletedSet,transition,workoutTakeaway};
 });

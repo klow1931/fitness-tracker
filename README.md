@@ -1,6 +1,10 @@
 # Loadnote
 
-**v3.98.0 · Development build.**
+**v3.99.0 · Development build.**
+
+[Gym-floor speed and Undo v3.99 release notes](docs/releases-v3.99.md): One-tap repeat of a verified completed set, persistent mobile Undo, and accurate unknown-versus-zero load context.
+
+**Earlier v3.98 gym-floor logging milestone.**
 
 [Gym-floor logging v3.98 release notes](docs/releases-v3.98.md): Unified quick-completion load validation, explicit no-RPE logging, zero-load-safe set reuse, and keyboard handling while resting. Measured browser acceptance and physical-device review remain release gates.
 

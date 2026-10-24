@@ -106,7 +106,7 @@
  function dock(){
   let host=document.getElementById('gym-floor-dock');if(host)return host;
   host=document.createElement('aside');host.id='gym-floor-dock';host.className='gym-floor-dock';host.setAttribute('aria-label','Workout quick controls');
-  host.innerHTML='<button type="button" class="gym-floor-current" data-gym-current><span>Current set</span><b data-gym-current-label>Workout</b><small data-gym-progress></small></button><button type="button" class="gym-floor-rest" data-gym-rest aria-label="Rest timer"><span>Rest</span><b id="rest-timer-sticky">—</b></button><button type="button" class="btn-primary gym-floor-finish" data-gym-finish>Finish</button>';
+  host.innerHTML='<button type="button" class="gym-floor-current" data-gym-current><span>Current set</span><b data-gym-current-label>Workout</b><small data-gym-progress></small></button><button type="button" class="gym-floor-rest" data-gym-rest aria-label="Rest timer"><span>Rest</span><b id="rest-timer-sticky">—</b></button><button type="button" class="gym-floor-undo" data-gym-undo aria-label="Undo last completed set" hidden>Undo</button><button type="button" class="btn-primary gym-floor-finish" data-gym-finish>Finish</button>';
   document.body.appendChild(host);
   host.querySelector('[data-gym-current]').onclick=()=>{const set=document.querySelector('#exercise-rows .logger-active-set')||firstUnfinishedSet();set?.scrollIntoView({block:'center',behavior:'smooth'});};
   host.querySelector('[data-gym-rest]').onclick=()=>{
@@ -117,6 +117,7 @@
    else timer?.start?.(90);
    updateDock();
   };
+  host.querySelector('[data-gym-undo]').onclick=()=>{window.LoadnoteQuickCompletionUndo?.undo?.();updateDock();};
   host.querySelector('[data-gym-finish]').onclick=()=>reviewWorkout();
   return host;
  }
@@ -146,6 +147,9 @@
   const progressLabel=host.querySelector('[data-gym-progress]');
   if(progressLabel)progressLabel.textContent=progress?.totalSets?progress.doneSets+'/'+progress.totalSets+' sets · '+progress.doneExercises+'/'+progress.totalExercises+' exercises':'';
   const finish=host.querySelector('[data-gym-finish]');if(finish)finish.textContent=progress?.complete?'Review':'Finish';
+  const undo=host.querySelector('[data-gym-undo]'),canUndo=show&&!!window.LoadnoteQuickCompletionUndo?.canUndo?.();
+  if(undo)undo.hidden=!canUndo;
+  host.classList.toggle('gym-floor-dock-has-undo',canUndo);
   const rest=host.querySelector('[data-gym-rest]'),restState=window.LoadnoteRestTimer?.snapshot?.();
   if(rest)rest.setAttribute('aria-label',restState?.active?(restState.paused?'Resume rest':'Pause rest'):'Start 90-second rest timer');
   const train=document.querySelector('#mobile-nav [data-tab="workouts"]');

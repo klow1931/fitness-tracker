@@ -1403,6 +1403,20 @@ body.dark #mobile-nav .workout-draft-active::after{box-shadow:0 0 0 2px #0f172a}
  .gym-floor-current b{max-width:100%;font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .gym-floor-rest{align-items:center;min-width:3.7rem}
  .gym-floor-rest b{font-size:.9rem}
+ .gym-floor-undo{
+   min-height:46px;
+   min-width:46px;
+   padding:.45rem .55rem;
+   border:1px solid #cbd5e1;
+   border-radius:.65rem;
+   background:transparent;
+   color:inherit;
+   font-weight:750;
+   font-size:.8rem
+ }
+ .gym-floor-undo[hidden]{display:none!important}
+ .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) auto auto auto}
+ body.dark .gym-floor-undo{border-color:#475569}
  .gym-floor-finish{min-height:46px;padding:.55rem .8rem;white-space:nowrap}
  body.gym-floor-dock-visible #panel-workouts{padding-bottom:9.5rem}
  body.mobile-keyboard-open .gym-floor-dock,
@@ -1419,6 +1433,7 @@ body.dark #mobile-nav .workout-draft-active::after{box-shadow:0 0 0 2px #0f172a}
    grid-template-columns:20px minmax(48px,.78fr) 10px minmax(66px,1fr) minmax(52px,.76fr) 34px
  }
  .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) 3.4rem auto}
+ .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) 3.4rem auto auto}
  .gym-floor-finish{padding:.5rem .65rem}
 }
 
@@ -2056,6 +2071,7 @@ body.dark .weekly-target{border-color:#475569}
 @media(max-width:768px){
  body.training-execution-active .gym-floor-dock .gym-floor-finish{display:none}
  body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto}
+ body.training-execution-active .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) auto auto}
  #workout-log-card .quick-rpe-chip{min-height:44px;min-width:48px}
  #workout-log-card .quick-done-no-rpe{min-height:44px}
 }

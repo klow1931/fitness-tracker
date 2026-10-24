@@ -1,3 +1,17 @@
+# v3.99.0 — Faster Between-Set Logging and Mobile Undo
+
+## Logging improvements
+- A blank next set can reuse the closest earlier **completed** valid set of the same exercise directly from the training cockpit, in one tap. It preserves the source display-unit load and reps/hold duration without copying actual effort or checking completion.
+- Reuse is not offered for prefilled targets, partial performance, explicitly entered zero destination loads, or typed RPE. It leaves the numeric keyboard closed during rest and otherwise.
+- The mobile workout dock offers a reachable Undo control for the most recently quick-completed set only while its checkpoint is still valid. Existing undo and rest-timer behavior is reused.
+- Missing historical or target load values no longer masquerade as zero in the gym-floor helpers and training cockpit; explicit bodyweight zero remains valid.
+
+## Tests and compatibility
+- Pure unit tests cover candidates, invalid/unfinished sources, out-of-order sets, missing-versus-zero data, and hold durations.
+- Browser regression covers one-tap repeat, draft recovery, no copied RPE, safe completion and save, mobile Undo, stale Undo removal, and a 320px viewport; added to iPhone WebKit CI.
+- Internal kg storage, draft format, workout schema **34**, and prescription/adaptive logic remain unchanged. No migration required.
+- **v3.99.0**, unsigned native development build **35900**. Physical-device touch testing and formal accessibility approval remain external acceptance steps.
+
 # v3.98.0 — Near-Frictionless Gym-Floor Logging
 
 ## Improvements
