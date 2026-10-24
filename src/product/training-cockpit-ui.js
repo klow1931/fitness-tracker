@@ -157,7 +157,7 @@
  function usePrevious(){
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
-  if(!Number.isFinite(Number(value.weight))||value.weight==null||Number(value.weight)<0||!Number.isFinite(Number(amount))||Number(amount)<=0)return;
+  if(value.weight==null||String(value.weight).trim()===''||!Number.isFinite(Number(value.weight))||Number(value.weight)<0||!Number.isFinite(Number(amount))||Number(amount)<=0)return;
   if((inputs.weight?.value!==''||inputs.measure?.value!=='')&&!confirm('Replace this set’s load and reps or duration with the previous session? Effort and completion stay unchanged.'))return;
   if(inputs.weight){inputs.weight.value=String(Math.round(toDisplay(value.weight)*100)/100);changed(inputs.weight);}
   if(inputs.measure){inputs.measure.value=String(amount);changed(inputs.measure);}
@@ -236,10 +236,11 @@
     rpe:s.querySelector('.set-rpe')?.value??'',
     done:setDone(s)
    })),ctx.setIndex,ctx.row.dataset.trackBy):null;
+  const previousAvailable=ctx.set&&prior&&window.LoadnoteGymFloor?.previousPayload(prior,ctx.row.dataset.trackBy)?.weight!=null;
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
     (repeat?'<button type="button" class="btn-secondary" data-cockpit-repeat>Repeat set '+repeat.fromSet+'</button>':'')+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
-    (prior?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
+    (previousAvailable?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
     '<button type="button" data-cockpit-adjust="'+(-steps.large)+'">−'+steps.large+'</button>'+
     '<button type="button" data-cockpit-adjust="'+(-steps.small)+'">−'+steps.small+'</button>'+
     '<button type="button" data-cockpit-adjust="'+steps.small+'">+'+steps.small+'</button>'+
