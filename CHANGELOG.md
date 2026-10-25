@@ -1,3 +1,17 @@
+# v4.2.0 — Next Session, At a Glance
+
+## Faster training decisions without extra taps
+- Home and the Train launcher show the first scheduled strength target beside the last usable same-identity logged set, including actual effort when recorded.
+- Previous data is sourced from prior workouts, never the planned RPE, and does not change approved programming.
+- Safeguards exclude later workouts, duplicate or conflicting exercise identities, incompatible known load conventions, unknown weights and unknown effort. Explicit 0 kg remains a valid logged bodyweight load.
+- Context is hidden behind draft recovery and required program-review actions. All weights remain stored in kilograms and are converted only for display.
+- No new screens, confirmations, state schema, or automatic progression thresholds.
+
+## Validation and rollback
+- v4.2.0 / unsigned build 36200; schema 34, no migration.
+- Regression tests cover preview context, chronology, unit display, prior-set identity, zero load, draft protection and mobile layout.
+- Keep v4.1.0 on main until full CI and device acceptance.
+
 # v4.1.0 — Trustworthy Workout Comparisons
 
 ## Reliable training evidence
