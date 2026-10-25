@@ -33,23 +33,29 @@
  function performance(workout){
   const comparison=Intent.compare(workout);
   const plan=workout?.sessionIntent?.prescription;
-  if(!plan)return {comparison:null,exercises:[],comparableRpeSets:0,averageTargetRpe:null,averageActualRpe:null,averageRpeDelta:null};
+  if(!plan)return {comparison:null,exercises:[],comparableRpeSets:0,unmatchedRpeSets:0,unknownActualRpeSets:0,averageTargetRpe:null,averageActualRpe:null,averageRpeDelta:null};
   const planned=groups(plan.plannedExercises),actual=groups(workout.exercises||[]),exercises=[];
-  let targetTotal=0,actualTotal=0,paired=0;
+  let targetTotal=0,actualTotal=0,paired=0,unmatchedRpeSets=0,unknownActualRpeSets=0;
   for(const [k,p] of planned){
    const a=actual.get(k),n=Math.min(p.sets.length,a?.sets?.length||0);
-   let pTarget=0,pActual=0,pairs=0;
-   for(let i=0;i<n;i++){
-    const target=p.sets[i]?.targetRpe,rpe=a.sets[i]?.rpe;
-    if(validRpe(target)&&validRpe(rpe)){pTarget+=Number(target);pActual+=Number(rpe);pairs++;targetTotal+=Number(target);actualTotal+=Number(rpe);paired++;}
+   let pTarget=0,pActual=0,pairs=0,unmatched=0,unknown=0;
+   for(let i=0;i<p.sets.length;i++){
+    const target=p.sets[i]?.targetRpe,performed=a?.sets?.[i],rpe=performed?.rpe;
+    if(!validRpe(target))continue;
+    if(!performed||!Intent.sameSet(p.sets[i],performed,p.trackBy)){
+     unmatched++;unmatchedRpeSets++;continue;
+    }
+    if(!validRpe(rpe)){unknown++;unknownActualRpeSets++;continue;}
+    pTarget+=Number(target);pActual+=Number(rpe);pairs++;targetTotal+=Number(target);actualTotal+=Number(rpe);paired++;
    }
    exercises.push({
-    key:k,name:p.name,exerciseId:p.exerciseId,plannedSets:p.sets.length,completedSets:Math.min(p.sets.length,a?.sets?.length||0),
-    comparableRpeSets:pairs,averageTargetRpe:pairs?round(pTarget/pairs):null,averageActualRpe:pairs?round(pActual/pairs):null,
+    key:k,name:p.name,exerciseId:p.exerciseId,plannedSets:p.sets.length,completedSets:n,
+    comparableRpeSets:pairs,unmatchedRpeSets:unmatched,unknownActualRpeSets:unknown,
+    averageTargetRpe:pairs?round(pTarget/pairs):null,averageActualRpe:pairs?round(pActual/pairs):null,
     averageRpeDelta:pairs?round((pActual-pTarget)/pairs):null
    });
   }
-  return {comparison,exercises,comparableRpeSets:paired,averageTargetRpe:paired?round(targetTotal/paired):null,averageActualRpe:paired?round(actualTotal/paired):null,averageRpeDelta:paired?round((actualTotal-targetTotal)/paired):null};
+  return {comparison,exercises,comparableRpeSets:paired,unmatchedRpeSets,unknownActualRpeSets,averageTargetRpe:paired?round(targetTotal/paired):null,averageActualRpe:paired?round(actualTotal/paired):null,averageRpeDelta:paired?round((actualTotal-targetTotal)/paired):null};
  }
  function acceptedChange(state,scheduleId){
   const rows=[];
