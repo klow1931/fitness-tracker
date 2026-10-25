@@ -1,6 +1,10 @@
 # Loadnote
 
-**v4.1.0 · Development build.**
+**v4.2.0 · Development build.**
+
+[Next-session context v4.2 release notes](docs/releases-v4.2.md): Home and Train show the current scheduled strength target beside a previous logged set, without modifying the plan.
+
+**Earlier v4.1 evidence-integrity milestone.**
 
 [Evidence integrity v4.1 release notes](docs/releases-v4.1.md): RPE comparisons now require matching planned and logged loads/reps, with explicit unknown-versus-zero safeguards.
 
