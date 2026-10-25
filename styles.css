@@ -2155,3 +2155,10 @@ body.dark .weekly-target{border-color:#475569}
 .beginner-first-week [data-first-week-history]{font-weight:500}
 #starter-days-hint{margin:.35rem 0 0;line-height:1.5}
 #starter-days[aria-invalid="true"] #starter-days-hint{font-weight:600}
+
+
+/* v4.0 — verified training-evidence summary without competing with Finish. */
+.adaptive-handoff-learning{padding:.65rem .8rem;border-inline-start:3px solid var(--line,#cbd5e1);margin:.65rem 0}
+.adaptive-handoff-learning h4{font-size:.86rem;font-weight:800;margin:0 0 .3rem}
+.adaptive-handoff-learning p{margin:.2rem 0;font-size:.84rem;line-height:1.45}
+.adaptive-handoff-learning .more-hint{font-size:.77rem}

@@ -1,6 +1,10 @@
 # Loadnote
 
-**v3.99.0 · Development build.**
+**v4.0.0 · Development build.**
+
+[Explainable adaptive loop v4.0](docs/releases-v4.0.md): A verified training-evidence explanation after saving, with clear next-step and athlete-approval boundaries.
+
+**Earlier v3.99 logging-speed milestone.**
 
 [Gym-floor speed and Undo v3.99 release notes](docs/releases-v3.99.md): One-tap repeat of a verified completed set, persistent mobile Undo, and accurate unknown-versus-zero load context.
 
