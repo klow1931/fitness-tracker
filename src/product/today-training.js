@@ -19,9 +19,16 @@
   return !logged.exerciseId&&cleanName(logged.name)===cleanName(planned.name);
  }
  function previousStrength(state,planned,day){
-  const before=(state?.workouts||[]).filter(w=>Schedule.date(w?.date)&&w.date<day&&(!w.createdAt||typeof w.createdAt==='string'&&w.createdAt<=day+'T23:59:59.999Z'))
+  const cutoff=day+'T23:59:59.999Z';
+  // If a historical result was corrected AFTER this view's date, skip it
+  // instead of leaking the future correction into an earlier preview.
+  const revisedLater=new Set((state?.workoutRevisions||[])
+   .filter(r=>r?.workoutId!=null&&typeof r.recordedAt==='string'&&r.recordedAt>cutoff)
+   .map(r=>String(r.workoutId)));
+  const before=(state?.workouts||[]).filter(w=>Schedule.date(w?.date)&&w.date<day&&(!w.createdAt||typeof w.createdAt==='string'&&w.createdAt<=cutoff))
    .sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
   for(const workout of before){
+   if(revisedLater.has(String(workout.id)))continue;
    const matched=(workout.exercises||[]).filter(e=>sameExercise(planned,e));
    if(matched.length!==1)continue;
    const set=(matched[0].sets||[]).find(s=>validLoad(s?.weight)&&validReps(s?.reps));
