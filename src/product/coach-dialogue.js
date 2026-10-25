@@ -34,6 +34,9 @@
   if(!reply||typeof reply.text!=='string'||reply.readOnly!==true||!plan)return reply;
   // Preserve all links, full evidence objects, and vetted actions.
   const meta={...reply,intent:{...(reply.intent||{}),communication:{mode:plan.mode,follow:true}}};
+  // The companion renders clarity as a separate three-part card. A deliberate
+  // short/detailed follow-up should show this newly composed text instead.
+  delete meta.clarity;
   if(plan.mode==='detail')return {...meta,text:'Here is the full explanation from your current training records:\n\n'+reply.text};
   const clarity=reply.clarity;
   if(clarity&&['happened','meaning','next'].every(k=>typeof clarity[k]==='string'&&clarity[k].trim())){
