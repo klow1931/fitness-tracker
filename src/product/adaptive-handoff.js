@@ -26,7 +26,7 @@
    if(e?.type==='cardio'||e?.type==='practice')continue;
    // Mirror the existing Session Intent identity rule: a missing ID can only
    // map by name/mode if exactly one known ID uses that name and mode.
-   const name=String(e?.name||'').trim().replace(/\\s+/g,' ').toLowerCase(),kind=mode(e);
+   const name=String(e?.name||'').trim().replace(/\s+/g,' ').toLowerCase(),kind=mode(e);
    const known=identities?.get(name+'|'+kind),resolvedId=e.exerciseId||(known?.size===1?[...known][0]:null);
    const k=resolvedId?'id:'+resolvedId+'|'+kind:'name:'+name+'|'+kind;
    if(!out.has(k))out.set(k,{key:k,name:e.name||'Exercise',exerciseId:resolvedId||null,trackBy:e.trackBy==='duration'?'duration':'reps',sets:[],loadConventions:new Set()});
@@ -40,7 +40,7 @@
   const names=new Map();
   for(const e of exercises||[]){
    if(!e?.exerciseId||e.type==='cardio'||e.type==='practice')continue;
-   const name=String(e.name||'').trim().replace(/\\s+/g,' ').toLowerCase()+'|'+mode(e);
+   const name=String(e.name||'').trim().replace(/\s+/g,' ').toLowerCase()+'|'+mode(e);
    if(!names.has(name))names.set(name,new Set());
    names.get(name).add(String(e.exerciseId));
   }
