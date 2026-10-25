@@ -26,7 +26,7 @@ test('v4.1 recap excludes RPE from changed loads and reports unknown actual effo
  const card=page.locator('.adaptive-handoff');
  await expect(card).toBeVisible();
  const evidence=card.locator('.session-result-evidence');
- await evidence.locator('summary').click();
+ await evidence.getByText('Training evidence',{exact:true}).click();
  await expect(evidence).toContainText('target RPE 8 · actual RPE 7.5 across 1 matched set');
  await expect(evidence).toContainText('1 planned RPE set not comparable');
  await expect(evidence).toContainText('1 matched set with unknown actual RPE');
