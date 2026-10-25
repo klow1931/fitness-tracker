@@ -18,6 +18,19 @@
   const extra=active.exerciseCount-active.exercises.length;
   return '<details class="today-session-preview"><summary>Planned exercises · '+active.exerciseCount+'</summary><ul role="list">'+rows+'</ul>'+(extra>0?'<p class="more-hint">'+extra+' more in the full workout.</p>':'')+'</details>';
  }
+ function performanceLine(active){
+  const evidence=active?.performanceContext;
+  if(!evidence)return '';
+  const weight=kg=>{
+   const value=Number(kg);
+   if(!Number.isFinite(value))return 'Load unknown';
+   return String(Math.round(toDisplay(value)*100)/100)+' '+unitLabel();
+  };
+  const target=evidence.target,prior=evidence.previous;
+  const dose=(s,rpe)=>weight(s.weightKg)+' × '+s.reps+(rpe!=null?' @'+rpe:'');
+  const last=prior?'Last logged ('+esc(prior.date)+'): '+esc(dose(prior,prior.rpe)):'No earlier exact-identity logged set';
+  return '<p class="more-hint today-performance-line" data-today-performance><b>'+esc(evidence.name)+'</b> · Target: '+esc(dose(target,target.targetRpe))+' · '+last+'</p>';
+ }
  function ensureFastStartUI(){
   if(typeof document==='undefined'||typeof document.getElementById!=='function')return;
   if(!document.getElementById('fast-start-style')){
@@ -113,7 +126,7 @@
   }else{
    title='What are you training today?';subtitle='Nothing is scheduled today. Start simple, repeat something familiar, or choose a saved template.';badge='Open training';primaryAction='empty';primaryLabel='Start empty workout';
   }
-  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(active?'<p class="more-hint">'+esc(sessionContext(active,lifecycle,belongs).meta)+'</p>':'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+preview+otherActions(report,primaryAction);
+  host.innerHTML='<div class="train-launch-head"><div><p class="eyebrow">Train</p><h2>'+esc(title)+'</h2><p>'+esc(subtitle)+'</p></div><span class="badge">'+esc(badge)+'</span></div>'+(active?'<p class="more-hint">'+esc(sessionContext(active,lifecycle,belongs).meta)+'</p>':'')+(active&&!active.draftOpen&&!lifecycleGate?performanceLine(active):'')+'<div class="train-launch-actions"><button type="button" class="btn-primary" data-train-primary="'+esc(primaryAction)+'">'+esc(primaryLabel)+'</button></div>'+preview+otherActions(report,primaryAction);
   bindLauncher(host,report,active,lifecycle,lifecycleGate);
  }
  function requestTrainLauncher(){trainLaunchRequested=true;requestAnimationFrame(renderTrainLauncher);}
@@ -138,7 +151,7 @@
    const adaptation=window.LoadnoteAdaptationExplanation?.forSession(data,active.id);
    const adaptationHtml=window.LoadnoteAdaptationExplanationUI?.render(adaptation)||'';
    const viewWorkout=belongs&&window.LoadnoteProgramWorkoutViewerUI?'<button type="button" class="btn-secondary" data-today-view-workout>View workout</button>':'';
-   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>'+esc(lifecycleGate?lifecycle.nextAction.label:sessionMeta||'Scheduled training')+'</p></div><span class="badge">'+(lifecycleGate?'Review first':'Ready')+'</span></div>'+focusLine(active)+'<p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'. Targets are planned; log what you do.</p>'+adaptationHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" '+(lifecycleGate?'data-today-lifecycle':'data-today-train="'+esc(active.id)+'"')+'>'+esc(lifecycleGate?lifecycle.nextAction.label:'Start workout')+'</button>'+viewWorkout+'<button type="button" class="btn-secondary" data-today-calendar>Calendar</button></div>'+exercisePreview(active);
+   host.innerHTML='<div class="today-training-head"><div><p class="eyebrow">Today</p><h2>'+esc(active.name)+'</h2><p>'+esc(lifecycleGate?lifecycle.nextAction.label:sessionMeta||'Scheduled training')+'</p></div><span class="badge">'+(lifecycleGate?'Review first':'Ready')+'</span></div>'+focusLine(active)+'<p class="more-hint">'+active.exerciseCount+' planned exercise'+(active.exerciseCount===1?'':'s')+' · '+active.setCount+' planned set'+(active.setCount===1?'':'s')+'. Targets are planned; log what you do.</p>'+(lifecycleGate?'':performanceLine(active))+adaptationHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" '+(lifecycleGate?'data-today-lifecycle':'data-today-train="'+esc(active.id)+'"')+'>'+esc(lifecycleGate?lifecycle.nextAction.label:'Start workout')+'</button>'+viewWorkout+'<button type="button" class="btn-secondary" data-today-calendar>Calendar</button></div>'+exercisePreview(active);
   }else if(report.completed||report.loggedToday){
    const count=report.loggedToday||report.completed;
    host.innerHTML='<p class="eyebrow">Today</p><h2>Training logged</h2><p>'+count+' workout'+(count===1?'':'s')+' saved today.</p>'+continuityHtml+'<div class="today-training-actions"><button type="button" class="btn-primary" data-today-resume>Start another workout</button><button type="button" class="btn-secondary" data-today-history>View workout history</button><button type="button" class="btn-secondary" data-today-calendar>View calendar</button></div>';
