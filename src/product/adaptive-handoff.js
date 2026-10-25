@@ -27,7 +27,7 @@
    // Mirror the existing Session Intent identity rule: a missing ID can only
    // map by name/mode if exactly one known ID uses that name and mode.
    const name=String(e?.name||'').trim().replace(/\\s+/g,' ').toLowerCase(),kind=mode(e);
-   const known=identities?.get(name+'|'+kind),resolvedId=e.exerciseId||known?.size===1?[...known][0]:null;
+   const known=identities?.get(name+'|'+kind),resolvedId=e.exerciseId||(known?.size===1?[...known][0]:null);
    const k=resolvedId?'id:'+resolvedId+'|'+kind:'name:'+name+'|'+kind;
    if(!out.has(k))out.set(k,{key:k,name:e.name||'Exercise',exerciseId:resolvedId||null,trackBy:e.trackBy==='duration'?'duration':'reps',sets:[],loadConventions:new Set()});
    const group=out.get(k);
