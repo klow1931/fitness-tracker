@@ -13,8 +13,8 @@
   const session=report.nextSession?'<p><b>Next scheduled:</b> '+esc(report.nextSession.date+' · '+report.nextSession.name)+'</p>':'';
   const setup=report.setup.status==='confirmed'?'Saved athlete preferences dated '+report.setup.recordedAt.slice(0,10)+'.':'Training preferences have not been confirmed.';
   const follow=report.learning?report.learning.observed+' of '+report.learning.recorded+' approved changes have exact follow-up; '+repeated.length+' lift/action groups have 3+ comparable observations.':'Historical outcomes need validation.';
-  const links=report.nextAction&&['review-phase','review-week','resolve-overdue','review-next-program','save-transition'].includes(report.nextAction.kind)?
-   '<button class="btn-secondary" type="button" data-longitudinal-review>Open approved review</button>':'';
+  const links=report.nextAction&&['review-phase','review-week','resolve-overdue','review-next-program','review-handoff','save-transition','review-custom','review-sport','review-hypertrophy'].includes(report.nextAction.kind)?
+   '<button class="btn-secondary" type="button" data-longitudinal-review>Open next review</button>':'';
   return '<details class="more-details longitudinal-coach" id="phase5-coaching"><summary>Long-term coaching · '+esc(phase)+'</summary>'+
    '<p>'+esc(program?.name||'Loadnote')+' · '+esc(phase)+'</p>'+
    '<p><b>Next:</b> '+esc(step)+'</p>'+session+
@@ -33,7 +33,7 @@
   host.append(details);
   details.querySelector('[data-longitudinal-review]')?.addEventListener('click',()=>{
    const current=globalThis.LoadnoteProgramLifecycleUI?.currentReport?.();
-   if(current?.nextAction&&['review-phase','review-week','resolve-overdue','review-next-program','save-transition'].includes(current.nextAction.kind))
+   if(current?.nextAction&&['review-phase','review-week','resolve-overdue','review-next-program','review-handoff','save-transition','review-custom','review-sport','review-hypertrophy'].includes(current.nextAction.kind))
     globalThis.LoadnoteProgramLifecycleUI.route(current);
   });
  }
