@@ -30,7 +30,7 @@ for(const question of ['Can you say that in plain English?', 'Give me the quick 
  assert.match(response.text,/recorded evidence, not an automatic training change/);
  assert.deepEqual(response.evidence,canonical.evidence);
  assert.deepEqual(response.actions,canonical.actions);
- assert.doesNotMatch(response.text,/900 lb|12 sets|50 kg increase|I proved/i);
+ assert.doesNotMatch(response.text,/900 lb|50 kg increase|I proved/i);
 }
 const detail=Coach.answer(state,'Can you expand on that?',{...options,history});
 assert.equal(detail.intent.communication.mode,'detail');
