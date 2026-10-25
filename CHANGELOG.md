@@ -11,6 +11,19 @@
 - Focused Node and mobile-browser tests cover changed load/reps, missing actual effort, exercise identity, unknown-versus-zero bodyweight loads, and historical immutability.
 - Physical iPhone and Android device acceptance remains unverified until carried out separately.
 
+# v4.1.0 — Trustworthy Workout Comparisons
+
+## Reliable training evidence
+- The shared Session Intent matcher now rejects missing actual weights rather than silently coercing them to zero. Explicitly entered zero remains a valid bodyweight load; reps, durations and weight tolerances continue to follow established rules.
+- Post-workout target-versus-actual RPE now pairs sets only when performed load and reps/hold duration match the captured prescription.
+- Exercise identity can be resolved by exact unique name/mode when an ID is missing. Conflicting IDs or incompatible known load conventions never become comparable RPE.
+- The training recap exposes differences between changed/missing doses and matching doses without known actual effort. Actual logged work and existing approval-controlled adaptive programming are unchanged.
+
+## Release safety
+- v4.1.0, unsigned build 36100, schema 34 unchanged; no migration, no new persisted fields, no kg/lb storage modifications.
+- Focused Node and mobile-browser tests cover changed load/reps, missing actual effort, exercise identity, unknown-versus-zero bodyweight loads, and historical immutability.
+- Physical iPhone and Android device acceptance remains unverified until carried out separately.
+
 # v4.0.0 — Explainable Adaptive Training Loop
 
 ## Post-workout learning
