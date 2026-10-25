@@ -14,6 +14,7 @@
  const validRpe=x=>known(x)&&Number(x)>=1&&Number(x)<=10;
  function sameExercise(planned,logged){
   if(!logged||logged.type==='cardio'||logged.type==='practice'||logged.trackBy==='duration')return false;
+  if(planned.loadConvention&&logged.loadConvention&&planned.loadConvention!==logged.loadConvention)return false;
   if(planned.exerciseId)return logged.exerciseId===planned.exerciseId;
   return !logged.exerciseId&&cleanName(logged.name)===cleanName(planned.name);
  }
