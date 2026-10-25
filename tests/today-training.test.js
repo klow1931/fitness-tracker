@@ -81,6 +81,20 @@ const ambiguous={...zeroState,workouts:[{id:'ambiguous',date:'2026-10-22',exerci
 assert.equal(Today.inspect(ambiguous,{day:'2026-10-24'}).active.performanceContext.previous,null,'Ambiguous duplicate exercises must not provide a last set');
 const unmatched={...zeroState,workouts:[{id:'other-id',date:'2026-10-22',exercises:[{name:'Bodyweight Squat',exerciseId:'not-bw',type:'strength',sets:[{weight:95,reps:12}]}]}]};
 assert.equal(Today.inspect(unmatched,{day:'2026-10-24'}).active.performanceContext.previous,null,'Conflicting exercise IDs must not be matched by name');
+const laterRevision={...contextState,workouts:[
+ ...contextState.workouts,
+ {id:'revised-after',date:'2026-10-20',createdAt:'2026-10-20T17:00:00.000Z',exercises:[
+  {name:'Competition Bench Press',exerciseId:'bench',type:'strength',sets:[{weight:210,reps:5,rpe:9}]}
+ ]}
+],workoutRevisions:[{workoutId:'revised-after',recordedAt:'2026-10-26T12:00:00.000Z'}]};
+assert.equal(Today.inspect(laterRevision,{day:'2026-10-24'}).active.performanceContext.previous.date,'2026-09-26',
+ 'A correction after the preview date must not backfill historical performance');
+const convention=structuredClone(zeroState);
+convention.scheduledSessions[0].revisions[0].context.prescription.plannedExercises[0].loadConvention='total';
+convention.workouts[1].exercises[0].loadConvention='per-hand';
+assert.equal(Today.inspect(convention,{day:'2026-10-24'}).active.performanceContext.previous,null,
+ 'A total-weight target cannot inherit a per-hand prior load');
+
 const noPlan={scheduledSessions:Schedule.create([],{date:'2026-10-24',name:'No strength targets',prescription:Intent.createPrescription([{name:'Cardio',type:'cardio',distance:5,duration:30}],{type:'manual'},'2026-10-20T12:00:00.000Z')},{id:'cardio',now:'2026-10-20T12:00:00.000Z'}),workouts:[]};
 assert.equal(Today.inspect(noPlan,{day:'2026-10-24'}).active.performanceContext,null,'No strength target means no comparison card');
 
