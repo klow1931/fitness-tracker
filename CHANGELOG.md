@@ -1,3 +1,16 @@
+# v4.3.0 — Five-Phase Roadmap Validation and Long-Term Coach Follow-Through
+
+## Product integrity
+- Audited the original five milestone releases: training experience/reliability (v3.37), adaptive programming (v3.40), progress/insights (v3.43), offline Coach (v3.48) and long-term coaching (v3.53). The foundations are already implemented; retain the original dedicated engines.
+- The long-term Coach now recognizes the lifecycle's real `review-custom` and `keep-plan` states instead of dropping those next actions.
+- The existing long-term coaching card exposes review navigation for custom, hypertrophy, sport and handoff steps, routing through the freshly validated lifecycle action instead of creating another approval path.
+- New Node and browser cases protect an athlete-authored custom program review, real UI routing, and unchanged workout/history/schedule data.
+- Release notes distinguish shipped code from device acceptance, longitudinal athlete validation, and genuine autonomous training capability.
+
+## Compatibility
+- v4.3.0 / unsigned native build 36300, schema 34. No migration, no kg/lb computation change, no modifications to e1RM, RPE, workout logs, approved review policy, training-max math or Coach credential boundary.
+- Validate CI before merging. v4.2.0 remains the rollback release.
+
 # v4.2.0 — Next Session, At a Glance
 
 ## Faster training decisions without extra taps
