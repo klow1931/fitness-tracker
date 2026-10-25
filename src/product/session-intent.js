@@ -137,9 +137,21 @@
     const measure=exercise?.trackBy==='duration'?'duration':'reps';return (exercise?.sets||[]).filter(set=>Number(set[measure])>0);
   }
   function sameSet(planned,actual,trackBy){
+    // Missing performed values must never coerce to zero; explicit 0 kg is
+    // meaningful for bodyweight movements and remains valid.
+    if(!planned||!actual)return false;
     const measure=trackBy==='duration'?'duration':'reps';
-    const amount=Number(actual?.[measure]);
-    const repsMatch=measure==='reps'&&planned?.minReps!==undefined?Number.isInteger(amount)&&amount>=planned.minReps&&amount<=planned.maxReps:Number(planned?.[measure])===amount;const loadMatch=!Object.hasOwn(planned||{},'weight')||Math.abs(Number(planned.weight)-Number(actual?.weight))<=0.01;return repsMatch&&loadMatch;
+    const raw=actual[measure],amount=Number(raw);
+    if(raw==null||String(raw).trim()===''||!Number.isFinite(amount)||amount<=0)return false;
+    const repsMatch=measure==='reps'&&planned.minReps!==undefined
+      ?Number.isInteger(amount)&&amount>=planned.minReps&&amount<=planned.maxReps
+      :Number(planned[measure])===amount;
+    if(!repsMatch)return false;
+    if(!Object.hasOwn(planned,'weight'))return true;
+    const load=actual.weight,target=planned.weight;
+    if(load==null||String(load).trim()===''||target==null||String(target).trim()==='')return false;
+    return Number.isFinite(Number(load))&&Number.isFinite(Number(target))&&
+      Number(load)>=0&&Number(target)>=0&&Math.abs(Number(target)-Number(load))<=0.01;
   }
   function compare(workout,exerciseIds){
     const plan=workout?.sessionIntent?.prescription;if(!plan)return null;
@@ -180,5 +192,5 @@
     const rows=(workouts||[]).map(workout=>compare(workout,exerciseIds)).filter(Boolean),plannedSets=rows.reduce((n,row)=>n+row.plannedSets,0),completedSets=rows.reduce((n,row)=>n+row.completedSets,0),exactSets=rows.reduce((n,row)=>n+row.exactSets,0),modified=rows.filter(row=>row.status!=='as-planned').length,targetRpeSets=rows.reduce((n,row)=>n+row.targetRpeSets,0),targetRpeTotal=rows.reduce((n,row)=>n+row.targetRpeTotal,0);
     return {prescribedSessions:rows.length,plannedSets,completedSets,exactSets,prescriptionCoverage:rows.length&&workouts?.length?Math.round(rows.length/workouts.length*1000)/10:null,setCompletionRate:plannedSets?Math.round(completedSets/plannedSets*1000)/10:null,exactCompletionRate:plannedSets?Math.round(exactSets/plannedSets*1000)/10:null,targetRpeCoverage:plannedSets?Math.round(targetRpeSets/plannedSets*1000)/10:null,averageTargetRpe:targetRpeSets?Math.round(targetRpeTotal/targetRpeSets*10)/10:null,modifiedSessions:modified,unexplainedModifiedSessions:rows.filter(row=>row.status!=='as-planned'&&!row.hasExplanation).length};
   }
-  return {SESSION_ROLES,DEVIATION_REASONS,createPrescription,prescription,context,validateState,compare,summarize,provenance,startTiming,revisePlan,planTiming};
+  return {SESSION_ROLES,DEVIATION_REASONS,createPrescription,prescription,context,validateState,sameSet,compare,summarize,provenance,startTiming,revisePlan,planTiming};
 });

@@ -20,36 +20,61 @@
  const mode=e=>e?.type==='cardio'?'cardio':e?.trackBy==='duration'?'duration':'reps';
  const key=e=>e?.exerciseId?'id:'+String(e.exerciseId)+'|'+mode(e):'name:'+String(e?.name||'').trim().toLowerCase()+'|'+mode(e);
  const strengthSets=e=>(e?.sets||[]).filter(s=>Number(s?.[e?.trackBy==='duration'?'duration':'reps'])>0);
- function groups(exercises){
+ function groups(exercises,identities){
   const out=new Map();
   for(const e of exercises||[]){
-   if(e?.type==='cardio')continue;
-   const k=key(e);
-   if(!out.has(k))out.set(k,{key:k,name:e.name||'Exercise',exerciseId:e.exerciseId||null,trackBy:e.trackBy==='duration'?'duration':'reps',sets:[]});
-   out.get(k).sets.push(...strengthSets(e));
+   if(e?.type==='cardio'||e?.type==='practice')continue;
+   // Mirror the existing Session Intent identity rule: a missing ID can only
+   // map by name/mode if exactly one known ID uses that name and mode.
+   const name=String(e?.name||'').trim().replace(/\s+/g,' ').toLowerCase(),kind=mode(e);
+   const known=identities?.get(name+'|'+kind),resolvedId=e.exerciseId||(known?.size===1?[...known][0]:null);
+   const k=resolvedId?'id:'+resolvedId+'|'+kind:'name:'+name+'|'+kind;
+   if(!out.has(k))out.set(k,{key:k,name:e.name||'Exercise',exerciseId:resolvedId||null,trackBy:e.trackBy==='duration'?'duration':'reps',sets:[],loadConventions:new Set()});
+   const group=out.get(k);
+   if(e.loadConvention)group.loadConventions.add(e.loadConvention);
+   group.sets.push(...strengthSets(e));
   }
   return out;
+ }
+ function identityNames(exercises){
+  const names=new Map();
+  for(const e of exercises||[]){
+   if(!e?.exerciseId||e.type==='cardio'||e.type==='practice')continue;
+   const name=String(e.name||'').trim().replace(/\s+/g,' ').toLowerCase()+'|'+mode(e);
+   if(!names.has(name))names.set(name,new Set());
+   names.get(name).add(String(e.exerciseId));
+  }
+  return names;
  }
  function performance(workout){
   const comparison=Intent.compare(workout);
   const plan=workout?.sessionIntent?.prescription;
-  if(!plan)return {comparison:null,exercises:[],comparableRpeSets:0,averageTargetRpe:null,averageActualRpe:null,averageRpeDelta:null};
-  const planned=groups(plan.plannedExercises),actual=groups(workout.exercises||[]),exercises=[];
-  let targetTotal=0,actualTotal=0,paired=0;
+  if(!plan)return {comparison:null,exercises:[],comparableRpeSets:0,unmatchedRpeSets:0,unknownActualRpeSets:0,averageTargetRpe:null,averageActualRpe:null,averageRpeDelta:null};
+  const identityMap=identityNames([...(plan.plannedExercises||[]),...(workout.exercises||[])]),
+   planned=groups(plan.plannedExercises,identityMap),actual=groups(workout.exercises||[],identityMap),exercises=[];
+  let targetTotal=0,actualTotal=0,paired=0,unmatchedRpeSets=0,unknownActualRpeSets=0;
   for(const [k,p] of planned){
    const a=actual.get(k),n=Math.min(p.sets.length,a?.sets?.length||0);
-   let pTarget=0,pActual=0,pairs=0;
-   for(let i=0;i<n;i++){
-    const target=p.sets[i]?.targetRpe,rpe=a.sets[i]?.rpe;
-    if(validRpe(target)&&validRpe(rpe)){pTarget+=Number(target);pActual+=Number(rpe);pairs++;targetTotal+=Number(target);actualTotal+=Number(rpe);paired++;}
+   let pTarget=0,pActual=0,pairs=0,unmatched=0,unknown=0;
+   for(let i=0;i<p.sets.length;i++){
+    const target=p.sets[i]?.targetRpe,performed=a?.sets?.[i],rpe=performed?.rpe;
+    if(!validRpe(target))continue;
+    const conventionMatch=!a||!p.loadConventions.size||!a.loadConventions.size||
+      (p.loadConventions.size===1&&a.loadConventions.size===1&&[...p.loadConventions][0]===[...a.loadConventions][0]);
+    if(!performed||!conventionMatch||!Intent.sameSet(p.sets[i],performed,p.trackBy)){
+     unmatched++;unmatchedRpeSets++;continue;
+    }
+    if(!validRpe(rpe)){unknown++;unknownActualRpeSets++;continue;}
+    pTarget+=Number(target);pActual+=Number(rpe);pairs++;targetTotal+=Number(target);actualTotal+=Number(rpe);paired++;
    }
    exercises.push({
-    key:k,name:p.name,exerciseId:p.exerciseId,plannedSets:p.sets.length,completedSets:Math.min(p.sets.length,a?.sets?.length||0),
-    comparableRpeSets:pairs,averageTargetRpe:pairs?round(pTarget/pairs):null,averageActualRpe:pairs?round(pActual/pairs):null,
+    key:k,name:p.name,exerciseId:p.exerciseId,plannedSets:p.sets.length,completedSets:n,
+    comparableRpeSets:pairs,unmatchedRpeSets:unmatched,unknownActualRpeSets:unknown,
+    averageTargetRpe:pairs?round(pTarget/pairs):null,averageActualRpe:pairs?round(pActual/pairs):null,
     averageRpeDelta:pairs?round((pActual-pTarget)/pairs):null
    });
   }
-  return {comparison,exercises,comparableRpeSets:paired,averageTargetRpe:paired?round(targetTotal/paired):null,averageActualRpe:paired?round(actualTotal/paired):null,averageRpeDelta:paired?round((actualTotal-targetTotal)/paired):null};
+  return {comparison,exercises,comparableRpeSets:paired,unmatchedRpeSets,unknownActualRpeSets,averageTargetRpe:paired?round(targetTotal/paired):null,averageActualRpe:paired?round(actualTotal/paired):null,averageRpeDelta:paired?round((actualTotal-targetTotal)/paired):null};
  }
  function acceptedChange(state,scheduleId){
   const rows=[];

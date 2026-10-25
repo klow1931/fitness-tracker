@@ -1,6 +1,10 @@
 # Loadnote
 
-**v4.0.0 · Development build.**
+**v4.1.0 · Development build.**
+
+[Evidence integrity v4.1 release notes](docs/releases-v4.1.md): RPE comparisons now require matching planned and logged loads/reps, with explicit unknown-versus-zero safeguards.
+
+**Earlier v4.0 explainable adaptive-loop milestone.**
 
 [Explainable adaptive loop v4.0](docs/releases-v4.0.md): A verified training-evidence explanation after saving, with clear next-step and athlete-approval boundaries.
 

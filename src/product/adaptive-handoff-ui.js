@@ -26,8 +26,11 @@
  function performanceHtml(p){
   if(!p?.comparison)return '<p class="adaptive-handoff-evidence">No comparable planned-work snapshot was available for this workout.</p>';
   const c=p.comparison,parts=[c.completedSets+'/'+c.plannedSets+' planned sets represented',c.exactRate+'% matched captured load/reps'];
-  if(p.comparableRpeSets)parts.push('target RPE '+p.averageTargetRpe+' · actual RPE '+p.averageActualRpe+' across '+p.comparableRpeSets+' paired set'+(p.comparableRpeSets===1?'':'s'));
-  const exercises=(p.exercises||[]).filter(x=>x.comparableRpeSets).map(x=>'<li><b>'+esc(x.name)+'</b><span>Target '+esc(x.averageTargetRpe)+' · Actual '+esc(x.averageActualRpe)+' · '+x.comparableRpeSets+' paired set'+(x.comparableRpeSets===1?'':'s')+'</span></li>').join('');
+  if(p.comparableRpeSets)parts.push('target RPE '+p.averageTargetRpe+' · actual RPE '+p.averageActualRpe+' across '+p.comparableRpeSets+' matched set'+(p.comparableRpeSets===1?'':'s'));
+  // Report evidence gaps without treating a changed dose as comparable RPE.
+  if(p.unmatchedRpeSets)parts.push(p.unmatchedRpeSets+' planned RPE set'+(p.unmatchedRpeSets===1?'':'s')+' not comparable (missing or changed load/reps)');
+  if(p.unknownActualRpeSets)parts.push(p.unknownActualRpeSets+' matched set'+(p.unknownActualRpeSets===1?'':'s')+' with unknown actual RPE');
+  const exercises=(p.exercises||[]).filter(x=>x.comparableRpeSets).map(x=>'<li><b>'+esc(x.name)+'</b><span>Target '+esc(x.averageTargetRpe)+' · Actual '+esc(x.averageActualRpe)+' · '+x.comparableRpeSets+' matched set'+(x.comparableRpeSets===1?'':'s')+'</span></li>').join('');
   return '<p class="adaptive-handoff-evidence"><b>Plan vs actual:</b> '+parts.map(esc).join(' · ')+'</p>'+(exercises?'<details class="adaptive-handoff-rpe"><summary>RPE evidence by exercise</summary><ul>'+exercises+'</ul></details>':'');
  }
  function changesHtml(report){
