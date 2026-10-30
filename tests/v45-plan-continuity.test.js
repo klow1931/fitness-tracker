@@ -26,4 +26,4 @@ const plan=Intent.createPrescription([{name:'Squat',exerciseId:'sq',type:'streng
 const preview={scheduledSessions:Schedule.create([],{date:day,name:'Range',prescription:plan},{id:'range',now:'2026-10-20T12:00:00.000Z'}),workouts:[{id:'last',date:'2026-10-28',exercises:[{name:'Squat',exerciseId:'sq',sets:[{weight:5,reps:10},{weight:20,reps:8},{weight:99,reps:1,warmup:true},{weight:25,reps:8,done:false}]}]}]};
 const glance=Today.inspect(preview,{day}).active.performanceContext;assert.equal(glance.target.maxReps,12);assert.equal(glance.previous.weightKg,20);
 assert.equal(JSON.stringify(state),frozen);
-console.log('v4.3 rep ranges, last real set, starter lineage/selection, graduated plan continuity and plan-aware Coach passed');
+console.log('v4.5 rep ranges, last real set, starter lineage/selection, graduated plan continuity and plan-aware Coach passed');

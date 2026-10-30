@@ -1,4 +1,4 @@
-# v4.3.0 — Plan Continuity and Contextual Coach
+# v4.5.0 — Plan Continuity and Contextual Coach
 
 ## Review fixes
 - Keep approved rep ranges in the Home/Train target preview. Last logged set now means the last valid performed set in the most recent eligible session; marked warm-ups and incomplete/skipped sets are excluded. Existing identity, unit, chronology and convention guards remain unchanged.
@@ -17,7 +17,37 @@
 ## Code scanning
 The prepared advanced CodeQL workflow installs Capacitor dependencies before the manual Swift/Xcode build, disables incompatible Swift caches, and preserves the repository's other language coverage. PR runs produce reviewable SARIF artifacts without competing uploads. GitHub's existing default setup must be switched to advanced by a repository administrator before main-branch uploads can replace the failing default Swift scan. See [CodeQL setup](codeql-setup.md). Do not claim the existing default scan is fixed before that setting change and a successful uploaded analysis.
 
-Version **4.3.0**, unsigned native build **36300**, schema **34** unchanged. No historical workout migration, automatic scheduling, changed training maxes or silent progression. Physical device and VoiceOver acceptance remain separate.
+Version **4.5.0**, unsigned native build **36500**, schema **34** unchanged. No historical workout migration, automatic scheduling, changed training maxes or silent progression. Physical device and VoiceOver acceptance remain separate.
+
+## Integration order
+This release builds on the pending v4.3 audit (#235) and v4.4 dialogue (#236). Merge those in order, then retarget this stacked PR onto main. Their evidence-routing and dialogue changes are preserved.
+
+# v4.4.0 — Offline Coach Natural Conversation
+
+## Communication without fabricated coaching
+- The offline Coach can respond to an athlete's natural single-topic requests for a shorter explanation, plain-English recap, main takeaway, or deeper explanation.
+- Bounded athlete-only dialogue context: history is session-only; unrelated topic changes, unsafe turns and missing topics prevent stale referents. Assistant and model statements are never used as training evidence.
+- Brief responses use existing evidence-backed clarity and validated cards; detail replies retain the original source-backed explanation. Unknown results and limits remain visible. Compound evidence follow-ups keep the existing coordinator.
+- Ensure short/detail text is actually displayed in the companion, rather than replaced by the full default clarity card.
+- New deterministic Node and mobile browser/selected iPhone WebKit tests cover multi-turn safety, accurate RPE/data explanations, chronology and immutable workouts.
+
+## Compatibility
+- Version 4.4.0, unsigned native build 36400, storage schema 34 unchanged and no migrations.
+- v4.4 stacks on unmerged v4.3. Neither release is ready for merge until its own CI passes; keep v4.2 on main as validated rollback.
+- No new model download, chat storage, automatic planning mutation or medical decisions.
+
+# v4.3.0 — Five-Phase Roadmap Validation and Long-Term Coach Follow-Through
+
+## Product integrity
+- Audited the original five milestone releases: training experience/reliability (v3.37), adaptive programming (v3.40), progress/insights (v3.43), offline Coach (v3.48) and long-term coaching (v3.53). The foundations are already implemented; retain the original dedicated engines.
+- The long-term Coach now recognizes the lifecycle's real `review-custom` and `keep-plan` states instead of dropping those next actions.
+- The existing long-term coaching card exposes review navigation for custom, hypertrophy, sport and handoff steps, routing through the freshly validated lifecycle action instead of creating another approval path.
+- New Node and browser cases protect an athlete-authored custom program review, real UI routing, and unchanged workout/history/schedule data.
+- Release notes distinguish shipped code from device acceptance, longitudinal athlete validation, and genuine autonomous training capability.
+
+## Compatibility
+- v4.3.0 / unsigned native build 36300, schema 34. No migration, no kg/lb computation change, no modifications to e1RM, RPE, workout logs, approved review policy, training-max math or Coach credential boundary.
+- Validate CI before merging. v4.2.0 remains the rollback release.
 
 # v4.2.0 — Next Session, At a Glance
 

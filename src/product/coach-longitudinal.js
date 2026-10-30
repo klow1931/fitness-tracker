@@ -10,7 +10,7 @@
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
  const dayEnd=d=>d+'T23:59:59.999Z';
  const weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
- const actions=new Set(['review-week','review-phase','resolve-overdue','start-workout','next-session','program-upcoming','resume-workout','resume-draft','review-next-program','review-handoff','save-transition','review-programs','review-hypertrophy','review-sport','wait-event','record-event','no-program','error']);
+ const actions=new Set(['review-week','review-phase','resolve-overdue','start-workout','next-session','program-upcoming','resume-workout','resume-draft','review-next-program','review-handoff','save-transition','review-programs','review-hypertrophy','review-sport','review-custom','keep-plan','wait-event','record-event','no-program','error']);
  const types={
   journey:/\b(where am i in (?:my |the )?(?:training |current )?(?:program|cycle|block)|what phase am i in|how far (?:am i|along) in my (?:training )?(?:program|cycle)|what comes after (?:this|my) (?:training )?(?:phase|block)|where is my training heading)\b/i,
   outcomes:/\b(what (?:have we|has loadnote) learned from (?:my |our )?(?:program|training|adaptation|progression) changes|how (?:have|did) my (?:program|training|adaptation) changes work|have my (?:past )?adjustments helped|what worked from (?:past|previous) (?:program|training) changes)\b/i,

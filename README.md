@@ -1,8 +1,16 @@
 # Loadnote
 
-**v4.3.0 · Development build.**
+**v4.5.0 · Development build.**
 
-[Plan continuity and contextual Coach](docs/releases-v4.3.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and the one-time repository setup step are documented.
+[Plan continuity and contextual Coach](docs/releases-v4.5.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and its one-time repository setup step are documented.
+
+[Offline Coach conversation v4.4 release notes](docs/releases-v4.4.md): evidence-grounded plain-English and detail follow-ups without new training decisions.
+
+**Earlier v4.3 five-phase roadmap milestone.**
+
+[Phases 1–5 audit and long-term Coach follow-through](docs/releases-v4.3.md): consolidate the five existing milestone implementations and complete missing athlete-authored program review routing.
+
+**Earlier v4.2 next-session-context milestone.**
 
 [Next-session context v4.2 release notes](docs/releases-v4.2.md): Home and Train show the current scheduled strength target beside a previous logged set, without modifying the plan.
 
