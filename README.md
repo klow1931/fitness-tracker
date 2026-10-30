@@ -1,6 +1,10 @@
 # Loadnote
 
-**v4.2.0 · Development build.**
+**v4.3.0 · Development build.**
+
+[Phases 1–5 audit and long-term Coach follow-through](docs/releases-v4.3.md): consolidate the five existing milestone implementations and complete missing athlete-authored program review routing.
+
+**Earlier v4.2 next-session-context milestone.**
 
 [Next-session context v4.2 release notes](docs/releases-v4.2.md): Home and Train show the current scheduled strength target beside a previous logged set, without modifying the plan.
 
