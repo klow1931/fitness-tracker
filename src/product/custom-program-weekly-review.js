@@ -2,9 +2,9 @@
  * Check-ins are explicit athlete reports. Observations never change Calendar targets.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./schedule'),require('./workout-feedback'));
- else root.LoadnoteCustomProgramWeeklyReview=factory(root.LoadnoteCustomProgram,root.LoadnoteSchedule,root.LoadnoteWorkoutFeedback);
-})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Schedule,Feedback){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./custom-program'),require('./schedule'),require('./workout-feedback'),require('./decision-readiness'),require('./session-intent'));
+ else root.LoadnoteCustomProgramWeeklyReview=factory(root.LoadnoteCustomProgram,root.LoadnoteSchedule,root.LoadnoteWorkoutFeedback,root.LoadnoteReadiness,root.LoadnoteIntent);
+})(typeof globalThis!=='undefined'?globalThis:this,function(Custom,Schedule,Feedback,Readiness,Intent){
  'use strict';
  const copy=x=>JSON.parse(JSON.stringify(x));
  const iso=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
@@ -37,7 +37,8 @@
   if(week!=null&&!selected)throw Error('Choose a completed program week');
   if(!selected)return {status:'waiting',name:p.config.name,through:advance(p.config.startDate,6),notice:NOTICE};
   const cutoff=now<asOf+'T23:59:59.999Z'?now:asOf+'T23:59:59.999Z';
-  const sessions=Schedule.rows(state.scheduledSessions||[],state.workouts||[],{asOf,knownAt:cutoff}).filter(s=>s.id.startsWith('custom:'+id+':')&&s.date>=selected.from&&s.date<=selected.through);
+  const correctedWorkouts=Readiness.workoutsAt(state,asOf,cutoff,false).workouts;
+  const sessions=Schedule.rows(state.scheduledSessions||[],correctedWorkouts,{asOf,knownAt:cutoff}).filter(s=>s.id.startsWith('custom:'+id+':')&&s.date>=selected.from&&s.date<=selected.through);
   const expected=p.sessions.filter(s=>s.week===selected.week);
   const totals={planned:expected.length,completed:0,skipped:0,cancelled:0,unconfirmed:0,unavailable:0,comparable:0,different:0,matchedSets:0,plannedSets:0,effortCompared:0,aboveCap:0,missingEffort:0};
   const rows=[];
@@ -45,11 +46,13 @@
    const s=sessions.find(x=>x.id==='custom:'+id+':'+planned.key);
    const stateName=s?.state||'unavailable';
    if(Object.hasOwn(totals,stateName))totals[stateName]++;
-   const matching=(state.workouts||[]).filter(w=>w.sessionIntent?.schedule?.id===s?.id&&w.date<=asOf&&w.createdAt&&w.createdAt<=cutoff);
+   const matching=correctedWorkouts.filter(w=>w.sessionIntent?.schedule?.id===s?.id&&w.date<=asOf&&w.createdAt&&w.createdAt<=cutoff);
    let comparison=null;
    if(stateName==='completed'&&matching.length===1){
     const w=matching[0],linkedRevision=(state.scheduledSessions||[]).find(x=>x.id===s.id)?.revisions.find(v=>v.recordedAt===w.sessionIntent.schedule.revisionAt);
-    if(linkedRevision&&linkedRevision.recordedAt<=w.createdAt&&linkedRevision.context.prescription?.source?.referenceId===id)comparison=Feedback.compare(w);
+    if(linkedRevision&&linkedRevision.recordedAt<=w.createdAt&&linkedRevision.context.prescription?.source?.referenceId===id){
+     try{if(JSON.stringify(Intent.prescription(linkedRevision.context.prescription))===JSON.stringify(Intent.prescription(w.sessionIntent?.prescription)))comparison=Feedback.compare(w);}catch{}
+    }
    }
    if(comparison){totals.matchedSets+=comparison.matchedSets;totals.plannedSets+=comparison.plannedSets;totals.effortCompared+=comparison.effortCompared;totals.aboveCap+=comparison.aboveCap;totals.missingEffort+=comparison.missingRpe;if(['within-cap','above-cap'].includes(comparison.status))totals.comparable++;else totals.different++;}
    else if(stateName==='completed')totals.different++;

@@ -1,0 +1,307 @@
+[
+  {
+    "id": "implicit-half-hour",
+    "group": "planning",
+    "question": "I have half an hour and only dumbbells",
+    "field": "minutes",
+    "equals": 30
+  },
+  {
+    "id": "implicit-focus",
+    "group": "planning",
+    "question": "I have half an hour and only dumbbells",
+    "slot": "focus"
+  },
+  {
+    "id": "quarter-hour",
+    "group": "planning",
+    "question": "I have a quarter of an hour and no equipment",
+    "field": "minutes",
+    "equals": 15
+  },
+  {
+    "id": "forty-five",
+    "group": "planning",
+    "question": "I've got forty five minutes and only DBs",
+    "field": "minutes",
+    "equals": 45
+  },
+  {
+    "id": "goal-first",
+    "group": "planning",
+    "question": "Build me a program",
+    "slot": "goal"
+  },
+  {
+    "id": "conflicting-goals",
+    "group": "planning",
+    "question": "Create a strength and muscle growth program 12 weeks 3 days 60 minutes full gym",
+    "slot": "goal",
+    "noAction": true
+  },
+  {
+    "id": "conflicting-days",
+    "group": "planning",
+    "question": "Create a strength program 12 weeks 3 or 4 days 60 minutes full gym",
+    "slot": "frequency",
+    "noAction": true
+  },
+  {
+    "id": "conflicting-focus",
+    "group": "planning",
+    "question": "Create an upper body or lower body workout 30 minutes dumbbells",
+    "slot": "focus",
+    "noAction": true
+  },
+  {
+    "id": "too-short",
+    "group": "planning",
+    "question": "Create a full body workout 5 minutes dumbbells",
+    "noAction": true
+  },
+  {
+    "id": "no-date-guess",
+    "group": "planning",
+    "question": "Create a full body workout next week 30 minutes dumbbells",
+    "noAction": true
+  },
+  {
+    "id": "no-sport-substitution",
+    "group": "planning",
+    "question": "Create an Olympic workout 30 minutes full body barbell",
+    "noAction": true
+  },
+  {
+    "id": "implicit-complete",
+    "group": "planning",
+    "question": "Create a full body workout 30 minutes dumbbells",
+    "action": true
+  },
+  {
+    "id": "partial-update",
+    "group": "dialogue",
+    "start": "Create a 12-week strength program 4 days 60 minutes full gym",
+    "question": "Make it 3 days instead",
+    "field": "frequency",
+    "equals": 3,
+    "preserve": [
+      "weeks",
+      "minutes",
+      "equipment"
+    ]
+  },
+  {
+    "id": "minute-only-slot",
+    "group": "dialogue",
+    "start": "Create a full body workout with dumbbells",
+    "question": "30",
+    "field": "minutes",
+    "equals": 30
+  },
+  {
+    "id": "focus-follow-up",
+    "group": "dialogue",
+    "start": "I have half an hour and only dumbbells",
+    "question": "Full body",
+    "field": "focus",
+    "equals": "full"
+  },
+  {
+    "id": "keep-after-explanation",
+    "group": "dialogue",
+    "start": "Create a 12-week strength program 4 days 60 minutes full gym",
+    "interlude": "Explain RPE",
+    "question": "Make it 3 days instead",
+    "field": "frequency",
+    "equals": 3,
+    "preserve": [
+      "weeks",
+      "minutes",
+      "equipment"
+    ]
+  },
+  {
+    "id": "separate-workout-and-program",
+    "group": "dialogue",
+    "start": "Create a full body workout 30 minutes dumbbells",
+    "question": "Make it 3 days instead",
+    "slot": "kind",
+    "noAction": true
+  },
+  {
+    "id": "do-not-reuse-medical-topic",
+    "group": "reset",
+    "interlude": "My knee hurts",
+    "question": "Make it 3 days instead"
+  },
+  {
+    "id": "do-not-reuse-new-topic",
+    "group": "reset",
+    "interlude": "New topic",
+    "question": "Make it 3 days instead"
+  },
+  {
+    "id": "do-not-reuse-discarded",
+    "group": "reset",
+    "interlude": "Discard this request",
+    "question": "Make it 3 days instead"
+  },
+  {
+    "id": "health-before-draft",
+    "group": "safety",
+    "question": "My knee hurts, create a squat workout",
+    "topic": "health"
+  },
+  {
+    "id": "medical-before-references",
+    "group": "safety",
+    "question": "Explain training volume for my injured knee",
+    "topic": "health"
+  },
+  {
+    "id": "references-typo",
+    "group": "references",
+    "question": "Explain strenght",
+    "hit": "phase-purpose"
+  },
+  {
+    "id": "references-specificity",
+    "group": "references",
+    "question": "Explain specificity",
+    "hit": "specificity"
+  },
+  {
+    "id": "references-muscle-language",
+    "group": "references",
+    "question": "What evidence supports muscle size?",
+    "hit": "hypertrophy"
+  },
+  {
+    "id": "references-assistance",
+    "group": "references",
+    "question": "How do assistance exercises help my main lift?",
+    "hit": "specificity"
+  },
+  {
+    "id": "unrelated-knowledge",
+    "group": "references",
+    "question": "Explain cryptocurrency tax deductions",
+    "none": true
+  },
+  {
+    "id": "knowledge-not-prescriptions",
+    "group": "references",
+    "question": "Increase my squat load",
+    "none": true
+  },
+  {
+    "id": "ready-follow-through",
+    "group": "followthrough",
+    "question": "Is my program working?",
+    "status": "ready"
+  },
+  {
+    "id": "missing-follow-through",
+    "group": "followthrough",
+    "question": "Am I on track?",
+    "empty": true,
+    "status": "empty"
+  },
+  {
+    "id": "follow-through-ambiguity",
+    "group": "followthrough",
+    "question": "Is my plan working?",
+    "overlap": true,
+    "status": "ambiguous"
+  },
+  {
+    "id": "follow-through-not-progress-command",
+    "group": "followthrough",
+    "question": "What needs changing next week?",
+    "status": "ready"
+  },
+  {
+    "id": "give-me-session",
+    "group": "planning",
+    "question": "Give me an upper body session 30 minutes dumbbells",
+    "action": true
+  },
+  {
+    "id": "like-program",
+    "group": "planning",
+    "question": "I'd like a 12-week strength program 3 days 60 minutes full gym",
+    "action": true
+  },
+  {
+    "id": "thirty-minutes",
+    "group": "planning",
+    "question": "I've got thirty minutes and only dumbbells",
+    "field": "minutes",
+    "equals": 30
+  },
+  {
+    "id": "day-range",
+    "group": "planning",
+    "question": "Create a strength program 12 weeks 3-4 days 60 minutes full gym",
+    "slot": "frequency",
+    "noAction": true
+  },
+  {
+    "id": "week-range",
+    "group": "planning",
+    "question": "Create a strength program 8 to 12 weeks 3 days 60 minutes full gym",
+    "slot": "weeks",
+    "noAction": true
+  },
+  {
+    "id": "minute-range",
+    "group": "planning",
+    "question": "Create a full body workout 30 to 45 minutes dumbbells",
+    "slot": "minutes",
+    "noAction": true
+  },
+  {
+    "id": "clinical-context-before-program",
+    "group": "safety",
+    "question": "I have diabetes, create a strength program",
+    "topic": "health"
+  },
+  {
+    "id": "pregnancy-before-program",
+    "group": "safety",
+    "question": "Create a strength program during pregnancy",
+    "topic": "health"
+  },
+  {
+    "id": "compound-number-weeks",
+    "group": "planning",
+    "question": "Create a twenty eight week meet prep program 3 days 60 minutes full gym",
+    "field": "weeks",
+    "equals": 28
+  },
+  {
+    "id": "unsupported-number-no-partial-dose",
+    "group": "planning",
+    "question": "Create a full body workout one hundred minutes dumbbells",
+    "noAction": true
+  },
+  {
+    "id": "written-range-days",
+    "group": "planning",
+    "question": "Create a strength program 12 weeks three-four days 60 minutes full gym",
+    "slot": "frequency",
+    "noAction": true
+  },
+  {
+    "id": "negative-duration",
+    "group": "planning",
+    "question": "Create a full body workout -30 minutes dumbbells",
+    "noAction": true
+  },
+  {
+    "id": "fractional-days",
+    "group": "planning",
+    "question": "Create a 12-week strength program 2.5 days 60 minutes full gym",
+    "noAction": true
+  }
+]

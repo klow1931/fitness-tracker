@@ -4,16 +4,17 @@
  else root.LoadnoteOfflinePlanner=factory(root.LoadnoteProgrammingProfile,root.LoadnoteCoachSupport,root.LoadnoteExerciseReference,root.LoadnoteIntent,root.LoadnoteAdaptiveSession,root.LoadnoteAthleteIntake,root.LoadnoteReadiness);
 })(typeof globalThis!=='undefined'?globalThis:this,function(Profile,Support,Ref,Intent,Adaptive,Intake,Roles){
  'use strict';
- const copy=x=>JSON.parse(JSON.stringify(x)),words={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20};
- const normalize=q=>String(q||'').toLowerCase().replace(/[’‘]/g,"'").replace(/[-–]/g,' ').replace(new RegExp('\\b('+Object.keys(words).join('|')+')\\b','g'),w=>words[w]).replace(/\s+/g,' ').trim().slice(0,500);
+ const copy=x=>JSON.parse(JSON.stringify(x)),words={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+ const normalize=q=>String(q||'').toLowerCase().replace(/[’‘]/g,"'").replace(/\b(\d{1,3})\s*[-–]\s*(\d{1,3})\s*(days?|minutes?|mins?|weeks?)\b/g,'$1 to $2 $3').replace(/[-–]/g,' ').replace(/\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\s+(one|two|three|four|five|six|seven|eight|nine)\b/g,(_,a,b)=>String(words[a]+words[b])).replace(/\bhalf an hour\b/g,'30 minutes').replace(/\ba quarter (?:of )?an hour\b/g,'15 minutes').replace(/\ban hour\b/g,'1 hour').replace(/\b(?:forty five|forty-five)\b/g,'45').replace(new RegExp('\\b('+Object.keys(words).join('|')+')\\b','g'),w=>words[w]).replace(/\s+/g,' ').trim().slice(0,500);
  const profile=state=>Profile.current(state.programmingProfiles||[])?.context||null;
  // Corrections prefer the expressly chosen value, not the first number in a
  // phrase such as "instead of four days, use three". An unresolved "or" is
  // a clarification, never a silent choice.
  function numericPreference(q,unit){
   const u=unit==='day'?'(?:days?|times?(?:\\s+(?:per|a)\\s+week)?)':'(?:minutes?|mins?)';
-  if(new RegExp('\\b\\d+\\s+(?:or|versus|vs)\\s+\\d+\\s*'+u+'\\b').test(q))return {value:null,ambiguous:true};
+  if(new RegExp('\\b\\d+\\s+(?:or|and|versus|vs|to|through)\\s+\\d+\\s*'+u+'\\b').test(q))return {value:null,ambiguous:true};
   const re=new RegExp('\\b(\\d+)\\s*'+u+'\\b','g'),matches=[...q.matchAll(re)];
+  if(new RegExp('\\b\\d+\\s+\\d+\\s*'+u+'\\b').test(q))return {value:null,ambiguous:true};
   if(!matches.length)return {value:null,ambiguous:false};
   if(matches.length===1)return {value:Number(matches[0][1]),ambiguous:false};
   const values=[...new Set(matches.map(m=>Number(m[1])))];
@@ -27,25 +28,31 @@
  // Named availability is kept in the reviewed draft; chat never edits saved preferences.
  function mentionedDays(q){return weekNames.flatMap((day,i)=>new RegExp('\\b'+day+'\\b').test(q)?[i]:[]);}
  function parse(question,previous=null){
-  const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),meetRequest=/\b(?:meet prep|meet preparation|meet cycle|peaking cycle)\b/.test(q),changePrior=previous&&/^(?:actually,?\s+)?(?:make|change|switch) (?:it|this) (?:to |a |an )?/i.test(q),start=!blocked&&!changePrior&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||meetRequest&&/\b(build|create|write|make|design|generate|draft|plan|want|need)\b/.test(q));
+  const q=normalize(question),blocked=/\b(cancel|delete|stop|remove|reschedule)\b/.test(q),meetRequest=/\b(?:meet prep|meet preparation|meet cycle|peaking cycle)\b/.test(q),changePrior=previous&&/^(?:actually,?\s+)?(?:make|change|switch) (?:it|this) (?:to |a |an )?/i.test(q),start=!blocked&&!changePrior&&(/\b(build|create|write|make|design|generate|draft|want|need)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(workout|session) for (today|tomorrow)\b/.test(q)||/\b(help me|can you|could you|i would like|i'd like)\b.*\b(draft|build|create|plan|design|write)\b.*\b(program|plan|routine|workout|session)\b/.test(q)||/\b(?:give me|put together|i'd like|i would like|can we plan)\b.*\b(?:program|plan|routine|workout|session)\b/.test(q)||meetRequest&&/\b(build|create|write|make|design|generate|draft|plan|want|need)\b/.test(q));
+  const uncertainUnit=q.match(/\b(?:hundred|thousand)\b.{0,40}?\b(weeks?|days?|minutes?|mins?|hours?)\b/)?.[1]||String(question).match(/(?:^|\s)[-−]\s*\d+(?:\.\d+)?\s*(weeks?|days?|minutes?|mins?|hours?)\b/i)?.[1]||q.match(/\b\d+\.\d+\s*(weeks?|days?|minutes?|mins?|hours?)\b/)?.[1]||null;
   if(/\b(explain|understand|learn|know|what|why|how)\b/.test(q)&&!/\b(build|create|write|make|design|generate|draft)\b/.test(q))return null;
-  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q)||mentionedDays(q).length>0);
+  const follow=previous&&!/\b(explain|why|what|how|last|previous|history|cancel|delete|save|schedule|progress|evidence|hello|thanks)\b/.test(q)&&(/\b(\d+|strength|powerlifting|muscle|hypertrophy|full body|upper body|lower body|multiweek|single workout|program|dumbbells?|dbs?|barbells?|bodyweight|body weight|cables?|machines?|pullup|pull up bar|cardio|no equipment|no weights|gym|bench|squat|deadlift|linear|wave|undulating|meet prep|meet preparation)\b/.test(q)||mentionedDays(q).length>0);
+  const implicit=!start&&!previous&&!blocked&&/\b(?:i have|i've got|i only have|only got)\b/.test(q)&&/\b(?:minutes?|mins?|hour)\b/.test(q)&&/\b(?:dumbbells?|dbs?|barbell|bodyweight|no equipment|full gym)\b/.test(q);
+  if(implicit)return parse('Create a workout '+question);
   if(!start&&!follow)return null;
   const r=start?{version:1,kind:/\b(workout|session)\b/.test(q)&&!/\b(program|routine|\d+\s*week)\b/.test(q)&&!meetRequest?'daily':'program',goal:null,weeks:null,frequency:null,minutes:null,equipment:[],focus:null,priority:null,periodization:null,excluded:[],tomorrow:false}:copy(previous);
   if(/\b(powerlifting|strength|get stronger|stronger)\b/.test(q))r.goal='strength';
   if(/\b(hypertrophy|muscle growth|build muscle|gain muscle|bigger muscles|bodybuilding)\b/.test(q))r.goal='hypertrophy';
+  const strengthGoal=/\b(strength|powerlifting|stronger)\b/.test(q),growthGoal=/\b(hypertrophy|muscle growth|build muscle|gain muscle|bodybuilding)\b/.test(q);
+  if(strengthGoal||growthGoal)r.goalUnclear=strengthGoal&&growthGoal;
   if(meetRequest&&!r.goal)r.goal='strength';
   const n=pattern=>{const m=q.match(pattern);return m?Number(m[1]):null;};
   const weeks=n(/\b(\d+)\s*weeks?\b/),dayChoice=numericPreference(q,'day'),minuteChoice=numericPreference(q,'minute');
   const frequency=dayChoice.value??(dayChoice.ambiguous?null:n(/\b(\d+)\s*x\s*(?:per|a|\/)?\s*week\b/));
   const minutes=minuteChoice.value??(minuteChoice.ambiguous?null:n(/\b(\d+)\s*hours?\b/)!=null?n(/\b(\d+)\s*hours?\b/)*60:/\bhalf an hour\b/.test(q)?30:null);
   if(weeks!==null)r.weeks=weeks;if(frequency!==null)r.frequency=frequency;if(minutes!==null)r.minutes=minutes;
+  if(/\b\d+\s+(?:or|to|through)\s+\d+\s*weeks?\b/.test(q))r.weeksUnclear=true;else if(weeks!==null)r.weeksUnclear=false;
   const named=mentionedDays(q);if(named.length&&/\b(?:train|workout|available|days?)\b/.test(q)){r.days=named;r.frequency=named.length;r.frequencyUnclear=false;}
   else if(frequency!==null&&Array.isArray(r.days)&&r.days.length!==frequency)delete r.days;
   // Don't carry a previous answer through an explicitly ambiguous correction.
-  if(dayChoice.ambiguous){r.frequency=null;r.frequencyUnclear=true;}
+  if(dayChoice.ambiguous||/\b(?:up to|at most)\s+\d+\s*days?\b/.test(q)){r.frequency=null;r.frequencyUnclear=true;}
   else if(dayChoice.value!==null||frequency!==null)r.frequencyUnclear=false;
-  if(minuteChoice.ambiguous){r.minutes=null;r.minutesUnclear=true;}
+  if(minuteChoice.ambiguous||uncertainUnit&&/^(?:minutes?|mins?|hours?)$/.test(uncertainUnit)||/\b\d+\s*hours?\b.*\b\d+\s*(?:minutes?|mins?)\b/.test(q)){r.minutes=null;r.minutesUnclear=true;}
   else if(minutes!==null)r.minutesUnclear=false;
   // Negative equipment corrects even an earlier chat selection.
   const equipment=[],unavailable=[];
@@ -63,10 +70,12 @@
   r.equipment=r.equipment.filter(key=>!unavailable.includes(key));
   if(/\bupper body\b/.test(q))r.focus='upper';else if(/\blower body|leg workout\b/.test(q))r.focus='lower';else if(/\bfull body\b/.test(q))r.focus='full';
   else if(/\bbench (?:workout|session)\b/.test(q))r.focus='upper';
+  const focuses=[/\bupper body\b/.test(q),/\blower body\b/.test(q),/\bfull body\b/.test(q)];if(r.kind==='daily'&&focuses.some(Boolean))r.focusUnclear=focuses.filter(Boolean).length>1;
   if(/\b(bench|pressing|press)\b/.test(q)&&/\b(priority|prioritize|focus|extra|improve|stuck)\b/.test(q))r.priority='bench';
   else if(/\b(squat|deadlift)\b/.test(q)&&/\b(priority|prioritize|focus|extra|improve|stuck)\b/.test(q))r.priority=q.includes('squat')?'squat':'deadlift';
   if(/\bweekly undulating\b/.test(q)){r.periodization='weekly-undulating';r.styleUnclear=false;}else if(/\bwave\b/.test(q)){r.periodization='wave';r.styleUnclear=false;}else if(/\bdaily undulating|\bdup\b/.test(q)){r.periodization='undulating';r.styleUnclear=false;}else if(/\bnonlinear|non linear|undulating\b/.test(q))r.styleUnclear=true;else if(/\blinear\b/.test(q)){r.periodization='linear';r.styleUnclear=false;}
   for(const m of q.matchAll(/\b(?:no|avoid|without|can't do|cannot do)\s+(squats?|bench|deadlifts?|lunges?|push\s*ups?|rows?)\b/g))r.excluded=[...new Set([...r.excluded,m[1].replace(/s$/,'').replace(/\s/g,'')])];
+  if(/\bmultiweek program\b/.test(q)){r.kind='program';r.kindUnclear=false;}else if(/\bsingle workout\b/.test(q)){r.kind='daily';r.kindUnclear=false;r.frequency=null;r.weeks=null;delete r.days;}else if(r.kind==='daily'&&frequency!==null)r.kindUnclear=true;
   if(/\btomorrow\b/.test(q))r.tomorrow=true;else if(/\btoday\b/.test(q))r.tomorrow=false;
   if(/\b(olympic|snatch|clean and jerk|sprint|jumping|sport specific)\b/.test(q))r.unsupportedDomain=true;
   if(r.kind==='program'&&/\b(meet|competition|peaking|taper)\b/.test(q)){
@@ -76,12 +85,18 @@
   }
   if(r.kind==='daily'&&/\bnext week\b|\b(?:next|on) (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\b\d{4} \d{2} \d{2}\b/.test(q))r.dateUnsupported=true;
   else if(/\btoday|tomorrow\b/.test(q))r.dateUnsupported=false;
+  if(uncertainUnit||/\b(?:hundred|thousand)\b/.test(q)){r.numberUnclear=true;if(/^weeks?$/.test(uncertainUnit||''))r.weeks=null;else if(/^days?$/.test(uncertainUnit||''))r.frequency=null;else if(uncertainUnit)r.minutes=null;else{r.weeks=null;r.frequency=null;r.minutes=null;}}else if(/\d/.test(q))r.numberUnclear=false;
   if(!start&&JSON.stringify(r)===JSON.stringify(previous))return null;
   return r;
  }
  function gaps(r,state){
   if(!r||r.version!==1||!['program','daily'].includes(r.kind)||!Array.isArray(r.equipment)||r.equipment.some(e=>!Object.hasOwn(Ref.EQUIPMENT,e))||!Array.isArray(r.excluded)||r.excluded.some(x=>typeof x!=='string')||r.goal!==null&&!['strength','hypertrophy'].includes(r.goal)||r.focus!==null&&!['upper','lower','full'].includes(r.focus)||r.priority!==null&&!['bench','squat','deadlift'].includes(r.priority)||[r.weeks,r.frequency,r.minutes].some(n=>n!==null&&!Number.isInteger(n)))return ['This planning request is incomplete or invalid. Start a new request.'];
   const p=profile(state),out=[];
+  if(r.numberUnclear)out.push('Please restate the uncertain duration or frequency as a positive whole number in weeks, days or minutes; I will not use a partial written, negative or fractional value.');
+  if(r.weeksUnclear)out.push('Which single number of weeks should the program last?');
+  if(r.kindUnclear)out.push('Do you want a single workout or a multiweek program?');
+  if(r.goalUnclear)out.push('Which is the primary goal for this request: strength or muscle growth?');
+  if(r.focusUnclear)out.push('Which single workout focus should I use: full-body, upper-body or lower-body?');
   if(r.frequencyUnclear)out.push('You mentioned more than one training frequency. Which single number of days per week should I use?');
   if(r.minutesUnclear)out.push('You mentioned more than one workout duration. Which single time limit should I use?');
   if(r.styleUnclear)out.push('Which loading style do you mean: daily undulating, weekly undulating, or waves?');
@@ -104,15 +119,46 @@
   return out;
  }
  function summary(r){return [r.kind==='daily'?'Daily workout request':(r.goal||'Unspecified goal')+(r.meet?' meet-prep':'')+' program request',r.weeks!=null?r.weeks+' weeks':null,r.frequency!=null?r.frequency+' days/week':null,Array.isArray(r.days)&&r.days.length?r.days.map(d=>weekNames[d]).join(', '):null,r.minutes!=null?r.minutes+' minutes':null,r.focus?r.focus+' body':null,r.equipment.length?r.equipment.join(', '):null,r.priority?r.priority+' priority':null,r.excluded.length?'avoid '+r.excluded.join(', '):null,r.periodization].filter(Boolean).join(' · ');}
+ function previousRequest(history=[]){
+  for(const row of (Array.isArray(history)?history:[]).slice(-12).reverse()){
+   if(row?.role==='assistant'&&row.planning?.version===1)return copy(row.planning);
+   if(row?.role==='user'){
+    const q=String(row.content||'');if(Support.health(q)||Support.kind(q)==='urgent-support'||/\b(?:start over|new topic|discard|cancel|hello|thanks)\b/i.test(q))return null;
+    if(!/\b(?:explain|why|what|how)\b.*\b(?:rpe|reps|effort|exercise|movement|equipment|draft|request|starting|that)\b/i.test(q))return null;
+   }
+  }return null;
+ }
+ function nextQuestion(r,state){
+  const missing=gaps(r,state);if(!missing.length)return null;
+  const question=missing[0],id=/single workout or a multiweek/.test(question)?'kind':/primary goal|Should this be/.test(question)?'goal':/weeks/.test(question)?'weeks':/frequency|days per week/.test(question)?'frequency':/minutes|time limit|duration/.test(question)?'minutes':/equipment can you/.test(question)?'equipment':/body|workout focus/.test(question)?'focus':'review';
+  const choices={kind:['A single workout','A multiweek program'],goal:['Strength','Muscle growth'],weeks:['8 weeks','12 weeks'],frequency:['2 days','3 days','4 days'],minutes:['30 minutes','45 minutes','60 minutes'],equipment:['Dumbbells only','Bodyweight only','Full gym'],focus:['Full body','Upper body','Lower body']};
+  return {id,question,choices:choices[id]||[]};
+ }
+ function changes(previous,current){
+  if(!previous)return [];
+  const fields={kind:'Request type',goal:'Goal',weeks:'Weeks',frequency:'Days per week',minutes:'Minutes',equipment:'Equipment',focus:'Focus',priority:'Priority',periodization:'Loading style',excluded:'Excluded movements'};
+  return Object.entries(fields).filter(([k])=>JSON.stringify(previous[k])!==JSON.stringify(current[k])).map(([key,label])=>({key,label,before:copy(previous[key]??null),after:copy(current[key]??null)}));
+ }
+ function rationale(state,r,e){
+  const p=profile(state),lines=['Matches the requested '+(r.focus||'full')+'-body movement group: '+e.group+'.','Uses '+Ref.EQUIPMENT[e.equipment]+' from your requested equipment.'];
+  if(e.exerciseId&&p?.preferredExerciseIds?.includes(e.exerciseId))lines.push('This movement is an explicitly confirmed preference.');
+  lines.push('Confirmed exclusions are checked before suggesting movements. This selection is not evidence of an individual weakness or an optimal dose.');return lines;
+ }
  function answer(state,question,{history=[]}={}){
   if(Support.kind(question)==='health'||Support.kind(question)==='urgent-support')return null;
   // Reading a previously reviewed personal plan is not a request to create a
   // new workout. Leave that to the exact Calendar-backed custom-program route.
   if(/\b(?:uploaded|imported|custom|my own)\s+(?:training\s+)?(?:program|plan)\b/i.test(question)&&/\b(?:what|which|show|review|when)\b/i.test(question)&&!/\b(?:create|write|build|draft|generate)\b/i.test(question))return null;
-  const last=history.at(-1),previous=last?.role==='assistant'?last.planning:null;
-  const r=parse(question,previous);if(!r)return null;
-  const missing=gaps(r,state),text=summary(r)+'. '+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');
-  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,intent:{topic:'offline-planning'},evidence:[],followUps:!r.meet&&r.goal==='strength'&&r.weeks>13?['Make it meet prep']:[],actions:missing.length?(r.unsupportedDomain?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
+  const previous=previousRequest(history),slot=previous?nextQuestion(previous,state):null;
+  if(/^(?:discard|cancel) (?:this |the |my )?(?:draft|request)[.!]?$/i.test(question.trim()))return {text:'This conversation request is discarded. Saved plans, preferences and workouts are unchanged.',source:'Shared coaching · offline planning',readOnly:true,planningReset:true};
+  let input=question;if(previous&&/^\d+$/.test(question.trim())&&['weeks','frequency','minutes'].includes(slot?.id))input=question.trim()+' '+({weeks:'weeks',frequency:'days',minutes:'minutes'}[slot.id]);
+  let r=parse(input,previous);
+  if(previous&&/^(?:use|keep) my (?:saved|confirmed) (?:setup|preferences)[.!]?$/i.test(question.trim())){const p=profile(state);if(p){r=copy(previous);if(!r.goal&&['strength','hypertrophy'].includes(p.goal))r.goal=p.goal;if(r.minutes==null)r.minutes=p.sessionMinutes;if(!r.equipment.length)r.equipment=[...new Set([...(p.equipment||[]),...(p.accessoryEquipment||[])])].filter(e=>Object.hasOwn(Ref.EQUIPMENT,e));}}
+  if(!r&&previous&&slot&&/\b(?:you choose|up to you|whatever you think|don.t know|do not know)\b/i.test(question))r=copy(previous);
+  if(!r)return null;
+  const delta=changes(previous,r);r.changeSummary=delta;
+  const missing=gaps(r,state),next=nextQuestion(r,state),changed=delta.length?' Changed: '+delta.map(d=>d.label+' '+(Array.isArray(d.before)?d.before.join(', '):d.before??'not set')+' → '+(Array.isArray(d.after)?d.after.join(', '):d.after??'not set')).join('; ')+'. ':'. ',text=summary(r)+changed+(missing[0]||'Review this draft request, then confirm exact movements, equipment and fresh loads. Nothing is saved, scheduled or marked completed by chat.');
+  return {text,source:'Shared coaching · offline planning',readOnly:true,planning:r,planningDelta:delta,clarificationSlot:next?.id||null,intent:{topic:'offline-planning'},evidence:[],followUps:!r.meet&&r.goal==='strength'&&r.weeks>13?['Make it meet prep']:next?.choices||[],actions:missing.length?(r.unsupportedDomain?[{kind:'programming',label:'Open the reviewed planners'}]:[]):[{kind:'offline-plan',label:r.kind==='daily'?'Draft my workout':'Review program request',request:copy(r)}]};
  }
  function candidates(state,r,{excludedExerciseIds=[],requireMapped=false}={}){
   const p=profile(state),preferred=new Set(p?.preferredExerciseIds||[]),excluded=new Set([...(p?.avoidedExerciseIds||[]),...excludedExerciseIds]),roleRows=Roles.list(state.exerciseRoles||[]);
@@ -133,5 +179,5 @@
   const prescription=Intent.createPrescription(exercises,{type:'manual',label:'Reviewed offline workout draft'},now),estimate=Adaptive.timePreview(prescription,{minutes:r.minutes,optionalExerciseIds:[],assumptions:{defaultRestSeconds:120}});
   return {request:copy(r),prescription,estimate:estimate.estimateAfter,notice:'Editable starting structure, not a measured individual dose. The time estimate excludes warm-up, queues and interruptions. No actual effort or completion has been entered.'};
  }
- return {parse,gaps,summary,answer,candidates,workout};
+ return {parse,gaps,summary,answer,candidates,workout,nextQuestion,previousRequest,changes,rationale};
 });
