@@ -87,7 +87,7 @@
   .cc-messages{height:auto;min-height:120px;flex:1 1 300px;overflow:auto;overscroll-behavior:contain;padding:12px 14px;display:flex;flex-direction:column;gap:9px}.cc-msg{max-width:88%;padding:9px 11px;border-radius:13px;background:#f1f5f9;color:#0f172a;font-size:13px;line-height:1.4}.cc-msg.user{align-self:flex-end;background:#312e81;color:#fff}.cc-msg small{display:block;margin-top:5px;color:#64748b}.cc-msg.user small{color:#c7d2fe}
   .cc-msg:has(.cc-clarity){max-width:96%}.cc-clarity p{margin:3px 0 9px}.cc-clarity b{font-size:12px}.cc-clarity details{border-top:1px solid #cbd5e1;padding-top:7px}.cc-clarity details p{white-space:pre-wrap;overflow-wrap:anywhere}.cc-clarity summary{cursor:pointer;font-weight:700}
   .cc-quick{display:flex;flex:0 0 auto;gap:6px;overflow:auto;padding:0 14px 10px}.cc-quick button{white-space:nowrap;border:1px solid #cbd5e1;background:transparent;border-radius:999px;padding:6px 9px;font-size:11px;color:inherit}
-  .cc-form{display:flex;flex:0 0 auto;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
+  .cc-form{display:flex;flex:0 0 auto;gap:7px;padding:10px 14px 12px;border-top:1px solid #e2e8f0}.cc-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 10px;background:transparent;color:inherit}.cc-form button{border:0;border-radius:10px;background:#312e81;color:white;padding:9px 12px;font-weight:700}.cc-foot{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;justify-content:space-between;align-items:center;padding:0 14px 12px;font-size:11px;color:#64748b}.cc-foot button{border:0;background:transparent;color:#4f46e5;font-weight:700;cursor:pointer}
   .cc-evidence{margin-top:9px;border-top:1px solid #cbd5e1;padding-top:7px;font-size:12px}.cc-evidence summary{cursor:pointer;font-weight:700}.cc-evidence article{margin-top:8px;padding:8px;border:1px solid #cbd5e1;border-radius:9px;overflow-wrap:anywhere}.cc-evidence article b{display:block}.cc-evidence article p{margin:4px 0;white-space:pre-wrap}.cc-evidence article small{display:block;margin-top:4px}.cc-evidence-status{display:inline-block;font-size:11px;margin-top:3px;opacity:.85}
   body.dark .cc-evidence,body.dark .cc-evidence article{border-color:#475569}
   body.dark .cc-head{background:#0f172a;border-color:#334155}body.dark .cc-head small{color:#94a3b8}body.dark .cc-close:hover{background:#1e293b}
@@ -107,6 +107,7 @@
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text||asking)return;input.value='';void serialAsk(text);});
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
+  const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('.cc-foot').append(researchButton);
   document.body.appendChild(panel);
   append('I can help draft a program or daily workout offline, explain your training, and control the rest timer. Drafts need your review; chat does not save or complete training.','assistant');
   refresh();
@@ -121,7 +122,7 @@
   const full=document.getElementById('chat-messages');if(full){row.fullView=row.cloneNode(true);full.append(row.fullView);full.scrollTop=full.scrollHeight;}
   return row;
  }
- function attachReply(message,reply){
+ function attachReply(message,reply,question){
   for(const host of [message,message?.fullView]){
    if(host&&reply?.clarity&&reply?.readOnly!==false){
     const c=reply.clarity;if(['happened','meaning','next'].every(key=>typeof c[key]==='string'&&c[key].trim())){
@@ -151,6 +152,7 @@
    // a clipped button while focusing it between the press and release.
    if(host?.parentElement)host.parentElement.scrollTop=host.parentElement.scrollHeight;
   }
+  window.LoadnoteCoachResearchUI?.attach(message,question);
  }
  function quickButtons(context){
   const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
@@ -249,7 +251,7 @@
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
-   const message=append(reply,'assistant',modelUnavailable?'Built-in coaching · local AI unavailable':(local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion')));attachReply(message,local);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
+   const message=append(reply,'assistant',modelUnavailable?'Built-in coaching · local AI unavailable':(local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion')));attachReply(message,local,text);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
    const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
@@ -260,7 +262,7 @@
    let reply=offline;try{if(!reply&&typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
    reply='Online Coach unavailable. '+(reply||'Your workout logger and deterministic Decisions remain available.');const message=append(reply,'assistant','Local fallback · '+(local?.source||'Built-in Coach'));
    // An online error must not discard reviewed actions, evidence, or sources.
-   attachReply(message,local);
+   attachReply(message,local,text);
    for(const host of [message,message?.fullView])if(host){
     const status=document.createElement('small');
     status.textContent='Online request failed · showing available local guidance';host.append(status);

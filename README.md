@@ -1,6 +1,8 @@
 # Loadnote
 
-**v4.6.0 · Development build.**
+**v4.7.0 · Development build.**
+
+[Optional Coach research](docs/releases-v4.7.md): Ask-first public research lookup, explicit automatic/offline modes, dated citations, saveable offline reference excerpts, and optional on-device explanation. No search key or backend deployment is needed for the web feature.
 
 [Local Coach runtime foundation](docs/releases-v4.6.md): Pinned same-origin runtime, background model worker, cancellable loading, bounded replies, network-blocked offline-start test, scoped model removal, and validated review-only tool routing.
 
