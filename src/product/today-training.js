@@ -31,7 +31,7 @@
    if(revisedLater.has(String(workout.id)))continue;
    const matched=(workout.exercises||[]).filter(e=>sameExercise(planned,e));
    if(matched.length!==1)continue;
-   const set=(matched[0].sets||[]).find(s=>validLoad(s?.weight)&&validReps(s?.reps));
+   const set=(matched[0].sets||[]).filter(s=>validLoad(s?.weight)&&validReps(s?.reps)&&!s.warmup&&!s.isWarmup&&s.type!=='warmup'&&!s.skipped&&s.done!==false&&s.completed!==false).at(-1);
    if(set)return {date:workout.date,weightKg:Number(set.weight),reps:Number(set.reps),rpe:validRpe(set.rpe)?Number(set.rpe):null};
   }
   return null;
@@ -43,7 +43,7 @@
    const first=(planned.sets||[]).find(s=>validLoad(s?.weight)&&validReps(s?.reps));
    if(!first)continue;
    return {name:planned.name,exerciseId:planned.exerciseId||null,
-    target:{weightKg:Number(first.weight),reps:Number(first.reps),targetRpe:validRpe(first.targetRpe)?Number(first.targetRpe):null},
+    target:{weightKg:Number(first.weight),reps:Number(first.reps),...(validReps(first.minReps)&&validReps(first.maxReps)?{minReps:Number(first.minReps),maxReps:Number(first.maxReps)}:{}),targetRpe:validRpe(first.targetRpe)?Number(first.targetRpe):null},
     previous:previousStrength(state,planned,day),
     notice:'The target is the current scheduled prescription; last performance is a prior recorded set, not an automatic progression recommendation.'};
   }

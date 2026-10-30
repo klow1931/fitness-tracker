@@ -1,6 +1,8 @@
 # Loadnote
 
-**v4.4.0 · Development build.**
+**v4.5.0 · Development build.**
+
+[Plan continuity and contextual Coach](docs/releases-v4.5.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and its one-time repository setup step are documented.
 
 [Offline Coach conversation v4.4 release notes](docs/releases-v4.4.md): evidence-grounded plain-English and detail follow-ups without new training decisions.
 

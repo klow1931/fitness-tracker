@@ -65,7 +65,7 @@
  }
  function companionContext(){
   const live=Core()?.buildContext({surface:surface(),workout:currentWorkout(),rest:window.LoadnoteRestTimer?.snapshot?.()||null});
-  return live||{version:1,surface:surface(),liveWorkout:null,restTimer:{active:false}};
+  return {...(live||{version:1,surface:surface(),liveWorkout:null,restTimer:{active:false}}),starterPlanId:window.LoadnoteBeginnerProgramUI?.selectedId?.()||null};
  }
  function coachContext(){
   let base={version:'0.6',unit:displayUnit(),units:{storageWeight:'kg',displayWeight:displayUnit()}};

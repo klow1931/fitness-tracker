@@ -123,7 +123,7 @@
   let plans=[];try{plans=B().saved(data,{asOf:today()});}catch{showToast('Could not validate starter plans. Review the program library.','error');return;}
   if(!plans.length){showToast('No current reviewed starter plan is available.','info');return;}
   d.innerHTML='<h2>Review your saved starter plan</h2><p>Choose a reviewed workout. Loading creates an editable draft for today; it does not complete training or link it to Calendar.</p>'+
-   '<label>Saved plan<select class="input" id="starter-saved-plan"><option value="">Choose a plan</option>'+plans.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · saved '+esc(p.createdAt.slice(0,10))+'</option>').join('')+'</select></label>'+
+   '<label>Saved plan<select class="input" id="starter-saved-plan"><option value="">Choose a plan</option>'+plans.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · '+(p.starterRevision?'Reviewed edit '+p.starterRevision:'Original')+' · saved '+esc(p.createdAt.slice(0,16).replace('T',' '))+'</option>').join('')+'</select></label>'+
    '<label>Workout<select class="input" id="starter-saved-session"></select></label><div id="starter-saved-preview"></div>'+
    '<button type="button" class="btn-primary" id="starter-saved-load" disabled>Load this unscheduled workout</button>'+
    '<div id="starter-saved-schedule-panel" hidden><label><input type="checkbox" id="starter-saved-confirm"> I reviewed all Calendar dates and want to schedule this plan</label><button type="button" class="btn-secondary" id="starter-saved-schedule">Add plan to Calendar</button></div>'+
@@ -136,7 +136,9 @@
    if(!q('plan').value)return;
    try{const p=current(),s=p.sessions.find(s=>s.key===q('session').value);
     if(!s)return;
-    q('preview').innerHTML='<h3>'+esc(p.config.name)+' · '+esc(s.name)+'</h3><ul>'+s.exercises.map(e=>'<li>'+esc(e.name)+' · '+e.sets.length+' sets · '+esc(e.sets[0]?.reps)+' reps · choose your starting load</li>').join('')+'</ul>'+
+    const load=weight=>weight==null?'load unspecified':Math.round(toDisplay(weight)*100)/100+' '+unitLabel();
+    const describe=e=>e.type==='cardio'?e.name+' · '+e.duration+' minutes':e.name+' · '+(e.sets||[]).map((set,i)=>'Set '+(i+1)+': '+(set.minReps!=null?set.minReps+'–'+set.maxReps:set.reps??set.duration+' seconds')+' '+(set.reps!=null?'reps':'')+' · '+load(set.weight)+(set.targetRpe!=null?' · target RPE '+set.targetRpe:'')).join('; ');
+    q('preview').innerHTML='<h3>'+esc(p.config.name)+' · '+esc(s.name)+'</h3><p>'+(p.starterRevision?'Reviewed edit '+p.starterRevision:'Original reviewed plan')+'</p><ul>'+s.exercises.map(e=>'<li>'+esc(describe(e))+'</li>').join('')+'</ul>'+
      '<details><summary>Review all plan dates</summary>'+p.sessions.map(s=>'<p>'+esc(s.date)+' · '+esc(s.name)+'</p>').join('')+'</details>'+
      '<p>'+(p.scheduledAt?'This plan is already scheduled. Start the linked workout from Calendar.':'These are editable starting targets. Enter actual loads before saving; use 0 for no added load. Effort ratings are optional.')+'</p>';
     q('load').disabled=!!p.scheduledAt;q('schedule-panel').hidden=!!p.scheduledAt;
@@ -144,10 +146,11 @@
   }
   function selectPlan(){
    q('status').textContent='';q('confirm').checked=false;q('session').replaceChildren();
-   if(q('plan').value){try{const p=current();q('session').innerHTML=p.sessions.filter(s=>s.week===1).map(s=>'<option value="'+esc(s.key)+'">'+esc(s.name)+'</option>').join('');}catch(error){q('status').textContent=error.message;}}
+   if(q('plan').value){try{const p=current();q('session').innerHTML=p.sessions.map(s=>'<option value="'+esc(s.key)+'">'+esc(s.name)+'</option>').join('');}catch(error){q('status').textContent=error.message;}}
    renderWorkout();
   }
-  q('plan').onchange=selectPlan;q('session').onchange=renderWorkout;
+  const remember=()=>{try{if(q('plan').value)localStorage.setItem(B().SELECTION_KEY,q('plan').value);}catch{q('status').textContent='The plan can be reviewed, but this device could not remember the selection.';}};
+  q('plan').onchange=()=>{selectPlan();remember();};q('session').onchange=renderWorkout;
   q('load').onclick=()=>{if(pending)return;try{
    const p=current();if(p.scheduledAt)throw Error('This plan is now scheduled. Start from Calendar to preserve its link.');
    const session=p.sessions.find(s=>s.key===q('session').value);if(!session)throw Error('Choose a reviewed workout');
@@ -162,8 +165,9 @@
   }catch(error){q('status').textContent=error.message;}finally{pending=false;}};
   q('calendar').onclick=()=>{if(pending)return;d.close();window.showTab?.('calendar');};
   q('close').onclick=()=>{if(!pending)d.close();};d.oncancel=e=>{if(pending)e.preventDefault();};
-  if(id&&plans.some(p=>p.id===id)||plans.length===1){q('plan').value=id||plans[0].id;selectPlan();}
+  const remembered=id||B().selected(localStorage,data,{asOf:today()});
+  if(remembered&&plans.some(p=>p.id===remembered)||plans.length===1){q('plan').value=remembered||plans[0].id;selectPlan();remember();}
   d.showModal();
  }
- window.LoadnoteBeginnerProgramUI={open,openSaved};
+ window.LoadnoteBeginnerProgramUI={open,openSaved,selectedId:()=>B().selected(localStorage,data,{asOf:today()})};
 })();
