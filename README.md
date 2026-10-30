@@ -1,6 +1,8 @@
 # Loadnote
 
-**v4.5.0 · Development build.**
+**v4.6.0 · Development build.**
+
+[Local Coach runtime foundation](docs/releases-v4.6.md): Pinned same-origin runtime, background model worker, cancellable loading, bounded replies, network-blocked offline-start test, scoped model removal, and validated review-only tool routing.
 
 [Plan continuity and contextual Coach](docs/releases-v4.5.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and its one-time repository setup step are documented.
 

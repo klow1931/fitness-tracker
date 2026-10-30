@@ -216,10 +216,14 @@
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
   let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
+  let toolReply=false;
+  if(!local&&localMode&&ai?.snapshot().status==='ready'&&!safety){
+   try{const selected=await ai.route?.(text),reply=window.LoadnoteLocalCoachTools?.execute(selected,data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});if(reply){local=reply;toolReply=true;}}catch{}
+  }
   let modelUnavailable=false;
   // An optional on-device model must never prevent a deterministic reply.
   // Keep local conversation consent selected during a model failure.
-  if(localMode&&!local?.planning&&!local?.applicationReview){
+  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&ai.eligible?.(text,local,history)!==false){
    try{
     const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
     const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
@@ -227,7 +231,7 @@
     if(generated)local={...(local||{}),readOnly:true,text:'Local AI conversation (experimental): '+generated+(local?.text?'\n\nReviewed guidance: '+local.text:''),source:'Local AI · on-device conversation'};
     else modelUnavailable=true;
    }catch{modelUnavailable=true;}
-  }else if(!local?.applicationReview&&local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){
+  }else if(!localMode&&!local?.applicationReview&&local?.knowledgeIds?.length&&ai?.snapshot().status==='ready'){
    try{
     const cards=window.LoadnoteCoachingLibrary.retrieve(local.intent.referenceQuestion),generated=await ai.explain(local.intent.referenceQuestion,cards);
     if(generated)local={...local,text:'Local AI explanation (experimental; check the references): '+generated+'\n\nReviewed guidance: '+local.text};
