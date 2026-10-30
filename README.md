@@ -1,6 +1,10 @@
 # Loadnote
 
-**v4.3.0 · Development build.**
+**v4.4.0 · Development build.**
+
+[Offline Coach conversation v4.4 release notes](docs/releases-v4.4.md): evidence-grounded plain-English and detail follow-ups without new training decisions.
+
+**Earlier v4.3 five-phase roadmap milestone.**
 
 [Phases 1–5 audit and long-term Coach follow-through](docs/releases-v4.3.md): consolidate the five existing milestone implementations and complete missing athlete-authored program review routing.
 

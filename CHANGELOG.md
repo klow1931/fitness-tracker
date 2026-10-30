@@ -1,3 +1,17 @@
+# v4.4.0 — Offline Coach Natural Conversation
+
+## Communication without fabricated coaching
+- The offline Coach can respond to an athlete's natural single-topic requests for a shorter explanation, plain-English recap, main takeaway, or deeper explanation.
+- Bounded athlete-only dialogue context: history is session-only; unrelated topic changes, unsafe turns and missing topics prevent stale referents. Assistant and model statements are never used as training evidence.
+- Brief responses use existing evidence-backed clarity and validated cards; detail replies retain the original source-backed explanation. Unknown results and limits remain visible. Compound evidence follow-ups keep the existing coordinator.
+- Ensure short/detail text is actually displayed in the companion, rather than replaced by the full default clarity card.
+- New deterministic Node and mobile browser/selected iPhone WebKit tests cover multi-turn safety, accurate RPE/data explanations, chronology and immutable workouts.
+
+## Compatibility
+- Version 4.4.0, unsigned native build 36400, storage schema 34 unchanged and no migrations.
+- v4.4 stacks on unmerged v4.3. Neither release is ready for merge until its own CI passes; keep v4.2 on main as validated rollback.
+- No new model download, chat storage, automatic planning mutation or medical decisions.
+
 # v4.3.0 — Five-Phase Roadmap Validation and Long-Term Coach Follow-Through
 
 ## Product integrity
