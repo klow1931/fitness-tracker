@@ -1,6 +1,16 @@
 # Loadnote
 
-**v4.3.0 · Development build.**
+**v4.7.0 · Development build.**
+
+[Optional Coach research](docs/releases-v4.7.md): Ask-first public research lookup, explicit automatic/offline modes, dated citations, saveable offline reference excerpts, and optional on-device explanation. No search key or backend deployment is needed for the web feature.
+
+[Local Coach runtime foundation](docs/releases-v4.6.md): Pinned same-origin runtime, background model worker, cancellable loading, bounded replies, network-blocked offline-start test, scoped model removal, and validated review-only tool routing.
+
+[Plan continuity and contextual Coach](docs/releases-v4.5.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and its one-time repository setup step are documented.
+
+[Offline Coach conversation v4.4 release notes](docs/releases-v4.4.md): evidence-grounded plain-English and detail follow-ups without new training decisions.
+
+**Earlier v4.3 five-phase roadmap milestone.**
 
 [Phases 1–5 audit and long-term Coach follow-through](docs/releases-v4.3.md): consolidate the five existing milestone implementations and complete missing athlete-authored program review routing.
 

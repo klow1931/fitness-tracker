@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict'),R=require('../src/product/coach-research');
+const now=Date.parse('2026-10-30T12:00:00Z'),row={source:'MED',id:'12345',title:'Resistance training review',pubYear:'2025',firstPublicationDate:'2025-05-01',authorString:'Example Authors',abstractText:'<p>A source excerpt about training.</p>',pubTypeList:{pubType:['Systematic Review']}};
+const payload={resultList:{result:[row]}},memory=()=>{const map=new Map();return {getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};};
+(async()=>{
+ let calls=[],storage=memory();const api=R.create({storage:()=>storage,now:()=>now,request:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify(payload));}});
+ assert.equal(api.mode(),'ask');assert.equal(calls.length,0);await assert.rejects(api.search('hypertrophy'),/confirm/);assert.equal(calls.length,0);await assert.rejects(api.search('http://127.0.0.1'),/available research topic/);
+ const result=await api.search('hypertrophy',{confirmed:true,question:'PRIVATE EMAIL AND NOTES',history:'PRIVATE LOGS',context:'PRIVATE DATA'});assert.equal(calls.length,1);assert.equal(result.items.length,1);assert.equal(result.items[0].url,'https://pubmed.ncbi.nlm.nih.gov/12345/');assert(!result.items[0].excerpt.includes('<p>'));
+ const call=calls[0];assert.equal(new URL(call.url).origin,'https://www.ebi.ac.uk');assert(!call.url.includes('PRIVATE'));assert.equal(call.options.credentials,'omit');assert.equal(call.options.referrerPolicy,'no-referrer');assert.equal(call.options.method,'GET');assert.equal(call.options.body,undefined);assert(!JSON.stringify(call.options).includes('Cookie'));
+ assert.equal(api.saved().length,0);api.save(result);assert.equal(api.saved().length,1);api.save(result);assert.equal(api.saved().length,1);api.setMode('off');await assert.rejects(api.search('hypertrophy',{confirmed:true}),/off/);assert.equal(calls.length,1);assert.equal(api.saved().length,1);api.clear();assert.equal(api.saved().length,0);
+ api.setMode('auto');await api.search('hypertrophy');assert.equal(calls.length,1,'Recent results are reused without another request');
+ const bad=R.normalizeResult({resultList:{result:[{...row,id:'../bad'},{...row,id:'2',source:'PPR'},{...row,id:'3',pubTypeList:{pubType:['Retracted Publication']}},{...row,id:'4',pubYear:'2030'},{...row,id:'5',firstPublicationDate:'2025-02-30'},{...row,id:'6',pubTypeList:{pubType:['Preprint']}},row,row]}},'volume',now);assert.equal(bad.items.length,1);
+ assert.equal(R.suggest('Explain training volume').id,'volume');for(const q of ['My knee hurts after squats','I have an injury','Should I increase weight?','My last workout had high volume','I have diabetes and want to build muscle','Training frequency during pregnancy'])assert.equal(R.suggest(q),null,q);
+ const offline=R.create({storage:()=>memory(),online:()=>false,request:async()=>{throw Error('MUST NOT REQUEST');}});await assert.rejects(offline.search('volume',{confirmed:true}),/offline/);
+
+ const quota=R.create({storage:()=>({getItem:()=>null,setItem:()=>{throw Error('quota');}})});assert.throws(()=>quota.save(result),/could not be saved/);assert.throws(()=>quota.setMode('auto'),/stopped for this session/);assert.equal(quota.mode(),'off');
+ const timed=R.create({storage:()=>memory(),timeoutMs:10,request:async()=>new Promise(()=>{})});await assert.rejects(timed.search('volume',{confirmed:true}),/timed out/);
+ let signal;const cancelled=R.create({storage:()=>memory(),request:async(_url,o)=>{signal=o.signal;return new Promise(()=>{});}});const pending=cancelled.search('volume',{confirmed:true});await new Promise(r=>setImmediate(r));cancelled.setMode('off');await assert.rejects(pending,/cancelled/);assert(signal.aborted);
+ const slowBody=R.create({storage:()=>memory(),timeoutMs:10,request:async()=>({ok:true,headers:{get:()=>null},text:async()=>new Promise(()=>{})})});await assert.rejects(slowBody.search('volume',{confirmed:true}),/timed out/);
+ const large=R.create({storage:()=>memory(),request:async()=>new Response('x'.repeat(512001))});await assert.rejects(large.search('volume',{confirmed:true}),/too large/);
+ const broken=R.create({storage:()=>memory(),request:async()=>{throw new TypeError('Failed to fetch');}});await assert.rejects(broken.search('volume',{confirmed:true}),/connection failed/);
+ const malformed=R.create({storage:()=>memory(),request:async()=>new Response('{}')});await assert.rejects(malformed.search('volume',{confirmed:true}),/unreadable results/);
+ const limited=R.create({storage:()=>memory(),request:async()=>new Response('',{status:429})});await assert.rejects(limited.search('volume',{confirmed:true}),/busy/);
+ // Corrupt cache cannot supply a hostile external link or HTML rendering.
+ storage.setItem('loadnote.research.saved.v1',JSON.stringify([{...result,items:[{...result.items[0],url:'javascript:alert(1)',title:'<img src=x onerror=alert(1)>Title'}]}]));const cached=api.saved()[0];assert.equal(cached.items[0].url,'https://pubmed.ncbi.nlm.nih.gov/12345/');assert(!cached.items[0].title.includes('<img'));
+ console.log('Coach research: topic-only privacy, opt-in/off/auto, source validation, safe cache, quotas, offline guards, cancellation and bounded network failures passed');
+})().catch(e=>{console.error(e);process.exitCode=1;});

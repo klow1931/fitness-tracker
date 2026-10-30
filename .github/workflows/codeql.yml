@@ -1,0 +1,93 @@
+name: Loadnote CodeQL
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      upload-results:
+        description: Upload results only after switching repository CodeQL to advanced setup
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  security-events: write
+  packages: read
+concurrency:
+  group: codeql-loadnote-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    name: Prepared CodeQL (${{ matrix.language }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            os: ubuntu-latest
+            build-mode: none
+          - language: javascript-typescript
+            os: ubuntu-latest
+            build-mode: none
+          - language: python
+            os: ubuntu-latest
+            build-mode: none
+          # App native sources are Java; add a manual Kotlin build if Kotlin is introduced.
+          - language: java-kotlin
+            os: ubuntu-latest
+            build-mode: none
+          - language: swift
+            os: macos-26
+            build-mode: manual
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        if: matrix.language == 'swift'
+        with:
+          node-version: 22
+      - name: Install Capacitor dependencies and prepare native assets
+        if: matrix.language == 'swift'
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run check:native
+      - name: Require an explicit Kotlin build if Kotlin is introduced
+        if: matrix.language == 'java-kotlin'
+        run: |
+          if [ -n "$(git ls-files '*.kt')" ]; then
+            echo "::error::Kotlin sources require a traced manual build; do not silently analyze Java alone."
+            exit 1
+          fi
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Compile the iOS app under analysis
+        if: matrix.language == 'swift'
+        run: >-
+          xcodebuild -project ios/App/App.xcodeproj -scheme App
+          -configuration Release -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build-codeql/DerivedData
+          ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=
+          COMPILER_INDEX_STORE_ENABLE=NO COMPILATION_CACHE_ENABLE_CACHING=NO
+          SWIFT_ENABLE_COMPILE_CACHE=NO SWIFT_USE_INTEGRATED_DRIVER=NO build
+      - name: Analyze and produce SARIF
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
+          output: codeql-results
+          # PR analysis is reviewable without conflicting with current default setup.
+          # Main uploads require the one-time switch documented in docs/codeql-setup.md.
+          upload: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.upload-results) }}
+      - name: Preserve analysis evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-${{ matrix.language }}-${{ github.run_number }}
+          path: codeql-results/*.sarif
+          if-no-files-found: warn
+          retention-days: 7

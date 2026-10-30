@@ -5,7 +5,7 @@
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
   if(a.kind==='starter-plan'){window.LoadnoteBeginnerUI?.start?.('help');return;}
-  if(a.kind==='saved-starter'){window.LoadnoteBeginnerProgramUI?.openSaved?.();return;}
+  if(a.kind==='saved-starter'){window.LoadnoteBeginnerProgramUI?.openSaved?.({id:a.planId||null});return;}
   if(a.kind==='beginner-log'){window.LoadnoteBeginnerUI?.start?.('log');return;}
   if(a.kind==='offline-plan'){window.LoadnoteOfflinePlannerUI.open(a.request);return;}
   if(a.kind==='progress'){showTab('prs');return;}

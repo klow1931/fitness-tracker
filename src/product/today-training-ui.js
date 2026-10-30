@@ -27,8 +27,8 @@
    return String(Math.round(toDisplay(value)*100)/100)+' '+unitLabel();
   };
   const target=evidence.target,prior=evidence.previous;
-  const dose=(s,rpe)=>weight(s.weightKg)+' × '+s.reps+(rpe!=null?' @'+rpe:'');
-  const last=prior?'Last logged ('+esc(prior.date)+'): '+esc(dose(prior,prior.rpe)):'No earlier exact-identity logged set';
+  const dose=(s,rpe)=>weight(s.weightKg)+' × '+(s.minReps!=null&&s.maxReps!=null?s.minReps+'–'+s.maxReps:s.reps)+(rpe!=null?' @'+rpe:'');
+  const last=prior?'Last logged set ('+esc(prior.date)+'): '+esc(dose(prior,prior.rpe)):'No earlier exact-identity logged set';
   return '<p class="more-hint today-performance-line" data-today-performance><b>'+esc(evidence.name)+'</b> · Target: '+esc(dose(target,target.targetRpe))+' · '+last+'</p>';
  }
  function ensureFastStartUI(){

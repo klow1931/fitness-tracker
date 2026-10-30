@@ -1,6 +1,9 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v4.3.0';
+const CACHE = 'loadnote-v4.7.0';
 const ASSETS = [
+  './assets/vendor/local-coach-runtime.mjs',
+  './assets/vendor/local-coach-manifest.json',
+  './src/local-ai/coach-worker.mjs',
   './src/product/custom-program.js',
   './src/product/custom-program-weekly-review.js',
   './src/product/custom-program-coach.js',
@@ -35,8 +38,11 @@ const ASSETS = [
   './src/product/coach-knowledge-application.js',
   './src/product/coaching-library.js',
   './src/product/local-coach-models.js',
+  './src/product/local-coach-tools.js',
   './src/product/local-coach-ai.js',
   './src/product/local-coach-context.js',
+  './src/product/coach-research.js',
+  './src/product/coach-research-ui.js',
   './src/product/coaching-library-ui.js',
   './src/product/reviewed-planning-ui.js',
   './src/product/athlete-intake.js',
@@ -171,6 +177,7 @@ const ASSETS = [
   './src/product/coach-reasoning.js',
   './src/product/coach-outcome-review.js',
   './src/product/coach-lift-comparison.js',
+  './src/product/coach-dialogue.js',
   './src/product/coach-conversation.js',
   './src/product/companion-intelligence.js',
   './src/product/companion-intelligence-ui.js',

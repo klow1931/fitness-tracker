@@ -6,6 +6,7 @@
  'use strict';
  const Support=typeof module==='object'&&module.exports?require('./coach-support'):globalThis.LoadnoteCoachSupport;
  const Language=typeof module==='object'&&module.exports?require('./coach-language'):globalThis.LoadnoteCoachLanguage;
+ const Dialogue=typeof module==='object'&&module.exports?require('./coach-dialogue'):globalThis.LoadnoteCoachDialogue;
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
@@ -33,7 +34,7 @@
   const evidenceFollow=explicitTopic==='evidence'&&/\brecent (lift )?evidence\b/i.test(q)&&!explicitLift;
   return {question:q,lift:explicitLift||(follow||evidenceFollow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
- function answer(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now}={}){
+ function answerCanonical(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now}={}){
   // Safety boundaries precede movement clarification, educational routing and AI.
   // Inspect the original question: truncation must not drop a reported symptom.
   const safetyKind=Support?.kind(String(question||''));
@@ -43,7 +44,7 @@
   const understood=Language?.interpret(question,history).question||question;
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
-  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf});if(beginner)return beginner;
+  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
   // Two named competition lifts can be reviewed independently; never compare
   // absolute loads, infer a causal reason, or authorize a programming change.
@@ -162,6 +163,19 @@
   if(intent.follow)return result('What would you like me to explain: a lift’s evidence, an accessory, or the purpose of a program phase? I do not have a clear prior topic to resolve that follow-up.','Clarification');
   if(/\b(hello|hi|hey|thanks|thank you)\b/i.test(q))return result('I can help explain your lift evidence, accessory choices, effort targets and program phases. What would you like to look at?');
   return null;
+ }
+ // Follow-ups recompute from the athlete's earlier question and saved data.
+ // Never summarize assistant or model prose, and never bypass safety routing.
+ function answer(state,question,options={}){
+  if(Support?.health(String(question||''))||Support?.kind(String(question||''))==='urgent-support')
+   return answerCanonical(state,question,options);
+  const plan=Dialogue?.request(question,options.history||[]);
+  if(!plan)return answerCanonical(state,question,options);
+  // Established compound-evidence follow-ups keep their own source and date rules.
+  const established=answerCanonical(state,question,options);
+  if(established?.source==='Offline Coach · combined validated evidence')return established;
+  const fresh=answerCanonical(state,plan.anchor,{...options,history:plan.history});
+  return fresh?.readOnly===true?Dialogue.present(fresh,plan):established;
  }
  return {resolve,answer};
 });

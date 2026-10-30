@@ -1,3 +1,93 @@
+# v4.7.0 — Optional Coach research
+
+Coach remains usable offline. Web users can optionally retrieve indexed training publications through Europe PMC's public REST API, without an online LLM, paid search credential or separate backend deployment. The first release covers twelve preset general training topics, rather than unrestricted browsing.
+
+## Permission and privacy
+
+- **Ask first** is the default: recognizing a topic offers a button; opening Research previews the search keywords. No search is sent until the user presses Search.
+- **Offline only** stops research requests and cancels pending work. Built-in coaching and saved references remain available.
+- **Automatic training-topic searches** requires an explicit settings choice. Recognized supported general training questions can retrieve references alongside the existing answer. Health/injury and recorded-history questions do not trigger research.
+- Only preset public topic keywords are sent. Raw chat, workout logs, saved athlete context, identity and injury notes are never request parameters. Browser credentials and referrers are omitted. Europe PMC still receives the network address. Opening a publication connects to its host separately.
+- Research is unavailable in the current local-only native beta. Its saved reference reader remains available. The web feature works on GitHub Pages through the API's public CORS response.
+
+## Results and offline use
+
+Results show publication dates, retrieval date, review/publication labels, authors, journal metadata when available and links built from validated PubMed/PMC identifiers. Review publications are preferred within the returned set. Detected preprints, retracted publications, corrections and future-dated records are excluded. Index membership and these filters do not certify study quality, relevance or current retraction status.
+
+Short abstract excerpts are collapsed and labelled as source excerpts, not Loadnote conclusions or full-text reviews. Missing abstracts remain missing. A ready local model can optionally explain the excerpts on-device; generated prose is supplementary and experimental. The existing output checks cannot guarantee factual accuracy. Citations and excerpts remain visible, and no research is forwarded to Online Coach or used to change training.
+
+Save retains one collection per topic, up to twelve collections, on this device. Saving is explicit and reports storage failures. Saved cards show their original retrieval date and an additional warning after ninety days; opening them does not fetch the internet. Clear removes only research storage. Collections are excluded from training backups and cloud sync. Model weights are not retrained from these references.
+
+Cancellation, timeouts, bounded responses and safe identifier/text handling keep failed or malformed requests from blocking Coach. Topic-only lookup and the public provider mean there are no browser search credentials to expose. Privacy information and permission controls are accessible from the Research button in Coach Companion.
+
+## Validation and limits
+
+Automated coverage includes permission modes; zero network before confirmation; request minimization; safe source links and text; cache persistence and corrupt cache handling; storage quota failure; offline/native guards; cancelled and stale responses; stalled/oversized/rate-limited requests; desktop/mobile research flow; and unchanged training state. Existing Coach, local-model and packaging regressions are also checked. A live Europe PMC response and its public CORS headers were inspected during implementation.
+
+A preset literature search does not provide exhaustive scientific review or broad general web intelligence. Physical iPhone acceptance, changing third-party availability, real local-model source explanation quality and publication-level validity still require separate review. No model download or retraining was performed for this release.
+
+Version **4.7.0**, native development build **36700**, schema **34** unchanged.
+
+API documentation: https://europepmc.org/RestfulWebService
+
+
+# v4.6.0 — Local Coach runtime foundation
+
+The optional local model now runs in a dedicated worker using a pinned, same-origin WebLLM bundle. Model files still require explicit download consent. Built-in coaching and reviewed programming remain available without downloading a model or exposing WebGPU.
+
+- Cancel an in-progress load or turn the model off without waiting for a download to finish. Load, device-check and reply timeouts release the worker. Private conversation selection survives a failure, preventing online fallback.
+- Test a fresh offline start: the active worker is terminated and a new worker loads the selected model with its fetch implementation restricted to browser-cache hits. Only successful initialization and both explanation probes mark that test as passed. This is a session-specific cache usability check, not a hardware, accuracy or future cache-retention guarantee.
+- Remove the selected model's cached weights, tokenizer, configuration and compiled library through WebLLM's scoped deletion API. App caches and training records are not cleared. A compiled library shared by another model may need downloading again. Partial failed deletion is reported and can be retried by inspecting and choosing the model again.
+- When deterministic Coach has no answer, an opted-in ready model may select a permitted read-only/review-only tool. Exact JSON validation rejects unknown tools and all extra arguments. Original athlete text goes to existing plan, exercise-history, coaching-reference or program-request validation. The model cannot invent request parameters, save a program or schedule training.
+- Requests intentionally kept in deterministic coaching no longer falsely label a healthy local model unavailable.
+
+The runtime build and license are reproduced from the exact npm lockfile during packaging. Model weights are excluded from app-shell precaching. Runtime manifest includes its version, byte count and SHA-256 for build inspection; this is not model-weight integrity certification.
+
+Version **4.6.0**, native development build **36600**, schema **34** unchanged.
+
+Validation covers lifecycle and failure paths with deterministic model doubles, actual browser worker behavior and network blocking, runtime import, existing offline conversation and planner checks. Real model accuracy, GPU performance, battery usage and iPhone compatibility require compatible-device testing with actual model weights. No model weights were downloaded for these automated checks.
+
+Later milestones: measured model-quality evaluation on athlete scenarios; a reviewed offline knowledge corpus and semantic retrieval; richer tool-request understanding that preserves original athlete facts; only then consider model adaptation using licensed, consented, de-identified examples.
+
+
+# v4.5.0 — Plan Continuity and Contextual Coach
+
+## Review fixes
+- Keep approved rep ranges in the Home/Train target preview. Last logged set now means the last valid performed set in the most recent eligible session; marked warm-ups and incomplete/skipped sets are excluded. Existing identity, unit, chronology and convention guards remain unchanged.
+- Find starter-plan descendants through validated saved revision ancestry, including Studio copies whose import source label changed. Label original and edited versions and require explicit selection when ambiguous. Future and superseded records remain excluded as of the requested date.
+
+## Continuing a plan
+- First-week tips graduate to a compact Your plan action while a reviewed starter plan remains available. Unfinished drafts, overdue review and scheduled sessions retain priority.
+- The saved-plan picker offers all reviewed weeks, exact strength/cardio targets and rep ranges. It remembers an explicitly reviewed version on this device and validates that ID before reuse; it never silently replaces a prescription or marks training complete.
+- Device-only selection uses loadnote.starter-selection.v1. It is not a training result or an inferred preference and does not change the backup schema.
+
+## Coach
+- Broaden common beginner phrasing, including never having lifted before.
+- What should I train today acknowledges the selected saved/scheduled starter version and routes to its actual review or Calendar.
+- Progression questions ask about exercises in that plan, offer freshly validated exercise history and link existing feedback/Studio review tools. No automatic load increases, guessed RPE or new progression policy are introduced. Medical/urgent-support checks retain precedence.
+
+## Code scanning
+The prepared advanced CodeQL workflow installs Capacitor dependencies before the manual Swift/Xcode build, disables incompatible Swift caches, and preserves the repository's other language coverage. PR runs produce reviewable SARIF artifacts without competing uploads. GitHub's existing default setup must be switched to advanced by a repository administrator before main-branch uploads can replace the failing default Swift scan. See [CodeQL setup](codeql-setup.md). Do not claim the existing default scan is fixed before that setting change and a successful uploaded analysis.
+
+Version **4.5.0**, unsigned native build **36500**, schema **34** unchanged. No historical workout migration, automatic scheduling, changed training maxes or silent progression. Physical device and VoiceOver acceptance remain separate.
+
+## Integration order
+This release builds on the pending v4.3 audit (#235) and v4.4 dialogue (#236). Merge those in order, then retarget this stacked PR onto main. Their evidence-routing and dialogue changes are preserved.
+
+# v4.4.0 — Offline Coach Natural Conversation
+
+## Communication without fabricated coaching
+- The offline Coach can respond to an athlete's natural single-topic requests for a shorter explanation, plain-English recap, main takeaway, or deeper explanation.
+- Bounded athlete-only dialogue context: history is session-only; unrelated topic changes, unsafe turns and missing topics prevent stale referents. Assistant and model statements are never used as training evidence.
+- Brief responses use existing evidence-backed clarity and validated cards; detail replies retain the original source-backed explanation. Unknown results and limits remain visible. Compound evidence follow-ups keep the existing coordinator.
+- Ensure short/detail text is actually displayed in the companion, rather than replaced by the full default clarity card.
+- New deterministic Node and mobile browser/selected iPhone WebKit tests cover multi-turn safety, accurate RPE/data explanations, chronology and immutable workouts.
+
+## Compatibility
+- Version 4.4.0, unsigned native build 36400, storage schema 34 unchanged and no migrations.
+- v4.4 stacks on unmerged v4.3. Neither release is ready for merge until its own CI passes; keep v4.2 on main as validated rollback.
+- No new model download, chat storage, automatic planning mutation or medical decisions.
+
 # v4.3.0 — Five-Phase Roadmap Validation and Long-Term Coach Follow-Through
 
 ## Product integrity

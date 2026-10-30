@@ -32,12 +32,14 @@
    latest.exercises.every(e=>e&&e.type!=='practice')?String(latest.id):null;
   // Stop showing onboarding after the first actual week, or when a lifter
   // has already logged three sessions; previously saved history is untouched.
-  if(sorted.length>=3||sorted.length&&dayNumber(asOf)-dayNumber(sorted[0])>6)return null;
+  const graduated=sorted.length>=3||!!(sorted.length&&dayNumber(asOf)-dayNumber(sorted[0])>6);
+  let plans=[];try{const Starter=typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram;plans=Starter?.saved(state,{asOf})||[];}catch{}
+  if(graduated&&!plans.length)return null;
   const count=sorted.length;
   const report=todayReport||{},next=continuity?.next||null;
   const overdue=Array.isArray(continuity?.unresolvedOverdue)?continuity.unresolvedOverdue.length:0;
-  const status={visible:true,count,asOf,firstDate:sorted[0]||null,action:'log',label:'Open workout log',
-   title:count?count+' saved workout'+(count===1?'':'s')+' in your first week':'Your first week starts with one workout',
+  const status={visible:true,count,asOf,graduated,firstDate:sorted[0]||null,action:'log',label:'Open workout log',
+   title:graduated?'Your training plan':count?count+' saved workout'+(count===1?'':'s')+' in your first week':'Your first week starts with one workout',
    detail:'When you are ready, choose your exercises and log what you actually do. RPE is optional.'};
   if(report.unlinkedDraft||report.active?.draftOpen){
    return {...status,action:'resume',label:'Resume your workout',
@@ -59,10 +61,9 @@
     detail:'Next scheduled: '+next.date+' · '+String(next.name||'Workout')+
      '. That is a plan, not a completed session.'};
   }
-  if(!count||latest?.date<asOf){
-   let plans=[];try{const Starter=typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram;plans=Starter?.saved(state,{asOf,unscheduled:true})||[];}catch{}
-   if(plans.length)return {...status,action:'starter',label:'Review a workout from your saved plan',
-    detail:'Your starter plan is saved but not scheduled. Choose a workout to review, then load an unscheduled draft or explicitly add the plan to Calendar.'};
+  if(graduated||!count||latest?.date<asOf){
+   if(plans.some(p=>!p.scheduledAt)||graduated&&plans.length)return {...status,action:'starter',label:'Review a workout from your saved plan',
+    detail:'Your reviewed plan stays available beyond the first week. Choose the version and workout you want to review. Scheduled plans continue through Calendar; nothing is completed automatically.'};
   }
   if(count){
    // Avoid prompting two training sessions on the same day. If the last

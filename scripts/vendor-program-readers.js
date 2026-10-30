@@ -16,3 +16,5 @@ for(const [source,name] of files){
  fs.copyFileSync(from,path.join(out,name));
 }
 console.log('Bundled local XLSX ZIP and PDF readers, with licenses, for offline program import');
+
+require('./vendor-local-coach')();
