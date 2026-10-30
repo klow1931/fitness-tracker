@@ -1,6 +1,8 @@
 # Loadnote
 
-**v4.2.0 · Development build.**
+**v4.3.0 · Development build.**
+
+[Plan continuity and contextual Coach](docs/releases-v4.3.md): Reviewed starter revisions, persistent plan access, exact rep-range previews, broader beginner questions and plan-specific progression evidence. Swift scan preparation and the one-time repository setup step are documented.
 
 [Next-session context v4.2 release notes](docs/releases-v4.2.md): Home and Train show the current scheduled strength target beside a previous logged set, without modifying the plan.
 

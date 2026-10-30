@@ -43,7 +43,7 @@
   const understood=Language?.interpret(question,history).question||question;
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
-  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf});if(beginner)return beginner;
+  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
   // Two named competition lifts can be reviewed independently; never compare
   // absolute loads, infer a causal reason, or authorize a programming change.
