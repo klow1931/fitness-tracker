@@ -171,6 +171,7 @@ const ASSETS = [
   './src/product/coach-reasoning.js',
   './src/product/coach-outcome-review.js',
   './src/product/coach-lift-comparison.js',
+  './src/product/coach-dialogue.js',
   './src/product/coach-conversation.js',
   './src/product/companion-intelligence.js',
   './src/product/companion-intelligence-ui.js',
