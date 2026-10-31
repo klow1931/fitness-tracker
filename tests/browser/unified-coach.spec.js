@@ -36,7 +36,7 @@ test('dark transcript uses legible colors and escapes reported labels',async({pa
  await full(page,'I am training alone');await page.evaluate(()=>document.activeElement?.blur());await page.locator('[data-sub="co-chat"].sub-panel .card').screenshot({path:info.outputPath('unified-coach-dark.png')});
 });
 test('both send controls lock during one request and clear cannot race it',async({page})=>{
- await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');LoadnoteCoachClient.ensureSignedIn=async()=>true;LoadnoteCoachClient.ask=()=>new Promise(resolve=>window.finishCoach=()=>resolve({summary:'Reviewed response',recommendation:{action:'none'}}));});
+ await page.evaluate(async()=>{showTab('coach');showSubTab('coach','co-chat');LoadnoteCoachClient.ensureSignedIn=async()=>true;LoadnoteCoachClient.availability=async()=>({online:true});await LoadnoteCoachCompanionUI.toggleOnlineConversation();LoadnoteCoachClient.ask=()=>new Promise(resolve=>window.finishCoach=()=>resolve({summary:'Reviewed response',recommendation:{action:'none'}}));});
  await page.locator('#chat-input').fill('Explain exercise physiology');await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeDisabled();
  await expect(page.locator('#cc-form button')).toBeDisabled();await page.getByRole('button',{name:'Clear conversation',exact:true}).click();await expect(page.locator('#chat-messages .user')).toHaveCount(1);
  await page.evaluate(()=>window.finishCoach());await expect(page.locator('#chat-send-btn')).toBeEnabled();await expect(page.locator('#chat-messages')).toContainText('Reviewed response');
