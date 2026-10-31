@@ -15,3 +15,12 @@ After merge, the workflow runs on pushes to `main` and uploads all five language
 Official references:
 - https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/configure-code-scanning/configuring-advanced-setup-for-code-scanning
 - https://docs.github.com/en/code-security/tutorials/customize-code-scanning/prepare-code-for-analysis
+
+
+## v5.3 compatibility guard
+
+The advanced workflow now checks publication compatibility before uploading. Full Actions, JavaScript/TypeScript, Python, Java and manually built Swift analysis still runs and SARIF artifacts are retained. When default setup is active, it does not attempt a conflicting upload; the job summary explicitly identifies artifact-only publication and the administrator handoff.
+
+GitHub’s default-setup read API requires Administration read, which the standard workflow token may lack. A 403/404 therefore uses artifact-only publication with an explicit warning, rather than assuming default setup is disabled. Unexpected API errors still fail the check. No setting or scanner is disabled. To publish advanced results after the administrator switch, dispatch the existing workflow with `upload-results` enabled. That explicit upload is still subject to GitHub’s configuration validation. Ordinary pushes can upload automatically when the configuration read confirms default setup is disabled.
+
+A green prepared-analysis check confirms analysis/artifact generation, not that every language’s results were published in the Security UI. Verify publication separately after switching setup.
