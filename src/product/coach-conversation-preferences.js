@@ -24,6 +24,7 @@
    if(lengths.length>1||tones.length>1)return result('Which reply length and encouragement style do you prefer? Choose one of each in the preference review. Nothing has been saved.');
    if(lengths.length||tones.length){const proposed={...current,length:lengths[0]||current.length,encouragement:tones[0]||current.encouragement};return result('You requested '+proposed.length+' replies with '+proposed.encouragement+' encouragement. Review and save this device’s communication preferences if that is correct. Nothing has been saved from this message.',proposed);}
   }
+  if(preferences?.error)return result('Saved communication preferences could not be read. Defaults are in use. Open the preference review to inspect storage or try saving again; I cannot confirm whether older choices are present.');
   if(/\b(?:remember|saved|preferences|forget|remove|delete|settings)\b/i.test(q))return result((preferences?.saved?'Saved on this device: '+current.length+' replies and '+current.encouragement+' encouragement.':'No communication preferences have been saved on this device.')+' This stores only those two choices. Conversation and reported feelings are not saved as personal facts. Confirmed training setup remains separate in Profile.');
   return null;
  }

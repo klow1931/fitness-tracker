@@ -35,7 +35,7 @@ assert(P.answer('What do you remember about me?',{preferences:store.read()}).tex
 assert(!P.answer('Remember I prefer brief and detailed replies',{preferences:store.read()}).actions[0].proposal);
 assert.throws(()=>store.save({...P.DEFAULTS,chat:'private'}));assert.equal(values.size,1);
 values.set(P.KEY,'broken');assert(store.read().error);assert.equal(store.read().saved,false);store.clear();assert.equal(values.size,0);
-const unavailable=P.createStore({getItem(){throw Error('denied');},setItem(){throw Error('quota');},removeItem(){throw Error('denied');}});assert(unavailable.read().error);assert.throws(()=>unavailable.save(P.DEFAULTS));assert.throws(()=>unavailable.clear());
+const unavailable=P.createStore({getItem(){throw Error('denied');},setItem(){throw Error('quota');},removeItem(){throw Error('denied');}});assert(unavailable.read().error);assert.match(P.answer('What reply preferences are saved?',{preferences:unavailable.read()}).text,/could not be read/);assert.throws(()=>unavailable.save(P.DEFAULTS));assert.throws(()=>unavailable.clear());
 const live=Companion.buildContext({workout:{active:true,date:options.asOf,currentExercise:{name:'Competition Bench',set:{index:1,count:3,target:'100 kg × 5 · RPE 8'}},exercises:[{name:'Competition Bench',completedSets:1,totalSets:3}]},rest:{active:true,remainingMs:900000}}),liveBefore=JSON.stringify(live);
 a=L.answer('How many sets are left?',{...options,live});assert.match(a.text,/2 .*sets remain unchecked/);assert.match(a.text,/not saved workout history/);
 a=L.answer('What is my current target?',{...options,live});assert.match(a.text,/Competition Bench.*set 2 of 3/);assert.match(a.text,/100 kg/);
