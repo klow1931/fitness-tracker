@@ -13,6 +13,7 @@ assert.match(C.answer(state,'Do all my sets need to be all out?',opts).text,/do 
 for(const q of ['My incline bench feels stuck','My dumbbell bench gains have dried up','My squat and bench feel stuck','My bench at 100 kg feels stuck','Delete my bench','My bench is not stuck','My current rest timer has time left'])assert.equal(U.interpret(q).changed,false,q);
 assert.match(C.answer(state,'My pressing is not moving',opts).text,/Which exact movement/);
 assert.equal(U.classify('gobbledygook xyzzq').accepted,false);
+assert(C.answer(state,'How can I build a consistent training habit?',opts).openDialogue,'Building a habit is not a request to build a program');
 assert(C.answer(state,'Explain dynamic effort',opts).knowledgeIds.includes('dynamic-effort'),'Existing educational concepts must precede the statistical fallback');
 assert.equal(U.interpret('Are my squat numbers moving forward').changed,false,'A statistical plateau error cannot turn a positive question into a stall report');
 for(const q of ['My knee hurts and my bench is stuck','I feel dizzy and want to talk'])assert.equal(C.answer(state,q,opts).intent.topic,'health');

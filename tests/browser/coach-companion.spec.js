@@ -86,9 +86,9 @@ test('v2.79 signed-in companion sends bounded live workout state with explicit k
  await page.locator('#exercise-rows .set-rpe').first().fill('8.5');
  await expectMobileLauncherClearOfDock(page);
  await page.locator('#coach-companion-launcher').click();
- // Exact set explanations stay local; use a broader unanswered question to exercise transport.
- await page.locator('#cc-input').fill('Can you give me a fresh perspective?');
- await page.locator('#cc-form button[type="submit"]').click();
+ // Exercise the authenticated transport directly with explicit structured context.
+ // Text conversation now requires Online chat and sends minimal context instead.
+ await page.evaluate(async()=>{const reply=await LoadnoteCoachClient.ask({question:'Why this set?',context:LoadnoteCoachCompanionUI.context(),history:[]});LoadnoteCoachCompanionUI.append(reply.summary);});
  await expect(page.locator('#cc-messages')).toContainText('Stay with the reviewed target');
  await expect.poll(()=>requestBody!==null).toBe(true);
  expect(requestBody.context.companion.surface).toBe('train');

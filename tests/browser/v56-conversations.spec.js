@@ -27,6 +27,7 @@ test('linked concepts retain sources and safety takes priority over reflection',
 });
 test('online conversation excludes offline chat, local evidence and training context',async({page})=>{
  await ask(page,'I had a long day at work');await ask(page,'My private offline phrase');
+ await ask(page,'What is a constellation?');expect(await page.evaluate(()=>remoteCalls.length)).toBe(0,'Online chat off must not upload an unanswered message, even when signed in');
  await page.evaluate(()=>LoadnoteCoachClient.availability=async()=>({online:true}));await page.locator('#coach-online-conversation').click();await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','true');
  let r=await ask(page,'Can we talk about my day?');await expect(r).toContainText('broader conversation response');
  let calls=await page.evaluate(()=>remoteCalls);expect(calls).toHaveLength(1);expect(Object.keys(calls[0].context).sort()).toEqual(['unit','version']);expect(calls[0].history).toEqual([]);

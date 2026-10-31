@@ -262,12 +262,12 @@
   // Exact logged and corrected-lift evidence must not be replaced by an online
   // model answer, even when an authenticated session is available.
   const authoritative=local?.readOnly===true&&!(onlineConversation&&local?.openDialogue);
-  const client=authoritative||localMode?null:Client();
+  const client=authoritative||localMode||!onlineConversation?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
    let reply=offline;
    if(!reply)try{if(typeof getChatResponse==='function')reply=stripHtml(getChatResponse(text,history));}catch{}
-   reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can answer live workout questions offline. Sign in from Profile for broader personalized Coach conversation.');
+   reply=reply||(localMode?'The local model could not provide a validated reply. I can still help with recorded training evidence and reviewed programming. Which movement or goal should we discuss?':window.Capacitor?.isNativePlatform?.()?'I can answer live workout questions offline. Online Coach is unavailable in this native beta.':'I can explain training or help you talk something through offline. For broader conversation, select Online chat if it is available.');
    const message=append(reply,'assistant',modelUnavailable?'Built-in coaching · local AI unavailable':(local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion')));attachReply(message,local,text);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
