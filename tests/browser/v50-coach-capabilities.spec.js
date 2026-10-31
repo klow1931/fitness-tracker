@@ -37,9 +37,11 @@ test('selected hypertrophy plan stays selected when lifecycle has overlapping pr
   const proposal=LoadnoteHypertrophyBuilder.prepare(data,config,{asOf,goalId});
   data=LoadnoteHypertrophyBuilder.save(data,proposal,{confirmed:true,workloadConfirmed:true},{asOf,now,id:'selected-growth'});
   data=LoadnoteHypertrophyBuilder.schedule(data,'selected-growth',{asOf,now:'2026-10-04T11:00:00.000Z'});
+  const other=structuredClone(data.hypertrophyPrograms[0]);other.id='other-growth';data.hypertrophyPrograms.push(other);
  });
  await page.clock.setSystemTime(new Date('2026-10-12T20:00:00Z'));
  const before=await page.evaluate(()=>JSON.stringify(data));
+ expect(await page.evaluate(()=>LoadnoteCoachFollowthrough.inspect(data,{asOf:today()}).status)).toBe('ambiguous');
  await page.evaluate(()=>LoadnoteCoachFollowthroughUI.open({programId:'selected-growth',programKind:'hypertrophy-program'}));
  const dialog=page.locator('#coach-followthrough-dialog');await expect(dialog.locator('h3')).toHaveText('Selected growth plan');
  await dialog.getByRole('button',{name:'Review this program',exact:true}).click();
