@@ -12,3 +12,7 @@ Combines the proposed v5.4–v5.6 milestones into one reviewable release. Versio
 ## Validation
 
 Run `node scripts/train-coach-intents.js --check`, `npm run eval:understanding`, the full unit/static suites, browser regressions and native packaging gates. The held-out language set is separate from training phrases and reports correct accepted classifications, errors and abstentions independently. Dialogue scenarios verify corrections, topic resets, user-only context, preservation of unknowns and immutability. A synthetic benchmark does not establish real-user language quality or training effectiveness. Hosted-provider quality and physical-device usability require separate acceptance.
+
+### Offline browser coverage
+
+The cache test uses a dedicated loopback origin, verifies that the new modules are cached, stops the origin, requires a reload response from the service worker, and verifies an uncached context cannot navigate. Chromium also uses full offline emulation. The pinned WebKit automation has an [upstream offline-emulation defect](https://github.com/microsoft/playwright/issues/42775), so its origin-outage test does not use that switch. This verifies cached recovery from an unavailable app server; it does not establish physical iPhone airplane-mode cold-start acceptance. Native Android offline emulator acceptance remains separate.

@@ -49,9 +49,17 @@ test('narrow large-text reflection stays usable and renders user text literally'
  const r=await ask(page,'<img src=x onerror="window.injected=true">');await expect(r).toContainText('<img');expect(await page.evaluate(()=>window.injected)).toBeUndefined();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.evaluate(()=>{document.activeElement?.blur();showTab('dashboard');});await page.locator('#coach-companion-launcher').click();await expect(page.locator('#cc-online-conversation')).toBeVisible();expect(await page.locator('#coach-companion-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
 });
-test('bundled understanding and reflection survive an actual offline reload',async({browser,baseURL})=>{
- const context=await browser.newContext({serviceWorkers:'allow'}),page=await context.newPage();
- try{await page.goto(baseURL);await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await page.reload();await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+test('cached Coach reloads with its origin stopped; Chromium also emulates offline',async({browser,browserName})=>{
+ const host=await require('./helpers/offline-origin').start(),context=await browser.newContext({serviceWorkers:'allow'}),page=await context.newPage();
+ try{await page.goto(host.origin);await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+  const cached=await page.evaluate(async()=>{const names=['coach-intent-model','coach-text-features','coach-understanding','coach-open-dialogue','coach-knowledge-links'];return Promise.all(names.map(name=>caches.match(new URL('src/product/'+name+'.js',location.href)).then(Boolean)));});expect(cached.every(Boolean)).toBe(true);
+  await host.stop();
+  // WebKit's pinned offline emulation rejects even literal SW responses:
+  // https://github.com/microsoft/playwright/issues/42775 . Stopping this
+  // dedicated origin independently tests cached navigation on every engine.
+  if(browserName!=='webkit')await context.setOffline(true);
+  const response=await page.reload();expect(response.fromServiceWorker()).toBe(true);await expect(page.locator('#coach-companion-launcher')).toBeVisible();
   const replies=await page.evaluate(()=>['My bench gains have dried up','Let’s talk it through','How do volume and fatigue relate?'].map(q=>LoadnoteCoachConversation.answer({},q,{asOf:'2026-10-31'})?.source));expect(replies).toEqual(['Offline Coach · training trends','Shared coaching · talk it through','Shared coaching · knowledge connections']);
- }finally{await context.close();}
+  const control=await browser.newContext({serviceWorkers:'block'});try{const uncached=await control.newPage();await expect(uncached.goto(host.origin,{timeout:3000})).rejects.toThrow();}finally{await control.close();}
+ }finally{await context.close();await host.stop();}
 });
