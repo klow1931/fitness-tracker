@@ -229,5 +229,5 @@
  }
  function exportProgram(p){if(!p)return;const rows=p.entries.map(r=>r.type==='cardio'?{week:r.week,day:M().dayNames[r.weekday],exercise:r.name,type:'cardio',minutes:r.minutes,notes:r.notes}:{week:r.week,day:M().dayNames[r.weekday],exercise:r.name,type:'strength',sets:r.sets,reps:r.minReps!=null?r.minReps+'-'+r.maxReps:r.reps,weight:r.percent!=null?'':r.weightKg,unit:r.percent!=null?r.referenceUnit:'kg',rpe:r.rpe,rest:r.rest,notes:r.notes,...(r.percent!=null?{percent:r.percent,percentBasis:r.percentBasis,reference:r.reference,referenceUnit:r.referenceUnit,roundTo:r.roundTo}:{})});download('loadnote-program-'+p.id+'.json',JSON.stringify({format:'loadnote-program-v1',name:p.config.name,startDate:p.config.startDate,weeks:p.config.weeks,rows},null,2),'application/json');}
  function download(name,content,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- window.renderCustomProgramStudio=render;window.LoadnoteCustomProgramUI={render,open};
+ window.renderCustomProgramStudio=render;window.LoadnoteCustomProgramUI={render,open,review:id=>{render();report(id);document.querySelector('[data-custom-report="'+CSS.escape(id)+'"]')?.scrollIntoView({block:'start'});}};
 })();

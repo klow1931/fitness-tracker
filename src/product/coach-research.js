@@ -35,7 +35,8 @@
    const abstract=text(r.abstractText,750),journal=text(r.journalInfo?.journal?.title,120);
    items.push({id:key,title,year,date,authors:text(r.authorString,200),journal,types:types.slice(0,4),review:types.some(v=>/review|meta-analysis/i.test(v)),excerpt:abstract,url:source==='MED'?'https://pubmed.ncbi.nlm.nih.gov/'+id+'/':'https://europepmc.org/articles/'+id});
   }
-  items.sort((a,b)=>Number(b.review)-Number(a.review));
+  const terms=t.label.toLowerCase().split(/\W+/).filter(w=>w.length>3);
+  items.sort((a,b)=>{const relevance=x=>terms.filter(w=>(x.title+' '+x.excerpt).toLowerCase().includes(w)).length;return relevance(b)-relevance(a)||Number(b.review)-Number(a.review)||Number(b.year)-Number(a.year);});
   return {version:1,topic:t.id,label:t.label,terms:t.terms,retrievedAt:new Date(now).toISOString(),provider:'Europe PMC',items:items.slice(0,4)};
  }
  function cleanSaved(value,now){

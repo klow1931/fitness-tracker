@@ -45,6 +45,7 @@
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
   const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
+  const followthrough=(typeof module==='object'&&module.exports?require('./coach-followthrough'):globalThis.LoadnoteCoachFollowthrough)?.answer(state,understood,{asOf,now,unit});if(followthrough)return followthrough;
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
   // Two named competition lifts can be reviewed independently; never compare
   // absolute loads, infer a causal reason, or authorize a programming change.
@@ -112,7 +113,9 @@
    if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
-  const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced)return referenced;
+  const ranked=(typeof module==='object'&&module.exports?require('./coach-reference-retrieval'):globalThis.LoadnoteCoachReferences);
+  const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced){if(!referenced.applicationReview&&/\b(?:sources|references|papers|research|evidence)\b/i.test(q)){const withSaved=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(withSaved?.referenceMatches?.some(h=>h.kind==='saved-paper'))return withSaved;}return referenced;}
+  if(intent.topic!=='evidence'&&!/\b(?:my|me|mine|recent|recorded|logged|last)\b/i.test(q)&&/\b(?:research|papers|sources|references|evidence)\b/i.test(q)){const directReference=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(directReference)return directReference;}
   const intake=(typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake)?.answer(state,q);if(intake)return intake;
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}
   if(intent.topic!=='health'&&Unified){try{const unified=Unified.answer(state,q,{asOf,unit,history,live,sportLive:live?.sportWorkout||null});if(unified)return unified;}catch{/* Existing domain-specific evidence handlers remain available. */}}
@@ -161,6 +164,7 @@
   const existing=(Intelligence||globalThis.LoadnoteCompanionIntelligence)?.answer?.(intelligence,q);if(existing)return result(existing,'Descriptive training evidence');
   if(intent.topic==='evidence')return result('Which lift should we inspect: squat, bench or deadlift? I can describe recorded evidence and its gaps, but cannot infer a load increase from an unspecified movement.','Clarification');
   if(intent.follow)return result('What would you like me to explain: a lift’s evidence, an accessory, or the purpose of a program phase? I do not have a clear prior topic to resolve that follow-up.','Clarification');
+  const referenceReply=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(referenceReply)return referenceReply;
   if(/\b(hello|hi|hey|thanks|thank you)\b/i.test(q))return result('I can help explain your lift evidence, accessory choices, effort targets and program phases. What would you like to look at?');
   return null;
  }

@@ -28,6 +28,7 @@
    if((a.sets||[]).length!==p.sets.length){base.reasons.push('Set count differs.');continue;}
    for(let i=0;i<p.sets.length;i++){
     const target=p.sets[i],log=a.sets[i],reps=log?.reps;
+    if(!log||log.skipped||log.warmup||log.type==='warmup'||log.done===false||log.completed===false){base.reasons.push('Skipped, warm-up or explicitly incomplete sets cannot establish achieved targets.');continue;}
     const repMatch=Number.isInteger(reps)&&(target.minReps!=null?reps>=target.minReps&&reps<=target.maxReps:reps===target.reps);
     if(!repMatch||!Number.isFinite(log?.weight)||!Number.isFinite(target.weight)||Math.abs(log.weight-target.weight)>.02){base.reasons.push('Logged reps or load differ from target.');continue;}
     base.matchedSets++;

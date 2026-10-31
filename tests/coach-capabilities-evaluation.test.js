@@ -1,0 +1,1 @@
+const assert=require('node:assert/strict'),{run}=require('../scripts/evaluate-coach');const r=run();assert.equal(r.failed,0,JSON.stringify(r.results.filter(c=>!c.passed),null,2));console.log('Coach capability benchmark: '+r.passed+'/'+r.total+' repeatable planning, dialogue, retrieval, safety and follow-through scenarios passed');

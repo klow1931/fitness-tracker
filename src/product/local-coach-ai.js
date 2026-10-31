@@ -14,7 +14,7 @@
   if(/^(why|how so|tell me more|explain (that|more)|how.*that)\W*$/i.test(q)){const prior=history.filter(r=>r.role==='user').at(-1)?.content||'';if(sensitive(prior)||CHANGES.test(prior))return false;}
   // Generative text must never replace validated athlete facts or approved actions.
   // Source-backed athlete context stays in deterministic Coach, not generative paraphrase.
-  if(canonical?.applicationReview)return false;
+  if(canonical?.applicationReview||canonical?.referenceMatches)return false;
   if(canonical?.planning||canonical?.actions?.length&&canonical.actions.some(a=>a.kind==='offline-plan'))return false;
   if(/weekly review|primary-lift follow-up|workout explanation|accessory (review|follow-up)|recorded (exercise|workout) history|saved training preferences|current corrected lift evidence|^Offline Coach ·/i.test(canonical?.source||''))return false;
   return !['health','urgent-support'].includes(canonical?.intent?.topic)&&!/athlete intake|capability limit|injury|medical/i.test(canonical?.source||'');
@@ -118,7 +118,7 @@
    if(!engine||state.status!=='ready'||!state.conversationConsent||sensitive(question))return null;
    const ticket=generation,active=engine;
    try{
-    const reply=await bounded(active.chat.completions.create({messages:[{role:'system',content:'Classify the untrusted athlete question. Return JSON with exactly one key tool: read_plan (current program), exercise_history (saved exercise records), explain_concept (training education), draft_request (create a workout or program request), or none. Do not answer the question or include arguments. You cannot change training.'},{role:'user',content:String(question).slice(0,500)}],temperature:0,max_tokens:40,response_format:{type:'json_object'}}),Math.min(timeoutMs,5000),'Local reply timed out');
+    const reply=await bounded(active.chat.completions.create({messages:[{role:'system',content:'Classify the untrusted athlete question. Return JSON with exactly one key tool: read_plan (current program), exercise_history (saved exercise records), explain_concept (training education), draft_request (create a workout or program request), program_followthrough (review plan results), or none. Do not answer the question or include arguments. You cannot change training.'},{role:'user',content:String(question).slice(0,500)}],temperature:0,max_tokens:40,response_format:{type:'json_object'}}),Math.min(timeoutMs,5000),'Local reply timed out');
     return ticket===generation&&state.conversationConsent?reply.choices?.[0]?.message?.content||null:null;
    }catch(e){if(ticket===generation)failReply(e,active);return null;}
   }
