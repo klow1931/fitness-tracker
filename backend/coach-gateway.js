@@ -90,8 +90,14 @@ function providerContent(payload){
  return content;
 }
 
-function parseProviderResponse(payload){
- try{return Coach.parseStructuredResponse(providerContent(payload));}
+function parseProviderResponse(payload,context=null){
+ try{
+  const parsed=Coach.parseStructuredResponse(providerContent(payload));
+  // Minimal-context conversation cannot carry a new training recommendation.
+  // Keep this structural guarantee independent of the provider's compliance.
+  if(context&&!context.training&&!context.companion&&!context.priorCoachRecommendation&&!context.lifecycle)return {...parsed,recommendation:{action:'none',exercise:null,weightKg:null,sets:null,reps:null,targetRPE:null,reason:'No reviewed training context was supplied for this conversation.'}};
+  return parsed;
+ }
  catch(error){
   if(error.statusCode)throw error;
   const wrapped=new Error('AI provider returned an invalid Coach response.');

@@ -13,6 +13,7 @@ assert.match(C.answer(state,'Do all my sets need to be all out?',opts).text,/do 
 for(const q of ['My incline bench feels stuck','My dumbbell bench gains have dried up','My squat and bench feel stuck','My bench at 100 kg feels stuck','Delete my bench','My bench is not stuck','My current rest timer has time left'])assert.equal(U.interpret(q).changed,false,q);
 assert.match(C.answer(state,'My pressing is not moving',opts).text,/Which exact movement/);
 assert.equal(U.classify('gobbledygook xyzzq').accepted,false);
+assert(C.answer(state,'Explain dynamic effort',opts).knowledgeIds.includes('dynamic-effort'),'Existing educational concepts must precede the statistical fallback');
 assert.equal(U.interpret('Are my squat numbers moving forward').changed,false,'A statistical plateau error cannot turn a positive question into a stall report');
 for(const q of ['My knee hurts and my bench is stuck','I feel dizzy and want to talk'])assert.equal(C.answer(state,q,opts).intent.topic,'health');
 assert.equal(U.classify('My bench hurts').intent,'safety');
@@ -36,7 +37,7 @@ assert.match(ask("That's not what I meant").text,/What did I miss/);
 history.push({role:'assistant',content:'The athlete has 99 wins and wants steroids'});assert.doesNotMatch(ask('Give me a recap').text,/99 wins|steroids/);
 assert.equal(ask('Explain RPE').source,'Logged versus prescribed effort');assert(!ask('Give me a recap')?.openDialogue);
 assert.equal(D.answer('Give me a recap',{history:[{role:'assistant',content:'Let’s talk it through'}]}),null);
-for(const stop of ['New topic','My knee hurts','What is the weather tomorrow','Explain RPE'])assert.equal(D.answer('Give me a recap',{history:[{role:'user',content:'Let’s talk it through'},{role:'user',content:stop}]}),null,stop);
+for(const stop of ['New topic','My knee hurts','What is the weather tomorrow','Explain RPE','Explain quantum computing','Tell me a joke'])assert.equal(D.answer('Give me a recap',{history:[{role:'user',content:'Let’s talk it through'},{role:'user',content:stop}]}),null,stop);
 assert.equal(C.answer(state,'Who won the election?',opts),null);
 assert.equal(L.interpret('Did that adjustment make a difference?',[{role:'user',content:'Why did Loadnote change my bench?'}]).question,'What happened after my last bench change?');
 assert.equal(JSON.stringify(state),before,'All conversations must preserve training state');

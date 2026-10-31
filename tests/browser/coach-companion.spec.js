@@ -86,7 +86,8 @@ test('v2.79 signed-in companion sends bounded live workout state with explicit k
  await page.locator('#exercise-rows .set-rpe').first().fill('8.5');
  await expectMobileLauncherClearOfDock(page);
  await page.locator('#coach-companion-launcher').click();
- await page.locator('#cc-input').fill('Why this set?');
+ // Exact set explanations stay local; use a broader unanswered question to exercise transport.
+ await page.locator('#cc-input').fill('Can you give me a fresh perspective?');
  await page.locator('#cc-form button[type="submit"]').click();
  await expect(page.locator('#cc-messages')).toContainText('Stay with the reviewed target');
  await expect.poll(()=>requestBody!==null).toBe(true);

@@ -10,7 +10,7 @@
  const sensitive=q=>Support.health(q)||Support.kind(q)==='urgent-support'||/\b(?:medication|therapy|therapist|diagnosis|abuse|eating disorder|self.harm|depress\w*)\b/i.test(q);
  // An explicit factual or app request exits reflection, even during an active
  // workspace. It is never answered by reflecting an unrelated old statement.
- const factual=q=>/^(?:who|when|where|what (?:is|are|was|were|does|did)|how (?:is|are|has|did|many|much|long|does|do)|why (?:is|are|does|did))\b/i.test(q)&&!/\b(?:my options|my next step|do i (?:decide|choose|start))\b/i.test(q);
+ const factual=q=>/^(?:who|when|where|define|calculate|translate|write|generate|explain|teach me|tell me (?:about|a joke|a story)|can you (?:explain|define|calculate)|what (?:is|are|was|were|does|did)|how (?:is|are|has|did|many|much|long|does|do)|why (?:is|are|does|did))\b/i.test(q)&&!/\b(?:my options|my next step|do i (?:decide|choose|start))\b/i.test(q)&&!control(q);
  const tool=q=>/\b(?:rpe|rir|training max|sets?|reps?|rest timer|sources|research|evidence|logged|recorded|plateau|progress|history)\b|\b(?:build|create|draft|save|delete|cancel|change|schedule|review|explain)\b.{0,50}\b(?:workout|program|plan|training|preference|equipment)\b/i.test(q)||/\b(?:bench|squat|deadlift)\b/i.test(q)&&/^(?:how|what|why|explain|show|review)\b/i.test(q);
  const summary=q=>/^(?:summari[sz]e (?:that|this|our conversation|what i said)|(?:give me )?(?:a )?recap|what have i said so far|short version)[.!?]*$/i.test(q);
  const repair=q=>/^(?:that(?:'s| is) not what i meant|you misunderstood|that doesn.t help|i (?:already )?tried that)[.!?]*$/i.test(q);

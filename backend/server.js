@@ -124,7 +124,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   catch(error){if(error?.name==='AbortError')return send(req,res,504,{error:'Online Coach timed out.',code:'coach_timeout'});return send(req,res,502,{error:'Online Coach provider is unavailable.',code:'coach_provider_unavailable'});}
   if(!upstream.ok)return send(req,res,502,{error:'Online Coach provider returned an error.',code:'coach_provider_error'});
   let payload;try{payload=await upstream.json();}catch{return send(req,res,502,{error:'Online Coach provider returned an invalid response.',code:'coach_provider_invalid_json'});}
-  return send(req,res,200,{coach:CoachGateway.parseProviderResponse(payload)});
+  return send(req,res,200,{coach:CoachGateway.parseProviderResponse(payload,CoachGateway.normalizeContext(body.context))});
   } finally {clearTimeout(timeout);lease.release();}
  }
  async function voiceSession(req,res){

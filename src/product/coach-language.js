@@ -22,6 +22,7 @@
  function normalize(question){
   let q=clean(question);
   if(!q||unsafe(q))return q;
+  if(/^(?:please )?(?:explain|define) (?:rpe|rir|reps in reserve|rate of perceived exertion)[?.!]*$/i.test(q))return 'What does RPE mean?';
   for(const [pattern,value] of aliases)q=q.replace(pattern,value);
   q=q.replace(/^hows my\b/i,'how is my').replace(/^how's my\b/i,'how is my');
   const lift=onlyLift(q);

@@ -125,13 +125,13 @@
    if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
+  const linked=KnowledgeLinks?.answer(state,q,{history});if(linked)return linked;
+  const ranked=(typeof module==='object'&&module.exports?require('./coach-reference-retrieval'):globalThis.LoadnoteCoachReferences);
+  const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced){if(!referenced.applicationReview&&/\b(?:sources|references|papers|research|evidence)\b/i.test(q)){const withSaved=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(withSaved?.referenceMatches?.some(h=>h.kind==='saved-paper'))return withSaved;}return referenced;}
   // Only unsupported paraphrases reach the statistical router. Every accepted
   // interpretation re-enters the same deterministic tools and safety checks.
   const interpretation=Understanding?.interpret(q);
   if(interpretation?.changed){const interpreted=answerCanonical(state,interpretation.question,{asOf,unit,history,live,intelligence,now,preferences});if(interpreted)return {...interpreted,intent:{...(interpreted.intent||{}),question:clean(question),resolvedQuestion:interpretation.question},languageHint:interpretation.hint};}
-  const linked=KnowledgeLinks?.answer(state,q,{history});if(linked)return linked;
-  const ranked=(typeof module==='object'&&module.exports?require('./coach-reference-retrieval'):globalThis.LoadnoteCoachReferences);
-  const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced){if(!referenced.applicationReview&&/\b(?:sources|references|papers|research|evidence)\b/i.test(q)){const withSaved=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(withSaved?.referenceMatches?.some(h=>h.kind==='saved-paper'))return withSaved;}return referenced;}
   if(intent.topic!=='evidence'&&!/\b(?:my|me|mine|recent|recorded|logged|last)\b/i.test(q)&&/\b(?:research|papers|sources|references|evidence)\b/i.test(q)){const directReference=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(directReference)return directReference;}
   const intake=(typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake)?.answer(state,q);if(intake)return intake;
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}

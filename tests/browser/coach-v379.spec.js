@@ -8,7 +8,7 @@ async function submit(page,question){
 }
 const authenticated={authenticated:true,account:{id:'coach_379_test',displayName:'Athlete',providers:['test']},expiresAt:'2030-01-01T00:00:00.000Z',csrf:'coach-test-csrf',transport:'cookie',authConfigured:true,authRequired:true,loginAvailable:true};
 
-test('v3.79 online failure retains local evidence, source links and read-only context on both Coach surfaces',async({page})=>{
+test('canonical evidence stays local with source links and read-only context on both Coach surfaces',async({page})=>{
  await page.route('**/api/auth/session',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(authenticated)}));
  let attempted=0;
  await page.route('**/api/coach',route=>{attempted++;return route.fulfill({status:503,contentType:'application/json',body:'{"error":"Temporarily unavailable"}'});});
@@ -26,7 +26,7 @@ test('v3.79 online failure retains local evidence, source links and read-only co
  const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduledSessions:data.scheduledSessions}));
  await page.locator('#coach-companion-launcher').click();
  const reply=await submit(page,'Explain my previous training evidence');
- await expect(reply).toContainText('Online Coach unavailable.');
+ await expect(reply).not.toContainText('Online Coach unavailable.');
  await expect(reply).toContainText('Recorded workout history is available');
  await expect(reply.locator('.cc-evidence article')).toHaveCount(1);
  const sources=reply.locator('details').filter({hasText:'Sources and coverage'});
@@ -34,8 +34,8 @@ test('v3.79 online failure retains local evidence, source links and read-only co
  await sources.locator('summary').click();
  await expect(reply.getByRole('link',{name:'NSCA public training reference'})).toHaveAttribute('href',/^https:\/\/www\.nsca\.com\//);
  await expect(page.locator('#chat-messages .assistant').last().locator('.cc-evidence article')).toHaveCount(1);
- await expect(reply).toContainText('Online request failed · showing available local guidance');
- expect(attempted).toBe(1);
+ await expect(reply).not.toContainText('Online request failed · showing available local guidance');
+ expect(attempted).toBe(0,'Canonical read-only evidence must not be uploaded or replaced');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduledSessions:data.scheduledSessions}))).toBe(before);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });

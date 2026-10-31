@@ -32,6 +32,7 @@ test('online conversation excludes offline chat, local evidence and training con
  let calls=await page.evaluate(()=>remoteCalls);expect(calls).toHaveLength(1);expect(Object.keys(calls[0].context).sort()).toEqual(['unit','version']);expect(calls[0].history).toEqual([]);
  await ask(page,'What does RPE mean?');expect(await page.evaluate(()=>remoteCalls.length)).toBe(1);
  await ask(page,'What is a constellation?');calls=await page.evaluate(()=>remoteCalls);expect(calls).toHaveLength(2);expect(calls[1].history).toHaveLength(2);expect(JSON.stringify(calls[1])).not.toContain('private offline phrase');expect(JSON.stringify(calls[1])).not.toContain('RPE means');
+ await page.evaluate(()=>LoadnoteCoachClient.ask=async()=>{throw Error('Service unavailable');});r=await ask(page,'Let’s talk it through');await expect(r).toContainText('Online Coach unavailable');await expect(r).toContainText('vent, reflect, or work through a choice');
  await page.getByRole('button',{name:'Clear conversation',exact:true}).click();await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','false');
 });
 test('missing server and native beta keep broader online chat off',async({page})=>{
