@@ -13,10 +13,13 @@
   return {intent:accepted?first.intent:'unknown',candidate:first.intent,accepted,margin:Math.round(margin*100)/100,coverage:Math.round(coverage*100)/100,reason:accepted?'supported-language':'clarify-or-existing-route'};
  }
  function interpret(question){
-  const q=String(question??'').trim(),hint=classify(q),lifts=['squat','bench','deadlift'].filter(l=>new RegExp('\\b'+l+'\\b','i').test(q));
+  const q=String(question??'').replace(/[’‘]/g,"'").trim(),hint=classify(q),lifts=['squat','bench','deadlift'].filter(l=>new RegExp('\\b'+l+'\\b','i').test(q));
   // Do not rewrite commands, quantities, multiple requests, negative evidence,
   // or named variations. Exact exercise identity belongs to existing tools.
-  if(!hint.accepted||q.length>160||/\d|\b(?:and|but|or|not|never|don't|cannot|can't|save|build|create|draft|change|increase|decrease|replace|swap|delete|cancel|remember|incline|decline|dumbbell|pause|paused|front|safety|romanian|sumo|overhead|timer|remaining|left|current|target|prescribed|today)\b/i.test(q))return {question:q,hint,changed:false};
+  if(!hint.accepted||q.length>160||/\d|\b(?:and|but|or|no|not|never|cannot|\w+n't|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|hundred|thousand|save|build|create|draft|change|increase|decrease|replace|swap|delete|cancel|remember|incline|decline|dumbbell|pause|paused|front|safety|romanian|sumo|overhead|timer|remaining|left|current|target|prescribed|today)\b/i.test(q))return {question:q,hint,changed:false};
+  // Unknown lift qualifiers can name an unrecognized variation. Statistical
+  // coverage is insufficient authority to erase them from an exercise query.
+  if(lifts.length&&F.words(q).some(w=>!index.has(w)&&w!=='competition'))return {question:q,hint,changed:false};
   let canonical=null;
   // A plateau route must retain an actual stagnation report. Word overlap
   // with a negated training example must not turn improvement into a stall.

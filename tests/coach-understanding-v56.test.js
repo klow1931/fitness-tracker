@@ -11,6 +11,7 @@ for(const q of ['My bench feels stuck','My bench gains have dried up']){const r=
 assert.match(C.answer(state,'How do I score the difficulty of a set?',opts).text,/Missing RPE is unknown/);
 assert.match(C.answer(state,'Do all my sets need to be all out?',opts).text,/do not need every set/);
 for(const q of ['My incline bench feels stuck','My dumbbell bench gains have dried up','My squat and bench feel stuck','My bench at 100 kg feels stuck','Delete my bench','My bench is not stuck','My current rest timer has time left'])assert.equal(U.interpret(q).changed,false,q);
+for(const q of ["My bench isn't stuck",'My bench isn’t stuck',"My squat hasn't stalled",'My bench feels stuck for three weeks','My close-grip bench feels stuck','My floor bench feels stuck'])assert.equal(U.interpret(q).changed,false,q);
 assert.match(C.answer(state,'My pressing is not moving',opts).text,/Which exact movement/);
 assert.equal(U.classify('gobbledygook xyzzq').accepted,false);
 assert(C.answer(state,'How can I build a consistent training habit?',opts).openDialogue,'Building a habit is not a request to build a program');
