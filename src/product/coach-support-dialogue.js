@@ -45,7 +45,7 @@
   const continuation=prior&&(repair(q)||eased(q)||duration||short||selected&&q.length<=160||/^(?:bench(?: press)?|squat|deadlift|not sure|i don't know)[.!?]*$/i.test(q));
   if(!topic&&!continuation)return null;
   // Informational or action requests retain their existing authoritative routes.
-  if(/\b(?:research|sources|evidence|training max|rpe|build|create|draft|save|delete|schedule|swap|replace|increase|decrease)\b/i.test(q))return null;
+  if(/\b(?:research|sources|evidence|training max|rpe|build|create|draft|save|delete|schedule|swap|replace|increase|decrease|progress|plateau|declin\w*|history|logged|recorded|compare|prescribed|target|outcomes?)\b|\b(?:program|plan)\b.{0,25}\bworking\b/i.test(q))return null;
   const c={topic:topic||prior.topic,barrier:selected||(!topic?prior.barrier:null),turns:(prior?.turns||0)+1};
   const minutes=duration?Number(duration[1]):!topic?prior?.minutes:null;
   if(c.barrier==='time'&&Number.isInteger(minutes)&&minutes>=1&&minutes<=240)c.minutes=minutes;

@@ -12,8 +12,9 @@
   const length=d.querySelector('#coach-reply-length'),encouragement=d.querySelector('#coach-encouragement'),status=d.querySelector('#coach-communication-status');
   length.value=value.length;encouragement.value=value.encouragement;
   status.textContent=snapshot.error||(snapshot.saved?'Preferences are saved on this device.':'No communication preferences have been saved.');
-  d.querySelector('form').onsubmit=e=>{e.preventDefault();try{store().save({version:1,length:length.value,encouragement:encouragement.value});status.textContent='Preferences saved on this device.';}catch{status.textContent='Preferences could not be saved. The previously saved settings remain in use.';}};
-  d.querySelector('#coach-communication-clear').onclick=()=>{try{store().clear();length.value=P().DEFAULTS.length;encouragement.value=P().DEFAULTS.encouragement;status.textContent='Saved communication preferences removed. Defaults are in use.';}catch{status.textContent='Preferences could not be removed. The previously saved settings remain in use.';}};
+  const announce=text=>{status.textContent=text;status.scrollIntoView({block:'nearest'});};
+  d.querySelector('form').onsubmit=e=>{e.preventDefault();try{store().save({version:1,length:length.value,encouragement:encouragement.value});announce('Preferences saved on this device.');}catch{announce('Preferences could not be saved. The previously saved settings remain in use.');}};
+  d.querySelector('#coach-communication-clear').onclick=()=>{try{store().clear();length.value=P().DEFAULTS.length;encouragement.value=P().DEFAULTS.encouragement;announce('Saved communication preferences removed. Defaults are in use.');}catch{announce('Preferences could not be removed. The previously saved settings remain in use.');}};
  }
  window.LoadnoteCoachConversationPreferencesUI={open,current};
 })();

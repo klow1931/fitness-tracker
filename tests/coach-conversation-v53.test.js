@@ -24,6 +24,8 @@ assert.match(D.answer('I am not nervous anymore',{history:[{role:'user',content:
 assert.match(D.answer('I have no spotter').text,/cannot spot/);
 assert.equal(D.answer('Build a program',{history}),null);
 assert.equal(D.answer('What does the research say?',{history}),null);
+assert.equal(D.answer('I am frustrated, why is my bench progress declining?',{history}),null,'An emotional phrase must not replace a training-evidence question');
+assert.equal(D.answer('I am frustrated, is my program working?',{history}),null);
 let values=new Map();const storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},store=P.createStore(storage);
 assert.equal(store.read().saved,false);assert.equal(values.size,0);
 a=P.answer('Remember I prefer brief replies',{preferences:store.read()});assert(a.actions[0].proposal);assert.equal(values.size,0,'Chat does not save a setting');

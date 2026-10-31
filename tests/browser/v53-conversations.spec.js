@@ -19,7 +19,7 @@ test('explicit reply settings survive reload, change detail and can be removed w
  let r=await ask(page,'Remember I prefer detailed replies with upbeat encouragement');
  expect(await page.evaluate(()=>localStorage.getItem(LoadnoteCoachConversationPreferences.KEY))).toBeNull();
  await r.getByRole('button',{name:'Review reply preferences',exact:true}).click();const d=page.locator('#coach-communication-dialog');
- await expect(d.locator('#coach-reply-length')).toHaveValue('detail');await d.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(d).toContainText('Preferences saved on this device');
+ await expect(d.locator('#coach-reply-length')).toHaveValue('detail');await d.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(d).toContainText('Preferences saved on this device');await expect(d.locator('#coach-communication-status')).toBeInViewport();
  await d.locator('[data-review-close]').click();r=await ask(page,'I am nervous');await expect(r).toContainText('One step at a time');await expect(r).toContainText('performance measurement');
  const raw=await page.evaluate(()=>localStorage.getItem(LoadnoteCoachConversationPreferences.KEY));expect(JSON.parse(raw)).toEqual({version:1,length:'detail',encouragement:'upbeat'});expect(raw).not.toContain('nervous');
  await page.reload();await expect(page.locator('#coach-companion-launcher')).toBeVisible();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
@@ -28,7 +28,7 @@ test('explicit reply settings survive reload, change detail and can be removed w
 test('settings failure stays visible and preserves previously saved choices',async({page})=>{
  await page.locator('#coach-reply-preferences').click();const d=page.locator('#coach-communication-dialog');await d.getByRole('button',{name:'Save preferences',exact:true}).click();
  await page.evaluate(()=>{window.originalCommunicationSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===LoadnoteCoachConversationPreferences.KEY)throw Error('Quota');return originalCommunicationSet.call(this,k,v);};});
- await d.locator('#coach-reply-length').selectOption('detail');await d.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(d).toContainText('could not be saved');expect(await page.evaluate(()=>LoadnoteCoachConversationPreferencesUI.current().preferences.length)).toBe('standard');
+ await d.locator('#coach-reply-length').selectOption('detail');await d.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(d).toContainText('could not be saved');await expect(d.locator('#coach-communication-status')).toBeInViewport();expect(await page.evaluate(()=>LoadnoteCoachConversationPreferencesUI.current().preferences.length)).toBe('standard');
 });
 test('topic changes, clearing and health questions stop supportive continuation',async({page})=>{
  await ask(page,'I am nervous');await ask(page,'Explain RPE');let r=await ask(page,'Mostly the equipment');await expect(r).not.toContainText('Which movement or piece of equipment feels unfamiliar');
