@@ -20,3 +20,18 @@ const stale=w('three');stale.sessionIntent.schedule.revisionAt='2026-09-01T10:00
 const altered=structuredClone(work[0]);altered.sessionIntent.prescription.plannedExercises[0].sets[0].weight=999;assert.throws(()=>S.checkLink({scheduledSessions:records,workouts:[]},altered),/prescription/);
 const draft=Draft.normalize({version:3,date:'2026-09-02',unit:'lb',rows:[{type:'strength',name:'Squat',sets:[{reps:'5',weight:'220.46'}]}],sessionIntent:work[0].sessionIntent});assert.equal(draft.sessionIntent.schedule.id,'one');assert.equal(Session.fromDraft(draft,'draft').sessionIntent.prescription.plannedExercises[0].sets[0].weight,100);
 console.log('Schedule revisions, explicit status, adherence, links, units and migration passed');
+
+// Local evening can fall on the following UTC date. Keep the explicit knowledge
+// cutoff while letting the display supply its actual local-day boundary.
+const evening=S.create([],{...base,date:'2026-10-30'},{id:'evening',now:'2026-10-31T02:00:00.000Z'}),eveningBefore=JSON.stringify(evening);
+const localOptions={from:'2026-10-26',to:'2026-11-01',asOf:'2026-10-30',knownAt:'2026-10-31T02:01:00.000Z',dayEnd:'2026-10-31T03:59:59.999Z'};
+assert.equal(S.summary(evening,[],localOptions).counts.scheduled,1);
+assert.equal(S.rows(evening,[],{asOf:'2026-10-30'}).length,0,'Historical UTC defaults stay unchanged');
+assert.equal(S.summary(evening,[],{...localOptions,knownAt:'2026-10-31T01:59:59.999Z'}).sessions.length,0,'Later revisions stay excluded');
+const afterDay=S.create(evening,{...base,date:'2026-10-30'},{id:'after-local-day',now:'2026-10-31T04:00:00.000Z'});
+assert.equal(S.summary(afterDay,[],{...localOptions,knownAt:'2026-10-31T05:00:00.000Z'}).sessions.length,1,'Local day end caps the knowledge cutoff');
+const ahead=S.create([],{...base,date:'2026-10-30'},{id:'ahead',now:'2026-10-30T09:00:00.000Z'});
+assert.equal(S.rows(ahead,[],{asOf:'2026-10-30',knownAt:'2026-10-30T09:01:00.000Z',dayEnd:'2026-10-30T09:59:59.999Z'}).length,1);
+for(const dayEnd of ['bad','2026-11-02T23:59:59.999Z'])assert.throws(()=>S.summary(evening,[],{...localOptions,dayEnd}),/local day/);
+assert.equal(JSON.stringify(evening),eveningBefore);
+console.log('Local schedule display boundaries preserve evening records, dated cutoffs and training history');

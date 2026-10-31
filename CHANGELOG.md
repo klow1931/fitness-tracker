@@ -18,7 +18,7 @@ Local AI settings offer **six optional device-only probes**: three source explan
 
 ## Calendar release regression
 
-Anchor month navigation to the first day before changing months so dates such as October 31 cannot overflow back into the displayed month or skip a shorter month. Fixed-clock browser coverage includes January/December boundaries and February in regular/leap years. Navigation leaves training data unchanged.
+Anchor month navigation to the first day before changing months so dates such as October 31 cannot overflow back into the displayed month or skip a shorter month. Fixed-clock browser coverage includes January/December boundaries and February in regular/leap years. Navigation leaves training data unchanged. The current schedule display also supplies its explicit local-day end and actual knowledge timestamp, so schedules created during local evenings after UTC midnight remain visible. Historical UTC defaults, revision cutoffs and saved records remain unchanged; New York evening/offline browser cases cover the boundary.
 
 ## Build dependency security
 
