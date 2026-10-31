@@ -16,7 +16,7 @@
    const proposal=r.review?.proposal;
    if(proposal?.changes?.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Compare the exact proposed future targets';details.append(summary);const box=document.createElement('div');box.innerHTML=LoadnoteWeeklyCoachingUI.previewMarkup(proposal.changes);details.append(box);host.append(details);}
    const b=document.createElement('button');b.type='button';b.className='btn-primary';b.textContent=r.route==='weekly'?'Open the dated Decisions review':r.route==='custom'?'Open this program’s review':'Review this program';
-   b.onclick=()=>{d.close();if(r.route==='weekly')LoadnoteWeeklyCoachingUI.open({programId:r.program.id,programKind:r.program.kind,week:r.review.week});else if(r.route==='custom'){showTab('coach');showSubTab('coach','co-programs');window.LoadnoteCustomProgramUI.review(r.program.id);}else{const report=LoadnoteProgramLifecycleUI.currentReport();if(report)LoadnoteProgramLifecycleUI.route(report);}};host.append(b);
+   b.onclick=()=>{d.close();if(r.route==='weekly')LoadnoteWeeklyCoachingUI.open({programId:r.program.id,programKind:r.program.kind,week:r.review.week});else if(r.route==='custom'){showTab('coach');showSubTab('coach','co-programs');window.LoadnoteCustomProgramUI.review(r.program.id);}else if(r.program.kind==='sport-program'){showTab('coach');showSubTab('coach','co-programs');window.LoadnoteSportPlannerUI.show(r.program.id);}else if(r.program.kind==='hypertrophy-program'){showTab('coach');showSubTab('coach','co-programs');window.LoadnoteHypertrophyBuilderUI.show(r.program.id);}};host.append(b);
   }
   render({programId:selection.programId||null,programKind:selection.programKind||null});
  }

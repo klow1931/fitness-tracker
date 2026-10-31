@@ -27,3 +27,23 @@ test('overlapping program choices keep reviews separate',async({page})=>{
 test('custom program follow-through opens its own Studio evidence review',async({page})=>{
  await page.evaluate(()=>{data=LoadnoteCustomProgram.save(data,LoadnoteCustomProgram.build(data,{name:'My authored plan',weeks:2,startDate:'2026-09-28',unit:'kg',rows:[{week:1,day:'Monday',exercise:'Competition Bench',sets:2,reps:5,weight:100,rpe:8,type:'strength'},{week:2,day:'Monday',exercise:'Competition Bench',sets:2,reps:5,weight:100,rpe:8,type:'strength'}]}),{id:'authored',confirmed:true,now:'2026-09-23T12:00:00.000Z'});data=LoadnoteCustomProgram.schedule(data,'authored',{now:'2026-09-24T12:00:00.000Z'});});const before=await page.evaluate(()=>JSON.stringify(data)),reply=await ask(page,'Is my program working?');await expect(reply).toContainText('My authored plan');await reply.getByRole('button',{name:'Review plan and logged results',exact:true}).click();const d=page.locator('#coach-followthrough-dialog');await d.getByRole('button',{name:'Open this program’s review',exact:true}).click();await expect(page.locator('[data-custom-report="authored"]')).toContainText('Linked workout evidence');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });
+
+test('selected hypertrophy plan stays selected when lifecycle has overlapping programs',async({page})=>{
+ await page.evaluate(()=>{
+  const now='2026-10-04T10:00:00.000Z',asOf='2026-10-04',muscles={confirmed:true,mode:'resistance',primary:['quadriceps'],secondary:['glutes']};
+  data.exerciseCatalog.push({id:'press',name:'Leg press',aliases:[],muscles});
+  data.athleteGoals=LoadnoteGoals.upsert(data.athleteGoals,{name:'Muscle growth',sport:'Resistance training',equipment:'Leg press',availableDays:[0],sessionMinutes:60,trainingContext:{primary:'hypertrophy',secondary:[],season:'off-season',scheduleKnown:true,practiceDays:[],competitionDays:[]}},{now});
+  const goalId=data.athleteGoals.at(-1).id,config={version:1,name:'Selected growth plan',startDate:'2026-10-05',weeks:4,days:[0],sessionMinutes:60,deloadWeeks:[4],sportCoordinationConfirmed:false,slots:[{day:0,exerciseId:'press',name:'Leg press',muscles,equipment:'machine',equipmentConfirmed:true,loadConvention:'stack',sets:3,minReps:8,maxReps:12,weightKg:60,incrementKg:5,targetRpe:8,restSeconds:120,purpose:'Athlete-selected quad training'}]};
+  const proposal=LoadnoteHypertrophyBuilder.prepare(data,config,{asOf,goalId});
+  data=LoadnoteHypertrophyBuilder.save(data,proposal,{confirmed:true,workloadConfirmed:true},{asOf,now,id:'selected-growth'});
+  data=LoadnoteHypertrophyBuilder.schedule(data,'selected-growth',{asOf,now:'2026-10-04T11:00:00.000Z'});
+ });
+ await page.clock.setSystemTime(new Date('2026-10-12T20:00:00Z'));
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ await page.evaluate(()=>LoadnoteCoachFollowthroughUI.open({programId:'selected-growth',programKind:'hypertrophy-program'}));
+ const dialog=page.locator('#coach-followthrough-dialog');await expect(dialog.locator('h3')).toHaveText('Selected growth plan');
+ await dialog.getByRole('button',{name:'Review this program',exact:true}).click();
+ await expect(page.locator('[data-hyp-record="selected-growth"]')).toHaveAttribute('open','');
+ await expect(page.locator('#hypertrophy-builder-panel')).toHaveAttribute('open','');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
