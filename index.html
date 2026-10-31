@@ -941,7 +941,7 @@
       <!-- Chat with Coach -->
       <div class="card">
         <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
-          <div><h2 class="font-semibold">Your Coach</h2><p class="text-sm mt-1">Talk through your training, ask questions, or get encouragement.</p><p id="coach-online-status" class="text-xs text-slate-500 mt-1">Checking secure Coach availability…</p></div>
+          <div><h2 class="font-semibold">Your Coach</h2><p class="text-sm mt-1">Talk through training, your day, or a decision. Ask questions or get encouragement.</p><p id="coach-online-status" class="text-xs text-slate-500 mt-1">Checking secure Coach availability…</p></div>
           <button type="button" class="btn-secondary text-xs" id="coach-account-link" onclick="showTab('profile')" hidden>Account</button>
         </div>
         
@@ -951,10 +951,12 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <input type="text" id="chat-input" class="input flex-1" maxlength="500" aria-label="Message Coach" placeholder="Build a program, draft a workout, or ask about training…" onkeydown="if(event.key==='Enter') sendChat()" />
+          <input type="text" id="chat-input" class="input flex-1" maxlength="500" aria-label="Message Coach" placeholder="Ask about training, or talk something through…" onkeydown="if(event.key==='Enter') sendChat()" />
           <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
         </div>
         <p class="text-xs text-slate-500 mt-2">The same conversation as your quick-access Coach. Session-only memory; no automatic training changes. <button class="btn-secondary" onclick="clearCoachConversation()">Clear conversation</button> <button type="button" class="btn-secondary" id="coach-reply-preferences" onclick="LoadnoteCoachConversationPreferencesUI.open()">Reply preferences</button></p>
+        <div class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Conversation options"><button type="button" class="btn-secondary" id="coach-talk-through" onclick="LoadnoteCoachCompanionUI.ask('Let’s talk it through')">Talk it through</button><button type="button" class="btn-secondary" id="coach-online-conversation" aria-pressed="false" onclick="LoadnoteCoachCompanionUI.toggleOnlineConversation()">Online chat: off</button></div>
+        <p class="text-xs text-slate-500 mt-2">Offline chat uses built-in coaching and reflection. Broader online chat requires a configured server; internet research alone does not enable it.</p>
         <div id="coach-quick-links" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Coach suggested questions">
           <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
           <button onclick="askSuggestion('How much protein do I need?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Protein</button>
@@ -1421,7 +1423,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v5.3.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v5.6.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2181,6 +2183,10 @@
   <script src="src/product/accessory-review.js" defer></script>
   <script src="src/product/accessory-follow-up.js" defer></script>
   <script src="src/product/accessory-follow-up-ui.js" defer></script>
+  <script src="src/product/coach-text-features.js" defer></script>
+  <script src="src/product/coach-intent-model.js" defer></script>
+  <script src="src/product/coach-understanding.js" defer></script>
+  <script src="src/product/coach-open-dialogue.js" defer></script>
   <script src="src/product/coach-language.js" defer></script>
   <script src="src/product/coach-dialogue.js" defer></script>
   <script src="src/product/coach-intent-router.js" defer></script>
@@ -2207,6 +2213,7 @@
   <script src="src/product/local-coach-context.js" defer></script>
   <script src="src/product/coach-research.js" defer></script>
   <script src="src/product/coach-research-ui.js" defer></script>
+  <script src="src/product/coach-knowledge-links.js" defer></script>
   <script src="src/product/coach-reference-retrieval.js" defer></script>
   <script src="src/product/coach-model-evaluation.js" defer></script>
   <script src="src/product/coaching-library-ui.js" defer></script>

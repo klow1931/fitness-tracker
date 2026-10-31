@@ -10,6 +10,9 @@
  const SupportDialogue=typeof module==='object'&&module.exports?require('./coach-support-dialogue'):globalThis.LoadnoteCoachSupportDialogue;
  const Communication=typeof module==='object'&&module.exports?require('./coach-conversation-preferences'):globalThis.LoadnoteCoachConversationPreferences;
  const LiveConversation=typeof module==='object'&&module.exports?require('./coach-live-conversation'):globalThis.LoadnoteCoachLiveConversation;
+ const Understanding=typeof module==='object'&&module.exports?require('./coach-understanding'):globalThis.LoadnoteCoachUnderstanding;
+ const OpenDialogue=typeof module==='object'&&module.exports?require('./coach-open-dialogue'):globalThis.LoadnoteCoachOpenDialogue;
+ const KnowledgeLinks=typeof module==='object'&&module.exports?require('./coach-knowledge-links'):globalThis.LoadnoteCoachKnowledgeLinks;
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
  function topic(q){
@@ -49,6 +52,9 @@
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
   const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
   const communication=Communication?.answer(question,{preferences});if(communication)return communication;
+  // An explicitly opened reflection workspace can discuss everyday topics.
+  // Direct factual/training requests exit it inside the dialogue module.
+  const reflection=OpenDialogue?.answer(question,{history});if(reflection)return reflection;
   const supportive=SupportDialogue?.answer(question,{history,live});if(supportive)return supportive;
   const liveReply=LiveConversation?.answer(question,{live,asOf});if(liveReply)return liveReply;
   const followthrough=(typeof module==='object'&&module.exports?require('./coach-followthrough'):globalThis.LoadnoteCoachFollowthrough)?.answer(state,understood,{asOf,now,unit});if(followthrough)return followthrough;
@@ -119,8 +125,13 @@
    if(exerciseHistory)return exerciseHistory;
   }
   const support=Support?.answer(q,{history,live});if(support)return support;
+  const linked=KnowledgeLinks?.answer(state,q,{history});if(linked)return linked;
   const ranked=(typeof module==='object'&&module.exports?require('./coach-reference-retrieval'):globalThis.LoadnoteCoachReferences);
   const referenced=(typeof module==='object'&&module.exports?require('./coaching-library'):globalThis.LoadnoteCoachingLibrary)?.answer(state,q,{asOf,history});if(referenced){if(!referenced.applicationReview&&/\b(?:sources|references|papers|research|evidence)\b/i.test(q)){const withSaved=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(withSaved?.referenceMatches?.some(h=>h.kind==='saved-paper'))return withSaved;}return referenced;}
+  // Only unsupported paraphrases reach the statistical router. Every accepted
+  // interpretation re-enters the same deterministic tools and safety checks.
+  const interpretation=Understanding?.interpret(q);
+  if(interpretation?.changed){const interpreted=answerCanonical(state,interpretation.question,{asOf,unit,history,live,intelligence,now,preferences});if(interpreted)return {...interpreted,intent:{...(interpreted.intent||{}),question:clean(question),resolvedQuestion:interpretation.question},languageHint:interpretation.hint};}
   if(intent.topic!=='evidence'&&!/\b(?:my|me|mine|recent|recorded|logged|last)\b/i.test(q)&&/\b(?:research|papers|sources|references|evidence)\b/i.test(q)){const directReference=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(directReference)return directReference;}
   const intake=(typeof module==='object'&&module.exports?require('./athlete-intake'):globalThis.LoadnoteAthleteIntake)?.answer(state,q);if(intake)return intake;
   if(intent.topic!=='health'&&Smart){const smart=Smart.answer(state,q,{asOf,history,live,sportLive:live?.sportWorkout||null});if(smart)return smart;}
@@ -171,6 +182,8 @@
   if(intent.topic==='evidence')return result('Which lift should we inspect: squat, bench or deadlift? I can describe recorded evidence and its gaps, but cannot infer a load increase from an unspecified movement.','Clarification');
   if(intent.follow)return result('What would you like me to explain: a lift’s evidence, an accessory, or the purpose of a program phase? I do not have a clear prior topic to resolve that follow-up.','Clarification');
   const referenceReply=ranked?.answer(state,q,{asOf,history,saved:globalThis.LoadnoteCoachResearch?.saved?.()||[]});if(referenceReply)return referenceReply;
+  const hint=Understanding?.classify(question);
+  if(hint?.accepted&&['plateau','progress'].includes(hint.intent)&&!liftOf(q)&&!/\b(?:build|create|change|delete|save|cancel)\b/i.test(q))return {...result('Which exact movement do you mean? Name the exercise so I can check its recorded evidence without treating a variation as a competition lift.','Shared coaching · clarification'),languageHint:hint,followUps:['How is my bench progress?','Review my weekly training']};
   if(/\b(hello|hi|hey|thanks|thank you)\b/i.test(q))return result('I can help explain your lift evidence, accessory choices, effort targets and program phases. What would you like to look at?');
   return null;
  }
@@ -187,6 +200,23 @@
   const fresh=answerCanonical(state,plan.anchor,{...options,history:plan.history});
   return fresh?.readOnly===true?Dialogue.present(fresh,plan):established;
  }
- function answer(state,question,options={}){return Communication.present(answerBase(state,question,options),options.preferences);}
+ function answer(state,question,options={}){
+  const raw=String(question??'');
+  const established=answerBase(state,question,options);
+  if(established?.evidence?.length||established?.planning||established?.applicationReview||established?.liveConversation||String(established?.source||'').startsWith('Offline Coach ·'))return Communication.present(established,options.preferences);
+  // Answer two explicit informational questions independently. Never split a
+  // command, health report, quoted reflection, or a reviewed planning request.
+  if(!Support.health(raw)&&Support.kind(raw)!=='urgent-support'&&!options.singleQuestion&&!/\b(?:build|create|draft|save|delete|cancel|schedule|change|swap|replace|increase|decrease|remember)\b/i.test(raw)){
+   const parts=raw.split(/\?\s+(?:and\s+|also[, ]+)?|\s+and\s+(?=(?:how|what|why|explain|can you explain)\b)/i).map(s=>s.trim()).filter(Boolean);
+   if(parts.length===2&&parts.every(p=>/^(?:how|what|why|explain|can you explain)\b/i.test(p))){
+    const replies=parts.map(p=>answerBase(state,p,{...options,singleQuestion:true}));
+    if(replies.every(r=>r?.readOnly&&!r.openDialogue&&!r.planning&&r.text)&&!replies.some(r=>/clarification|unavailable|capability limit/i.test(r.source||''))){
+     const unique=rows=>[...new Map(rows.map(v=>[JSON.stringify(v),v])).values()];
+     return {text:replies.map((r,i)=>parts[i].replace(/[?!.]+$/,'')+'?\n'+r.text).join('\n\n'),source:'Offline Coach · two grounded questions',readOnly:true,evidence:replies.flatMap(r=>r.evidence||[]),citations:unique(replies.flatMap(r=>r.citations||r.sources||[])),actions:unique(replies.flatMap(r=>r.actions||[])).slice(0,4),intent:{topic:'multi-question'},parts:replies};
+    }
+   }
+  }
+  return Communication.present(established,options.preferences);
+ }
  return {resolve,answer};
 });
