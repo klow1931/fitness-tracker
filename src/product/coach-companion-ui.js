@@ -108,6 +108,7 @@
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
   const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('.cc-foot').append(researchButton);
+  const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('.cc-foot').append(communicationButton);
   document.body.appendChild(panel);
   append('I can help draft a program or daily workout offline, explain your training, and control the rest timer. Drafts need your review; chat does not save or complete training.','assistant');
   refresh();
@@ -216,7 +217,7 @@
   ensure();append(text,'user');
   const live=companionContext(),safety=window.LoadnoteCoachSupport?.kind(text),command=['health','urgent-support'].includes(safety)?null:Core()?.classifyCommand(text);
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
-  let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence});}catch{}
+  let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence,preferences:window.LoadnoteCoachConversationPreferencesUI?.current()});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
   let toolReply=false;
   if(!local&&localMode&&ai?.snapshot().status==='ready'&&!safety){

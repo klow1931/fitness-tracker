@@ -9,7 +9,7 @@
  'use strict';
  const SURFACES=new Set(['home','train','progress','coach','profile','other']);
  const clean=(value,max=240)=>String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
- const finite=value=>{const n=Number(value);return Number.isFinite(n)?n:null;};
+ const finite=value=>{if(value==null||typeof value==='string'&&!value.trim())return null;const n=Number(value);return Number.isFinite(n)?n:null;};
  const integer=value=>{const n=finite(value);return n==null?null:Math.round(n);};
  function normalizeSurface(value){const surface=clean(value,32).toLowerCase();return SURFACES.has(surface)?surface:'other';}
  function normalizeSet(raw={}){

@@ -1,9 +1,11 @@
 (function(){
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const KINDS=new Set(['coach-followthrough','starter-plan','saved-starter','beginner-log','profile-review','offline-plan','progress','training-feedback','log-workout','review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up','mappings','custom-programs']);
+ const KINDS=new Set(['conversation-preferences','current-workout','coach-followthrough','starter-plan','saved-starter','beginner-log','profile-review','offline-plan','progress','training-feedback','log-workout','review','calendar','programming','proposals','check-in','wave','manage','lifecycle','adapt','preferences','guidance','intake','edit-plan','cardio','edit-learning','library','accessory-review','accessory-follow-up','workout-brief','weekly-coaching','primary-follow-up','mappings','custom-programs']);
  function route(a){if(!a||!KINDS.has(a.kind))return;
   window.LoadnoteCoachCompanionUI?.close?.();document.querySelector('#sp-record-dialog[open]')?.close();
+  if(a.kind==='conversation-preferences'){window.LoadnoteCoachConversationPreferencesUI?.open(a);return;}
+  if(a.kind==='current-workout'){showTab('workouts');showSubTab('workouts','wo-log');return;}
   if(a.kind==='coach-followthrough'){window.LoadnoteCoachFollowthroughUI?.open(a);return;}
   if(a.kind==='starter-plan'){window.LoadnoteBeginnerUI?.start?.('help');return;}
   if(a.kind==='saved-starter'){window.LoadnoteBeginnerProgramUI?.openSaved?.({id:a.planId||null});return;}

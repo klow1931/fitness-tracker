@@ -75,14 +75,29 @@ jobs:
           CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=
           COMPILER_INDEX_STORE_ENABLE=NO COMPILATION_CACHE_ENABLE_CACHING=NO
           SWIFT_ENABLE_COMPILE_CACHE=NO SWIFT_USE_INTEGRATED_DRIVER=NO build
+      - name: Choose compatible result publication
+        id: publication
+        uses: actions/github-script@v8
+        env:
+          CODEQL_UPLOAD_REQUESTED: ${{ inputs.upload-results == true }}
+        with:
+          script: |
+            const { planUpload } = require(process.env.GITHUB_WORKSPACE + '/scripts/codeql-upload-policy.js');
+            const plan = await planUpload({
+              eventName: context.eventName,
+              requested: process.env.CODEQL_UPLOAD_REQUESTED === 'true',
+              readConfiguration: async () => (await github.request('GET /repos/{owner}/{repo}/code-scanning/default-setup', context.repo)).data
+            });
+            core.setOutput('upload', plan.upload ? 'true' : 'false');
+            if (plan.warning) core.warning(plan.warning);
+            await core.summary.addHeading('CodeQL publication').addRaw(plan.warning || plan.reason).write();
       - name: Analyze and produce SARIF
         uses: github/codeql-action/analyze@v4
         with:
           category: /language:${{ matrix.language }}
           output: codeql-results
-          # PR analysis is reviewable without conflicting with current default setup.
-          # Main uploads require the one-time switch documented in docs/codeql-setup.md.
-          upload: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.upload-results) }}
+          # Analysis always runs; publication follows the explicit configuration policy.
+          upload: ${{ steps.publication.outputs.upload == 'true' }}
       - name: Preserve analysis evidence
         if: always()
         uses: actions/upload-artifact@v4

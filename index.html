@@ -954,7 +954,7 @@
           <input type="text" id="chat-input" class="input flex-1" maxlength="500" aria-label="Message Coach" placeholder="Build a program, draft a workout, or ask about training…" onkeydown="if(event.key==='Enter') sendChat()" />
           <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
         </div>
-        <p class="text-xs text-slate-500 mt-2">The same conversation as your quick-access Coach. Session-only memory; no automatic training changes. <button class="btn-secondary" onclick="clearCoachConversation()">Clear conversation</button></p>
+        <p class="text-xs text-slate-500 mt-2">The same conversation as your quick-access Coach. Session-only memory; no automatic training changes. <button class="btn-secondary" onclick="clearCoachConversation()">Clear conversation</button> <button type="button" class="btn-secondary" id="coach-reply-preferences" onclick="LoadnoteCoachConversationPreferencesUI.open()">Reply preferences</button></p>
         <div id="coach-quick-links" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Coach suggested questions">
           <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
           <button onclick="askSuggestion('How much protein do I need?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Protein</button>
@@ -1421,7 +1421,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v5.0.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v5.3.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2174,6 +2174,10 @@
   <script src="src/product/smart-coach.js" defer></script>
   <script src="src/product/smart-coach-ui.js" defer></script>
   <script src="src/product/coach-support.js" defer></script>
+  <script src="src/product/coach-support-dialogue.js" defer></script>
+  <script src="src/product/coach-conversation-preferences.js" defer></script>
+  <script src="src/product/coach-live-conversation.js" defer></script>
+  <script src="src/product/coach-conversation-preferences-ui.js" defer></script>
   <script src="src/product/accessory-review.js" defer></script>
   <script src="src/product/accessory-follow-up.js" defer></script>
   <script src="src/product/accessory-follow-up-ui.js" defer></script>

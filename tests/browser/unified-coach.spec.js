@@ -15,7 +15,7 @@ test('one history follows lift context across full and quick views',async({page}
 });
 test('encouragement responds safely without changing training or claiming progress',async({page})=>{
  const before=await page.evaluate(()=>JSON.stringify(data));await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
- await full(page,'I am training alone');await expect(page.locator('#chat-messages .assistant').last()).toContainText("can't spot you");
+ await full(page,'I am training alone');await expect(page.locator('#chat-messages .assistant').last()).toContainText(/can(?:not|'t) spot you/);
  await full(page,'Give me encouragement');await expect(page.locator('#chat-messages .assistant').last()).toContainText('choosing rest');
  await full(page,'Encourage me through Achilles pain');await expect(page.locator('#chat-messages .assistant').last()).toContainText('cannot diagnose');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
