@@ -16,6 +16,10 @@ Custom-program reviews now reconstruct corrected workout history at the requeste
 
 Local AI settings offer **six optional device-only probes**: three source explanations and three tool classifications, using synthetic prompts and no athlete records. Tool tests are skipped without local-conversation permission. The evaluation requires an already-ready model and never downloads weights. Cancellation stops the remaining probes; the current bounded generation may finish before cancellation is reported. Keyword and enum checks measure narrow behavior, not general intelligence, scientific accuracy or safe individualized prescribing. Review failures rather than treating the pass count as a certification.
 
+## Build dependency security
+
+Pin the build-only `rimraf` → `glob` dependency to 14.0.3, which resolves patched minimatch 11.0.3 in the lockfile. Capacitor 7 remains unchanged. This scoped override addresses GHSA-3g3m-2fjr-6pw4 and GHSA-g3hv-75wg-m249 without disabling the dependency audit or downgrading Capacitor. Native synchronization and compilation remain compatibility gates.
+
 ## Release and acceptance
 
 Version **5.0.0**, unsigned native development build **37000**, schema **34** unchanged. No new backend, credential, data migration or automatic training writes. Existing research permissions and session-only conversation memory remain in place. Real-model answer quality and performance, and physical iPhone/Android acceptance, require separate device review; model probes are provided for that process.
