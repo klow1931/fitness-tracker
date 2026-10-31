@@ -16,6 +16,10 @@ Custom-program reviews now reconstruct corrected workout history at the requeste
 
 Local AI settings offer **six optional device-only probes**: three source explanations and three tool classifications, using synthetic prompts and no athlete records. Tool tests are skipped without local-conversation permission. The evaluation requires an already-ready model and never downloads weights. Cancellation stops the remaining probes; the current bounded generation may finish before cancellation is reported. Keyword and enum checks measure narrow behavior, not general intelligence, scientific accuracy or safe individualized prescribing. Review failures rather than treating the pass count as a certification.
 
+## Calendar release regression
+
+Anchor month navigation to the first day before changing months so dates such as October 31 cannot overflow back into the displayed month or skip a shorter month. Fixed-clock browser coverage includes January/December boundaries and February in regular/leap years. Navigation leaves training data unchanged.
+
 ## Build dependency security
 
 Pin the build-only `rimraf` → `glob` dependency to 14.0.3, which resolves patched minimatch 11.0.3 in the lockfile. Capacitor 7 remains unchanged. This scoped override addresses GHSA-3g3m-2fjr-6pw4 and GHSA-g3hv-75wg-m249 without disabling the dependency audit or downgrading Capacitor. Native synchronization and compilation remain compatibility gates.

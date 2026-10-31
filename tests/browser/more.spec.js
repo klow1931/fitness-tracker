@@ -1,5 +1,6 @@
 const {test,expect}=require('playwright/test');
 test.beforeEach(async({page})=>{
+ await page.clock.install({time:new Date('2026-10-31T12:00:00Z')});
  await page.route(/assets\/chart\.umd\.js$/,r=>r.fulfill({contentType:'text/javascript',body:''}));
  await page.addInitScript(()=>{window.Chart=class{destroy(){}update(){}};});
  await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);
@@ -61,4 +62,19 @@ test('Profile groups secondary navigation and Tools keeps disclosures',async({pa
  await expect(page.locator('#privacy-policy')).toContainText('training and decision-support app');
  await expect(page.locator('#privacy-policy')).toContainText('Account sign-in');
  await expect(page.locator('#privacy-policy')).toContainText('Optional online Coach');
+});
+
+for(const [date,previous,current,next] of [
+ ['2026-01-31','December 2025','January 2026','February 2026'],
+ ['2026-03-31','February 2026','March 2026','April 2026'],
+ ['2024-03-31','February 2024','March 2024','April 2024'],
+ ['2026-12-31','November 2026','December 2026','January 2027']
+])test('Calendar month navigation stays adjacent on '+date,async({page})=>{
+ await page.clock.setSystemTime(new Date(date+'T12:00:00Z'));await page.reload();
+ await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await page.evaluate(()=>showTab('calendar'));
+ const label=page.locator('#cal-month-label'),before=await page.evaluate(()=>JSON.stringify(data));
+ await expect(label).toHaveText(current);await page.getByRole('button',{name:'Previous month',exact:true}).click();await expect(label).toHaveText(previous);
+ await page.getByRole('button',{name:'Next month',exact:true}).click();await expect(label).toHaveText(current);
+ await page.getByRole('button',{name:'Next month',exact:true}).click();await expect(label).toHaveText(next);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
 });

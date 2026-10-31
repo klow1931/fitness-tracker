@@ -701,6 +701,7 @@
     let calSelectedDate = null;
 
     function shiftCalendar(deltaMonths) {
+      calCursor.setDate(1);
       calCursor.setMonth(calCursor.getMonth() + deltaMonths);
       renderCalendar();
     }
