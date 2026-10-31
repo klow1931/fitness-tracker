@@ -93,3 +93,11 @@ The underlying four-week, phase, meet-cycle and adoption engines remain separate
 `program-planning-decision.js` owns meet-date arithmetic and default accumulation/strength/peak/taper allocation. It consumes the reviewed lift setup plus frozen objective/starting-prescription evidence and current structured profile context. It does not create workouts or Calendar records. `meet-cycle.js` consumes the resulting explicit configuration, the v2.67 quality gate inspects the generated cycle, and athlete approval remains the save boundary.
 
 Manual phase overrides are preserved as an explicit input and recorded as athlete-customized rather than being attributed to Decisions. New planning snapshots are additive; legacy meet cycles remain valid.
+
+## Coach understanding and conversation (v5.6)
+
+`coach-text-features`, the generated `coach-intent-model`, and `coach-understanding` supply optional statistical routing hints. `scripts/train-coach-intents.js` reproducibly trains from authored fixture phrases; no messages are collected. Margin/coverage thresholds abstain on uncertain language. Conservative interpretation guards retain quantities, negations, commands and exact movement identities. Existing safety and deterministic evidence handlers remain authoritative. `coach-knowledge-links` traverses at most two reviewed edges between existing library summaries, with provenance.
+
+`coach-open-dialogue` reconstructs a bounded reflection workspace from recent user turns only. It composes authored questions and quotes explicit statements, supports listening/recaps/corrections, resets at topic/safety boundaries, and never persists conversation. Confirmed Profile and communication settings remain the supported persistent preferences; approved-change outcome review remains observational.
+
+The two Coach surfaces share one session transcript. Explicit broader online conversation has a separate, initially empty history; minimal version/unit context and only recent successful online turns reach the existing authenticated gateway. Offline messages and deterministic replies never enter this online history. Clear/reload/off remove it. Unavailable service and native beta retain local coaching. This frontend does not provision a hosted model or enable online AI on GitHub Pages.

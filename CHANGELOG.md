@@ -1,3 +1,14 @@
+# v5.6.0 — Coach understanding and broader conversations
+
+- Bundle a reproducibly trained small intent classifier with abstention and conservative rewrites into existing evidence tools.
+- Preserve sources and evidence when answering two explicit informational questions.
+- Connect reviewed coaching concepts with bounded, source-backed explanations.
+- Add session-only Talk it through for everyday reflection, user-authored recaps, corrections and listening.
+- Add explicit broader online conversation through the existing secure gateway, with a separate online history and minimal context. A configured signed-in web deployment is required; public research access does not provide an online model.
+- Keep exact training facts, safety routing, explicit preference approval and reviewed programming authoritative. No schema migration or automatic conversation persistence.
+
+Version **5.6.0**, development build **37600**, schema **34** unchanged. See [release notes](docs/releases-v5.6.md) for verification commands and remaining acceptance limits.
+
 # v5.3.0 — Supportive conversation and workout context
 
 This combines the proposed v5.1 supportive-dialogue, v5.2 communication-preference and v5.3 live-workout milestones. It builds on merged v5.0 and reuses its existing evidence and review engines.

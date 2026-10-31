@@ -52,7 +52,7 @@
  const switchLift=q=>/^(?:(?:and|what about|how about|now)\s+)(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q);
  const correctLift=q=>/^(?:(?:actually|sorry|no),?\s*)?(?:i meant|i mean|make that)\s+(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q)||
   /^(?:actually|sorry|no),?\s+(?:my |the )?(squat|bench|deadlift)(?: press)?(?: instead)?\s*[?.!]*$/i.exec(q);
- const outcomeFollow=q=>/^(?:did that (?:help|work)|did it (?:help|work)|what happened afterwards?|what happened after that)\s*[?.!]*$/i.test(q);
+ const outcomeFollow=q=>/^(?:did that (?:help|work)|did it (?:help|work)|did (?:that|the) (?:adjustment|change) (?:help|work|make a difference)|what happened afterwards?|what happened after that)\s*[?.!]*$/i.test(q);
  const rationaleFollow=q=>/^(?:why was (?:that|it) approved|why was that change made)\s*[?.!]*$/i.test(q);
  const phrasing=(kind,lift)=>{
   if(kind==='rationale')return 'Why did Loadnote change my '+lift+'?';

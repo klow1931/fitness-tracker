@@ -7,8 +7,22 @@
  const Core=()=>window.LoadnoteCoachCompanion;
  const Client=()=>window.LoadnoteCoachClient;
   // One session-only conversation, presented in the full Coach and quick panel.
-  const history=[];
- let refreshTimer=null,queued=false,asking=false;
+  const history=[],onlineHistory=[];
+ let refreshTimer=null,queued=false,asking=false,onlineConversation=false,modeRequest=0;
+ function updateConversationMode(){for(const id of ['coach-online-conversation','cc-online-conversation']){const b=document.getElementById(id);if(b){b.textContent='Online chat: '+(onlineConversation?'on':'off');b.setAttribute('aria-pressed',String(onlineConversation));}}}
+ async function toggleOnlineConversation(){
+  ensure();if(asking)return;const ticket=++modeRequest;
+  if(onlineConversation){onlineConversation=false;onlineHistory.length=0;updateConversationMode();append('Online chat is off. You can keep talking things through with the built-in Coach.');return;}
+  const ai=window.LoadnoteLocalCoachAI?.snapshot();
+  if(ai?.conversationConsent){append('Local AI conversation is selected. Turn it off in Local AI settings before selecting online chat.');return;}
+  if(window.Capacitor?.isNativePlatform?.()){append('Broader online chat is unavailable in this native beta. Offline reflection and training guidance remain available.');return;}
+  const client=Client();let available=false;
+  try{available=!!client&&!!(await client.availability({force:true})).online&&await client.ensureSignedIn();}catch{}
+  if(ticket!==modeRequest||asking)return;
+  if(!available){append('Broader online chat needs a configured Loadnote server and a signed-in web account. It is unavailable here; offline reflection and training guidance remain available.');return;}
+  onlineConversation=true;onlineHistory.length=0;updateConversationMode();
+  append('Online chat is on for this session. Your next message and subsequent conversation turns will be sent to the configured AI provider through the Loadnote server. Earlier offline messages and your training records are excluded from this mode. Exact training questions still use local evidence. You can turn it off or clear the conversation at any time.');
+ }
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function displayUnit(){try{return typeof unitLabel==='function'?unitLabel():'kg';}catch{return 'kg';}}
  function toKg(value){
@@ -109,7 +123,10 @@
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
   const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('.cc-foot').append(researchButton);
   const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('.cc-foot').append(communicationButton);
+  const talkButton=document.createElement('button');talkButton.type='button';talkButton.textContent='Talk it through';talkButton.style.minHeight='44px';talkButton.onclick=()=>serialAsk('Let’s talk it through');panel.querySelector('.cc-foot').append(talkButton);
+  const onlineButton=document.createElement('button');onlineButton.type='button';onlineButton.id='cc-online-conversation';onlineButton.style.minHeight='44px';onlineButton.onclick=toggleOnlineConversation;panel.querySelector('.cc-foot').append(onlineButton);
   document.body.appendChild(panel);
+  updateConversationMode();
   append('I can help draft a program or daily workout offline, explain your training, and control the rest timer. Drafts need your review; chat does not save or complete training.','assistant');
   refresh();
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
@@ -242,10 +259,9 @@
    }catch{modelUnavailable=true;}
   }
   const offline=local?.text||Core()?.offlineReply(live,text);
-  const source=String(local?.source||'');
   // Exact logged and corrected-lift evidence must not be replaced by an online
   // model answer, even when an authenticated session is available.
-  const authoritative=source.startsWith('Shared coaching')||source.startsWith('Recorded exercise history')||source.startsWith('Recorded workout history')||source.startsWith('Current corrected lift evidence')||source.startsWith('Saved training preferences')||source.startsWith('Offline Coach ·');
+  const authoritative=local?.readOnly===true&&!(onlineConversation&&local?.openDialogue);
   const client=authoritative||localMode?null:Client();
   let signedIn=false;try{signedIn=!!client&&await client.ensureSignedIn();}catch{}
   if(!signedIn){
@@ -255,8 +271,8 @@
    const message=append(reply,'assistant',modelUnavailable?'Built-in coaching · local AI unavailable':(local?.source||(localMode?'Built-in coaching · local AI fallback':'Built-in companion')));attachReply(message,local,text);history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
   try{
-   const snapshot=await client.ask({question:text,context:coachContext(),history:history.slice(-8)});
-   const reply=formatOnline(snapshot);append(reply,'assistant',live.liveWorkout?.active?'Live workout context':'Loadnote training context');
+   const snapshot=await client.ask({question:text,context:onlineConversation?{version:'5.6.0',unit:currentUnit()}:coachContext(),history:onlineConversation?onlineHistory.slice(-8):history.slice(-8)});
+   const reply=formatOnline(snapshot);if(onlineConversation){onlineHistory.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000)});if(onlineHistory.length>8)onlineHistory.splice(0,onlineHistory.length-8);}append(reply,'assistant',onlineConversation?'Online conversation':live.liveWorkout?.active?'Live workout context':'Loadnote training context');
    if(typeof renderCoachSnapshot==='function')renderCoachSnapshot(snapshot);
    history.push({role:'user',content:text},{role:'assistant',content:reply});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }catch(error){
@@ -277,7 +293,7 @@
  function init(){ensure();window.addEventListener('scroll',syncLauncherPosition,{passive:true});window.addEventListener('resize',syncLauncherPosition,{passive:true});}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  async function serialAsk(text){if(asking||!String(text??'').trim())return null;asking=true;const buttons=[document.querySelector('#cc-form button'),document.getElementById('chat-send-btn')];for(const b of buttons)if(b)b.disabled=true;try{return await ask(String(text).trim().slice(0,500));}finally{asking=false;for(const b of buttons)if(b)b.disabled=false;}}
- function clearConversation(){if(asking)return;history.length=0;document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about your current training evidence.');}
+ function clearConversation(){if(asking)return;modeRequest++;history.length=0;onlineConversation=false;onlineHistory.length=0;updateConversationMode();document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about training or choose Talk it through.');}
  function appendTranscript(text,role='assistant',meta='Voice Companion'){if(['user','assistant'].includes(role)){history.push({role,content:String(text??'').slice(0,role==='user'?500:2000)});if(history.length>24)history.splice(0,history.length-24);}return append(text,role,meta);}
- window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
+ window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,toggleOnlineConversation,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
 })();

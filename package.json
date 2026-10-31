@@ -1,6 +1,6 @@
 {
   "name": "loadnote",
-  "version": "5.3.0",
+  "version": "5.6.0",
   "private": true,
   "description": "Loadnote \u2014 adaptive strength-training log",
   "scripts": {
@@ -25,7 +25,8 @@
     "check:android:release": "node scripts/android-release-preflight.js",
     "build:android:aab": "node scripts/build-android-aab.js",
     "build:android:aab:signed": "node scripts/build-android-aab.js --signed",
-    "eval:coach": "node scripts/evaluate-coach.js"
+    "eval:coach": "node scripts/evaluate-coach.js",
+    "eval:understanding": "node scripts/evaluate-coach-understanding.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",

@@ -1,0 +1,362 @@
+[
+  {
+    "id": "plateau-1",
+    "question": "My bench improvement has flatlined",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-2",
+    "question": "My deadlift feels stuck lately",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-3",
+    "question": "My squat gains seem frozen",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-4",
+    "question": "Bench numbers seem to be stagnating",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-5",
+    "question": "My squat seems at a standstill",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-6",
+    "question": "My deadlift gains have stalled",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-7",
+    "question": "I have hit a wall with my squat",
+    "expected": "plateau"
+  },
+  {
+    "id": "plateau-8",
+    "question": "My bench is no longer getting stronger",
+    "expected": "plateau"
+  },
+  {
+    "id": "progress-1",
+    "question": "Is my deadlift coming along well",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-2",
+    "question": "How is my bench developing lately",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-3",
+    "question": "Are my squat numbers moving forward",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-4",
+    "question": "How am I doing with bench lately",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-5",
+    "question": "Show how my deadlift is progressing",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-6",
+    "question": "Can we review my squat improvement",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-7",
+    "question": "What direction are my bench numbers heading",
+    "expected": "progress"
+  },
+  {
+    "id": "progress-8",
+    "question": "Has my deadlift been getting better",
+    "expected": "progress"
+  },
+  {
+    "id": "effort-1",
+    "question": "How do I score the difficulty of a set",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-2",
+    "question": "Explain how perceived effort is rated",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-3",
+    "question": "What does the RIR abbreviation mean",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-4",
+    "question": "How can I judge the reps I had left",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-5",
+    "question": "How does the perceived exertion scale work",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-6",
+    "question": "Can you explain how effort ratings work",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-7",
+    "question": "Tell me what rate of perceived exertion means",
+    "expected": "effort"
+  },
+  {
+    "id": "effort-8",
+    "question": "How do I estimate my effort after lifting",
+    "expected": "effort"
+  },
+  {
+    "id": "rest-1",
+    "question": "How much downtime should there be between lifts",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-2",
+    "question": "Why should I wait between sets",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-3",
+    "question": "What is the purpose of taking breaks between sets",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-4",
+    "question": "How long should a break between efforts last",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-5",
+    "question": "Tell me how rest intervals work",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-6",
+    "question": "What determines the break between working sets",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-7",
+    "question": "Is rushing between sets useful",
+    "expected": "rest"
+  },
+  {
+    "id": "rest-8",
+    "question": "How long do I recover before the next effort",
+    "expected": "rest"
+  },
+  {
+    "id": "failure-1",
+    "question": "Does every single set have to be all out",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-2",
+    "question": "Is it necessary to reach failure on every set",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-3",
+    "question": "Must I completely exhaust myself on every rep",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-4",
+    "question": "Should I always grind to my limit",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-5",
+    "question": "Can muscle grow without reaching failure",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-6",
+    "question": "Do all my sets need to be maximal effort",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-7",
+    "question": "Is stopping before failure allowed",
+    "expected": "failure"
+  },
+  {
+    "id": "failure-8",
+    "question": "Is lifting to failure mandatory for growth",
+    "expected": "failure"
+  },
+  {
+    "id": "reflection-1",
+    "question": "Could you help me think through a problem",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-2",
+    "question": "I need a sounding board for a choice",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-3",
+    "question": "Can we chat about something on my mind",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-4",
+    "question": "I would like to reflect on a difficult day",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-5",
+    "question": "I am trying to think through a decision",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-6",
+    "question": "I need to vent after work today",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-7",
+    "question": "I just want someone to listen while I think",
+    "expected": "reflection"
+  },
+  {
+    "id": "reflection-8",
+    "question": "Can we talk through how my day went",
+    "expected": "reflection"
+  },
+  {
+    "id": "habit-1",
+    "question": "How can I make showing up a habit",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-2",
+    "question": "I struggle to keep my routine going",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-3",
+    "question": "How do I follow through more consistently",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-4",
+    "question": "I want to make my training routine sustainable",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-5",
+    "question": "How can I get back into a regular routine",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-6",
+    "question": "I find it hard to stick with training",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-7",
+    "question": "Help me make room for training in my life",
+    "expected": "habit"
+  },
+  {
+    "id": "habit-8",
+    "question": "How do I keep showing up after the first week",
+    "expected": "habit"
+  },
+  {
+    "id": "unknown-1",
+    "question": "Who is the current president",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-2",
+    "question": "What will the weather be tomorrow",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-3",
+    "question": "Which stock should I buy",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-4",
+    "question": "Explain quantum computing",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-5",
+    "question": "Who won the football game",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-6",
+    "question": "Tell me about the history of Rome",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-7",
+    "question": "Write a poem about autumn",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-8",
+    "question": "How do I fix a leaking sink",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-9",
+    "question": "What is the best phone to buy",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-10",
+    "question": "What is the capital of Peru",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-11",
+    "question": "Can you recommend a restaurant",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-12",
+    "question": "Which university should I attend",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-13",
+    "question": "Calculate my taxes",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-14",
+    "question": "How do I build a gaming computer",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-15",
+    "question": "What is the price of Bitcoin",
+    "expected": "unknown"
+  },
+  {
+    "id": "unknown-16",
+    "question": "What does this legal contract mean",
+    "expected": "unknown"
+  }
+]

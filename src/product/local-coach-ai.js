@@ -14,7 +14,7 @@
   if(/^(why|how so|tell me more|explain (that|more)|how.*that)\W*$/i.test(q)){const prior=history.filter(r=>r.role==='user').at(-1)?.content||'';if(sensitive(prior)||CHANGES.test(prior))return false;}
   // Generative text must never replace validated athlete facts or approved actions.
   // Source-backed athlete context stays in deterministic Coach, not generative paraphrase.
-  if(canonical?.supportive||canonical?.liveConversation||canonical?.intent?.topic==='communication-preferences')return false;
+  if(canonical?.supportive||canonical?.knowledgeConnections||canonical?.languageHint||canonical?.liveConversation||canonical?.intent?.topic==='communication-preferences')return false;
   if(canonical?.applicationReview||canonical?.referenceMatches)return false;
   if(canonical?.planning||canonical?.actions?.length&&canonical.actions.some(a=>a.kind==='offline-plan'))return false;
   if(/weekly review|primary-lift follow-up|workout explanation|accessory (review|follow-up)|recorded (exercise|workout) history|saved training preferences|current corrected lift evidence|^Offline Coach ·/i.test(canonical?.source||''))return false;
