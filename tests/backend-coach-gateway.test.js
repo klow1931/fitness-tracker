@@ -63,6 +63,10 @@ const {createServer}=require('../backend/server');
   assert.equal(upstream.messages.at(-1).content,'What should I focus on?');
   assert(!upstream.messages.some(row=>row.content==='browser owns prompt'));
 
+  response=await fetch(base+'/api/coach',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json','X-Loadnote-CSRF':login.csrf},body:JSON.stringify({question:'Help me think through a choice',context:{version:'5.6.0',unit:'kg'},history:[]})});
+  assert.equal(response.status,200);
+  const minimal=await response.json();assert.equal(minimal.coach.recommendation.action,'none');assert.equal(minimal.coach.recommendation.weightKg,null,'A minimal-context conversation cannot expose a provider-invented load');assert.equal(minimal.coach.recommendation.sets,null);
+
   response=await fetch(base+'/api/health');
   const health=await response.json();
   assert.equal(health.coach.configured,true);

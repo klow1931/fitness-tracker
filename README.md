@@ -1,6 +1,8 @@
 # Loadnote
 
-**v5.3.0 · Development build.**
+**v5.6.0 · Development build.**
+
+[Coach understanding and broader conversations](docs/releases-v5.6.md): bundled intent classification, connected training concepts, two-question answers, offline reflection, and an explicit online conversation option through a configured server. No LLM download is required for the built-in improvements.
 
 [Supportive conversation v5.1–v5.3](docs/releases-v5.3.md): session-only follow-ups and corrections, optional communication preferences, fresh workout context, and compatible CodeQL result publication.
 

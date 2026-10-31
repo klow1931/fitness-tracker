@@ -35,9 +35,9 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
   requestBody=route.request().postDataJSON();
   requestHeaders=await route.request().allHeaders();
   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({coach:{
-   summary:'Keep the reviewed plan.',
+   summary:'We can talk about what matters to you.',
    insights:[{type:'info',title:'Current evidence',body:'Your logged work supports staying with the reviewed session.'}],
-   recommendation:{action:'hold',exercise:'Competition Squat',weightKg:100,sets:3,reps:5,targetRPE:8,reason:'The current plan is already reviewed.'},
+   recommendation:{action:'none',exercise:null,weightKg:null,sets:null,reps:null,targetRPE:null,reason:''},
    confidence:'high'
   }})});
  });
@@ -49,10 +49,11 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
  await expect(page.locator('#coach-online-status')).toContainText('Secure online Coach available');
  await expect(page.locator('#coach-account-link')).toBeHidden();
 
+ await page.locator('#coach-online-conversation').click();
+ await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','true');
  await page.locator('#chat-input').fill('How can I build a consistent training habit?');
  await page.locator('#chat-send-btn').click();
- await expect(page.locator('#chat-messages')).toContainText('Keep the reviewed plan.');
- await expect(page.locator('#coach-proactive')).toContainText('220.5 lb');
+ await expect(page.locator('#chat-messages')).toContainText('We can talk about what matters to you.');
  await expect.poll(()=>requestBody!==null).toBe(true);
 
  expect(Object.keys(requestBody).sort()).toEqual(['context','history','question']);
@@ -62,6 +63,8 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
  expect(requestBody.provider).toBeUndefined();
  expect(requestBody.model).toBeUndefined();
  expect(requestBody.context.unit).toBe('lb');
+ expect(Object.keys(requestBody.context).sort()).toEqual(['unit','version']);
+ expect(requestBody.history).toEqual([]);
  expect(requestHeaders['x-loadnote-csrf']).toBe('coach-csrf');
  expect(JSON.stringify(requestBody)).not.toContain('legacy-browser-secret-that-must-not-be-used');
 });
@@ -76,8 +79,10 @@ test('v2.63 online Coach failure falls back to built-in coaching without losing 
  await page.goto('/');
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
- await page.locator('#chat-input').fill('How do I know when to deload?');
+ await page.locator('#coach-online-conversation').click();
+ await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#chat-input').fill('Can we talk through a decision?');
  await page.locator('#chat-send-btn').click();
  await expect(page.locator('#chat-messages')).toContainText('Online Coach unavailable');
- await expect(page.locator('#chat-messages')).toContainText('deload');
+ await expect(page.locator('#chat-messages')).toContainText('decision');
 });
