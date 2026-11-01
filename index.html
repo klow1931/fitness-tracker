@@ -955,7 +955,7 @@
           <button onclick="sendChat()" id="chat-send-btn" class="btn-primary whitespace-nowrap">Send</button>
         </div>
         <p class="text-xs text-slate-500 mt-2">The same conversation as your quick-access Coach. Session-only memory; no automatic training changes. <button class="btn-secondary" onclick="clearCoachConversation()">Clear conversation</button> <button type="button" class="btn-secondary" id="coach-reply-preferences" onclick="LoadnoteCoachConversationPreferencesUI.open()">Reply preferences</button></p>
-        <div class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Conversation options"><button type="button" class="btn-secondary" id="coach-talk-through" onclick="LoadnoteCoachCompanionUI.ask('Let’s talk it through')">Talk it through</button><button type="button" class="btn-secondary" id="coach-online-conversation" aria-pressed="false" onclick="LoadnoteCoachCompanionUI.toggleOnlineConversation()">Online chat: off</button></div>
+        <div class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Conversation options"><button type="button" class="btn-secondary" id="coach-talk-through" onclick="LoadnoteCoachCompanionUI.ask('Let’s talk it through')">Talk it through</button><button type="button" class="btn-secondary" id="coach-memory-open" onclick="LoadnoteCoachMemoryUI.open()" >Things Coach remembers</button><button type="button" class="btn-secondary" id="coach-online-conversation" aria-pressed="false" onclick="LoadnoteCoachCompanionUI.toggleOnlineConversation()">Online chat: off</button></div>
         <p class="text-xs text-slate-500 mt-2">Offline chat uses built-in coaching and reflection. Broader online chat requires a configured server; internet research alone does not enable it.</p>
         <div id="coach-quick-links" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Coach suggested questions">
           <button onclick="askSuggestion('How should I progress my lifts?')" class="text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-full">Progression</button>
@@ -2178,8 +2178,10 @@
   <script src="src/product/coach-support.js" defer></script>
   <script src="src/product/coach-support-dialogue.js" defer></script>
   <script src="src/product/coach-conversation-preferences.js" defer></script>
+  <script src="src/product/coach-memory.js" defer></script>
   <script src="src/product/coach-live-conversation.js" defer></script>
   <script src="src/product/coach-conversation-preferences-ui.js" defer></script>
+  <script src="src/product/coach-memory-ui.js" defer></script>
   <script src="src/product/accessory-review.js" defer></script>
   <script src="src/product/accessory-follow-up.js" defer></script>
   <script src="src/product/accessory-follow-up-ui.js" defer></script>
