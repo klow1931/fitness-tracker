@@ -21,7 +21,12 @@
  const unsupported=/\b(?:medication|therapy|therapist|diagnosis|abuse|eating disorder|self.harm|depress\w*|suicid\w*)\b/i;
  const sensitive=q=>Support?.health(q)||Support?.kind(q)==='urgent-support'||unsupported.test(q);
  const topicOf=q=>/\b(?:my )?(?:work|job|shift)\b/i.test(q)?'work':/\b(?:my )?(?:routine|habit)\b/i.test(q)?'routine':/\b(?:class|course)\b/i.test(q)?'class':/\b(?:my )?(?:day|evening)\b/i.test(q)?'day':'conversation';
- const report=q=>clean(q).replace(/^(?:i (?:just )?(?:want|need) to (?:talk|vent)(?: about)?|can we (?:just )?talk about|could i talk to you about)\s*/i,'').trim();
+ const report=q=>{
+  const raw=clean(q),mixed=listen.test(raw)&&/(?:;|\bbut\b)/i.test(raw);
+  const slice=mixed?raw.split(/;|\bbut\b/i).at(-1).trim():raw;
+  return slice.replace(/^(?:i (?:just )?(?:want|need) to (?:talk|vent)(?: about)?|can we (?:just )?talk about|could i talk to you about)\s*/i,'')
+   .replace(/\b(?:and )?i (?:just )?(?:want|need) to vent[.!?]*$/i,'').trim();
+ };
  const quote=q=>'“'+clean(q).slice(0,180)+'”';
  function act(raw){
   const q=clean(raw);
@@ -29,13 +34,14 @@
   if(reset.test(q))return 'reset';
   if(closing.test(q)||/^(?:thank you|thanks)[!.?]*$/i.test(q))return 'close';
   if(resume.test(q))return 'resume';
+  // Opening a conversation with a request to vent needs a durable frame.
+  if(entry.test(q))return 'start';
   if(listen.test(q))return 'listen';
   // Explicit training/factual questions remain with authoritative handlers;
   // a mixed training report with an explicit vent request is listening, not a claim.
   if(direct.test(q)||training.test(q))return 'direct';
   if(ideas.test(q)||help.test(q))return 'ideas';
   if(correction.test(q))return 'correct';
-  if(entry.test(q))return 'start';
   return 'report';
  }
  const makeFrame=(q)=>({subject:topicOf(q),statements:report(q)&&report(q)!==q||!/\b(?:can we|talk|vent|someone to)\b/i.test(q)?[report(q)].filter(Boolean):[],listening:listen.test(q),turns:1});
