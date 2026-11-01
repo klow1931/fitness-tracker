@@ -13,7 +13,7 @@
  const pastDay=v=>{const d=new Date(v+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);};
  function wants(question){
   const q=clean(question,240).toLowerCase().replace(/[’‘]/g,"'").replace(/[?!.]+$/,'').trim();
-  return /^(?:how did i do last time|what did i do last time|what did i lift last time|what did i log last time|how did (?:my|the) (?:last|previous) (?:set|session) go|show (?:my |the )?(?:last|previous) (?:saved |recorded )?(?:sets|session) for this exercise|how did i do last time (?:on|for|with) (?:this|the current) (?:exercise|lift|movement)|(?:what|how) (?:did i|was i) (?:do|perform) (?:on|for) this exercise last time|compare (?:this|my current) exercise (?:to|with) (?:last time|my last session)|compare (?:my )?current (?:exercise|set) (?:to|with) (?:my )?(?:last|previous) (?:saved )?(?:session|workout))$/.test(q);
+  return /^(?:how did i do last time|what did i do last time|what did i lift last time|what did i log last time|show (?:my |the )?(?:last|previous) (?:saved |recorded )?(?:sets|session) for this exercise|how did i do last time (?:on|for|with) (?:this|the current) (?:exercise|lift|movement)|(?:what|how) (?:did i|was i) (?:do|perform) (?:on|for) this exercise last time|compare (?:this|my current) exercise (?:to|with) (?:last time|my last session)|compare (?:my )?current (?:exercise|set) (?:to|with) (?:my )?(?:last|previous) (?:saved )?(?:session|workout))$/.test(q);
  }
  function selection(state,name){
   const target=key(name);
