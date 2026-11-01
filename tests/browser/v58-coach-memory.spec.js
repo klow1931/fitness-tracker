@@ -76,6 +76,27 @@ test('v5.8 follow-up is offered on a later opening, and a profile switch isolate
  expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(1);
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(afterReload);
 });
+test('v5.8 switching profiles closes an open memory review without touching training',async({page})=>{
+ page.on('dialog',d=>d.accept());
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ await page.locator('#coach-memory-open').click();
+ const d=page.locator('#coach-memory-dialog');
+ await d.locator('#coach-memory-text').fill('Keep training enjoyable');
+ await d.locator('#coach-memory-save').click();
+ await expect(d).toContainText('Keep training enjoyable');
+ await page.evaluate(()=>{
+  LoadnoteAccountSession._applyForTest({authenticated:true,account:{id:'different-account'},authConfigured:true});
+  LoadnoteCoachCompanionUI.refresh();
+ });
+ await expect(d).not.toBeVisible();
+ expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(0);
+ await page.evaluate(()=>{
+  LoadnoteAccountSession._resetForTest('anonymous');
+  LoadnoteCoachCompanionUI.refresh();
+ });
+ expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(1);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
 test('v5.8 account changes erase an in-flight Coach reply instead of displaying another profile\'s chat',async({page})=>{
  await page.evaluate(()=>{
   LoadnoteAccountSession._resetForTest('anonymous');
