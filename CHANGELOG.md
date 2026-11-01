@@ -1,3 +1,10 @@
+# v6.1.0 — Recorded exercise context in the open workout
+
+- Offline Coach can identify the current strength exercise and recall up to four corrected, saved working sets from the latest earlier session.
+- Explicitly separates the last checked **unsaved draft** set, its display weight/reps/RPE, from recorded history and avoids fabricated progress or load changes.
+- Guards against ambiguous catalog aliases, stale workout dates, missing history, unknown RPE and unmarked completion; reuses the existing exercise-history engine.
+- Adds Node plus desktop/mobile Chromium and actual iPhone WebKit acceptance; version 6.1.0 / unsigned build 38100; training schema 34 unchanged. Merged v6.0 remains rollback.
+
 # v6.0.0 — Live set reviews during training
 
 - Coach can read the last checked strength set in an open workout draft and report exactly entered reps/duration, display weight and RPE without changing or saving any workout.
