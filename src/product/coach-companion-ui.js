@@ -16,7 +16,11 @@
   if(!memoryScopeInitialized){memoryScopeInitialized=true;memoryScope=next;return;}
   if(next!==memoryScope){
    // Account transitions cannot leave a previous account's remembered replies visible.
-   memoryScope=next;memoryShown.clear();resetConversation();
+   memoryScope=next;memoryShown.clear();
+   // A review left open from the previous profile must not display its notes
+   // after the authenticated identity changes.
+   document.getElementById('coach-memory-dialog')?.close();
+   resetConversation();
   }
  }
  function showNextVisitMemory(){
