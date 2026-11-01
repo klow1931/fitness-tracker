@@ -1,6 +1,10 @@
 # Loadnote
 
-**v6.0.0 · Development build.**
+**v6.1.0 · Development build.**
+
+[Live saved exercise context v6.1](docs/releases-v6.1.md): offline Coach can show earlier recorded working sets for the exercise in your open workout, clearly separated from checked unsaved draft entries. No automatic load adjustments.
+
+**Earlier v6.0 in-session set review.**
 
 [Live set reviews v6.0](docs/releases-v6.0.md): deterministic Coach help during a workout — checked draft set readouts, missing RPE prompts, explicit saving boundaries and fast return to Train. No automatic programming or AI-generated logs.
 
