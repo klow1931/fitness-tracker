@@ -1,3 +1,12 @@
+# v5.8.0 — Approved Coach continuity
+
+- An optional Things Coach remembers dialog provides explicit review-before-save, edit, remove-one and clear-all controls for non-sensitive preferred name, training reason, routine cue and next-visit follow-up.
+- The Coach can propose a memory review after an explicit request but cannot automatically persist the conversation. Next-visit check-ins are shown only when Coach is opened in a later app session; no background monitoring or notification promise.
+- The versioned memory store is isolated by local-device or authenticated account space, with optimistic concurrency, timestamps, expiry, manual approval provenance and strict export/import validation.
+- Device-local memories are not copied into workouts, training backups, cloud sync, hosted conversation context or inferred personal claims. A switched account cannot read or keep showing another account's memories.
+- Includes deterministic memory/failure/rollback regressions and WebKit browser acceptance. Native physical-device testing is separate.
+- v5.8.0 · build 37800 · training schema 34 unchanged; no training migration. Preserve merged v5.7 as rollback.
+
 # v5.7.0 — Flexible offline Coach conversation
 
 - Add session-only, bounded dialogue-act frames shared by the full Coach and quick Companion.

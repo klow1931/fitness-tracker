@@ -1,6 +1,10 @@
 # Loadnote
 
-**v5.7.0 · Development build.**
+**v5.8.0 · Development build.**
+
+[Approved Coach continuity v5.8](docs/releases-v5.8.md): opt-in, device-local, reviewable notes and next-visit follow-ups with account isolation, edit/delete and separate export. Nothing is learned automatically from chat.
+
+**Earlier v5.7 flexible conversation milestone.**
 
 [Flexible offline Coach conversations](docs/releases-v5.7.md): listening without a forced form, interruptions, corrections, explicit topic resumption and natural endings. Training evidence and approved programming remain authoritative.
 

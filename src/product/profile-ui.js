@@ -41,6 +41,7 @@
     '<section class="card profile-card" id="profile-preferences">'+
      '<p class="eyebrow">PREFERENCES</p><h2>How Loadnote feels</h2>'+
      (window.LoadnoteBeginnerUI?.preferencesHTML()||'')+
+     '<div class="profile-preference-row"><div><b>Things Coach remembers</b><p class="more-hint">Review or remove optional saved notes. Separate from training sync and backups.</p></div><button type="button" class="btn-secondary" id="profile-coach-memory">Manage Coach memories</button></div>'+
      '<div class="profile-preference-row"><div><b>Weight display</b><p class="more-hint">Display units only. Saved loads stay unchanged.</p></div><div class="profile-inline-actions" role="group" aria-label="Weight display"><button type="button" class="btn-secondary" data-profile-unit="kg" aria-label="Kilograms">kg</button><button type="button" class="btn-secondary" data-profile-unit="lb" aria-label="Pounds">lb</button></div></div>'+
      '<div class="profile-preference-row"><div><b>Gym mode</b><p class="more-hint">Larger workout controls.</p></div><button type="button" class="btn-secondary" id="profile-gym-mode" aria-label="Gym mode" aria-pressed="'+Boolean(data.gymMode)+'">'+(data.gymMode?'On':'Off')+'</button></div>'+
      (window.LoadnoteAppearanceUI?.markup()||'')+
@@ -66,6 +67,7 @@
    button.setAttribute('aria-pressed',String(active));
    button.addEventListener('click',()=>{setUnit(button.dataset.profileUnit);render();});
   });
+  host.querySelector('#profile-coach-memory')?.addEventListener('click',()=>window.LoadnoteCoachMemoryUI?.open());
   host.querySelector('#profile-gym-mode')?.addEventListener('click',()=>{toggleGymMode();render();});
   window.LoadnoteAppearanceUI?.bind(host,()=>applyDark());
   host.querySelectorAll('[data-profile-tab]').forEach(button=>button.addEventListener('click',()=>showTab(button.dataset.profileTab)));
