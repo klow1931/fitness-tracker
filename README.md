@@ -1,6 +1,10 @@
 # Loadnote
 
-**v5.6.0 · Development build.**
+**v5.7.0 · Development build.**
+
+[Flexible offline Coach conversations](docs/releases-v5.7.md): listening without a forced form, interruptions, corrections, explicit topic resumption and natural endings. Training evidence and approved programming remain authoritative.
+
+**Earlier v5.6 understanding milestone.**
 
 [Coach understanding and broader conversations](docs/releases-v5.6.md): bundled intent classification, connected training concepts, two-question answers, offline reflection, and an explicit online conversation option through a configured server. No LLM download is required for the built-in improvements.
 
