@@ -40,6 +40,7 @@
   if(/^(?:actually|no|sorry)[, ]+(?:i (?:mean|meant)|my)\b.{0,35}\b(?:bench|squat|deadlift)\b/i.test(q))return 'direct';
   // Explicit training/factual questions remain with authoritative handlers;
   // a mixed training report with an explicit vent request is listening, not a claim.
+  if(/^(?:(?:please )?remember\b|ask me next time\b|(?:open|manage|edit|delete|clear) (?:my |the )?(?:coach )?memories\b)/i.test(q))return 'direct';
   if(direct.test(q)||training.test(q))return 'direct';
   if(ideas.test(q)||help.test(q))return 'ideas';
   if(correction.test(q))return 'correct';
