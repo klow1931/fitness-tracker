@@ -96,6 +96,16 @@
    if(storage.getItem(key)!=null)throw Error('Memory deletion could not be confirmed.');
    return read();
   }
+  function resetUnreadable({confirmed=false}={}){
+   if(confirmed!==true)throw Error('Explicit confirmation is required to erase unreadable memories.');
+   const current=raw();if(current==null)return read();
+   // This recovery path must never delete a valid approved memory set.
+   try{validateVault(JSON.parse(current),scope);throw Error('Memories are valid. Use ordinary Clear all instead.');}
+   catch(e){if(e.message==='Memories are valid. Use ordinary Clear all instead.')throw e;}
+   storage.removeItem(key);
+   if(raw()!=null)throw Error('Memory deletion could not be confirmed.');
+   return read();
+  }
   function exportData(){const state=vault();return JSON.stringify({version:VERSION,scope,revision:state.revision,records:state.records},null,2);}
   function importData(input,{expectedRevision,confirmed=false}={}){
    const parsed=typeof input==='string'?JSON.parse(input):input,source=validateVault(parsed,scope);
@@ -103,7 +113,7 @@
    const current=vault();
    return commit({...current,records:source.records},expectedRevision,confirmed);
   }
-  return {scope,key,read,save,remove,clear,exportData,importData};
+  return {scope,key,read,save,remove,clear,resetUnreadable,exportData,importData};
  }
  function response(question,view){
   const q=String(question??'').replace(/[’‘]/g,"'").trim().slice(0,500);
