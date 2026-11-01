@@ -74,6 +74,7 @@ assert.equal(Flow.answer('Just listen',{history:[assistant]}).intent.act,'listen
 assert.equal(Flow.answer('What does RPE mean?',{history}),null);
 assert.equal(Flow.answer('Actually, I meant bench',{history}),null);
 assert.equal(Flow.answer('Who won the election?',{history}),null);
+assert.equal(Flow.answer('I am frustrated, why is my bench progress declining?',{history}),null,'Embedded personal training questions must keep the evidence engine');
 assert.equal(Flow.answer('How many sets remain?',{history}),null);
 assert.equal(Coach.answer(state,'How is my bench progress?',opts).readOnly,true);
 for(const stop of ['My knee hurts','New topic']){
