@@ -218,7 +218,7 @@
   window.LoadnoteCoachResearchUI?.attach(message,question);
  }
  function quickButtons(context){
-  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Review my last checked set','Any RPE missing?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
+  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','Review my last checked set','Any RPE missing?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }
