@@ -1,6 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const workflow=fs.readFileSync(require.resolve('../.github/workflows/test.yml'),'utf8');
 assert.match(workflow,/fail-fast: false/);
+assert.match(workflow,/push:\s*\n\s+branches: \[main\]/,'Do not run expensive duplicate PR and branch push suites');
+assert.match(workflow,/pull_request:/,'PR checks remain required');
+assert.match(workflow,/tests\/browser\/v57-flexible-conversation\.spec\.js.*tests\/browser\/v56-conversations\.spec\.js/,'WebKit includes v5.7 conversation regression');
 assert.match(workflow,/shard: \[1, 2, 3, 4\]/);
 assert.match(workflow,/run: npx playwright test --shard=\$\{\{ matrix.shard \}\}\/4/);
 assert.match(workflow,/test:\s+if: always\(\)\s+needs: \[smoke, browser, webkit\]/);

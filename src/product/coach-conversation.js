@@ -12,6 +12,7 @@
  const LiveConversation=typeof module==='object'&&module.exports?require('./coach-live-conversation'):globalThis.LoadnoteCoachLiveConversation;
  const Understanding=typeof module==='object'&&module.exports?require('./coach-understanding'):globalThis.LoadnoteCoachUnderstanding;
  const OpenDialogue=typeof module==='object'&&module.exports?require('./coach-open-dialogue'):globalThis.LoadnoteCoachOpenDialogue;
+ const Flow=typeof module==='object'&&module.exports?require('./coach-conversation-flow'):globalThis.LoadnoteCoachFlow;
  const KnowledgeLinks=typeof module==='object'&&module.exports?require('./coach-knowledge-links'):globalThis.LoadnoteCoachKnowledgeLinks;
  const clean=x=>String(x??'').replace(/\s+/g,' ').trim().slice(0,500);
  const liftOf=q=>/\b(bench|press)\b/i.test(q)?'bench':/\b(deadlift|sumo)\b/i.test(q)?'deadlift':/\b(squat)\b/i.test(q)?'squat':null;
@@ -202,6 +203,12 @@
  }
  function answer(state,question,options={}){
   const raw=String(question??'');
+  // A supported conversational act can be handled without training evidence.
+  // Safety and exact training questions retain their authoritative routes.
+  if(!Support.health(raw)&&Support.kind(raw)!=='urgent-support'){
+   const conversational=Flow?.answer(question,{history:options.history||[]});
+   if(conversational)return Communication.present(conversational,options.preferences);
+  }
   const established=answerBase(state,question,options);
   if(established?.evidence?.length||established?.planning||established?.applicationReview||established?.liveConversation||String(established?.source||'').startsWith('Offline Coach ·'))return Communication.present(established,options.preferences);
   // Answer two explicit informational questions independently. Never split a
