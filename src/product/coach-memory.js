@@ -29,7 +29,7 @@
   return value;
  }
  function validateRecord(row){
-  if(!row||typeof row!=='object'||Array.isArray(row)||Object.keys(row).some(k=>!['id','type','text','createdAt','updatedAt','expiresAt','visit'].includes(k)))throw Error('Unsupported memory record.');
+  if(!row||typeof row!=='object'||Array.isArray(row)||Object.keys(row).some(k=>!['id','type','text','createdAt','updatedAt','expiresAt','visit','source','approved'].includes(k)))throw Error('Unsupported memory record.');
   if(typeof row.id!=='string'||!/^m-[a-z0-9-]{8,90}$/.test(row.id))throw Error('Invalid memory ID.');
   if(!own(TYPES,row.type))throw Error('Unsupported memory type.');
   validText(row.text);validDate(row.createdAt);validDate(row.updatedAt);
@@ -37,6 +37,7 @@
   validDate(row.expiresAt,{nullable:true});
   if(row.expiresAt&&row.expiresAt<=row.createdAt)throw Error('Memory expiry must follow creation.');
   if(typeof row.visit!=='string'||!/^[a-z0-9-]{8,90}$/.test(row.visit))throw Error('Invalid visit marker.');
+  if(row.source!=='manual-review'||row.approved!==true)throw Error('Only explicitly reviewed memory records are allowed.');
   return {...row,expiresAt:row.expiresAt??null};
  }
  function validateVault(value,scope){
@@ -77,7 +78,7 @@
    if(id!=null&&index<0)throw Error('This memory no longer exists.');
    if(index===-1&&records.length>=MAX)throw Error('Memory list is full. Remove an entry before adding another.');
    const previous=index>=0?records[index]:null;
-   const record={id:previous?.id||newId(now,records),type,text:value,createdAt:previous?.createdAt||now,updatedAt:now,expiresAt:expire,visit:previous?.visit||visit};
+   const record={id:previous?.id||newId(now,records),type,text:value,createdAt:previous?.createdAt||now,updatedAt:now,expiresAt:expire,visit:previous?.visit||visit,source:'manual-review',approved:true};
    if(index<0)records.push(record);else records[index]=record;
    return commit({...current,records},expectedRevision,confirmed);
   }
