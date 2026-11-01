@@ -64,7 +64,7 @@
    const load=checked.displayWeight,entered=typeof load==='number'&&Number.isFinite(load)&&load>=0&&load<=2000?load+' '+(checked.displayUnit==='lb'?'lb':'kg'):'load not entered';
    const reps=Number.isInteger(checked.reps)&&checked.reps>=0&&checked.reps<=1000?checked.reps+' reps':typeof checked.durationSeconds==='number'&&Number.isFinite(checked.durationSeconds)&&checked.durationSeconds>=0?checked.durationSeconds+' seconds':'reps not entered';
    const effort=typeof checked.rpe==='number'&&Number.isFinite(checked.rpe)&&checked.rpe>=1&&checked.rpe<=10?'RPE '+checked.rpe:'RPE not entered';
-   text+='The last checked set in your *unsaved draft* shows '+reps+' × '+load+' · '+effort+'. ';
+   text+='The last checked set in your *unsaved draft* shows '+reps+' × '+entered+' · '+effort+'. ';
   }
   text+='Saved sets and checked draft entries are different evidence. Missing effort and unmarked completion remain unknown. This does not establish progress or authorize a new target; review changes in Decisions.';
   return result(text,[{exercise:found.name,exerciseId:found.exerciseId,date:previous.date,cutoff:pastDay(asOf),unit:unitName,sets:previous.sets.length,confirmed:previous.confirmed,completionUnmarked:previous.unmarked,excluded:previous.excluded}]);
