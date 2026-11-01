@@ -45,7 +45,15 @@
   const owns=()=>{if(scope()!==initialScope)throw Error('The account or profile changed. Close this review and reopen it in the correct space.');};
   const load=()=>{
    const snapshot=current();
-   if(snapshot.error){list.replaceChildren();form.hidden=true;d.querySelector('#coach-memory-scope').textContent=snapshot.error;revision=null;return;}
+   if(snapshot.error){
+    list.innerHTML='<p>Saved memories are unreadable. You can delete this space’s unreadable memory file after confirming. Other training data and reply preferences will remain untouched.</p><button type="button" class="btn-secondary" id="coach-memory-recover">Erase unreadable memories</button>';
+    list.querySelector('#coach-memory-recover').onclick=()=>{
+     try{owns();if(!confirm('Erase the unreadable Coach memories for this space? This cannot be undone.'))return;
+      store().resetUnreadable({confirmed:true});resetForm();load();tell('Unreadable Coach memories erased. Training history was not changed.');
+     }catch(e){tell(e.message);}
+    };
+    form.hidden=true;d.querySelector('#coach-memory-scope').textContent=snapshot.error;revision=null;return;
+   }
    form.hidden=false;revision=snapshot.revision;
    d.querySelector('#coach-memory-scope').textContent=initialScope==='local-device'?'Local device — not synchronized':'This signed-in account space on this device — not synchronized';
    list.innerHTML=snapshot.records.length?snapshot.records.map(r=>
