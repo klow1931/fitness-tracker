@@ -12,7 +12,7 @@
  const closing=/^(?:that's (?:all|enough)(?: for (?:now|today))?|that is (?:all|enough)|no more questions|i(?:'m| am) (?:done|good) (?:chatting|talking)(?: for now)?|let's (?:stop|leave it there)|thanks[, ]*(?:that's all|that is all|i'm good)|stop (?:talking|chatting))[.!?]*$/i;
  const resume=/^(?:back to (?:that|our (?:earlier |previous )?(?:topic|conversation)|what we were talking about|(?:my |the )?(work|day|routine|class) (?:thing|topic)?)|can we (?:go|get) back to (?:that|what we were talking about|(?:my |the )?(work|day|routine|class)(?: thing)?))[.!?]*$/i;
  const listen=/\b(?:just listen|only listen|listen for (?:a |one )?(?:bit|moment)|no advice|don't (?:give|want|need) advice|i (?:just )?(?:want|need) to vent|just (?:let me|want to) vent|rather (?:just )?vent|hear me out)\b/i;
- const ideas=/\b(?:i(?:'m| am) ready for (?:ideas|suggestions|advice)|can you (?:help me )?(?:think through|suggest some) (?:ideas|options)|i(?:'d| would) like (?:some )?(?:ideas|suggestions)|let's (?:think through|discuss) (?:my |the )?options)\b/i;
+ const ideas=/\b(?:i(?:'m| am) ready for (?:ideas|suggestions|advice)|can you (?:give me|offer) (?:some )?(?:ideas|suggestions)|can you (?:help me )?(?:think through|suggest some) (?:ideas|options)|i(?:'d| would) like (?:some )?(?:ideas|suggestions)|let's (?:think through|discuss) (?:my |the )?options)\b/i;
  const correction=/^(?:no[, ]+|actually[, ]+|i meant\b|that's not what i meant\b|that isn't what i meant\b|not (?:the |my )?\w+[,;:. -]+|sorry[, ]+i meant\b)/i;
  const help=/^(?:what do you think i should do|what might help|where do i start|what should i do about that)[.!?]*$/i;
  const entry=/\b(?:can we (?:just )?talk(?: about\b| for a bit)|i (?:just )?(?:want|need) to talk(?: about\b)?|could i talk to you about|i need someone to (?:listen|talk to)|i (?:just )?(?:want|need) to vent|i had a (?:rough|stressful|difficult) day|work was (?:rough|stressful|difficult))\b/i;
@@ -35,8 +35,9 @@
   if(closing.test(q)||/^(?:thank you|thanks)[!.?]*$/i.test(q))return 'close';
   if(resume.test(q))return 'resume';
   // Opening a conversation with a request to vent needs a durable frame.
-  if(entry.test(q))return 'start';
+  if(entry.test(q)&&(!training.test(q)||listen.test(q)))return 'start';
   if(listen.test(q))return 'listen';
+  if(/^(?:actually|no|sorry)[, ]+(?:i (?:mean|meant)|my)\b.{0,35}\b(?:bench|squat|deadlift)\b/i.test(q))return 'direct';
   // Explicit training/factual questions remain with authoritative handlers;
   // a mixed training report with an explicit vent request is listening, not a claim.
   if(direct.test(q)||training.test(q))return 'direct';
@@ -44,7 +45,10 @@
   if(correction.test(q))return 'correct';
   return 'report';
  }
- const makeFrame=(q)=>({subject:topicOf(q),statements:report(q)&&report(q)!==q||!/\b(?:can we|talk|vent|someone to)\b/i.test(q)?[report(q)].filter(Boolean):[],listening:listen.test(q),turns:1});
+ const makeFrame=q=>{
+  const introductory=/^(?:can we|could i|i (?:just )?(?:want|need) to talk)\b/i.test(q),content=introductory&&/\?$/.test(q)?'':report(q);
+  return {subject:topicOf(q),statements:content?[content]:[],listening:listen.test(q),turns:1};
+ };
  function fold(history=[]){
   const recent=(Array.isArray(history)?history:[]).slice(-24),frames=[];
   let active=-1,interrupted=false;
@@ -87,6 +91,7 @@
   if(type==='blocked'||type==='direct'||type==='reset')return null;
   const ctx=fold(history),frame=ctx.frames[ctx.active]||null;
   if(type==='close'){
+   if(/^(?:thanks|thank you)[!.?]*$/i.test(q)&&!frame)return null;
    // A clear closing must not trigger another intake question.
    return {act:'close',frame:null,question:q};
   }
