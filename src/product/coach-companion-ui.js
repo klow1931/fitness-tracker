@@ -291,7 +291,7 @@
   let modelUnavailable=false;
   // An optional on-device model must never prevent a deterministic reply.
   // Keep local conversation consent selected during a model failure.
-  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&local?.source!=='Shared coaching · approved memories'&&!local?.liveDraftReview&&ai.eligible?.(text,local,history)!==false){
+  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&local?.source!=='Shared coaching · approved memories'&&!local?.liveDraftReview&&!local?.liveSavedHistoryBridge&&ai.eligible?.(text,local,history)!==false){
    try{
     const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
     const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
