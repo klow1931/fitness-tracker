@@ -48,7 +48,7 @@ r=reply('How did I do last time? My shoulder hurts');assert.match(r.text,/cannot
 assert.equal(JSON.stringify(state),original,'Saved history is never mutated by live comparison');
 const fs=require('node:fs'),path=require('node:path');
 const config=fs.readFileSync(path.join(__dirname,'../playwright.config.js'),'utf8');
-const webkitMatch=config.match(/name:'mobile-webkit',testMatch:\\[([^\\]]+)\\]/);
+const webkitMatch=config.match(/name:'mobile-webkit',testMatch:\[([^\]]+)\]/);
 assert(webkitMatch&&webkitMatch[1].includes("'v61-live-history.spec.js'"),'The iPhone WebKit project must include the v6.1 history acceptance spec');
 const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/test.yml'),'utf8');
 assert(workflow.includes('npx playwright test tests/browser/v61-live-history.spec.js'),'CI must actually request the v6.1 WebKit spec');
