@@ -1,0 +1,61 @@
+const {test,expect}=require('playwright/test');
+const {fixture}=require('../fixtures/program-review');
+test.beforeEach(async({page})=>{
+ await page.clock.install({time:new Date('2026-11-01T14:00:00.000Z')});
+ await page.route('**/api/auth/session',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:false,authConfigured:false})}));
+ await page.goto('/');
+ await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+ await page.evaluate(state=>{data=normalizeDataShape({...data,...state});LoadnoteAccountSession._resetForTest('anonymous');showTab('coach');showSubTab('coach','co-chat');},fixture());
+});
+async function ask(page,text){
+ await page.locator('#chat-input').fill(text);
+ await page.locator('#chat-send-btn').click();
+ await expect(page.locator('#chat-send-btn')).toBeEnabled();
+ return page.locator('#chat-messages .assistant').last();
+}
+test('v5.9 natural approved-goal recall remains read-only and review-driven',async({page})=>{
+ page.on('dialog',d=>d.accept());
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ let reply=await ask(page,'Remind me why I train');
+ await expect(reply).toContainText('do not have an approved');
+ await expect(reply.getByRole('button',{name:'Things Coach remembers'})).toBeVisible();
+ await reply.getByRole('button',{name:'Things Coach remembers'}).click();
+ const d=page.locator('#coach-memory-dialog');
+ await expect(d).toBeVisible();
+ await d.locator('#coach-memory-text').fill('Train consistently and enjoy lifting');
+ await d.locator('#coach-memory-save').click();
+ await expect(d.locator('#coach-memory-status')).toContainText('Memory saved');
+ await d.locator('[data-review-close]').click();
+ reply=await ask(page,'Remind me why I train');
+ await expect(reply).toContainText('Train consistently and enjoy lifting');
+ await expect(reply).toContainText('not verified training performance');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ await page.evaluate(()=>{LoadnoteAccountSession._applyForTest({authenticated:true,account:{id:'second-athlete'},authConfigured:true});LoadnoteCoachCompanionUI.refresh();});
+ reply=await ask(page,'Remind me why I train');
+ await expect(reply).not.toContainText('Train consistently and enjoy lifting');
+ await expect(reply).toContainText('do not have an approved');
+ await page.evaluate(()=>{LoadnoteAccountSession._resetForTest('anonymous');LoadnoteCoachCompanionUI.refresh();});
+ reply=await ask(page,'Remind me why I train');
+ await expect(reply).toContainText('Train consistently and enjoy lifting');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
+test('v5.9 pick-up request does not invent saved chat and only uses reviewed follow-up',async({page})=>{
+ page.on('dialog',d=>d.accept());
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ let reply=await ask(page,'Where did we leave off?');
+ await expect(reply).toContainText('do not save previous conversations');
+ await page.locator('#coach-memory-open').click();
+ const d=page.locator('#coach-memory-dialog');
+ await d.locator('#coach-memory-type').selectOption('follow-up');
+ await d.locator('#coach-memory-text').fill('Ask if I tried keeping my Sunday routine');
+ await d.locator('#coach-memory-save').click();
+ await d.locator('[data-review-close]').click();
+ reply=await ask(page,'Where did we leave off?');
+ await expect(reply).toContainText('do not keep your previous chat transcript');
+ await expect(reply).toContainText('Ask if I tried keeping my Sunday routine');
+ await expect(reply).toContainText('not proof that you completed anything');
+ await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
+ reply=await ask(page,'Where did we leave off?');
+ await expect(reply).toContainText('Ask if I tried keeping my Sunday routine');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
