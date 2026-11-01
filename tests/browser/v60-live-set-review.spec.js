@@ -8,8 +8,13 @@ test.beforeEach(async({page})=>{
   setUnit('lb');
   showTab('workouts');showSubTab('workouts','wo-log');
   document.getElementById('wo-date').value=today();
-  fillWorkoutForm([{name:'Competition Bench',type:'strength',sets:[{weight:225,reps:5,rpe:''},{weight:225,reps:5,rpe:''}]}],'',false);
+  // Program/session form helpers expect internal kg; 100 kg is a placeholder.
+  // The following input interaction sets the athlete's real display weight in lb.
+  fillWorkoutForm([{name:'Competition Bench',type:'strength',sets:[{weight:100,reps:5,rpe:''},{weight:100,reps:5,rpe:''}]}],'',false);
  });
+ // A real logger edit, not a fabricated kg-as-lb fixture.
+ for(const input of await page.locator('#exercise-rows .set-weight').all())await input.fill('225');
+ await expect(page.locator('#exercise-rows .set-weight')).toHaveValues(['225','225']);
 });
 async function ask(page,question){
  await page.evaluate(()=>{LoadnoteCoachCompanionUI.close();showTab('coach');showSubTab('coach','co-chat');});
