@@ -55,6 +55,10 @@ values.set(a.key,'malformed json');
 assert.match(a.read().error,/could not be read/);
 assert.throws(()=>a.save({type:'reason',text:'Still training'},{expectedRevision:null,confirmed:true}));
 assert.equal(values.get(a.key),'malformed json','Corrupt memories must not be overwritten');
+assert.throws(()=>a.resetUnreadable(),/Explicit confirmation/);
+assert.equal(a.resetUnreadable({confirmed:true}).records.length,0);
+assert.equal(values.has(a.key),false,'Confirmed recovery must actually erase the corrupted value');
+
 const broken=M.createStore({getItem(){throw Error('denied');},setItem(){throw Error('quota');},removeItem(){throw Error('denied');}},'local-device',{visit:'visit-quota-0001',clock:()=>now});
 assert(broken.read().error);assert.throws(()=>broken.save({type:'reason',text:'Training consistently'},{expectedRevision:0,confirmed:true}),/denied/);
 const noWrite=new Map,quiet=M.createStore({getItem:k=>noWrite.get(k)??null,setItem:(k,v)=>noWrite.set(k,v),removeItem:k=>noWrite.delete(k)},'local-device',{visit:'visit-nowrite01',clock:()=>now});
