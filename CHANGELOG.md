@@ -1,3 +1,13 @@
+# v5.7.0 — Flexible offline Coach conversation
+
+- Add session-only, bounded dialogue-act frames shared by the full Coach and quick Companion.
+- Recognize requests to listen, mixed venting reports, corrections, explicit returns to interrupted topics, requests for ideas and natural closure without forcing a sequential intake.
+- Preserve the authority of actual logged sets, exercise IDs, training data, canonical educational routes, approvals, and all existing safety boundaries.
+- Separate user statements from verified facts. Assistant/model text cannot become memory or evidence; old topics do not resume unless requested, and ambiguity produces a clarification.
+- Include mobile browser tests and deterministic multi-turn regressions; PWA caches the new module for offline use.
+- v5.7.0 / unsigned native build 37700 / schema 34 unchanged; no migration, new downloaded model or cloud dependency.
+- Complete CI and physical device acceptance before release; keep v5.6.0 as rollback.
+
 # v5.6.0 — Coach understanding and broader conversations
 
 - Bundle a reproducibly trained small intent classifier with abstention and conservative rewrites into existing evidence tools.
