@@ -67,6 +67,9 @@
   const liveReply=LiveConversation?.answer(question,{live,asOf});if(liveReply)return liveReply;
   // User-requested readout of *checked draft* entries; no inferred saved training.
   const setReview=(typeof module==='object'&&module.exports?require('./coach-set-review'):globalThis.LoadnoteCoachSetReview)?.answer(question,{live,asOf});if(setReview)return setReview;
+  // Tie an unnamed 'last time' question to one exact current logger exercise.
+  // Existing saved-history identity and correction rules remain authoritative.
+  const liveHistory=(typeof module==='object'&&module.exports?require('./coach-live-history'):globalThis.LoadnoteCoachLiveHistory)?.answer(state,question,{live,asOf,unit});if(liveHistory)return liveHistory;
   const followthrough=(typeof module==='object'&&module.exports?require('./coach-followthrough'):globalThis.LoadnoteCoachFollowthrough)?.answer(state,understood,{asOf,now,unit});if(followthrough)return followthrough;
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
   // Two named competition lifts can be reviewed independently; never compare
