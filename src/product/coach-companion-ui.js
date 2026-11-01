@@ -9,6 +9,24 @@
   // One session-only conversation, presented in the full Coach and quick panel.
   const history=[],onlineHistory=[];
  let refreshTimer=null,queued=false,asking=false,onlineConversation=false,modeRequest=0;
+ let memoryScope=null;
+ const memoryShown=new Set();
+ function ensureMemoryScope(){
+  const next=window.LoadnoteCoachMemoryUI?.scope?.()??null;
+  if(memoryScope===null){memoryScope=next;return;}
+  if(next!==memoryScope){
+   // Account transitions cannot leave a previous account's remembered replies visible.
+   memoryScope=next;memoryShown.clear();clearConversation();
+  }
+ }
+ function showNextVisitMemory(){
+  ensureMemoryScope();
+  const items=window.LoadnoteCoachMemoryUI?.nextVisit?.()||[];
+  const first=items.find(r=>!memoryShown.has(r.id));
+  if(!first)return;
+  memoryShown.add(first.id);
+  append('You asked me to follow up next time: '+first.text+'. You can edit or remove this in Things Coach remembers.','assistant','Approved note on this device');
+ }
  function updateConversationMode(){for(const id of ['coach-online-conversation','cc-online-conversation']){const b=document.getElementById(id);if(b){b.textContent='Online chat: '+(onlineConversation?'on':'off');b.setAttribute('aria-pressed',String(onlineConversation));}}}
  async function toggleOnlineConversation(){
   ensure();if(asking)return;const ticket=++modeRequest;
@@ -122,6 +140,7 @@
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
   const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('.cc-foot').append(researchButton);
+  const memoryButton=document.createElement('button');memoryButton.type='button';memoryButton.id='cc-memory';memoryButton.textContent='Things Coach remembers';memoryButton.style.minHeight='44px';memoryButton.onclick=()=>{close();window.LoadnoteCoachMemoryUI?.open();};panel.querySelector('.cc-foot').append(memoryButton);
   const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('.cc-foot').append(communicationButton);
   const talkButton=document.createElement('button');talkButton.type='button';talkButton.textContent='Talk it through';talkButton.style.minHeight='44px';talkButton.onclick=()=>serialAsk('Let’s talk it through');panel.querySelector('.cc-foot').append(talkButton);
   const onlineButton=document.createElement('button');onlineButton.type='button';onlineButton.id='cc-online-conversation';onlineButton.style.minHeight='44px';onlineButton.onclick=toggleOnlineConversation;panel.querySelector('.cc-foot').append(onlineButton);
@@ -187,7 +206,7 @@
    launcher.style.bottom=(window.innerHeight-controls.top+12)+'px';
   }
  }
- function refresh(){
+ function refresh(){ensureMemoryScope();
   const context=companionContext(),launcher=document.getElementById('coach-companion-launcher'),host=document.getElementById('cc-context'),status=document.getElementById('cc-status'),quick=document.getElementById('cc-quick');
   if(!launcher||!host)return;
   launcher.hidden=['coach','profile'].includes(context.surface);
@@ -231,10 +250,10 @@
   return text;
  }
  async function ask(text){
-  ensure();append(text,'user');
+  ensure();ensureMemoryScope();append(text,'user');
   const live=companionContext(),safety=window.LoadnoteCoachSupport?.kind(text),command=['health','urgent-support'].includes(safety)?null:Core()?.classifyCommand(text);
   if(command){const reply=execute(command);append(reply,'assistant','Local companion action');refresh();return reply;}
-  let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence,preferences:window.LoadnoteCoachConversationPreferencesUI?.current()});}catch{}
+  let local=null;try{local=window.LoadnoteCoachConversation?.answer(data,text,{asOf:today(),unit:currentUnit(),history,live,intelligence:live.intelligence,preferences:window.LoadnoteCoachConversationPreferencesUI?.current(),memory:window.LoadnoteCoachMemoryUI?.current()});}catch{}
   const ai=window.LoadnoteLocalCoachAI,localMode=ai?.snapshot().conversationConsent===true;
   let toolReply=false;
   if(!local&&localMode&&ai?.snapshot().status==='ready'&&!safety){
@@ -243,7 +262,7 @@
   let modelUnavailable=false;
   // An optional on-device model must never prevent a deterministic reply.
   // Keep local conversation consent selected during a model failure.
-  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&ai.eligible?.(text,local,history)!==false){
+  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&local?.source!=='Shared coaching · approved memories'&&ai.eligible?.(text,local,history)!==false){
    try{
     const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
     const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
@@ -287,7 +306,7 @@
    history.push({role:'user',content:text.slice(0,500)},{role:'assistant',content:reply.slice(0,2000),...(local?.planning?{planning:local.planning}:{})});if(history.length>24)history.splice(0,history.length-24);refresh();return reply;
   }
  }
- function open(){ensure();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
+ function open(){ensure();showNextVisitMemory();const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');const modal=document.querySelector('#sp-record-dialog[open]');if(modal){modal.append(panel);if(backdrop)modal.append(backdrop);}panel.hidden=false;if(backdrop)backdrop.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();clearInterval(refreshTimer);refreshTimer=setInterval(refresh,1000);if(window.matchMedia?.('(min-width: 641px)').matches)setTimeout(()=>document.getElementById('cc-input')?.focus({preventScroll:true}),0);}
  function close(){const panel=document.getElementById('coach-companion-panel'),launcher=document.getElementById('coach-companion-launcher'),backdrop=document.getElementById('coach-companion-backdrop');if(panel){panel.hidden=true;document.body.append(panel);}if(backdrop){backdrop.hidden=true;document.body.append(backdrop);}if(launcher)launcher.setAttribute('aria-expanded','false');clearInterval(refreshTimer);refreshTimer=null;}
  function toggle(){const panel=document.getElementById('coach-companion-panel');if(!panel||panel.hidden)open();else close();}
  function init(){ensure();window.addEventListener('scroll',syncLauncherPosition,{passive:true});window.addEventListener('resize',syncLauncherPosition,{passive:true});}
