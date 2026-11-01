@@ -77,13 +77,17 @@
       if(!steady)return;
       event.preventDefault();
       lastHandledTouch=Date.now();
-      route(a);
+      // Wait until the current touch/click sequence finishes before opening a
+      // modal. WebKit can otherwise send a compatibility click through to its
+      // newly mounted Close button and immediately dismiss the review.
+      setTimeout(()=>route(a),0);
     },{passive:false});
     b.addEventListener('click',event=>{
       // Click remains native for keyboard, accessibility and mouse activation.
       // Some engines may emit a compatibility click despite preventDefault.
       if(event.detail!==0&&Date.now()-lastHandledTouch<1000)return;
-      route(a);
+      // Defer only the navigation, preserving native click and keyboard input.
+      setTimeout(()=>route(a),0);
     });
     group.append(b);
    }
