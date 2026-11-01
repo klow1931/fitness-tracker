@@ -9,6 +9,7 @@
  const Dialogue=typeof module==='object'&&module.exports?require('./coach-dialogue'):globalThis.LoadnoteCoachDialogue;
  const SupportDialogue=typeof module==='object'&&module.exports?require('./coach-support-dialogue'):globalThis.LoadnoteCoachSupportDialogue;
  const Communication=typeof module==='object'&&module.exports?require('./coach-conversation-preferences'):globalThis.LoadnoteCoachConversationPreferences;
+ const Memory=typeof module==='object'&&module.exports?require('./coach-memory'):globalThis.LoadnoteCoachMemory;
  const LiveConversation=typeof module==='object'&&module.exports?require('./coach-live-conversation'):globalThis.LoadnoteCoachLiveConversation;
  const Understanding=typeof module==='object'&&module.exports?require('./coach-understanding'):globalThis.LoadnoteCoachUnderstanding;
  const OpenDialogue=typeof module==='object'&&module.exports?require('./coach-open-dialogue'):globalThis.LoadnoteCoachOpenDialogue;
@@ -41,7 +42,7 @@
   const evidenceFollow=explicitTopic==='evidence'&&/\brecent (lift )?evidence\b/i.test(q)&&!explicitLift;
   return {question:q,lift:explicitLift||(follow||evidenceFollow?prior?.lift:null)||null,topic:muscleProgression?'hypertrophy':sportProgression?prior.topic:explicitTopic||(follow?prior?.topic:null)||null,muscles:muscles.length?muscles:(follow||muscleProgression?prior?.muscles||[]:[]),referenceQuestion:follow||sportProgression||muscleProgression?prior?.referenceQuestion||prior?.question||q:q,follow};
  }
- function answerCanonical(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now,preferences=null}={}){
+ function answerCanonical(state,question,{asOf,unit='kg',history=[],live=null,intelligence=null,now,preferences=null,memory=null}={}){
   // Safety boundaries precede movement clarification, educational routing and AI.
   // Inspect the original question: truncation must not drop a reported symptom.
   const safetyKind=Support?.kind(String(question||''));
@@ -52,7 +53,13 @@
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
   const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
+  // Memory never saves through chat: these are review/inspect actions only.
+  // Existing explicit reply-length/encouragement settings remain canonical.
+  const preferenceRequest=/\b(?:repl(?:y|ies)|responses?|tone|encouragement|brief|detailed|shorter)\b/i.test(String(question||''));
+  const memoryReply=Memory?.response(question,memory);
+  if(memoryReply&&!preferenceRequest)return memoryReply;
   const communication=Communication?.answer(question,{preferences});if(communication)return communication;
+  if(memoryReply)return memoryReply;
   // An explicitly opened reflection workspace can discuss everyday topics.
   // Direct factual/training requests exit it inside the dialogue module.
   const reflection=OpenDialogue?.answer(question,{history});if(reflection)return reflection;
