@@ -1,6 +1,10 @@
 # Loadnote
 
-**v5.9.0 · Development build.**
+**v6.0.0 · Development build.**
+
+[Live set reviews v6.0](docs/releases-v6.0.md): deterministic Coach help during a workout — checked draft set readouts, missing RPE prompts, explicit saving boundaries and fast return to Train. No automatic programming or AI-generated logs.
+
+**Earlier v5.9 contextual memory milestone.**
 
 [Contextual approved-memory recall v5.9](docs/releases-v5.9.md): more natural replies about previously approved notes, explicit limitations about chat history, and no automatic memory or training changes.
 
