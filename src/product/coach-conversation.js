@@ -65,6 +65,8 @@
   const reflection=OpenDialogue?.answer(question,{history});if(reflection)return reflection;
   const supportive=SupportDialogue?.answer(question,{history,live});if(supportive)return supportive;
   const liveReply=LiveConversation?.answer(question,{live,asOf});if(liveReply)return liveReply;
+  // User-requested readout of *checked draft* entries; no inferred saved training.
+  const setReview=(typeof module==='object'&&module.exports?require('./coach-set-review'):globalThis.LoadnoteCoachSetReview)?.answer(question,{live,asOf});if(setReview)return setReview;
   const followthrough=(typeof module==='object'&&module.exports?require('./coach-followthrough'):globalThis.LoadnoteCoachFollowthrough)?.answer(state,understood,{asOf,now,unit});if(followthrough)return followthrough;
   const planning=(typeof module==='object'&&module.exports?require('./offline-planner'):globalThis.LoadnoteOfflinePlanner)?.answer(state,understood,{history});if(planning)return planning;
   // Two named competition lifts can be reviewed independently; never compare
