@@ -51,5 +51,6 @@ const config=fs.readFileSync(path.join(__dirname,'../playwright.config.js'),'utf
 const webkitMatch=config.match(/name:'mobile-webkit',testMatch:\[([^\]]+)\]/);
 assert(webkitMatch&&webkitMatch[1].includes("'v61-live-history.spec.js'"),'The iPhone WebKit project must include the v6.1 history acceptance spec');
 const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/test.yml'),'utf8');
-assert(workflow.includes('npx playwright test tests/browser/v61-live-history.spec.js'),'CI must actually request the v6.1 WebKit spec');
+const workflowLines=workflow.split('\\n');
+assert(workflowLines.some(line=>line.includes('npx playwright test ')&&line.includes('tests/browser/v61-live-history.spec.js')),'CI must execute the v6.1 Coach acceptance spec on WebKit');
 console.log('v6.1 live last-session context: exact identity, corrected history, cutoff, kg/lb, aliases, no writes and safety passed');
