@@ -1,3 +1,10 @@
+# v6.0.0 — Live set reviews during training
+
+- Coach can read the last checked strength set in an open workout draft and report exactly entered reps/duration, display weight and RPE without changing or saving any workout.
+- A dedicated query exposes missing RPE on checked draft strength sets without inventing effort. Quick Coach actions return users to the workout logger.
+- Explicitly distinguishes draft checkboxes from saved training history; guarded date, missing values, kg/lb units, safety boundaries and approved-program authority.
+- Adds unit and Chromium/WebKit acceptance checks. Version 6.0.0 · unsigned build 38000 · training schema 34 unchanged, no migration; merged v5.9 remains the rollback.
+
 # v5.9.0 — Natural approved-memory Coach continuity
 
 - Coach can answer direct, ordinary-language questions about explicitly approved training reasons, routine cues, preferred names and follow-up notes.
