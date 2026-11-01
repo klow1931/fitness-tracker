@@ -76,6 +76,29 @@ test('v5.8 follow-up is offered on a later opening, and a profile switch isolate
  expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(1);
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(afterReload);
 });
+test('v5.8 account changes erase an in-flight Coach reply instead of displaying another profile\'s chat',async({page})=>{
+ await page.evaluate(()=>{
+  LoadnoteAccountSession._resetForTest('anonymous');
+  LoadnoteCoachCompanionUI.refresh();
+  window.LoadnoteLocalCoachAI={
+   snapshot:()=>({conversationConsent:true,status:'ready'}),
+   eligible:()=>true,
+   respond:()=>new Promise(resolve=>{window.resolveCoachReply=resolve;})
+  };
+  window.pendingCoachReply=LoadnoteCoachCompanionUI.ask('I had a rough day');
+ });
+ await page.waitForFunction(()=>typeof window.resolveCoachReply==='function');
+ await expect(page.locator('#chat-messages')).toContainText('I had a rough day');
+ await page.evaluate(()=>{
+  LoadnoteAccountSession._applyForTest({authenticated:true,account:{id:'other-user'},authConfigured:true});
+  LoadnoteCoachCompanionUI.refresh();
+ });
+ await expect(page.locator('#chat-messages')).not.toContainText('rough day');
+ await page.evaluate(()=>window.resolveCoachReply('Stale previous account reply'));
+ expect(await page.evaluate(()=>window.pendingCoachReply)).toBeNull();
+ await expect(page.locator('#chat-messages')).not.toContainText('Stale previous account reply');
+ expect(await page.evaluate(()=>LoadnoteCoachCompanionUI.history().length)).toBe(0);
+});
 test('v5.8 manual memory backup imports only in matching scope and clear-all is independent of training',async({page})=>{
  page.on('dialog',d=>d.accept());
  const before=await page.evaluate(()=>JSON.stringify(data));
