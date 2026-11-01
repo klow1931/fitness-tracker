@@ -48,47 +48,16 @@
  function attach(host,reply,ask=null){if(!host||!reply?.actions?.length&&!reply?.followUps?.length)return;const group=document.createElement('div');group.className='smart-coach-actions';
   for(const a of (reply.actions||[]).filter(a=>KINDS.has(a.kind)).slice(0,4)){
     const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=a.label;
-    // Open the review only after a completed touch gesture. WebKit may
-    // otherwise synthesize a click *after* pointerup, landing through the
-    // newly opened dialog on a checkbox or Close button.
-    // Cancelling the touchend default suppresses that compatibility click.
-    let touchStart=null,lastHandledTouch=-Infinity;
+    // Use one native click as the sole activation for mouse, touch and
+    // keyboard. Opening a modal from touchend can lead WebKit to deliver its
+    // subsequent compatibility click into the new dialog (or close it).
+    // touch-action keeps taps responsive; the browser suppresses clicks on
+    // cancelled/scrolling touch gestures.
     b.style.touchAction='manipulation';
-    // Safari can scroll the overflowing chat when mouse-down focuses a
-    // button, moving it away from the held pointer before release.
-    // Mouse click still activates normally; keyboard click (detail === 0)
-    // retains native focus and accessibility behavior.
+    // Avoid scrolling the overflowing chat just because a mouse click focuses
+    // its action button. Keyboard focus remains native and accessible.
     b.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
-    b.addEventListener('touchstart',event=>{
-      const touch=event.touches?.[0];
-      touchStart=touch?{id:touch.identifier,x:touch.clientX,y:touch.clientY}:null;
-    },{passive:true});
-    b.addEventListener('touchcancel',()=>{touchStart=null;});
-    b.addEventListener('touchmove',event=>{
-      if(!touchStart)return;
-      const touch=[...event.changedTouches].find(t=>t.identifier===touchStart.id);
-      if(touch&&Math.hypot(touch.clientX-touchStart.x,touch.clientY-touchStart.y)>=16)touchStart=null;
-    },{passive:true});
-    b.addEventListener('touchend',event=>{
-      if(!touchStart)return;
-      const touch=[...event.changedTouches].find(t=>t.identifier===touchStart.id);
-      const steady=touch&&Math.hypot(touch.clientX-touchStart.x,touch.clientY-touchStart.y)<16;
-      touchStart=null;
-      if(!steady)return;
-      event.preventDefault();
-      lastHandledTouch=Date.now();
-      // Wait until the current touch/click sequence finishes before opening a
-      // modal. WebKit can otherwise send a compatibility click through to its
-      // newly mounted Close button and immediately dismiss the review.
-      setTimeout(()=>route(a),0);
-    },{passive:false});
-    b.addEventListener('click',event=>{
-      // Click remains native for keyboard, accessibility and mouse activation.
-      // Some engines may emit a compatibility click despite preventDefault.
-      if(event.detail!==0&&Date.now()-lastHandledTouch<1000)return;
-      // Defer only the navigation, preserving native click and keyboard input.
-      setTimeout(()=>route(a),0);
-    });
+    b.addEventListener('click',()=>route(a));
     group.append(b);
    }
   if(ask)for(const q of (reply.followUps||[]).slice(0,3)){const b=document.createElement('button');b.type='button';b.className='coach-follow-up';b.textContent=q;b.addEventListener('click',()=>ask(q));group.append(b);}host.append(group);
