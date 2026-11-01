@@ -110,9 +110,12 @@
   const remembering=/^(?:(?:please )?remember (?:that |my )?|ask me next time (?:whether |if |about )?)(.{2,160})[.!]?$/i;
   const open=/^(?:open|manage|edit|delete|clear) (?:my |the )?(?:coach )?memories[.!?]*$/i;
   if(!ask.test(q)&&!open.test(q)&&!remembering.test(q))return null;
-  const a=[{kind:'coach-memory',label:remembering.test(q)?'Review memory before saving':'Things Coach remembers'}];
+  const match=q.match(remembering);
+  const followup=/^ask me next time\b/i.test(q);
+  const proposal=match?{type:followup?'follow-up':'reason',text:match[1].replace(/[.!?]+$/,'').trim()}:null;
+  const a=[{kind:'coach-memory',label:proposal?'Review memory before saving':'Things Coach remembers',...(proposal?{proposal}:{})}];
   if(!view||view.error)return {text:'I cannot verify saved memories on this device right now. Open Things Coach remembers to check storage. No chat was saved.',readOnly:true,evidence:[],source:'Shared coaching · approved memories',actions:a};
-  if(remembering.test(q))return {text:'I can remember a short, non-sensitive detail only after you review and save it. Open Things Coach remembers, choose a type and confirm the exact wording. Nothing from this chat was stored.',readOnly:true,evidence:[],source:'Shared coaching · approved memories',actions:a};
+  if(proposal)return {text:'I can remember a short, non-sensitive detail only after you review and save it. Open Things Coach remembers, choose a type and confirm the exact wording. Nothing from this chat was stored.',readOnly:true,evidence:[],source:'Shared coaching · approved memories',actions:a};
   const text=view.records.length?'You approved '+view.records.length+' memory '+(view.records.length===1?'entry':'entries')+' on this device: '+view.records.map(r=>TYPES[r.type]+': '+r.text).join(' · ')+'. These are saved notes, not verified training performance.':'There are no approved Coach memories saved in this space. Conversation messages are not stored as memories.';
   return {text,readOnly:true,evidence:[],source:'Shared coaching · approved memories',actions:a};
  }
