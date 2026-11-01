@@ -1,3 +1,10 @@
+# v5.9.0 — Natural approved-memory Coach continuity
+
+- Coach can answer direct, ordinary-language questions about explicitly approved training reasons, routine cues, preferred names and follow-up notes.
+- “Where did we leave off?” presents only reviewed notes and clearly states that previous chat transcripts are not preserved. Notes never prove workout completion.
+- All recall remains read-only, account-scoped, expiry-aware and separate from training, backups, cloud sync and online model context. Missing or unverifiable notes fail closed.
+- Includes offline browser and deterministic regression tests. Version 5.9.0 · unsigned build 37900 · training schema 34 and Coach note schema 1 unchanged; preserve merged v5.8 as rollback.
+
 # v5.8.0 — Approved Coach continuity
 
 - An optional Things Coach remembers dialog provides explicit review-before-save, edit, remove-one and clear-all controls for non-sensitive preferred name, training reason, routine cue and next-visit follow-up.

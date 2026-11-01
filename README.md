@@ -1,6 +1,10 @@
 # Loadnote
 
-**v5.8.0 · Development build.**
+**v5.9.0 · Development build.**
+
+[Contextual approved-memory recall v5.9](docs/releases-v5.9.md): more natural replies about previously approved notes, explicit limitations about chat history, and no automatic memory or training changes.
+
+**Earlier v5.8 approved memory milestone.**
 
 [Approved Coach continuity v5.8](docs/releases-v5.8.md): opt-in, device-local, reviewable notes and next-visit follow-ups with account isolation, edit/delete and separate export. Nothing is learned automatically from chat.
 

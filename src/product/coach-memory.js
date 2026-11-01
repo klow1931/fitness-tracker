@@ -6,6 +6,7 @@
  else root.LoadnoteCoachMemory=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
+ const Recall=typeof module==='object'&&module.exports?require('./coach-memory-recall'):globalThis.LoadnoteCoachMemoryRecall;
  const VERSION=1,PREFIX='loadnote.coach-memory.v1.',MAX=12,MAX_TEXT=160;
  const TYPES=Object.freeze({'preferred-name':'Preferred name','reason':'Reason or non-sensitive goal','routine-cue':'Routine cue','follow-up':'Ask next visit'});
  const sensitive=/\b(?:pain|injur\w*|diagnos\w*|suicid\w*|self.harm|therapy|therapist|depress\w*|medication|pregnan\w*|religion|politic\w*|party affiliation|sexual|bank|password|credit card|social security|ssn|medical)\b/i;
@@ -120,6 +121,8 @@
   const ask=/^(?:what (?:do you |have you )?(?:remember|saved) about me|show (?:my |the )?(?:coach )?memories|what will you ask me next time|what do you remember\??)[?!.]*$/i;
   const remembering=/^(?:(?:please )?remember (?:that |my )?|ask me next time (?:whether |if |about )?)(.{2,160})[.!]?$/i;
   const open=/^(?:open|manage|edit|delete|clear) (?:my |the )?(?:coach )?memories[.!?]*$/i;
+  const naturalRecall=Recall?.answer(q,view);
+  if(naturalRecall)return naturalRecall;
   if(!ask.test(q)&&!open.test(q)&&!remembering.test(q))return null;
   const match=q.match(remembering);
   const followup=/^ask me next time\b/i.test(q);
