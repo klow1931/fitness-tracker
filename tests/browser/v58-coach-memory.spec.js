@@ -57,9 +57,14 @@ test('v5.8 follow-up is offered on a later opening, and a profile switch isolate
  await expect(d.locator('#coach-memory-status')).toContainText('Memory saved');
  await d.locator('[data-review-close]').click();
  expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.nextVisit().length)).toBe(0);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
  await page.reload();
  await expect(page.locator('#coach-companion-launcher')).toBeVisible();
  await page.evaluate(()=>LoadnoteAccountSession._resetForTest('anonymous'));
+ // The fixture assigned in beforeEach is transient; a real page reload restores
+ // saved browser state instead. Profile isolation must be compared within the
+ // same post-reload session, not against an unsaved pre-reload fixture.
+ const afterReload=await page.evaluate(()=>JSON.stringify(data));
  await page.locator('#coach-companion-launcher').click();
  await expect(page.locator('#cc-messages')).toContainText('Did I try putting my phone away while cooking?');
  await page.evaluate(()=>LoadnoteAccountSession._applyForTest({authenticated:true,account:{id:'other-user'},authConfigured:true}));
@@ -69,7 +74,7 @@ test('v5.8 follow-up is offered on a later opening, and a profile switch isolate
  await page.evaluate(()=>LoadnoteAccountSession._resetForTest('anonymous'));
  await page.evaluate(()=>LoadnoteCoachCompanionUI.refresh());
  expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(1);
- expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(afterReload);
 });
 test('v5.8 manual memory backup imports only in matching scope and clear-all is independent of training',async({page})=>{
  page.on('dialog',d=>d.accept());
