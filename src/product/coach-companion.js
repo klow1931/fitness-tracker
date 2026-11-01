@@ -36,6 +36,21 @@
    set:raw.set?normalizeSet(raw.set):null
   };
  }
+ function normalizeCheckedSet(raw){
+  if(!raw||typeof raw!=='object')return null;
+  const index=integer(raw.index),count=integer(raw.count);
+  const weight=finite(raw.displayWeight),reps=finite(raw.reps),duration=finite(raw.durationSeconds),effort=finite(raw.rpe);
+  return {
+   exerciseName:clean(raw.exerciseName,160)||null,
+   index:index!=null&&index>=0&&index<=500?index:null,
+   count:count!=null&&count>=0&&count<=500?count:null,
+   displayWeight:weight!=null&&weight>=0&&weight<=2000?weight:null,
+   displayUnit:raw.displayUnit==='lb'?'lb':'kg',
+   reps:reps!=null&&Number.isInteger(reps)&&reps>=0&&reps<=1000?reps:null,
+   durationSeconds:duration!=null&&duration>=0&&duration<=86400?duration:null,
+   rpe:effort!=null&&effort>=1&&effort<=10?effort:null
+  };
+ }
  function normalizeWorkout(raw){
   if(!raw||typeof raw!=='object')return null;
   const exercises=Array.isArray(raw.exercises)?raw.exercises.slice(0,12).map(ex=>({
@@ -49,6 +64,9 @@
    name:clean(raw.name,180)||null,
    position:clean(raw.position,180)||null,
    currentExercise:raw.currentExercise?normalizeExercise(raw.currentExercise):null,
+   lastCheckedSet:normalizeCheckedSet(raw.lastCheckedSet),
+   checkedStrengthSets:Math.max(0,Math.min(500,integer(raw.checkedStrengthSets)||0)),
+   missingRpeSets:Math.max(0,Math.min(500,integer(raw.missingRpeSets)||0)),
    exercises
   };
  }
