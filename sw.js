@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v5.8.0';
+const CACHE = 'loadnote-v5.9.0';
 const ASSETS = [
   './assets/vendor/local-coach-runtime.mjs',
   './assets/vendor/local-coach-manifest.json',
@@ -172,6 +172,7 @@ const ASSETS = [
   './src/product/coach-support.js',
   './src/product/coach-support-dialogue.js',
   './src/product/coach-conversation-preferences.js',
+  './src/product/coach-memory-recall.js',
   './src/product/coach-memory.js',
   './src/product/coach-live-conversation.js',
   './src/product/coach-conversation-preferences-ui.js',
