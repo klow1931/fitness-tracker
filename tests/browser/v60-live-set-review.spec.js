@@ -14,7 +14,8 @@ test.beforeEach(async({page})=>{
  });
  // A real logger edit, not a fabricated kg-as-lb fixture.
  for(const input of await page.locator('#exercise-rows .set-weight').all())await input.fill('225');
- await expect(page.locator('#exercise-rows .set-weight')).toHaveValues(['225','225']);
+ await expect(page.locator('#exercise-rows .set-weight').first()).toHaveValue('225');
+ await expect(page.locator('#exercise-rows .set-weight').nth(1)).toHaveValue('225');
 });
 async function ask(page,question){
  await page.evaluate(()=>{LoadnoteCoachCompanionUI.close();showTab('coach');showSubTab('coach','co-chat');});
