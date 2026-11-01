@@ -86,6 +86,25 @@
   const exerciseSummaries=rows.slice(0,12).map(row=>{
    const sets=setRows(row);return {name:row.querySelector('.ex-name')?.value.trim()||'Exercise',completedSets:sets.filter(setComplete).length,totalSets:sets.length};
   });
+  // Checked boxes are unsaved draft indicators, not performance confirmation.
+  // Read entered display units only; storage conversion belongs to the logger.
+  const entered=(set,selector)=>{
+   const value=set.querySelector(selector)?.value;
+   if(value==null||value.trim()==='')return null;
+   const n=Number(value);return Number.isFinite(n)?n:null;
+  };
+  const checkedSets=[];
+  for(const row of rows){
+   const name=row.querySelector('.ex-name')?.value.trim()||'Exercise',sets=setRows(row);
+   for(let i=0;i<sets.length;i++){
+    if(!setComplete(sets[i]))continue;
+    checkedSets.push({
+     exerciseName:name,index:i,count:sets.length,displayWeight:entered(sets[i],'.set-weight'),
+     displayUnit:displayUnit(),reps:entered(sets[i],'.set-reps'),
+     durationSeconds:entered(sets[i],'.set-duration'),rpe:entered(sets[i],'.set-rpe')
+    });
+   }
+  }
   const meta=cockpit&&!cockpit.hidden?cockpit.querySelector('.training-cockpit-title'):null;
   return {
    active:true,
@@ -96,7 +115,10 @@
     name:currentRow.querySelector('.ex-name')?.value.trim()||'Exercise',index:currentIndex,count:rows.length,
     set:currentSet?{index:setIndex,count,reps:repsInput?.value===''?null:Number(repsInput?.value),durationSeconds:durationInput?.value===''?null:Number(durationInput?.value),weightKg:displayWeight==null?null:toKg(displayWeight),displayWeight,displayUnit:displayUnit(),rpe:rpeInput?.value===''?null:Number(rpeInput?.value),completed:setComplete(currentSet),target,previous}:null
    }:null,
-   exercises:exerciseSummaries
+   exercises:exerciseSummaries,
+   lastCheckedSet:checkedSets.length?checkedSets[checkedSets.length-1]:null,
+   checkedStrengthSets:checkedSets.length,
+   missingRpeSets:checkedSets.filter(set=>set.rpe==null||set.rpe<1||set.rpe>10).length
   };
  }
  function companionContext(){
@@ -196,7 +218,7 @@
   window.LoadnoteCoachResearchUI?.attach(message,question);
  }
  function quickButtons(context){
-  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Why this set?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
+  const items=context.sportWorkout?['Why this drill?','What is the stop protocol?','Weekly coaching review']:context.liveWorkout?.active?['What’s next?','Review my last checked set','Any RPE missing?','How did I do last time?']:['Build a program','Create a workout for today','How did this week go?'];
   if(context.restTimer?.active)items.unshift('How much rest is left?');
   return items;
  }
@@ -269,7 +291,7 @@
   let modelUnavailable=false;
   // An optional on-device model must never prevent a deterministic reply.
   // Keep local conversation consent selected during a model failure.
-  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&local?.source!=='Shared coaching · approved memories'&&ai.eligible?.(text,local,history)!==false){
+  if(localMode&&!toolReply&&!local?.planning&&!local?.applicationReview&&local?.source!=='Shared coaching · approved memories'&&!local?.liveDraftReview&&ai.eligible?.(text,local,history)!==false){
    try{
     const resolved=window.LoadnoteCoachingLibrary?.query(text,history)||text,cards=window.LoadnoteCoachingLibrary?.retrieve(resolved)||[];
     const context=window.LoadnoteLocalCoachContext?.build(data,{asOf:today(),live,unit:currentUnit()});
