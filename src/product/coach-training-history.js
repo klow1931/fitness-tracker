@@ -57,7 +57,7 @@
  }
  const done=set=>set&&!set.skipped&&!set.warmup&&set.type!=='warmup'&&set.done!==false&&set.completed!==false;
  const formatWeight=(kg,unit)=>kg==null||kg===''||!Number.isFinite(Number(kg))||Number(kg)<0?'load not recorded':(Math.round(Number(kg)*(unit==='lb'?2.2046226218:1)*10)/10)+' '+unit;
- function inspect(state,selection,{asOf,unit='kg'}={}){
+ function inspect(state,selection,{asOf,unit='kg',withSetEvidence=false}={}){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(asOf||''))throw Error('An explicit analysis date is required.');
   const rows=Readiness.workoutsAt(state,asOf,null,true).workouts,entries=(state.exerciseCatalog||[]);
   const nameOwners=entries.filter(e=>e.id!=null&&(selection.aliases||[]).some(alias=>normalize(e.name)===normalize(alias)||Array.isArray(e.aliases)&&e.aliases.some(a=>normalize(a)===normalize(alias))));
@@ -74,7 +74,10 @@
     const weight=formatWeight(set.weight,unit),rpe=Number(set.rpe),effort=set.rpe!=null&&set.rpe!==''&&Number.isFinite(rpe)&&rpe>=1&&rpe<=10?rpe:null;
     if(reps===null&&weight==='load not recorded'){excluded++;continue;}
     if(set.done===true||set.completed===true)confirmed++;else unmarked++;
-    sets.push({reps,weight,rpe:effort});
+    // Extra numerical evidence is opt-in for exact-rep comparisons only.
+    // Ordinary history consumers retain their established public shape.
+    const weightKg=set.weight!==null&&set.weight!==''&&Number.isFinite(Number(set.weight))&&Number(set.weight)>=0?Number(set.weight):null;
+    sets.push(withSetEvidence?{reps,weight,rpe:effort,weightKg,explicitlyCompleted:set.done===true||set.completed===true}:{reps,weight,rpe:effort});
    }
    records.push({date:w.date,sets,confirmed,unmarked,excluded,sessionId:String(w.id)});
   }

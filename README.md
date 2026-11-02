@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.1.0 · Development build.**
+**v6.2.0 · Development build.**
+
+[Exact-rep checked-set comparisons v6.2](docs/releases-v6.2.md): built-in offline Coach compares a checked, unsaved set with an explicitly completed saved set of the same exercise and rep count, preserving entered weight units, recorded RPE and approval boundaries.
 
 [Live saved exercise context v6.1](docs/releases-v6.1.md): offline Coach can show earlier recorded working sets for the exercise in your open workout, clearly separated from checked unsaved draft entries. No automatic load adjustments.
 

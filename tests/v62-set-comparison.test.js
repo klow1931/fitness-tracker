@@ -1,0 +1,54 @@
+'use strict';
+const assert=require('node:assert/strict'),History=require('../src/product/coach-training-history'),Bridge=require('../src/product/coach-live-history'),Coach=require('../src/product/coach-conversation'),Companion=require('../src/product/coach-companion');
+const asOf='2026-11-01';
+const data={exerciseCatalog:[{id:'bench',name:'Competition Bench',aliases:['Comp Bench']},{id:'row',name:'Row'}],exerciseRoles:[],workoutRevisions:[],workouts:[
+ {id:'past',date:'2026-10-10',exercises:[{exerciseId:'bench',name:'Competition Bench',sets:[{weight:90,reps:5,rpe:8,done:true}]}]},
+ {id:'last',date:'2026-10-24',exercises:[{exerciseId:'bench',name:'Competition Bench',sets:[{weight:100,reps:5,rpe:8,done:true},{weight:110,reps:5,rpe:9,done:false},{weight:105,reps:5,rpe:null},{weight:120,reps:3,rpe:8.5,done:true},{weight:40,reps:5,warmup:true,done:true}]}]},
+ {id:'same-day',date:asOf,exercises:[{exerciseId:'bench',name:'Competition Bench',sets:[{weight:999,reps:5,rpe:10,done:true}]}]}
+]};
+const snapshot=JSON.stringify(data);
+const workout={active:true,date:asOf,currentExercise:{name:'Row',index:1,count:2,set:{index:0,count:2}},exercises:[{name:'Competition Bench',completedSets:1,totalSets:2},{name:'Row',completedSets:0,totalSets:2}],checkedStrengthSets:1,missingRpeSets:0,lastCheckedSet:{exerciseName:'Competition Bench',index:0,count:2,displayWeight:225,displayUnit:'lb',reps:5,rpe:8.5}};
+const live=Companion.buildContext({surface:'train',workout});
+const ask=(q,st=data,ctx=live,opts={})=>Coach.answer(st,q,{live:ctx,asOf,unit:'lb',...opts});
+for(const q of ['Compare my checked set to last time','How does my checked set compare to last time?','Compare my last checked set with my previous saved workout'])assert.equal(Bridge.comparisonIntent(q),true,q);
+for(const q of ['Review my last checked set','How did I do last time?','How did my last set go?','Compare my squat and bench progress','Increase my next set'])assert.equal(Bridge.comparisonIntent(q),false,q);
+let r=ask('Compare my checked set to last time');
+assert.equal(r.readOnly,true);assert.equal(r.liveSavedHistoryBridge,true);
+assert.match(r.text,/Competition Bench/);assert.match(r.text,/2026-10-24/);
+assert.match(r.text,/220.5 lb/);assert.match(r.text,/225 lb/);
+assert.match(r.text,/\+4\.5 lb/);
+assert.match(r.text,/reported RPE 8/);assert.match(r.text,/reported RPE 8.5/);
+assert.match(r.text,/unsaved draft/);assert.match(r.text,/no training target was changed/);
+assert.doesNotMatch(r.text,/999|110 kg|120 kg/);
+assert.equal(r.evidence[0].savedExplicitlyCompleted,true);
+assert(r.actions.some(x=>x.kind==='current-workout'));
+const selected=Bridge.selection(data,'Competition Bench'),base=History.inspect(data,selected,{asOf:'2026-10-31',unit:'lb'});
+assert.deepEqual(Object.keys(base.sessions[0].sets[0]).sort(),['reps','rpe','weight'].sort(),'existing history output remains stable');
+const full=History.inspect(data,selected,{asOf:'2026-10-31',unit:'lb',withSetEvidence:true});
+assert.equal(full.sessions[0].sets[0].weightKg,100);assert.equal(full.sessions[0].sets[0].explicitlyCompleted,true);
+const unknown=Companion.buildContext({surface:'train',workout:{...workout,lastCheckedSet:{...workout.lastCheckedSet,rpe:null}}});
+r=ask('Compare my checked set to last time',data,unknown);assert.match(r.text,/RPE not entered/);assert.doesNotMatch(r.text,/RPE 0/);
+const less=Companion.buildContext({surface:'train',workout:{...workout,lastCheckedSet:{...workout.lastCheckedSet,displayWeight:200}}});
+assert.match(ask('Compare my checked set to last time',data,less).text,/-20.5 lb/);
+const inKg=Companion.buildContext({surface:'train',workout:{...workout,lastCheckedSet:{...workout.lastCheckedSet,displayWeight:102.5,displayUnit:'kg'}}});
+assert.match(ask('Compare my checked set to last time',data,inKg).text,/\+2\.5 kg/);
+const noRpeInSaved={...data,workouts:data.workouts.map(w=>w.id==='last'?{...w,exercises:[{...w.exercises[0],sets:[{weight:100,reps:5,rpe:null,done:true}]}]}:w)};
+assert.match(ask('Compare my checked set to last time',noRpeInSaved).text,/RPE unknown/);
+const onlyUnmarked={...data,workouts:data.workouts.map(w=>w.id==='last'?{...w,exercises:[{...w.exercises[0],sets:[{weight:100,reps:5,rpe:8}]}]}:w)};
+assert.match(ask('Compare my checked set to last time',onlyUnmarked).text,/no explicitly completed working set/);
+const unmatched=Companion.buildContext({surface:'train',workout:{...workout,lastCheckedSet:{...workout.lastCheckedSet,reps:12}}});
+assert.match(ask('Compare my checked set to last time',data,unmatched).text,/no explicitly completed working set/);
+const absent=Companion.buildContext({surface:'train',workout:{...workout,lastCheckedSet:null}});
+assert.match(ask('Compare my checked set to last time',data,absent).text,/No checked strength set/);
+const stale=ask('Compare my checked set to last time',data,live,{asOf:'2026-11-02'});assert.match(stale.text,/date does not match/);
+const clash={...data,exerciseCatalog:[...data.exerciseCatalog,{id:'other',name:'Comp Bench'}]};
+assert.match(ask('Compare my checked set to last time',clash).text,/aliases overlap|More than one saved exercise/);
+assert.match(ask('Compare my checked set to last time. My shoulder hurts').text,/cannot diagnose/);
+assert.equal(JSON.stringify(data),snapshot,'Comparison is read-only, including corrected workout history');
+const fs=require('node:fs'),path=require('node:path');
+const config=fs.readFileSync(path.join(__dirname,'../playwright.config.js'),'utf8');
+const m=config.match(/name:'mobile-webkit',testMatch:\[([^\]]+)\]/);
+assert(m&&m[1].includes("'v62-set-comparison.spec.js'"),'WebKit must match v6.2 acceptance');
+const yml=fs.readFileSync(path.join(__dirname,'../.github/workflows/test.yml'),'utf8');
+assert(yml.split('\n').some(line=>line.includes('npx playwright test ')&&line.includes('tests/browser/v62-set-comparison.spec.js')),'Workflow must execute v6.2 in WebKit');
+console.log('v6.2 exact-rep saved-vs-draft comparison, bounded kg/lb, completion, RPE and read-only safeguards passed');

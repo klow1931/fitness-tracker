@@ -1,3 +1,11 @@
+# v6.2.0 — Explainable checked-set comparison against saved history
+
+- Built-in offline Coach answers “Compare my checked set to last time” using one exact registered exercise and the latest corrected saved session before the open draft date.
+- Requires the same rep count and an explicitly completed saved working set. Displays both entered and saved load/RPE, with a signed unit-safe load difference only when both loads are valid. Missing RPE and unconfirmed saved sets remain unknown.
+- The returned response is read-only, separates checked unsaved sets from saved training, preserves injury/safety precedence, and cannot automatically update targets or mutate workout data.
+- Adds Node, desktop/mobile Chromium, and actual iPhone WebKit acceptance plus a WebKit inclusion guard. Reuses the existing saved-history engine without changing its default output shape.
+- Version 6.2.0, unsigned native build 38200, data schema 34 unchanged, PWA cache refreshed. Keep merged v6.1 for rollback; device/offline acceptance remains a release gate.
+
 # v6.1.0 — Recorded exercise context in the open workout
 
 - Offline Coach can identify the current strength exercise and recall up to four corrected, saved working sets from the latest earlier session.
