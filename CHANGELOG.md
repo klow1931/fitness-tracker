@@ -1,3 +1,12 @@
+# v6.4.0 — Last confirmed same-rep performance in Train
+
+- Adds a separate **Last confirmed** readout to the active strength-set cockpit when its entered reps match an explicitly completed working set from one of the last three corrected saved sessions before the draft date.
+- Reuses Coach's strict catalog identity, correction-aware history, kg/lb conversion and warm-up/skipped/incomplete filters. Same-day and future workouts, ambiguous aliases and unmarked completion never qualify as confirmed performance.
+- Shows the saved date, rep count, load and RPE (or explicitly unknown RPE); no claim of progress or readiness and no automatic load, RPE, completion, history or program changes.
+- Existing ordinal **Last** context and optional **Use last set** input shortcut remain unchanged for compatibility. **Last confirmed** is independently labeled and read-only.
+- Adds Node and real browser acceptance on Chromium and iPhone WebKit, with saved-data no-write and corrected-history checks.
+- Version 6.4.0, unsigned native build 38400, schema 34 unchanged, refreshed PWA cache. Merged v6.3.0 remains on main as the rollback release.
+
 # v6.3.0 — One-tap Coach comparison during a workout
 
 - After checking a strength set in Train, an inline **Compare checked set** action opens the built-in deterministic Coach with the existing v6.2 saved-versus-unsaved exact-rep comparison.

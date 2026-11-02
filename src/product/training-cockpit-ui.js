@@ -53,6 +53,16 @@
   if(!ctx?.set)return null;
   return H()?.targetSet(plan(),marker(ctx.row),ctx.setIndex)||null;
  }
+ function confirmed(ctx){
+  if(!ctx?.set||ctx.row?.dataset.type==='cardio')return null;
+  const mark=marker(ctx.row),draftReps=ctx.set.querySelector('.set-reps')?.value;
+  if(!mark?.name||mark.ambiguous||draftReps==null||draftReps.trim()==='')return null;
+  const reps=Number(draftReps),day=document.getElementById('wo-date')?.value;
+  if(!Number.isInteger(reps)||reps<=0)return null;
+  try{return window.LoadnoteCockpitVerifiedHistory?.lastConfirmed?.(data,{
+   name:mark.name,date:day,reps,unit:currentUnit(),trackBy:mark.trackBy
+  })||null;}catch{return null;}
+ }
  function previous(ctx){
   if(!ctx?.row||ctx.row.dataset.type==='cardio')return null;
   const mark=marker(ctx.row),day=document.getElementById('wo-date')?.value;
@@ -227,7 +237,7 @@
   const host=ensure();if(!host)return;
   let hasDraft=false;try{hasDraft=loggerHasContent();}catch{}
   if(!visible()||!hasDraft){host.hidden=true;return;}
-  const ctx=current(),meta=workoutMeta(),counts=completionCounts(ctx),value=target(ctx),prior=previous(ctx),steps=H()?.loadSteps(currentUnit())||{small:2.5,large:5};
+  const ctx=current(),meta=workoutMeta(),counts=completionCounts(ctx),value=target(ctx),prior=previous(ctx),verified=confirmed(ctx),steps=H()?.loadSteps(currentUnit())||{small:2.5,large:5};
   const checkedStrengthSets=ctx.rows.reduce((total,row)=>total+(row.dataset.type==='cardio'?0:setRows(row).filter(setDone).length),0);
   const compareAvailable=!!window.LoadnoteCoachCompanionUI?.ask&&H()?.canReviewCheckedSet({
    checkedStrengthSets,workoutDate:document.getElementById('wo-date')?.value,asOf:today()
@@ -239,6 +249,7 @@
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
   const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
+  const verifiedLine=verified?'<div class="training-cockpit-verified"><span>Last confirmed · '+esc(verified.date)+' · '+verified.reps+' reps</span><b>'+esc(verified.weight)+' · '+(verified.rpe==null?'RPE unknown':'RPE '+verified.rpe)+'</b></div>':'';
   const repeat=ctx.set?H()?.repeatCompletedSet(setRows(ctx.row).map(s=>({
     weight:s.querySelector('.set-weight')?.value??'',
     reps:s.querySelector('.set-reps')?.value??'',
@@ -260,7 +271,7 @@
   const why=meta.scheduled?'<button type="button" class="training-cockpit-link" data-cockpit-why>Why?</button>':'';
   const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options aria-expanded="'+String(!!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())+'">'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
-    '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
+    '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+verifiedLine+'</div>'+why+'</div>'+
     quick+'<div class="cockpit-help-actions">'+(compareAvailable?'<button type="button" class="training-cockpit-link" data-cockpit-compare>Compare checked set</button>':'')+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+(ctx.row?'<button type="button" class="training-cockpit-link" data-cockpit-swap>Swap exercise</button>':'')+'</div>'+transitionHtml()+restHtml()+
     (window.LoadnoteQuickCompletionUndo?.canUndo?.()?'<div class="cockpit-undo"><span>Last set checked complete</span><button type="button" class="btn-secondary" data-cockpit-undo>Undo set completion</button></div>':'')+
     '<div class="cockpit-save-health"><p role="status" data-cockpit-save-status></p><button type="button" class="btn-secondary" data-cockpit-retry-save hidden>Retry draft save</button></div>';
