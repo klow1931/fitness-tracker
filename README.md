@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.2.0 · Development build.**
+**v6.3.0 · Development build.**
+
+[One-tap gym-floor Coach comparisons v6.3](docs/releases-v6.3.md): once you check a strength set in Train, tap **Compare checked set** to view a read-only, exact-rep comparison against corrected saved history; there are no program, load, or log changes. A matching quick question also appears in Coach.
 
 [Exact-rep checked-set comparisons v6.2](docs/releases-v6.2.md): built-in offline Coach compares a checked, unsaved set with an explicitly completed saved set of the same exercise and rep count, preserving entered weight units, recorded RPE and approval boundaries.
 

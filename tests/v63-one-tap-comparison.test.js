@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const Cockpit=require('../src/product/training-cockpit');
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:1,workoutDate:'2026-11-01',asOf:'2026-11-01'}),true);
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:0,workoutDate:'2026-11-01',asOf:'2026-11-01'}),false);
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:1,workoutDate:'2026-10-31',asOf:'2026-11-01'}),false);
+const root=path.resolve(__dirname,'..'),read=rel=>fs.readFileSync(path.join(root,rel),'utf8');
+const ui=read('src/product/training-cockpit-ui.js');
+const coach=read('src/product/coach-companion-ui.js');
+const config=read('playwright.config.js');
+const workflow=read('.github/workflows/test.yml');
+assert(ui.includes('data-cockpit-compare')&&ui.includes("coach.ask('Compare my checked set to last time')"),'Train must open the established read-only Coach comparison');
+assert(coach.includes("context.liveWorkout.checkedStrengthSets>0?['Compare my checked set to last time']"),'Coach comparison quick action is gated on checked strength work');
+const m=config.match(/name:'mobile-webkit',testMatch:\[([^\]]+)\]/);
+assert(m&&m[1].includes("'v63-one-tap-comparison.spec.js'"),'WebKit testMatch must include the v6.3 acceptance spec');
+assert(workflow.split('\n').some(line=>line.includes('npx playwright test ')&&line.includes('tests/browser/v63-one-tap-comparison.spec.js')),'Actual iPhone WebKit workflow must execute v6.3 acceptance');
+console.log('v6.3 one-tap Coach comparison policy and WebKit acceptance inclusion passed');

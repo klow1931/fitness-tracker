@@ -1,3 +1,11 @@
+# v6.3.0 — One-tap Coach comparison during a workout
+
+- After checking a strength set in Train, an inline **Compare checked set** action opens the built-in deterministic Coach with the existing v6.2 saved-versus-unsaved exact-rep comparison.
+- The action is hidden when no strength set is checked or when the draft is dated another day, and uses the last checked strength set even after advancing to the next exercise. It never copies saved weights, marks completion or changes programs.
+- Add the same comparison to Coach's in-workout quick questions only when a strength set is checked; avoid adding a persistent new screen or slowing down numeric logging.
+- Add Node policy checks and real browser regressions for one-tap comparison, unit integrity, immutable training history, stale dates and quick return to Train, including the actual iPhone WebKit allowlist and CI command.
+- v6.3.0, unsigned native build 38300; schema 34 unchanged. Keep merged v6.2 as rollback until validation.
+
 # v6.2.0 — Explainable checked-set comparison against saved history
 
 - Built-in offline Coach answers “Compare my checked set to last time” using one exact registered exercise and the latest corrected saved session before the open draft date.
