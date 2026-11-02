@@ -18,8 +18,7 @@ test.beforeEach(async({page})=>{
 test('v6.3 one-tap comparison follows the checked bench when logger advances to the next exercise',async({page})=>{
  const button=page.locator('#training-cockpit [data-cockpit-compare]');
  await expect(button).toHaveCount(0);
- await page.locator('#exercise-rows .set-done-check').first().check();
- await page.locator('#exercise-rows .set-rpe').first().fill('8.5');
+ await page.locator('#exercise-rows > div').first().locator('.quick-set-entry:visible [data-quick-rpe="8.5"]').click();
  await expect(button).toBeVisible();
  const saved=await page.evaluate(()=>JSON.stringify(data));
  await button.click();
@@ -42,16 +41,18 @@ test('v6.3 one-tap comparison follows the checked bench when logger advances to 
 test('v6.3 shows the comparison only for checked strength sets dated today',async({page})=>{
  const button=page.locator('#training-cockpit [data-cockpit-compare]');
  await expect(button).toHaveCount(0);
- await page.locator('#exercise-rows .set-done-check').first().check();
+ await page.locator('#exercise-rows > div').first().locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
  await expect(button).toBeVisible();
- await page.locator('#wo-date').fill('2026-10-31');
+ // The date input is intentionally hidden in gym-floor execution mode.
+ // Simulate the same value/input event without opening a hidden secondary form.
+ await page.evaluate(day=>{const input=document.getElementById('wo-date');input.value=day;input.dispatchEvent(new Event('input',{bubbles:true}));refreshTrainingCockpit();},'2026-10-31');
  await expect(button).toHaveCount(0);
- await page.locator('#wo-date').fill('2026-11-01');
+ await page.evaluate(day=>{const input=document.getElementById('wo-date');input.value=day;input.dispatchEvent(new Event('input',{bubbles:true}));refreshTrainingCockpit();},'2026-11-01');
  await expect(button).toBeVisible();
 });
 test('v6.3 still opens an honest read-only empty-history result after a checked set',async({page})=>{
  await page.evaluate(()=>{data.workouts=[];});
- await page.locator('#exercise-rows .set-done-check').first().check();
+ await page.locator('#exercise-rows > div').first().locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
  const saved=await page.evaluate(()=>JSON.stringify(data));
  await page.locator('#training-cockpit [data-cockpit-compare]').click();
  await expect(page.locator('#cc-messages .assistant').last()).toContainText('No earlier saved working sets');
