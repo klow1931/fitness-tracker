@@ -154,6 +154,12 @@
   // RPE chips are the next action; never open the numeric keyboard automatically.
   return true;
  }
+ function compareCheckedSet(){
+  const coach=window.LoadnoteCoachCompanionUI;
+  if(!coach?.open||!coach?.ask)return;
+  coach.open();
+  void coach.ask('Compare my checked set to last time');
+ }
  function usePrevious(){
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
@@ -222,6 +228,10 @@
   let hasDraft=false;try{hasDraft=loggerHasContent();}catch{}
   if(!visible()||!hasDraft){host.hidden=true;return;}
   const ctx=current(),meta=workoutMeta(),counts=completionCounts(ctx),value=target(ctx),prior=previous(ctx),steps=H()?.loadSteps(currentUnit())||{small:2.5,large:5};
+  const checkedStrengthSets=ctx.rows.reduce((total,row)=>total+(row.dataset.type==='cardio'?0:setRows(row).filter(setDone).length),0);
+  const compareAvailable=!!window.LoadnoteCoachCompanionUI?.ask&&H()?.canReviewCheckedSet({
+   checkedStrengthSets,workoutDate:document.getElementById('wo-date')?.value,asOf:today()
+  });
   const complete=!ctx.row&&counts.total>0&&counts.done===counts.total;
   const exerciseName=ctx.row?.querySelector('.ex-name')?.value.trim()||'Workout complete';
   const position=complete?'All entered work checked complete':('Exercise '+Math.min(ctx.exerciseIndex+1,ctx.rows.length)+' of '+ctx.rows.length+(ctx.set?' · Set '+(ctx.setIndex+1)+' of '+ctx.setCount:''));
@@ -251,7 +261,7 @@
   const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options aria-expanded="'+String(!!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())+'">'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
   host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+'</div>'+why+'</div>'+
-    quick+'<div class="cockpit-help-actions"><button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+(ctx.row?'<button type="button" class="training-cockpit-link" data-cockpit-swap>Swap exercise</button>':'')+'</div>'+transitionHtml()+restHtml()+
+    quick+'<div class="cockpit-help-actions">'+(compareAvailable?'<button type="button" class="training-cockpit-link" data-cockpit-compare>Compare checked set</button>':'')+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+(ctx.row?'<button type="button" class="training-cockpit-link" data-cockpit-swap>Swap exercise</button>':'')+'</div>'+transitionHtml()+restHtml()+
     (window.LoadnoteQuickCompletionUndo?.canUndo?.()?'<div class="cockpit-undo"><span>Last set checked complete</span><button type="button" class="btn-secondary" data-cockpit-undo>Undo set completion</button></div>':'')+
     '<div class="cockpit-save-health"><p role="status" data-cockpit-save-status></p><button type="button" class="btn-secondary" data-cockpit-retry-save hidden>Retry draft save</button></div>';
   host.hidden=false;
@@ -263,6 +273,7 @@
   host.querySelector('[data-cockpit-previous]')?.addEventListener('click',usePrevious);
   host.querySelector('[data-cockpit-swap]')?.addEventListener('click',()=>{const button=ctx.row?.querySelector('[data-workout-action="swap-exercise"]');if(button)openExerciseSwap(button);});
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.setAttribute('aria-label',(Number(button.dataset.cockpitAdjust)>0?'Increase':'Decrease')+' load by '+Math.abs(Number(button.dataset.cockpitAdjust))+' '+unitLabel()));
+  host.querySelector('[data-cockpit-compare]')?.addEventListener('click',compareCheckedSet);
   host.querySelector('[data-cockpit-guidance]')?.addEventListener('click',()=>window.LoadnoteMovementGuidanceUI?.open?.(exerciseName));
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.addEventListener('click',()=>adjust(Number(button.dataset.cockpitAdjust))));
   host.querySelector('[data-cockpit-start]')?.addEventListener('click',()=>{startWorkoutNow();queueRefresh();});
