@@ -8,6 +8,12 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const norm=x=>String(x??'').trim().replace(/\s+/g,' ').toLowerCase();
+ // Review is available only for a current-day draft with checked strength work.
+ // This pure guard neither copies a set nor changes the prescription.
+ function canReviewCheckedSet({checkedStrengthSets=0,workoutDate=null,asOf=null}={}){
+  return Number.isInteger(checkedStrengthSets)&&checkedStrengthSets>0&&checkedStrengthSets<=500&&
+   typeof workoutDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(workoutDate)&&workoutDate===asOf;
+ }
  function loadSteps(unit){
   return unit==='lb'?{small:2.5,large:5}:{small:1.25,large:2.5};
  }
@@ -77,5 +83,5 @@
   const missing=sets.length-known;
   return {logged:sets.length+' strength set'+(sets.length===1?'':'s')+' recorded.',watch:!sets.length?'Cardio recorded; no strength-effort comparison.':missing?missing+(missing===1?' set has':' sets have')+' no recorded RPE; effort comparisons are limited.':'Effort recorded for every strength set; recovery is still separate.',next:'Keep scheduled targets until a supported change is reviewed.'};
  }
- return {loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,repeatCompletedSet,transition,workoutTakeaway};
+ return {canReviewCheckedSet,loadSteps,adjustDisplayWeight,elapsedMinutes,plannedExercise,targetSet,repeatCompletedSet,transition,workoutTakeaway};
 });

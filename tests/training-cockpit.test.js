@@ -2,6 +2,11 @@ const assert=require('node:assert/strict');
 const Cockpit=require('../src/product/training-cockpit');
 
 assert.deepEqual(Cockpit.loadSteps('lb'),{small:2.5,large:5});
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:1,workoutDate:'2026-11-01',asOf:'2026-11-01'}),true);
+for(const checkedStrengthSets of [0,-1,501,1.5,null,Number.NaN])
+ assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets,workoutDate:'2026-11-01',asOf:'2026-11-01'}),false);
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:2,workoutDate:'2026-10-31',asOf:'2026-11-01'}),false);
+assert.equal(Cockpit.canReviewCheckedSet({checkedStrengthSets:2,workoutDate:'invalid',asOf:'invalid'}),false);
 assert.deepEqual(Cockpit.loadSteps('kg'),{small:1.25,large:2.5});
 assert.equal(Cockpit.adjustDisplayWeight(100,5),105);
 assert.equal(Cockpit.adjustDisplayWeight(2.5,-5),0);
