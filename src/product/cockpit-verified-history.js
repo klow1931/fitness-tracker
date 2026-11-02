@@ -7,7 +7,7 @@
  else root.LoadnoteCockpitVerifiedHistory=factory(root.LoadnoteCoachLiveHistory,root.LoadnoteCoachTrainingHistory);
 })(typeof globalThis!=='undefined'?globalThis:this,function(Bridge,History){
  'use strict';
- const validDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+'T12:00:00Z').toISOString().slice(0,10)===d;
+ const validDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!Number.isNaN(Date.parse(d+'T12:00:00Z'))&&new Date(d+'T12:00:00Z').toISOString().slice(0,10)===d;
  function lastConfirmed(state,{name='',date=null,reps=null,unit='kg',trackBy='reps'}={}){
   if(trackBy!=='reps'||!validDate(date)||!Number.isInteger(reps)||reps<1||reps>1000)return null;
   const matched=Bridge?.selection?.(state,name);
