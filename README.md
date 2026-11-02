@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.3.0 · Development build.**
+**v6.4.0 · Development build.**
+
+[Last confirmed same-rep history v6.4](docs/releases-v6.4.md): Train shows a compact, read-only **Last confirmed** entry when corrected saved history includes an explicitly completed working set at the reps currently entered; missing/unmarked data stays unknown.
 
 [One-tap gym-floor Coach comparisons v6.3](docs/releases-v6.3.md): once you check a strength set in Train, tap **Compare checked set** to view a read-only, exact-rep comparison against corrected saved history; there are no program, load, or log changes. A matching quick question also appears in Coach.
 
