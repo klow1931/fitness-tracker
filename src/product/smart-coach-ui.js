@@ -48,16 +48,40 @@
  function attach(host,reply,ask=null){if(!host||!reply?.actions?.length&&!reply?.followUps?.length)return;const group=document.createElement('div');group.className='smart-coach-actions';
   for(const a of (reply.actions||[]).filter(a=>KINDS.has(a.kind)).slice(0,4)){
     const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=a.label;
-    // Use one native click as the sole activation for mouse, touch and
-    // keyboard. Opening a modal from touchend can lead WebKit to deliver its
-    // subsequent compatibility click into the new dialog (or close it).
-    // touch-action keeps taps responsive; the browser suppresses clicks on
-    // cancelled/scrolling touch gestures.
+    // Safari can swallow the synthetic click on a button in a scrolling
+    // chat when a finger tap settles the scroll. A stationary touch activates
+    // once on touchend; preventDefault blocks WebKit's subsequent ghost click.
+    // Swipes, multi-touch and cancelled gestures never route an action.
     b.style.touchAction='manipulation';
-    // Avoid scrolling the overflowing chat just because a mouse click focuses
-    // its action button. Keyboard focus remains native and accessible.
+    let start=null,lastTouchActivation=0;
+    const point=(list,id)=>[...list].find(t=>t.identifier===id);
+    b.addEventListener('touchstart',event=>{
+     if(event.touches.length!==1){start=null;return;}
+     const t=event.touches[0];
+     start={id:t.identifier,x:t.clientX,y:t.clientY};
+    },{passive:true});
+    b.addEventListener('touchmove',event=>{
+     if(!start)return;
+     const t=point(event.touches,start.id);
+     if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>12)start=null;
+    },{passive:true});
+    b.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+    b.addEventListener('touchend',event=>{
+     const initial=start;start=null;
+     if(!initial||event.changedTouches.length!==1)return;
+     const t=point(event.changedTouches,initial.id);
+     if(!t||Math.hypot(t.clientX-initial.x,t.clientY-initial.y)>12)return;
+     if(event.cancelable)event.preventDefault();
+     lastTouchActivation=Date.now();
+     route(a);
+    },{passive:false});
+    // Retain mouse, keyboard and assistive-technology clicks. Suppress only
+    // the immediate compatibility click after a touchend-initiated route.
     b.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
-    b.addEventListener('click',()=>route(a));
+    b.addEventListener('click',event=>{
+     if(event.detail!==0&&lastTouchActivation&&Date.now()-lastTouchActivation<700)return;
+     route(a);
+    });
     group.append(b);
    }
   if(ask)for(const q of (reply.followUps||[]).slice(0,3)){const b=document.createElement('button');b.type='button';b.className='coach-follow-up';b.textContent=q;b.addEventListener('click',()=>ask(q));group.append(b);}host.append(group);
