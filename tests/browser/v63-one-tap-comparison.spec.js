@@ -51,8 +51,11 @@ test('v6.3 shows the comparison only for checked strength sets dated today',asyn
  await expect(button).toBeVisible();
 });
 test('v6.3 still opens an honest read-only empty-history result after a checked set',async({page})=>{
- await page.evaluate(()=>{data.workouts=[];});
  await page.locator('#exercise-rows > div').first().locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
+ await expect(page.locator('#training-cockpit [data-cockpit-compare]')).toBeVisible();
+ // The review must read corrected saved state at question time, not cache
+ // the previous session from when the draft set was completed.
+ await page.evaluate(()=>{data.workouts=[];});
  const saved=await page.evaluate(()=>JSON.stringify(data));
  await page.locator('#training-cockpit [data-cockpit-compare]').click();
  await expect(page.locator('#cc-messages .assistant').last()).toContainText('No earlier saved working sets');
