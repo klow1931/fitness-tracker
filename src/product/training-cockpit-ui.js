@@ -4,7 +4,7 @@
  */
 (function(){
  'use strict';
- let transitionState=null,scheduledRefresh=false,timer=null;
+ let transitionState=null,scheduledRefresh=false,timer=null,lastConfirmedFill=null;
  const H=()=>window.LoadnoteTrainingCockpit;
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function visible(){
@@ -136,7 +136,31 @@
   input?.focus({preventScroll:true});
   if(select)try{input?.select();}catch{}
  }
+ function undoConfirmedAvailable(ctx=current()){
+  const action=lastConfirmedFill;
+  if(!action)return false;
+  const input=ctx?.set?.querySelector('.set-weight'),mark=marker(ctx?.row);
+  const reps=ctx?.set?.querySelector('.set-reps')?.value;
+  const ok=window.LoadnoteCockpitFillUndo?.canUndo?.(action.snapshot,{
+   name:mark?.name,exerciseId:mark?.exerciseId,date:document.getElementById('wo-date')?.value,
+   reps:reps==null||reps.trim()===''?null:Number(reps),unit:currentUnit(),weight:input?.value,
+   done:setDone(ctx?.set),sameSet:ctx?.set===action.set&&input===action.input,
+   connected:!!ctx?.set?.isConnected&&!!input?.isConnected
+  })||false;
+  if(!ok)lastConfirmedFill=null;
+  return ok;
+ }
+ function undoConfirmedLoad(){
+  const ctx=current();
+  if(!undoConfirmedAvailable(ctx))return false;
+  const action=lastConfirmedFill,input=action.input;
+  lastConfirmedFill=null;
+  input.value=action.snapshot.before;changed(input);
+  saveLoggerDraft();window.updateTrainingFlow?.();render();
+  return true;
+ }
  function useTarget(){
+  lastConfirmedFill=null;
   const ctx=current(),value=target(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx);
   if(inputs.weight&&value.weight!=null){inputs.weight.value=String(Math.round(toDisplay(value.weight)*100)/100);changed(inputs.weight);}
@@ -146,11 +170,13 @@
   focusForEntry(inputs.rpe);
  }
  function adjust(delta){
+  lastConfirmedFill=null;
   const ctx=current(),input=activeInputs(ctx).weight;if(!input)return;
   const next=H()?.adjustDisplayWeight(input.value,delta);if(next==null)return;
   input.value=String(next);changed(input);saveLoggerDraft();window.updateTrainingFlow?.();render();focusForEntry(input,true);
  }
  function repeatLastCompletedSet(){
+  lastConfirmedFill=null;
   const ctx=current();if(!ctx?.set||!ctx.row)return false;
   const sets=setRows(ctx.row),mode=ctx.row.dataset.trackBy==='duration'?'duration':'reps';
   const snapshot=sets.map(s=>({weight:s.querySelector('.set-weight')?.value??'',reps:s.querySelector('.set-reps')?.value??'',duration:s.querySelector('.set-duration')?.value??'',rpe:s.querySelector('.set-rpe')?.value??'',done:setDone(s)}));
@@ -184,12 +210,21 @@
   // Re-evaluate matching exercise/rep/completion/corrections at click time.
   const value=confirmedLoadValue(ctx,confirmed(ctx));
   if(value==null)return false;
+  const mark=marker(ctx.row),reps=Number(ctx.set.querySelector('.set-reps')?.value);
+  const snapshot=window.LoadnoteCockpitFillUndo?.capture?.({
+   name:mark.name,exerciseId:mark.exerciseId,date:document.getElementById('wo-date')?.value,
+   reps,unit:currentUnit(),before:input.value,after:String(value)
+  });
+  if(!snapshot)return false;
+  // Only the last fill is reversible. Do not share its reference with storage.
+  lastConfirmedFill={snapshot,set:ctx.set,input};
   input.value=String(value);changed(input);
   saveLoggerDraft();window.updateTrainingFlow?.();render();
   // No forced keyboard focus: the next gym-floor action may be a quick RPE chip.
   return true;
  }
  function usePrevious(){
+  lastConfirmedFill=null;
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
   if(value.weight==null||String(value.weight).trim()===''||!Number.isFinite(Number(value.weight))||Number(value.weight)<0||!Number.isFinite(Number(amount))||Number(amount)<=0)return;
@@ -255,7 +290,7 @@
  function render(){
   const host=ensure();if(!host)return;
   let hasDraft=false;try{hasDraft=loggerHasContent();}catch{}
-  if(!visible()||!hasDraft){host.hidden=true;return;}
+  if(!visible()||!hasDraft){lastConfirmedFill=null;host.hidden=true;return;}
   const ctx=current(),meta=workoutMeta(),counts=completionCounts(ctx),value=target(ctx),prior=previous(ctx),verified=confirmed(ctx),steps=H()?.loadSteps(currentUnit())||{small:2.5,large:5};
   const checkedStrengthSets=ctx.rows.reduce((total,row)=>total+(row.dataset.type==='cardio'?0:setRows(row).filter(setDone).length),0);
   const compareAvailable=!!window.LoadnoteCoachCompanionUI?.ask&&H()?.canReviewCheckedSet({
@@ -269,6 +304,7 @@
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
   const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
   const canUseConfirmed=confirmedLoadValue(ctx,verified)!=null;
+  const canUndoConfirmed=undoConfirmedAvailable(ctx);
   const verifiedLine=verified?'<div class="training-cockpit-verified"><span>Last confirmed · '+esc(verified.date)+' · '+verified.reps+' reps</span><b>'+esc(verified.weight)+' · '+(verified.rpe==null?'RPE unknown':'RPE '+verified.rpe)+'</b>'+(canUseConfirmed?'<button type="button" class="btn-secondary" data-cockpit-use-confirmed>Use confirmed load</button>':'')+'</div>':'';
   const repeat=ctx.set?H()?.repeatCompletedSet(setRows(ctx.row).map(s=>({
     weight:s.querySelector('.set-weight')?.value??'',
@@ -279,6 +315,7 @@
    })),ctx.setIndex,ctx.row.dataset.trackBy):null;
   const previousAvailable=ctx.set&&prior&&window.LoadnoteGymFloor?.previousPayload(prior,ctx.row.dataset.trackBy)?.weight!=null;
   const quick=ctx.set?'<div class="training-cockpit-quick">'+
+    (canUndoConfirmed?'<button type="button" class="btn-secondary" data-cockpit-undo-confirmed>Undo load fill</button>':'')+
     (repeat?'<button type="button" class="btn-secondary" data-cockpit-repeat>Repeat set '+repeat.fromSet+'</button>':'')+
     (value?'<button type="button" class="btn-secondary" data-cockpit-target>Use target</button>':'')+
     (previousAvailable?'<button type="button" class="btn-secondary" data-cockpit-previous>Use last set</button>':'')+
@@ -303,6 +340,7 @@
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelector('[data-cockpit-previous]')?.addEventListener('click',usePrevious);
   host.querySelector('[data-cockpit-use-confirmed]')?.addEventListener('click',useConfirmedLoad);
+  host.querySelector('[data-cockpit-undo-confirmed]')?.addEventListener('click',undoConfirmedLoad);
   host.querySelector('[data-cockpit-swap]')?.addEventListener('click',()=>{const button=ctx.row?.querySelector('[data-workout-action="swap-exercise"]');if(button)openExerciseSwap(button);});
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.setAttribute('aria-label',(Number(button.dataset.cockpitAdjust)>0?'Increase':'Decrease')+' load by '+Math.abs(Number(button.dataset.cockpitAdjust))+' '+unitLabel()));
   host.querySelector('[data-cockpit-compare]')?.addEventListener('click',compareCheckedSet);
@@ -328,7 +366,10 @@
   ensure();queueRefresh();
   const card=document.getElementById('workout-log-card');
   if(card){
-   card.addEventListener('input',queueRefresh);
+   card.addEventListener('input',event=>{
+    if(event.isTrusted&&lastConfirmedFill&&event.target===lastConfirmedFill.input)lastConfirmedFill=null;
+    queueRefresh();
+   });
    // Text/number inputs already refresh on `input`. Refreshing again on their
    // blur-triggered `change` can replace a cockpit button between pointerdown
    // and click, swallowing Workout options/Finish actions. Keep `change` for
@@ -347,7 +388,7 @@
   timer=setInterval(()=>{if(!document.hidden)queueRefresh();},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRefresh();});
  }
- window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,useConfirmedLoad,adjust,current,startNextExercise};
+ window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,useConfirmedLoad,undoConfirmedLoad,adjust,current,startNextExercise};
  window.refreshTrainingCockpit=render;
  window.refreshTrainingCockpitRest=refreshRest;
  window.refreshTrainingCockpitSaveStatus=refreshSaveStatus;
