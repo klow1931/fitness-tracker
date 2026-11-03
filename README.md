@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.5.0 · Development build.**
+**v6.6.0 · Development build.**
+
+[Reversible confirmed load fill v6.6](docs/releases-v6.6.md): after using a verified saved load in Train, **Undo load fill** safely restores the blank field while the same unfinished set is untouched. Manual edits, unit changes, completion and navigation invalidate the temporary undo.
 
 [Safe one-tap confirmed load fill v6.5](docs/releases-v6.5.md): when the current working-set load is blank, Train offers **Use confirmed load** beside the corrected-history reference. It copies only the matching saved load in your chosen display unit; reps, effort, completion and programming stay unchanged.
 

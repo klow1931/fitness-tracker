@@ -1,3 +1,12 @@
+# v6.6.0 — Safe undo for confirmed-load quick entry
+
+- Add **Undo load fill** to the Train cockpit after the v6.5 **Use confirmed load** shortcut is tapped on a blank strength set.
+- The temporary, one-action undo is available only on that exact unfinished set while exercise identity, date, rep count, display unit and filled load remain unchanged. Typing a new weight, using a different fill shortcut, completing the set, switching units or leaving Train invalidates it.
+- Undo restores the field's original blank entry through the existing draft-save pipeline, without touching RPE, reps, completion, saved history, training targets or the rest timer.
+- Transient undo state never enters synced backups or stored workout schemas. Existing quick completion Undo stays independent and available.
+- Add unit and browser tests on desktop/mobile Chromium and actual iPhone WebKit, including a real tap, input edits, kg/lb, rest timer, reload and no-write assertions.
+- Version 6.6.0, unsigned native build 38600, schema 34 unchanged, refreshed PWA cache. Merged v6.5 stays on main for rollback.
+
 # v6.5.0 — Safe one-tap fill from confirmed saved sets
 
 - The Train cockpit now offers **Use confirmed load** beside v6.4’s **Last confirmed** evidence, only for an unfinished strength set with entered reps, a blank load, and a trustworthy explicitly completed saved working set at the exact same rep count.

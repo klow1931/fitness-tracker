@@ -1861,6 +1861,8 @@ body.dark .training-cockpit-verified [data-cockpit-use-confirmed]{background:rgb
 .training-cockpit-quick{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap;margin-top:.55rem}
 .training-cockpit-quick button{min-height:36px;padding:.35rem .55rem;border:1px solid #cbd5e1;border-radius:.55rem;background:#fff;color:#334155;font-size:.72rem;font-weight:750}
 .training-cockpit-quick .btn-secondary{border-color:#c7d2fe}
+.training-cockpit-quick [data-cockpit-undo-confirmed]{border-color:#a5b4fc;background:#eef2ff;color:#3730a3}
+body.dark .training-cockpit-quick [data-cockpit-undo-confirmed]{background:#312e81;border-color:#818cf8;color:#eef2ff}
 .training-cockpit-quick button:active,.training-cockpit-quick button:hover{border-color:#6366f1;background:#eef2ff;color:#3730a3}
 .training-cockpit-transition{display:flex;align-items:center;justify-content:space-between;gap:.7rem;margin-top:.6rem;padding:.6rem .65rem;border-radius:.65rem;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.24)}
 .training-cockpit-transition span,.training-cockpit-transition b,.training-cockpit-transition small{display:block}
