@@ -10,7 +10,7 @@ const data={exerciseCatalog:[{id:'bench',name:'Competition Bench',aliases:['Comp
 ]};
 const snapshot=JSON.stringify(data),req={name:'Comp Bench',date:asOf,reps:5,unit:'lb',trackBy:'reps'};
 let r=H.lastConfirmed(data,req);
-assert.deepEqual(r,{date:'2026-10-24',reps:5,weight:'220.5 lb',rpe:8,exercise:'Competition Bench',confirmed:true,source:'corrected-saved-history'});
+assert.deepEqual(r,{date:'2026-10-24',reps:5,weight:'220.5 lb',weightKg:100,rpe:8,exercise:'Competition Bench',confirmed:true,source:'corrected-saved-history'});
 r=H.lastConfirmed(data,{...req,unit:'kg'});
 assert.equal(r.weight,'100 kg');
 r=H.lastConfirmed(data,{...req,reps:3});

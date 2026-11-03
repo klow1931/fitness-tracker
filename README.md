@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.4.0 · Development build.**
+**v6.5.0 · Development build.**
+
+[Safe one-tap confirmed load fill v6.5](docs/releases-v6.5.md): when the current working-set load is blank, Train offers **Use confirmed load** beside the corrected-history reference. It copies only the matching saved load in your chosen display unit; reps, effort, completion and programming stay unchanged.
 
 [Last confirmed same-rep history v6.4](docs/releases-v6.4.md): Train shows a compact, read-only **Last confirmed** entry when corrected saved history includes an explicitly completed working set at the reps currently entered; missing/unmarked data stays unknown.
 
