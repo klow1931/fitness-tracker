@@ -170,6 +170,25 @@
   coach.open();
   void coach.ask('Compare my checked set to last time');
  }
+ function confirmedLoadValue(ctx,evidence){
+  if(!ctx?.set||!ctx.row)return null;
+  const weight=ctx.set.querySelector('.set-weight'),reps=ctx.set.querySelector('.set-reps')?.value;
+  if(!weight||reps==null||reps.trim()==='')return null;
+  return window.LoadnoteCockpitVerifiedHistory?.confirmedLoadValue?.(evidence,{
+   reps:Number(reps),currentWeight:weight.value,done:setDone(ctx.set),unit:currentUnit()
+  })??null;
+ }
+ function useConfirmedLoad(){
+  const ctx=current(),input=ctx?.set?.querySelector('.set-weight');
+  if(!input)return false;
+  // Re-evaluate matching exercise/rep/completion/corrections at click time.
+  const value=confirmedLoadValue(ctx,confirmed(ctx));
+  if(value==null)return false;
+  input.value=String(value);changed(input);
+  saveLoggerDraft();window.updateTrainingFlow?.();render();
+  // No forced keyboard focus: the next gym-floor action may be a quick RPE chip.
+  return true;
+ }
  function usePrevious(){
   const ctx=current(),value=previous(ctx);if(!ctx.set||!value)return;
   const inputs=activeInputs(ctx),amount=ctx.row.dataset.trackBy==='duration'?value.duration:value.reps;
@@ -249,7 +268,8 @@
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
   const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
   const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
-  const verifiedLine=verified?'<div class="training-cockpit-verified"><span>Last confirmed · '+esc(verified.date)+' · '+verified.reps+' reps</span><b>'+esc(verified.weight)+' · '+(verified.rpe==null?'RPE unknown':'RPE '+verified.rpe)+'</b></div>':'';
+  const canUseConfirmed=confirmedLoadValue(ctx,verified)!=null;
+  const verifiedLine=verified?'<div class="training-cockpit-verified"><span>Last confirmed · '+esc(verified.date)+' · '+verified.reps+' reps</span><b>'+esc(verified.weight)+' · '+(verified.rpe==null?'RPE unknown':'RPE '+verified.rpe)+'</b>'+(canUseConfirmed?'<button type="button" class="btn-secondary" data-cockpit-use-confirmed>Use confirmed load</button>':'')+'</div>':'';
   const repeat=ctx.set?H()?.repeatCompletedSet(setRows(ctx.row).map(s=>({
     weight:s.querySelector('.set-weight')?.value??'',
     reps:s.querySelector('.set-reps')?.value??'',
@@ -282,6 +302,7 @@
   host.querySelector('[data-cockpit-repeat]')?.addEventListener('click',repeatLastCompletedSet);
   host.querySelector('[data-cockpit-target]')?.addEventListener('click',useTarget);
   host.querySelector('[data-cockpit-previous]')?.addEventListener('click',usePrevious);
+  host.querySelector('[data-cockpit-use-confirmed]')?.addEventListener('click',useConfirmedLoad);
   host.querySelector('[data-cockpit-swap]')?.addEventListener('click',()=>{const button=ctx.row?.querySelector('[data-workout-action="swap-exercise"]');if(button)openExerciseSwap(button);});
   host.querySelectorAll('[data-cockpit-adjust]').forEach(button=>button.setAttribute('aria-label',(Number(button.dataset.cockpitAdjust)>0?'Increase':'Decrease')+' load by '+Math.abs(Number(button.dataset.cockpitAdjust))+' '+unitLabel()));
   host.querySelector('[data-cockpit-compare]')?.addEventListener('click',compareCheckedSet);
@@ -326,7 +347,7 @@
   timer=setInterval(()=>{if(!document.hidden)queueRefresh();},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRefresh();});
  }
- window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,adjust,current,startNextExercise};
+ window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,useConfirmedLoad,adjust,current,startNextExercise};
  window.refreshTrainingCockpit=render;
  window.refreshTrainingCockpitRest=refreshRest;
  window.refreshTrainingCockpitSaveStatus=refreshSaveStatus;

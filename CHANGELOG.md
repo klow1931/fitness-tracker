@@ -1,3 +1,11 @@
+# v6.5.0 — Safe one-tap fill from confirmed saved sets
+
+- The Train cockpit now offers **Use confirmed load** beside v6.4’s **Last confirmed** evidence, only for an unfinished strength set with entered reps, a blank load, and a trustworthy explicitly completed saved working set at the exact same rep count.
+- Fill uses the latest corrected training evidence at click time, converts from internal kg to the athlete's current display units, and populates **load only**. It never overwrites a typed load (including 0), reps, RPE, completion, saved workout history or programming.
+- Unknown/invalid loads and ambiguous or missing records never enable the action. A historical bodyweight zero is valid. No automatic recommendation, progress or fatigue claim.
+- Keeps prior controls, rest timer, Coach conversation and existing workout completion behavior intact. Adds deterministic unit tests plus desktop/mobile Chromium and actual iPhone WebKit acceptance for input safety and data integrity.
+- Version 6.5.0, unsigned native build 38500, schema 34 unchanged, refreshed PWA cache; merged v6.4 remains the rollback release.
+
 # v6.4.0 — Last confirmed same-rep performance in Train
 
 - Adds a separate **Last confirmed** readout to the active strength-set cockpit when its entered reps match an explicitly completed working set from one of the last three corrected saved sessions before the draft date.
