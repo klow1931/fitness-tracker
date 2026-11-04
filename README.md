@@ -1,6 +1,8 @@
 # Loadnote
 
-**v6.6.0 · Development build.**
+**v6.7.0 · Development build.**
+
+[Reliable workout draft checkpoints v6.7](docs/releases-v6.7.md): if the primary unfinished-workout save fails but the recovery copy succeeds, Loadnote correctly reports **saved in recovery copy**, retains the newest draft for offline recovery, and offers **Retry draft save** to restore redundancy. Total save failure remains a clear warning.
 
 [Reversible confirmed load fill v6.6](docs/releases-v6.6.md): after using a verified saved load in Train, **Undo load fill** safely restores the blank field while the same unfinished set is untouched. Manual edits, unit changes, completion and navigation invalidate the temporary undo.
 

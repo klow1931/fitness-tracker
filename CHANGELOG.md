@@ -1,3 +1,12 @@
+# v6.7.0 — Reliable local workout checkpoint health
+
+- Correct dual-checkpoint write accounting: one successful local copy is **recoverable**, not falsely marked unsaved, while two successful writes are required for the fully redundant saved state.
+- Distinguish **two copies saved**, **primary only**, **recovery only**, and **neither saved**. Keep the critical keep-this-page-open warning for genuine total-save failure.
+- Show **Retry draft save** in Train for single-copy checkpoints as well as total failure, without extra dialogs. Retry rechecks current logger state, repairs redundancy when possible and clears the warning.
+- Preserve the newest-checkpoint recovery order, entered reps/loads/RPE/completion, kg/lb display units, and clearing both copies after a committed workout. Keep stored draft format, keys and data schema unchanged.
+- Add Node tests for primary-only/recovery-only/both-failed writes and recovery repair, plus real Chromium and iPhone WebKit tests for after-reload recovery, integrity and retry.
+- Version 6.7.0, unsigned native build 38700, schema 34 unchanged, refreshed PWA cache; v6.6 on main remains rollback.
+
 # v6.6.0 — Safe undo for confirmed-load quick entry
 
 - Add **Undo load fill** to the Train cockpit after the v6.5 **Use confirmed load** shortcut is tapped on a blank strength set.
