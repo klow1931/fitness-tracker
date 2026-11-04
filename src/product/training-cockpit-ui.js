@@ -283,9 +283,10 @@
   const host=document.getElementById('training-cockpit'),status=host?.querySelector('[data-cockpit-save-status]');if(!status)return;
   const text=document.getElementById('logger-draft-status')?.textContent||'Draft save status unavailable';
   if(status.textContent!==text)status.textContent=text;
-  const failed=window.LoadnoteDraftSaveHealth==='failed';
+  const failed=window.LoadnoteDraftSaveHealth==='failed',degraded=window.LoadnoteDraftSaveHealth==='degraded';
   host.classList.toggle('cockpit-save-failed',failed);
-  const retry=host.querySelector('[data-cockpit-retry-save]');if(retry)retry.hidden=!failed;
+  host.classList.toggle('cockpit-save-degraded',degraded);
+  const retry=host.querySelector('[data-cockpit-retry-save]');if(retry)retry.hidden=!(failed||degraded);
  }
  function render(){
   const host=ensure();if(!host)return;

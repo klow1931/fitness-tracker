@@ -954,6 +954,11 @@ body.dark .previous-performance p { color:#cbd5e1; }
 #workout-log-card .set-number { font-size:12px; color:#64748b; }
 #workout-log-card .set-done-check { width:22px; height:22px; accent-color:#4f46e5; }
 #logger-draft-status { color:#4f46e5; }
+/* v6.7 — differentiate a recoverable single copy from a failed checkpoint. */
+#training-cockpit.cockpit-save-degraded .cockpit-save-health [data-cockpit-save-status]{color:#92400e}
+#training-cockpit.cockpit-save-failed .cockpit-save-health [data-cockpit-save-status]{color:#b91c1c}
+body.dark #training-cockpit.cockpit-save-degraded .cockpit-save-health [data-cockpit-save-status]{color:#fcd34d}
+body.dark #training-cockpit.cockpit-save-failed .cockpit-save-health [data-cockpit-save-status]{color:#fca5a5}
 
 /* v1.12: athlete evidence and decision readiness */
 .readiness-title,.readiness-heading,.readiness-controls,.readiness-actions { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
