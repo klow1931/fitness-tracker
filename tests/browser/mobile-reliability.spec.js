@@ -8,18 +8,21 @@ async function enter(page){
  await page.locator('.ex-name').fill('Competition Bench');await page.locator('.set-reps').fill('5');
  await page.locator('.set-weight').fill('100');await page.locator('.set-rpe').fill('8');
 }
-test('draft failure stays visible in execution mode and retry checkpoints latest values',async({page})=>{
+test('recovery-only checkpoint stays visible in execution mode and retry repairs redundancy',async({page})=>{
  await enter(page);
  await page.evaluate(()=>{window.originalDraftSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='loadnote-workout-draft-v1')throw Error('quota');return window.originalDraftSet.call(this,key,value);};});
  await page.locator('.set-weight').fill('105');
- await expect(page.locator('#logger-draft-failure')).toBeVisible();
- await expect(page.locator('#logger-draft-failure')).toContainText('excludes unfinished sets');
+ await expect(page.locator('#logger-draft-failure')).toBeHidden();
+ await expect(page.locator('[data-cockpit-save-status]')).toContainText('saved in recovery copy');
+ await expect(page.locator('#training-cockpit')).toHaveClass(/cockpit-save-degraded/);
+ await expect(page.locator('[data-cockpit-retry-save]')).toBeVisible();
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote-workout-draft-v1')).rows[0].sets[0].weight)).toBe('100');
  expect(await page.evaluate(()=>readLoggerDraft().rows[0].sets[0].weight)).toBe('105');
  await page.evaluate(()=>{Storage.prototype.setItem=window.originalDraftSet;});
- // Exercise the original warning; the cockpit shortcut has separate coverage.
- await page.locator('#logger-draft-failure').getByRole('button',{name:'Retry draft save',exact:true}).click();
- await expect(page.locator('#logger-draft-failure')).toBeHidden();
+ // Retry the recoverable single copy, then restore normal two-copy health.
+ await page.locator('[data-cockpit-retry-save]').click();
+ await expect(page.locator('[data-cockpit-save-status]')).toHaveText('Draft saved on this device');
+ await expect(page.locator('[data-cockpit-retry-save]')).toBeHidden();
  await page.reload();await expect(page.locator('.set-weight')).toHaveValue('105');
  expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
 });

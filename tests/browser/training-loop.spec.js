@@ -33,11 +33,12 @@ test('one-tap start and completion keep rest keyboard closed, targets intact and
  const sets=await page.evaluate(()=>data.workouts.find(w=>w.id!=='previous').exercises[0].sets);
  expect(sets[0].weight).toBe(100);expect(sets[0].rpe).toBe(8);expect(sets[1].rpe==null||sets[1].rpe==='').toBe(true);
 });
-test('failed draft save stays visible without opening options and retries the same data',async({page})=>{
+test('single-copy draft warning stays visible without opening options and retries the same data',async({page})=>{
  await page.locator('#today-training [data-today-train]').click();
  await page.evaluate(()=>{window.originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===LOGGER_DRAFT_KEY)throw Error('quota');return originalSetItem.call(this,k,v);};});
  await page.locator('.set-weight').first().fill('97.5');
- await expect(page.locator('[data-cockpit-save-status]')).toContainText('Draft not saved');
+ await expect(page.locator('[data-cockpit-save-status]')).toContainText('saved in recovery copy');
+ await expect(page.locator('#training-cockpit')).toHaveClass(/cockpit-save-degraded/);
  await expect(page.locator('[data-cockpit-retry-save]')).toBeVisible();
  await page.evaluate(()=>Storage.prototype.setItem=originalSetItem);
  await page.locator('[data-cockpit-retry-save]').click();await expect(page.locator('[data-cockpit-save-status]')).toContainText('Draft saved');
