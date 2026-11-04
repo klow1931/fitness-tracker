@@ -1,4 +1,7 @@
-/* Recover the newest valid local workout draft without changing the v3 payload. */
+/* v6.7 — recover the newest local draft with truthful checkpoint health.
+ * One successful write is recoverable; two successful writes provide redundancy.
+ * The existing v3 payload and keys remain unchanged.
+ */
 (function(root,factory){
   if(typeof module==='object'&&module.exports)module.exports=factory();
   else root.LoadnoteDraftRecovery=factory();
@@ -20,10 +23,13 @@
   }
   function write(storage,key,draft){
     const serialized=JSON.stringify(draft);
-    let redundant=false,saved=false;
-    try{storage.setItem(key+suffix,serialized);redundant=true;}catch(_){}
-    try{storage.setItem(key,serialized);saved=true;}catch(_){}
-    return {saved,redundant};
+    let recoverySaved=false,primarySaved=false;
+    try{storage.setItem(key+suffix,serialized);recoverySaved=true;}catch(_){}
+    try{storage.setItem(key,serialized);primarySaved=true;}catch(_){}
+    // A successful recovery copy is recoverable, not a total loss.
+    // "Redundant" means both slots contain the latest checkpoint.
+    return {saved:primarySaved||recoverySaved,redundant:primarySaved&&recoverySaved,
+      recoveryOnly:recoverySaved&&!primarySaved};
   }
   function clear(storage,key){
     let ok=true;

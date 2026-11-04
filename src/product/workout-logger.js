@@ -24,22 +24,28 @@ function saveLoggerDraft() {
   const status = document.getElementById('logger-draft-status');
   if (!status) return;
   if(loggerHasContent())window.clearWorkoutRecap?.();
-  let saved=false;
+  let saved=false,health='failed';
   try {
     if (loggerHasContent()) {
       const result=LoadnoteDraftRecovery.write(localStorage,LOGGER_DRAFT_KEY,captureLoggerDraft());
       saved=result.saved;
-      status.textContent=saved
-        ? (result.redundant?'Draft saved on this device':'Draft saved on this device · recovery copy unavailable')
-        : 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.';
+      health=!saved?'failed':result.redundant?'saved':'degraded';
+      status.textContent=!saved
+        ? 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.'
+        : result.redundant
+          ? 'Draft saved on this device'
+          : result.recoveryOnly
+            ? 'Draft saved in recovery copy · main copy unavailable. Retry for second copy.'
+            : 'Draft saved on this device · recovery copy unavailable. Retry for second copy.';
     } else {
       saved=LoadnoteDraftRecovery.clear(localStorage,LOGGER_DRAFT_KEY);
+      health=saved?'saved':'failed';
       status.textContent=saved?'Draft saves on this device as you train.':'Draft could not be cleared. Retry before closing.';
     }
   } catch (_) { status.textContent = 'Draft not saved. Keep this page open and retry. A training backup does not contain unfinished sets.'; }
   const failure=document.getElementById('logger-draft-failure');
-  if(failure)failure.hidden=saved;
-  window.LoadnoteDraftSaveHealth=saved?'saved':'failed';
+  if(failure)failure.hidden=health!=='failed';
+  window.LoadnoteDraftSaveHealth=health;
   window.refreshTrainingCockpitSaveStatus?.();
   updateLoggerSummary();
   renderPrescriptionSummary();
