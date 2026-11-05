@@ -1016,8 +1016,6 @@ body.dark .coach-research-sources a{color:#a5b4fc}
  .coach-chat-card #chat-input{min-width:0;font-size:1rem}
  .coach-chat-card #chat-send-btn{min-width:44px;padding:.5rem .65rem;font-size:.9rem}
  .coach-chat-card #coach-quick-links{max-height:6rem;overflow:auto}
- #gym-floor-dock{grid-template-columns:minmax(0,1fr) repeat(3,auto)}
- #gym-floor-dock:has([data-gym-undo]:not([hidden])){grid-template-columns:minmax(0,1fr) repeat(4,auto);gap:.25rem}
 }
 
 #coach-companion-panel{height:min(680px,calc(100dvh - 100px))}

@@ -13,3 +13,6 @@ const health=Coach.answer(state,'My knee hurts. Explain training volume',opts);
 assert.equal(health.intent.topic,'health');
 assert.equal(JSON.stringify(state),before);
 console.log('v6.8 general volume education preserves personal evidence, health routing and training');
+
+const fs=require('node:fs'),path=require('node:path');
+for(const name of ['../playwright.config.js','../.github/workflows/test.yml'])assert(fs.readFileSync(path.join(__dirname,name),'utf8').includes('v68-mobile-coach-ux.spec.js'),'v6.8 must be included in the WebKit configuration and actual CI invocation');
