@@ -81,7 +81,7 @@
    finally{cancelButtons.forEach(b=>b.remove());controls.forEach(b=>b.disabled=false);}
   }
   if(cached&&(offline||R().mode()==='off')){render(cached,true);return;}
-  if(!cached&&R().mode()==='auto')void search();
+  if(R().mode()==='auto')void search();
  }
 
  window.LoadnoteCoachResearchUI={open,attach,showResult};

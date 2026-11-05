@@ -73,3 +73,14 @@ test('quick completion survives a focused numeric field and degraded checkpoint,
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote-workout-draft-v1-recovery')));
  expect(saved.rows[0].sets.map(s=>s.rpe)).toEqual(['8','10']);expect(saved.rows[0].sets.every(s=>s.done)).toBe(true);
 });
+
+test('automatic research can refresh a saved topic online while off mode uses only saved excerpts',async({page})=>{
+ let requests=0;const fresh={...paper,title:'Fresh synthetic volume review'};
+ await page.route('**/europepmc/webservices/rest/search**',r=>{requests++;return r.fulfill({contentType:'application/json',body:JSON.stringify({resultList:{result:[fresh]}})});});
+ await page.evaluate(p=>{LoadnoteCoachResearch.save(LoadnoteCoachResearch.normalizeResult({resultList:{result:[p]}},'volume'));LoadnoteCoachResearch.setMode('auto');},paper);
+ const before=await page.evaluate(()=>JSON.stringify(data));await page.locator('#coach-companion-launcher').click();await ask(page,'Explain training volume');
+ await expect(page.locator('#cc-messages .coach-research-offer').last()).toContainText(fresh.title);expect(requests).toBe(1);
+ await page.evaluate(()=>LoadnoteCoachResearch.setMode('off'));await ask(page,'Explain training volume');
+ const cached=page.locator('#cc-messages .coach-research-offer').last();await expect(cached).toContainText(paper.title);await expect(cached).toContainText('saved references');expect(requests).toBe(1);
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+});
