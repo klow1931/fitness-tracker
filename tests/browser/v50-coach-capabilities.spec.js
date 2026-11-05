@@ -1,6 +1,6 @@
 const {test,expect}=require('playwright/test'),{phaseFixture}=require('../fixtures/phase-builder'),{fixture}=require('../fixtures/weekly-coaching');
-test.beforeEach(async({page})=>{
- await page.clock.install({time:new Date('2026-10-04T20:00:00Z')});await page.goto('/');await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+test.beforeEach(async({page},testInfo)=>{
+ await page.clock.install({time:new Date('2026-10-04T20:00:00Z')});await page.goto(testInfo.title.includes('local-model capability')?'/?developer=1':'/');await expect(page.locator('#coach-companion-launcher')).toBeVisible();
  await page.evaluate(state=>{data=normalizeDataShape({...data,...state});window.remoteCalls=0;LoadnoteCoachClient.ensureSignedIn=async()=>{remoteCalls++;return true;};showTab('coach');showSubTab('coach','co-chat');remoteCalls=0;},phaseFixture().state);
 });
 async function ask(page,q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();return page.locator('#chat-messages .assistant').last();}
