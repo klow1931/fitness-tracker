@@ -57,3 +57,19 @@ test('all RPE choices fit without swiping and Coach access cannot float over the
  await page.locator('#coach-companion-launcher').click();await expect(page.locator('#cc-context')).toContainText('Workout active');await ask(page,'How much rest is left?');
  expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,scheduled:data.scheduledSessions}))).toBe(before);await fits(page);
 });
+
+test('quick completion survives a focused numeric field and degraded checkpoint, including keyboard activation',async({page})=>{
+ await page.evaluate(()=>{showTab('workouts');showSubTab('workouts','wo-log');fillWorkoutForm([{name:'Competition Bench',type:'strength',sets:[{weight:100,reps:5,rpe:''},{weight:100,reps:5,rpe:''}]}],'',false);});
+ await page.locator('.set-reps').first().focus();
+ await expect.poll(()=>page.evaluate(()=>LoadnoteDraftSaveHealth)).toBe('saved');
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ await page.evaluate(()=>{const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='loadnote-workout-draft-v1')throw Error('Primary checkpoint unavailable');return write.call(this,key,value);};});
+ await page.locator('.quick-set-entry:visible [data-quick-rpe="8"]').click();
+ await expect(page.locator('.set-done-check').first()).toBeChecked();await expect(page.locator('.set-rpe').first()).toHaveValue('8');
+ await expect(page.locator('[data-cockpit-save-status]')).toContainText('saved in recovery copy');
+ const finish=page.locator('.quick-set-entry:visible [data-quick-rpe="10"]');await finish.focus();await finish.press('Space');
+ await expect(page.locator('.set-done-check').nth(1)).toBeChecked();await expect(page.locator('.set-rpe').nth(1)).toHaveValue('10');
+ expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote-workout-draft-v1-recovery')));
+ expect(saved.rows[0].sets.map(s=>s.rpe)).toEqual(['8','10']);expect(saved.rows[0].sets.every(s=>s.done)).toBe(true);
+});

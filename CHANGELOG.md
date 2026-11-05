@@ -1,6 +1,7 @@
 # v6.8.0 — Mobile training and conversational research
 
 - Move Coach access into workout controls and show every quick RPE choice without sideways scrolling.
+- Keep Safari quick completion reliable when a degraded checkpoint warning changes layout during a press; retain keyboard activation and the existing save/undo path.
 - Give conversations more space with collapsed Coach options; keep experimental model downloads in an explicit developer view.
 - Search supported research topics directly beneath Coach answers, with permission, dated expandable sources, cancellation/retry and explicit offline saves.
 - Refresh saved references immediately after saving; keep both conversation views synchronized.
