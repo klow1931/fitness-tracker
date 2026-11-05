@@ -1027,3 +1027,22 @@ body.dark .coach-research-sources a{color:#a5b4fc}
  body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto auto}
  body.training-execution-active .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) auto auto auto}
 }
+
+/* v6.9: keep Coach connected to the current logging task. */
+#coach-workout-continuity{display:flex;align-items:center;justify-content:space-between;gap:.75rem;border:1px solid var(--line);border-radius:.75rem;background:var(--surface);padding:.65rem;margin-bottom:.75rem}
+#coach-workout-continuity[hidden]{display:none}
+#coach-workout-continuity p{margin:0;font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
+#coach-resume-workout{min-height:44px;flex:0 0 auto;font-size:.85rem}
+#coach-context-questions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem;margin:.65rem 0}
+#coach-context-questions>button{min-height:44px;min-width:0;font-size:.8rem;padding:.5rem;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+#coach-more-topics{margin-top:.5rem}
+#coach-more-topics #coach-quick-links{max-height:none;overflow:visible}
+#coach-online-status{overflow-wrap:anywhere}
+#research-return-to-coach{min-height:44px;margin-bottom:.65rem}
+@media(max-width:400px){#coach-workout-continuity{align-items:stretch;flex-direction:column}#coach-resume-workout{width:100%}}
+
+/* Optional starting choices belong to Home; native safety notices stay global. */
+body[data-active-tab]:not([data-active-tab="dashboard"]) #onboarding-card{display:none!important}
+@media(max-width:640px){
+ .coach-chat-card:has(#coach-workout-continuity:not([hidden])) #chat-messages{height:clamp(160px,30dvh,320px);min-height:160px}
+}

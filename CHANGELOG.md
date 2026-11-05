@@ -1,3 +1,13 @@
+# v6.9.0 — Clearer Coach and workout continuity
+
+- Show honest offline/online capability states before offering sign-in. An unavailable backend, native-only beta, disconnected network or local-model selection cannot advertise an online conversation.
+- Reuse quick Coach’s context-aware question selection in full Coach. Keep the eleven existing educational shortcuts under More topics.
+- Return directly from Coach to the existing unfinished logger, preserving its date, display units, entered work, completion, intent and edit state without creating history.
+- Add Back to conversation when the research library is opened from either Coach view.
+- Keep optional welcome choices on Home without dismissing them or hiding native safety notices.
+- Move connection and continuity presentation into focused, offline-cached modules. Preserve schema 34 and training engines; version 6.9.0, native build 38900.
+- See docs/releases-v6.9.md for validation and the merged v6.8 rollback baseline.
+
 # v6.8.0 — Mobile training and conversational research
 
 - Move Coach access into workout controls and show every quick RPE choice without sideways scrolling.

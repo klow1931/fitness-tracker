@@ -37,9 +37,13 @@
    return result;
   }catch(e){status.textContent=e.message;cancel.remove();}
  }
- function open({topicId=null}={}){
+ function open({topicId=null,returnToCoach=null}={}){
   const U=window.LoadnoteReviewedPlanningUI;if(!U||!R())return;
   const dialog=U.dialog('coach-research-dialog','Research & saved sources','<p>Find training research while Coach stays local. Europe PMC receives topic keywords and your network address. Your chat and training records stay on this device.</p><label>Internet permission<select class="input" id="research-mode"><option value="ask">Ask before searching</option><option value="off">Offline only</option><option value="auto">Automatic research</option></select></label><details><summary>Permission, privacy and limits</summary><p>Ask before searching is the default. Automatic research looks up recognized general training topics alongside Coach replies. Recognized health and injury questions do not trigger research. Research does not retrain the model or change your plan. No chat, workout records, injury notes, account cookies or training summaries are sent. Opening a publication link connects to that site separately.</p></details><label>Research topic<select class="input" id="research-topic"></select></label><details><summary>Search keywords</summary><p id="research-query"></p></details><button type="button" class="btn-primary" id="research-search">Search online</button><p id="research-notice" role="status"></p><div id="research-results"></div><h3>Saved references on this device</h3><p>Save citations and short excerpts on this device. They are excluded from training backups and cloud sync; clear them here when you choose.</p><div id="research-saved"></div><button type="button" class="btn-secondary" id="research-clear">Clear saved references</button>');if(!dialog)return;
+  if(['quick','full'].includes(returnToCoach)){
+   const back=button('Back to conversation',()=>{dialog.close();if(returnToCoach==='quick')window.LoadnoteCoachCompanionUI?.open();else{window.showTab?.('coach');window.showSubTab?.('coach','co-chat');}});
+   back.id='research-return-to-coach';dialog.querySelector('.adaptive-dialog-body').prepend(back);
+  }
   const mode=dialog.querySelector('#research-mode'),select=dialog.querySelector('#research-topic'),query=dialog.querySelector('#research-query'),notice=dialog.querySelector('#research-notice'),results=dialog.querySelector('#research-results'),saved=dialog.querySelector('#research-saved');
   mode.value=R().mode();for(const t of R().topics()){const option=element('option',t.label);option.value=t.id;select.append(option);}if(R().topics().some(t=>t.id===topicId))select.value=topicId;
   function update(){const t=R().topics().find(t=>t.id===select.value);query.textContent='Search keywords: '+t.terms;dialog.querySelector('#research-search').disabled=R().mode()==='off';}

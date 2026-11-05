@@ -1,6 +1,6 @@
 # Loadnote
 
-**v6.8.0 · Development build.**
+**v6.9.0 · Development build.**
 
 [Reliable workout draft checkpoints v6.7](docs/releases-v6.7.md): if the primary unfinished-workout save fails but the recovery copy succeeds, Loadnote correctly reports **saved in recovery copy**, retains the newest draft for offline recovery, and offers **Retry draft save** to restore redundancy. Total save failure remains a clear warning.
 
