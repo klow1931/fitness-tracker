@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test'),{phaseFixture}=require('../fixtures/phase-builder');
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-10-16T14:00:00Z')});await page.goto('/',{waitUntil:'domcontentloaded'});await expect(page.locator('.ex-name')).toHaveCount(1);
@@ -112,7 +113,7 @@ test('device exclusions apply and changed device preferences invalidate a review
  await d.locator('#offline-load-workout').click();await expect(d.locator('#offline-plan-error')).toContainText('preferences changed');expect(await page.evaluate(()=>pendingPrescription)).toBe(null);
 });
 test('clearing the shared conversation removes the unfinished planning request',async({page,context})=>{
- await context.setOffline(true);await ask(page,'Build a program');await ask(page,'Strength');await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
+ await context.setOffline(true);await ask(page,'Build a program');await ask(page,'Strength');await showCoachOptions(page);await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
  const reply=await ask(page,'12 weeks');await expect(reply).not.toContainText('strength program request');await expect(page.locator('#chat-messages').getByRole('button',{name:'Review program request'})).toHaveCount(0);
 });
 test('a new user reviews setup explicitly; workout preview fits a narrow phone',async({page},info)=>{

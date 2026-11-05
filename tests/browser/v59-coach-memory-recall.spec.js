@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 const {fixture}=require('../fixtures/program-review');
 test.beforeEach(async({page})=>{
@@ -44,7 +45,7 @@ test('v5.9 pick-up request does not invent saved chat and only uses reviewed fol
  const before=await page.evaluate(()=>JSON.stringify(data));
  let reply=await ask(page,'Where did we leave off?');
  await expect(reply).toContainText('do not save previous conversations');
- await page.locator('#coach-memory-open').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-memory-open').click();
  const d=page.locator('#coach-memory-dialog');
  await d.locator('#coach-memory-type').selectOption('follow-up');
  await d.locator('#coach-memory-text').fill('Ask if I tried keeping my Sunday routine');
@@ -54,7 +55,7 @@ test('v5.9 pick-up request does not invent saved chat and only uses reviewed fol
  await expect(reply).toContainText('do not keep your previous chat transcript');
  await expect(reply).toContainText('Ask if I tried keeping my Sunday routine');
  await expect(reply).toContainText('not proof that you completed anything');
- await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
+ await showCoachOptions(page);await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
  reply=await ask(page,'Where did we leave off?');
  await expect(reply).toContainText('Ask if I tried keeping my Sunday routine');
  expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);

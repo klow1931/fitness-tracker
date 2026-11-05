@@ -27,6 +27,11 @@
   host=document.createElement('div');host.className='quick-set-entry';host.hidden=true;
   const chips=H().RPE_VALUES.map(v=>'<button type="button" class="quick-rpe-chip" data-quick-rpe="'+v+'">'+v+'</button>').join('');
   host.innerHTML='<span class="quick-set-label">Log set · tap RPE</span><div class="quick-rpe-chips">'+chips+'</div><button type="button" class="quick-done-no-rpe" data-quick-done>Done without RPE</button>';
+  // Keep numeric-input focus until the completion click is delivered. Safari
+  // can otherwise blur the input on mousedown, write a checkpoint, and move
+  // this button when a save warning appears before mouseup. Keyboard clicks
+  // retain their native activation; completion still runs through complete().
+  host.querySelectorAll('button').forEach(button=>button.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();}));
   set.appendChild(host);return host;
  }
  function setState(set,active){

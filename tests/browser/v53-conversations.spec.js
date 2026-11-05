@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 const {phaseFixture}=require('../fixtures/phase-builder');
 test.beforeEach(async({page})=>{
@@ -23,16 +24,16 @@ test('explicit reply settings survive reload, change detail and can be removed w
  await d.locator('[data-review-close]').click();r=await ask(page,'I am nervous');await expect(r).toContainText('One step at a time');await expect(r).toContainText('performance measurement');
  const raw=await page.evaluate(()=>localStorage.getItem(LoadnoteCoachConversationPreferences.KEY));expect(JSON.parse(raw)).toEqual({version:1,length:'detail',encouragement:'upbeat'});expect(raw).not.toContain('nervous');
  await page.reload();await expect(page.locator('#coach-companion-launcher')).toBeVisible();await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
- await page.locator('#coach-reply-preferences').click();await expect(d.locator('#coach-reply-length')).toHaveValue('detail');await d.getByRole('button',{name:'Remove saved preferences',exact:true}).click();await expect(d).toContainText('Defaults are in use');expect(await page.evaluate(()=>localStorage.getItem(LoadnoteCoachConversationPreferences.KEY))).toBeNull();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-reply-preferences').click();await expect(d.locator('#coach-reply-length')).toHaveValue('detail');await d.getByRole('button',{name:'Remove saved preferences',exact:true}).click();await expect(d).toContainText('Defaults are in use');expect(await page.evaluate(()=>localStorage.getItem(LoadnoteCoachConversationPreferences.KEY))).toBeNull();
 });
 test('settings failure stays visible and preserves previously saved choices',async({page})=>{
- await page.locator('#coach-reply-preferences').click();const d=page.locator('#coach-communication-dialog');await d.getByRole('button',{name:'Save preferences',exact:true}).click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-reply-preferences').click();const d=page.locator('#coach-communication-dialog');await d.getByRole('button',{name:'Save preferences',exact:true}).click();
  await page.evaluate(()=>{window.originalCommunicationSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===LoadnoteCoachConversationPreferences.KEY)throw Error('Quota');return originalCommunicationSet.call(this,k,v);};});
  await d.locator('#coach-reply-length').selectOption('detail');await d.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(d).toContainText('could not be saved');await expect(d.locator('#coach-communication-status')).toBeInViewport();expect(await page.evaluate(()=>LoadnoteCoachConversationPreferencesUI.current().preferences.length)).toBe('standard');
 });
 test('topic changes, clearing and health questions stop supportive continuation',async({page})=>{
  await ask(page,'I am nervous');await ask(page,'Explain RPE');let r=await ask(page,'Mostly the equipment');await expect(r).not.toContainText('Which movement or piece of equipment feels unfamiliar');
- await ask(page,'I am nervous');await page.getByRole('button',{name:'Clear conversation',exact:true}).click();r=await ask(page,'Mostly the equipment');await expect(r).not.toContainText('Which movement or piece of equipment feels unfamiliar');
+ await ask(page,'I am nervous');await showCoachOptions(page);await page.getByRole('button',{name:'Clear conversation',exact:true}).click();r=await ask(page,'Mostly the equipment');await expect(r).not.toContainText('Which movement or piece of equipment feels unfamiliar');
  r=await ask(page,'I feel dizzy but how many sets are left?');await expect(r).toContainText('cannot diagnose');await expect(r).not.toContainText('sets remain unchecked');
 });
 test('live questions read fresh draft counts and timer, never save or complete a workout',async({page})=>{
@@ -42,5 +43,5 @@ test('live questions read fresh draft counts and timer, never save or complete a
  await r.getByRole('button',{name:'Return to workout',exact:true}).click();await expect(page.locator('#panel-workouts')).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);expect(await page.locator('.set-done-check:checked').count()).toBe(2);
 });
 test('new preferences stay reachable at narrow large-text sizes',async({page})=>{
- await page.setViewportSize({width:320,height:740});await page.evaluate(()=>document.documentElement.style.fontSize='20px');await page.locator('#coach-reply-preferences').click();const d=page.locator('#coach-communication-dialog');await expect(d).toBeVisible();expect(await d.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+ await page.setViewportSize({width:320,height:740});await page.evaluate(()=>document.documentElement.style.fontSize='20px');await showCoachOptions(page,{quick:false});await page.locator('#coach-reply-preferences').click();const d=page.locator('#coach-communication-dialog');await expect(d).toBeVisible();expect(await d.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
 });

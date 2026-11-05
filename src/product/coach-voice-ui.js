@@ -85,6 +85,7 @@
   host.querySelector('#cc-voice-last button').addEventListener('click',()=>{const result=loggerResult('undoLast');if(result?.ok)append(result.summary,'assistant','Voice logging');});
   host.querySelector('#cc-proactive select').addEventListener('change',event=>{Proactive()?.setMode?.(event.target.value);renderProactive();});
   host.querySelector('.cc-cues-pause').addEventListener('click',()=>{const state=Proactive()?.state?.();if(state?.paused)Proactive()?.resume?.();else Proactive()?.pause?.();renderProactive();});
+  document.getElementById('cc-options-body')?.append(host.querySelector('#cc-proactive'));
   renderProactive();return host;
  }
  function render(snapshot={state:'off',muted:false}){

@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 
 test.beforeEach(async({page})=>{
@@ -49,7 +50,7 @@ test('v2.63 signed-in Coach sends only question, bounded context and history thr
  await expect(page.locator('#coach-online-status')).toContainText('Secure online Coach available');
  await expect(page.locator('#coach-account-link')).toBeHidden();
 
- await page.locator('#coach-online-conversation').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-online-conversation').click();
  await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','true');
  await page.locator('#chat-input').fill('How can I build a consistent training habit?');
  await page.locator('#chat-send-btn').click();
@@ -79,7 +80,7 @@ test('v2.63 online Coach failure falls back to built-in coaching without losing 
  await page.goto('/');
  await expect.poll(()=>page.evaluate(()=>window.LoadnoteAccountSession?.snapshot().status)).toBe('authenticated');
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
- await page.locator('#coach-online-conversation').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-online-conversation').click();
  await expect(page.locator('#coach-online-conversation')).toHaveAttribute('aria-pressed','true');
  await page.locator('#chat-input').fill('Can we talk through a decision?');
  await page.locator('#chat-send-btn').click();

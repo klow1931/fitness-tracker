@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 
 test.beforeEach(async({page})=>{
@@ -77,7 +78,7 @@ test('v2.82 proactive cues persist mode, pause safely, and speak only during an 
  await mockSignedInVoice(page);await page.goto('/');await page.locator('#coach-companion-launcher').click();
  await expect.poll(()=>page.evaluate(()=>!!window.LoadnoteProactiveCoachUI&&!!window.LoadnoteCoachVoiceUI)).toBe(true);
  const mode=page.locator('#cc-proactive select');await expect(mode).toHaveValue('normal');
- await mode.selectOption('proactive');expect(await page.evaluate(()=>localStorage.getItem('loadnote-proactive-coach-mode-v1'))).toBe('proactive');
+ await showCoachOptions(page,{quick:true});await mode.selectOption('proactive');expect(await page.evaluate(()=>localStorage.getItem('loadnote-proactive-coach-mode-v1'))).toBe('proactive');
  let before=await page.evaluate(()=>window.__voiceEvents.length);
  const inactive=await page.evaluate(()=>window.LoadnoteProactiveCoachUI.offer(window.LoadnoteProactiveCoach.restCompleteEvent({nextLabel:'Bench set 2'})));
  expect(inactive).toBe(false);expect(await page.evaluate(()=>window.__voiceEvents.length)).toBe(before);
