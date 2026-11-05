@@ -160,19 +160,19 @@
   style();
   const launcher=document.createElement('button');launcher.id='coach-companion-launcher';launcher.type='button';launcher.textContent='Coach';launcher.setAttribute('aria-controls','coach-companion-panel');launcher.setAttribute('aria-expanded','false');launcher.addEventListener('click',toggle);document.body.appendChild(launcher);
   const backdrop=document.createElement('button');backdrop.id='coach-companion-backdrop';backdrop.type='button';backdrop.hidden=true;backdrop.tabIndex=-1;backdrop.setAttribute('aria-label','Close Coach Companion');backdrop.addEventListener('click',close);document.body.appendChild(backdrop);
-  const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.setAttribute('aria-modal','true');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><span>Training changes stay with Decisions.</span><button type="button" id="cc-full">Open Coach</button></div>`;
+  const panel=document.createElement('aside');panel.id='coach-companion-panel';panel.hidden=true;panel.setAttribute('aria-label','Coach Companion');panel.setAttribute('aria-modal','true');panel.innerHTML=`<div class="cc-head"><div><b>Coach Companion</b><small id="cc-status">Available anywhere in Loadnote</small></div><button class="cc-close" type="button" aria-label="Close Coach Companion">×</button></div><div class="cc-context" id="cc-context"></div><div class="cc-messages" id="cc-messages" aria-live="polite"></div><div class="cc-quick" id="cc-quick"></div><form class="cc-form" id="cc-form"><input id="cc-input" autocomplete="off" placeholder="Ask about your training…" aria-label="Message Coach Companion"><button type="submit">Send</button></form><div class="cc-foot"><button type="button" id="cc-full">Open Coach</button><details id="cc-options" class="coach-options"><summary>Coach options</summary><div id="cc-options-body"></div></details></div>`;
   panel.querySelector('.cc-close').addEventListener('click',close);
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text||asking)return;input.value='';void serialAsk(text);});
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
-  const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('.cc-foot').append(aiButton);
-  const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('.cc-foot').append(researchButton);
-  const memoryButton=document.createElement('button');memoryButton.type='button';memoryButton.id='cc-memory';memoryButton.textContent='Things Coach remembers';memoryButton.style.minHeight='44px';memoryButton.onclick=()=>{close();window.LoadnoteCoachMemoryUI?.open();};panel.querySelector('.cc-foot').append(memoryButton);
-  const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('.cc-foot').append(communicationButton);
-  const talkButton=document.createElement('button');talkButton.type='button';talkButton.textContent='Talk it through';talkButton.style.minHeight='44px';talkButton.onclick=()=>serialAsk('Let’s talk it through');panel.querySelector('.cc-foot').append(talkButton);
-  const onlineButton=document.createElement('button');onlineButton.type='button';onlineButton.id='cc-online-conversation';onlineButton.style.minHeight='44px';onlineButton.onclick=toggleOnlineConversation;panel.querySelector('.cc-foot').append(onlineButton);
+  const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI · developer';aiButton.hidden=new URLSearchParams(location.search).get('developer')!=='1';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('#cc-options-body').append(aiButton);
+  const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research & saved sources';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('#cc-options-body').append(researchButton);
+  const memoryButton=document.createElement('button');memoryButton.type='button';memoryButton.id='cc-memory';memoryButton.textContent='Things Coach remembers';memoryButton.style.minHeight='44px';memoryButton.onclick=()=>{close();window.LoadnoteCoachMemoryUI?.open();};panel.querySelector('#cc-options-body').append(memoryButton);
+  const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('#cc-options-body').append(communicationButton);
+  const talkButton=document.createElement('button');talkButton.type='button';talkButton.textContent='Talk it through';talkButton.style.minHeight='44px';talkButton.onclick=()=>serialAsk('Let’s talk it through');panel.querySelector('#cc-options-body').append(talkButton);
+  const onlineButton=document.createElement('button');onlineButton.type='button';onlineButton.id='cc-online-conversation';onlineButton.style.minHeight='44px';onlineButton.onclick=toggleOnlineConversation;panel.querySelector('#cc-options-body').append(onlineButton);
   document.body.appendChild(panel);
   updateConversationMode();
-  append('I can help draft a program or daily workout offline, explain your training, and control the rest timer. Drafts need your review; chat does not save or complete training.','assistant');
+  append('What would help today? Ask about your training, research a topic, or talk something through. Training changes need your review.','assistant');
   refresh();
   document.addEventListener('input',queueRefresh,true);document.addEventListener('change',queueRefresh,true);document.addEventListener('click',queueRefresh,true);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();close();}});
@@ -226,7 +226,18 @@
   const launcher=document.getElementById('coach-companion-launcher'),dock=document.getElementById('gym-floor-dock');
   if(!launcher)return;
   launcher.style.bottom='';
-  if(!dock||!window.matchMedia('(max-width: 640px)').matches)return;
+  const training=surface()==='train'&&!document.body.classList.contains('train-launch-mode');
+  let slot=document.getElementById('workout-coach-access');
+  if(training){
+   const rows=document.getElementById('exercise-rows');
+   if(!slot&&rows){slot=document.createElement('div');slot.id='workout-coach-access';rows.before(slot);}
+   const inDock=window.matchMedia('(max-width: 640px)').matches&&document.body.classList.contains('gym-floor-dock-visible')&&dock;
+   const destination=inDock?dock:slot;
+   if(destination&&launcher.parentElement!==destination)destination.append(launcher);
+  }else if(launcher.parentElement!==document.body)document.body.append(launcher);
+  launcher.classList.toggle('coach-workout-access',training);
+  if(slot)slot.hidden=!training||launcher.parentElement!==slot;
+  if(training||!dock||!window.matchMedia('(max-width: 640px)').matches)return;
   const button=launcher.getBoundingClientRect(),controls=dock.getBoundingClientRect();
   if(controls.height&&controls.top<button.bottom&&controls.bottom>button.top&&controls.left<button.right&&controls.right>button.left){
    launcher.style.bottom=(window.innerHeight-controls.top+12)+'px';
@@ -346,7 +357,7 @@
  function init(){ensure();window.addEventListener('scroll',syncLauncherPosition,{passive:true});window.addEventListener('resize',syncLauncherPosition,{passive:true});}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  async function serialAsk(text){if(asking||!String(text??'').trim())return null;asking=true;const buttons=[document.querySelector('#cc-form button'),document.getElementById('chat-send-btn')];for(const b of buttons)if(b)b.disabled=true;try{return await ask(String(text).trim().slice(0,500));}finally{asking=false;for(const b of buttons)if(b)b.disabled=false;}}
- function resetConversation(){conversationGeneration++;modeRequest++;history.length=0;onlineConversation=false;onlineHistory.length=0;updateConversationMode();document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about training or choose Talk it through.');}
+ function resetConversation(){window.LoadnoteCoachResearch?.cancel();conversationGeneration++;modeRequest++;history.length=0;onlineConversation=false;onlineHistory.length=0;updateConversationMode();document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about training or choose Talk it through.');}
  function clearConversation(){if(asking)return;resetConversation();}
  function appendTranscript(text,role='assistant',meta='Voice Companion'){if(['user','assistant'].includes(role)){history.push({role,content:String(text??'').slice(0,role==='user'?500:2000)});if(history.length>24)history.splice(0,history.length-24);}return append(text,role,meta);}
  window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,toggleOnlineConversation,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};

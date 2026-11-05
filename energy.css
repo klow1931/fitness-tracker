@@ -972,3 +972,60 @@ body.dark .cockpit-save-failed .cockpit-save-health p { color:#fca5a5; }
 .custom-program-coverage p{overflow-wrap:anywhere}
 @media(max-width:520px){.custom-program-config,.custom-program-row-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-row-fields label:has([data-field="exercise"]),.custom-program-row-fields label:has([data-field="notes"]),.custom-program-config label:first-child{grid-column:1 / -1}.custom-program-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);padding:12px}.custom-program-row{padding:10px}.custom-program-row-head{gap:8px}.custom-program-row-actions button{min-height:42px;padding:8px 10px}}
 @media(max-width:520px){.custom-program-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-program-quick-grid button{grid-column:1 / -1}}
+
+/* v6.8: conversation first, with explicit secondary options and inline sources. */
+.coach-options{position:relative;min-width:0;color:var(--ink)}
+.coach-options>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:.5rem .65rem;font-weight:700;font-size:.85rem;border:1px solid var(--line);border-radius:.65rem}
+.coach-options[open]>summary{margin-bottom:.5rem}
+#cc-options{flex:1 1 auto}
+#cc-options-body,.coach-options-body{display:grid;gap:.5rem;max-height:32dvh;overflow:auto;overscroll-behavior:contain;padding:.4rem}
+#cc-options-body>button,.coach-options-body button{min-height:44px;text-align:left;padding:.55rem .65rem;font-size:.85rem;white-space:normal}
+#cc-options-body #cc-proactive{display:grid;gap:.5rem;padding:.5rem 0}
+#coach-companion-panel .cc-voice{padding:6px 14px;flex:0 0 auto}
+#coach-companion-panel .cc-voice button{min-height:44px}
+#coach-companion-panel .cc-foot{gap:.5rem;align-items:flex-start;padding-top:4px}
+#coach-companion-panel .cc-foot>#cc-full{min-height:44px;padding:.5rem}
+#coach-companion-panel .cc-messages{min-height:96px}
+.coach-research-offer{margin-top:.65rem;border-top:1px solid var(--line);padding-top:.6rem;overflow-wrap:anywhere}
+.coach-research-offer>small{display:block;margin:.4rem 0;color:var(--muted)}
+.coach-research-offer button{min-height:44px;max-width:100%;white-space:normal}
+.coach-research-offer h3{font-weight:700;font-size:.9rem}
+.coach-research-offer p{margin:.4rem 0;font-size:.8rem;line-height:1.45}
+.coach-research-sources>summary{min-height:44px;cursor:pointer;font-weight:700;display:flex;align-items:center}
+.coach-research-sources article{border:1px solid var(--line);border-radius:.65rem;padding:.65rem;margin:.5rem 0}
+.coach-research-sources h4{font-weight:700}
+.coach-research-sources a{text-decoration:underline;color:var(--brand)}
+body.dark .coach-research-sources a{color:#a5b4fc}
+#coach-companion-launcher.coach-workout-access{position:static;box-shadow:none;min-height:44px;margin:0;font-size:.85rem}
+#workout-coach-access{display:flex;justify-content:flex-end;margin:.5rem 0}
+#workout-coach-access[hidden]{display:none}
+#gym-floor-dock>#coach-companion-launcher{grid-column:auto;min-width:0;padding:.5rem .6rem}
+@media(max-width:640px){
+ .quick-rpe-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:.35rem;overflow:visible;width:100%}
+ #workout-log-card .quick-rpe-chips>.quick-rpe-chip{min-width:44px;min-height:44px;padding:.35rem .1rem}
+ .app-shell>header{margin-bottom:.45rem;gap:.25rem}
+ .app-shell>header h1{font-size:1.25rem}
+ .loadnote-focus-message{padding-block:.3rem;font-size:.72rem}
+ #simple-view-banner{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;padding:.5rem .65rem;margin-bottom:.65rem;font-size:.75rem}
+ #simple-view-banner button{min-height:44px;font-size:.75rem;padding:.4rem .5rem;margin:0}
+ #panel-prs .measure-hero,#panel-profile .measure-hero{padding:.65rem .8rem;border-radius:.75rem}
+ #panel-prs .measure-hero h1,#panel-profile .measure-hero h1{font-size:1.2rem;margin:.2rem 0}
+ #panel-prs .measure-hero p:not(.measure-eyebrow),#panel-profile .measure-hero p:not(.measure-eyebrow){display:none}
+ .coach-chat-card{padding:.75rem}
+ .coach-chat-card #chat-messages{height:clamp(240px,45dvh,480px)}
+ .coach-chat-card #chat-input{min-width:0;font-size:1rem}
+ .coach-chat-card #chat-send-btn{min-width:44px;padding:.5rem .65rem;font-size:.9rem}
+ .coach-chat-card #coach-quick-links{max-height:6rem;overflow:auto}
+ #gym-floor-dock{grid-template-columns:minmax(0,1fr) repeat(3,auto)}
+ #gym-floor-dock:has([data-gym-undo]:not([hidden])){grid-template-columns:minmax(0,1fr) repeat(4,auto);gap:.25rem}
+}
+
+#coach-companion-panel{height:min(680px,calc(100dvh - 100px))}
+@media(max-width:640px){
+ #coach-companion-panel{height:calc(100dvh - 88px)}
+ body.gym-floor-dock-visible #coach-companion-panel{height:calc(100dvh - 168px)}
+ .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) repeat(3,auto)}
+ .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) repeat(4,auto)}
+ body.training-execution-active .gym-floor-dock.gym-floor-dock-active{grid-template-columns:minmax(0,1fr) auto auto}
+ body.training-execution-active .gym-floor-dock.gym-floor-dock-active.gym-floor-dock-has-undo{grid-template-columns:minmax(0,1fr) auto auto auto}
+}

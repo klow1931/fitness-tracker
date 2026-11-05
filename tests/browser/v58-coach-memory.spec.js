@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 const {fixture}=require('../fixtures/program-review');
 test.beforeEach(async({page})=>{
@@ -34,9 +35,9 @@ test('v5.8 review-only memory is retained on reload but never saved from a chat 
  await page.evaluate(()=>{LoadnoteAccountSession._resetForTest('anonymous');showTab('coach');showSubTab('coach','co-chat');});
  r=await ask(page,'What do you remember about me?');
  await expect(r).toContainText('I want to keep enjoying exercise');
- await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
+ await showCoachOptions(page);await page.getByRole('button',{name:'Clear conversation',exact:true}).click();
  expect(await page.evaluate(()=>LoadnoteCoachMemoryUI.current().records.length)).toBe(1);
- await page.locator('#coach-memory-open').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-memory-open').click();
  await expect(d.locator('[data-coach-memory-id]')).toHaveCount(1);
  await d.locator('[data-memory-edit]').click();
  await d.locator('#coach-memory-text').fill('Keep exercise enjoyable every week');
@@ -49,7 +50,7 @@ test('v5.8 review-only memory is retained on reload but never saved from a chat 
 test('v5.8 follow-up is offered on a later opening, and a profile switch isolates memory',async({page})=>{
  page.on('dialog',d=>d.accept());
  const before=await page.evaluate(()=>JSON.stringify(data));
- await page.locator('#coach-memory-open').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-memory-open').click();
  const d=page.locator('#coach-memory-dialog');
  await d.locator('#coach-memory-type').selectOption('follow-up');
  await d.locator('#coach-memory-text').fill('Did I try putting my phone away while cooking?');
@@ -79,7 +80,7 @@ test('v5.8 follow-up is offered on a later opening, and a profile switch isolate
 test('v5.8 switching profiles closes an open memory review without touching training',async({page})=>{
  page.on('dialog',d=>d.accept());
  const before=await page.evaluate(()=>JSON.stringify(data));
- await page.locator('#coach-memory-open').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-memory-open').click();
  const d=page.locator('#coach-memory-dialog');
  await d.locator('#coach-memory-text').fill('Keep training enjoyable');
  await d.locator('#coach-memory-save').click();
@@ -123,7 +124,7 @@ test('v5.8 account changes erase an in-flight Coach reply instead of displaying 
 test('v5.8 manual memory backup imports only in matching scope and clear-all is independent of training',async({page})=>{
  page.on('dialog',d=>d.accept());
  const before=await page.evaluate(()=>JSON.stringify(data));
- await page.locator('#coach-memory-open').click();
+ await showCoachOptions(page,{quick:false});await page.locator('#coach-memory-open').click();
  const d=page.locator('#coach-memory-dialog');
  await d.locator('#coach-memory-type').selectOption('routine-cue');
  await d.locator('#coach-memory-text').fill('Put gym shoes near the door on Sunday');

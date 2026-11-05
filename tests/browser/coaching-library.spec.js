@@ -2,7 +2,7 @@ const {test,expect}=require('playwright/test'),{fixture}=require('../fixtures/pr
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-09-24T12:00:00Z')});
  await page.route('**/api/auth/session',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({authenticated:false,authConfigured:false})}));
- await page.goto('/');await expect(page.locator('#coach-companion-launcher')).toBeVisible();await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});},fixture());
+ await page.goto('/?developer=1');await expect(page.locator('#coach-companion-launcher')).toBeVisible();await page.evaluate(seed=>{data=normalizeDataShape({...data,...seed});},fixture());
 });
 async function ask(page,q){await page.locator('#cc-input').fill(q);await page.locator('#cc-form button').click();await expect(page.locator('#cc-form button')).toBeEnabled();}
 test('Companion shares referenced Westside knowledge with full Coach without altering training',async({page})=>{

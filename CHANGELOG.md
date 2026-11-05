@@ -1,3 +1,13 @@
+# v6.8.0 — Mobile training and conversational research
+
+- Move Coach access into workout controls and show every quick RPE choice without sideways scrolling.
+- Give conversations more space with collapsed Coach options; keep experimental model downloads in an explicit developer view.
+- Search supported research topics directly beneath Coach answers, with permission, dated expandable sources, cancellation/retry and explicit offline saves.
+- Refresh saved references immediately after saving; keep both conversation views synchronized.
+- Answer general training-volume questions before offering personal workload review; compact mobile introductory UI and align navigation wording.
+- Reuse existing training/research engines, preserve units and schema 34, and align all native metadata to build 38800.
+- See docs/releases-v6.8.md for architecture, validation and the v6.7 rollback baseline.
+
 # v6.7.0 — Reliable local workout checkpoint health
 
 - Correct dual-checkpoint write accounting: one successful local copy is **recoverable**, not falsely marked unsaved, while two successful writes are required for the fully redundant saved state.

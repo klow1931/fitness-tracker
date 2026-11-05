@@ -1,3 +1,4 @@
+const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test'),{fixture}=require('../fixtures/program-review');
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-09-24T12:00:00Z')});
@@ -19,5 +20,5 @@ test('full offline Coach remembers follow-ups and escapes hostile exercise label
  async function full(q){await page.locator('#chat-input').fill(q);await page.locator('#chat-send-btn').click();await expect(page.locator('#chat-send-btn')).toBeEnabled();}
  await full('How is my squat progress?');await expect(page.locator('#chat-messages')).toContainText('<img src=x onerror=alert(1)> Squat');await expect(page.locator('#chat-messages img')).toHaveCount(0);
  await full('What about bench?');await expect(page.locator('#chat-messages')).toContainText('Competition Bench');
- await page.getByRole('button',{name:'Clear conversation',exact:true}).click();await full('Why?');await expect(page.locator('#chat-messages')).toContainText('clear prior topic');
+ await showCoachOptions(page);await page.getByRole('button',{name:'Clear conversation',exact:true}).click();await full('Why?');await expect(page.locator('#chat-messages')).toContainText('clear prior topic');
 });

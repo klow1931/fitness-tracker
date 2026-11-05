@@ -36,7 +36,8 @@ async function expectMobileLauncherClearOfDock(page){
   const launcher=document.getElementById('coach-companion-launcher')?.getBoundingClientRect();
   const dock=document.getElementById('gym-floor-dock')?.getBoundingClientRect();
   if(!launcher||!dock)return false;
-  return dock.top>=launcher.bottom||dock.bottom<=launcher.top||dock.right<=launcher.left||dock.left>=launcher.right;
+  const button=document.getElementById('coach-companion-launcher');
+  return button.parentElement.id==='gym-floor-dock'&&getComputedStyle(button).position==='static'&&launcher.left>=dock.left&&launcher.right<=dock.right;
  })).toBe(true);
 }
 

@@ -2,14 +2,14 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 let current={surface:'home',liveWorkout:null,restTimer:{active:false}};
 let replacementCount=0;
-const host={innerHTML:''},status={},launcher={dataset:{},style:{},getBoundingClientRect:()=>({top:550,bottom:590,left:290,right:375})},quick={dataset:{},buttons:[]};
+const host={innerHTML:''},status={},launcher={dataset:{},style:{},classList:{toggle(){}},getBoundingClientRect:()=>({top:550,bottom:590,left:290,right:375})},quick={dataset:{},buttons:[]};
 Object.defineProperty(quick,'innerHTML',{set(html){
  replacementCount++;
  this.buttons=[...html.matchAll(/data-cc-q="([^"]+)"/g)].map(match=>({dataset:{ccQ:match[1]},listeners:[],addEventListener(type,fn){this.listeners.push({type,fn});}}));
 }});
 quick.querySelectorAll=()=>quick.buttons;
 const elements={'coach-companion-launcher':launcher,'cc-context':host,'cc-status':status,'cc-quick':quick};
-const document={readyState:'loading',addEventListener(){},getElementById:id=>elements[id]||null,querySelectorAll:()=>[]};
+const document={body:{append(el){el.parentElement=this;},classList:{contains:()=>false}},readyState:'loading',addEventListener(){},getElementById:id=>elements[id]||null,querySelectorAll:()=>[]};
 const window={innerHeight:760,matchMedia:()=>({matches:true}),LoadnoteCoachCompanion:{buildContext:()=>current,currentSetSummary:()=>null}};
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/product/coach-companion-ui'),'utf8'),{window,document});
 const refresh=window.LoadnoteCoachCompanionUI.refresh;
