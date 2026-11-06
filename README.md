@@ -1,8 +1,8 @@
 # Loadnote
 
-**v7.3.0 · Development build.**
+**v7.5.0 · Development build.**
 
-[Returning to training v7.3](docs/releases-v7.3.md): Repeat workout is visible in Simple History, active filters remain clearable with controls closed, and empty or invalid-date results offer a clear next step.
+[Clearer rest and return to entry v7.5](docs/releases-v7.5.md): A minutes-and-seconds rest clock and an explicit return to the next unfinished set, without marking it complete or saving a workout.
 
 [Beginner training clarity v7.1](docs/releases-v7.1.md): saved starter plans remain available across local/UTC date boundaries. Guided first sessions offer simpler controls, a short save recap, compact Progress and direct access to the saved plan in Coach. Full view and optional training tools remain available.
 

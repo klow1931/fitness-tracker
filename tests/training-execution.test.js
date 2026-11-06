@@ -29,3 +29,9 @@ assert.deepEqual(Execution.restSnapshot({total:90000,deadline:100000,paused:true
 });
 
 console.log('v2.75 execution state activates only for meaningful work and classifies workout/rest focus deterministically');
+for(const [ms,clock] of [[90000,'1:30'],[180000,'3:00'],[59999,'1:00'],[1,'0:01'],[0,'0:00'],[-1,'0:00'],[6000000,'100:00'],[NaN,'0:00']])assert.equal(Execution.restDisplay({remainingMs:ms,active:ms>0}).clock,clock);
+assert.equal(Execution.restDisplay({remainingMs:45000,active:true,paused:true}).state,'Rest paused');
+assert.equal(Execution.restDisplay({remainingMs:45000,active:true,paused:false}).state,'Rest');
+assert.deepEqual(Execution.restDisplay(null),{clock:'0:00',state:'Rest finished'});
+const snapshot=Execution.restSnapshot({total:90000,deadline:100000,paused:false,remaining:90000},40000),copy=JSON.stringify(snapshot);Execution.restDisplay(snapshot);assert.equal(JSON.stringify(snapshot),copy);
+console.log('Rest display rounds remaining time up, handles minute boundaries and preserves the timer snapshot');

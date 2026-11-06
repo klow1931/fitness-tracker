@@ -1,3 +1,11 @@
+# v7.5.0 — Clearer rest and return to entry
+
+- Show the current-workout rest clock as minutes:seconds, with an explicit paused state and unchanged deadline/pause/extension behavior.
+- Offer Back to set (or Back to exercise for cardio) during rest. End the timer and focus the unfinished entry without changing loads, reps, effort, completion or saved history.
+- Update the visible clock without replacing the pause/return controls; suppress automatic countdown announcements.
+- Retain completion Undo, independent timer edits, draft recovery and the existing save/review flow. Schema 34 unchanged; unsigned native build 39500.
+- Version 7.5 follows merged v7.3 at the user's request; no v7.4 release is implied.
+
 # v7.3.0 — Returning to training
 
 - Promote Repeat workout in Simple History and explain its new-draft behavior alongside Edit.
