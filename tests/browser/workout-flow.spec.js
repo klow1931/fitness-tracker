@@ -57,9 +57,9 @@ for(const mode of ['reps','duration'])test('copy current previous '+mode+' set p
 test('current workout rest and swap actions remain reachable without setup',async({page},testInfo)=>{
  await seed(page);await page.locator('#today-training [data-today-train]').click();
  const cockpit=page.locator('#training-cockpit');const before=await page.evaluate(()=>JSON.stringify(readLoggerDraft().rows));
- await cockpit.getByRole('button',{name:'Start 90 seconds of rest'}).click();await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('90s');
+ await cockpit.getByRole('button',{name:'Start 90 seconds of rest'}).click();await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('1:30');
  await cockpit.locator('[data-cockpit-rest-pause]').click();await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('paused');
- await cockpit.getByRole('button',{name:'Add 30 seconds of rest'}).click();await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('120s');
+ await cockpit.getByRole('button',{name:'Add 30 seconds of rest'}).click();await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('2:00');
  await cockpit.locator('[data-cockpit-rest-stop]').click();await expect(cockpit.locator('[data-cockpit-rest-start]')).toHaveCount(2);
  await cockpit.getByRole('button',{name:'Start 3 minutes of rest'}).click();expect(await page.evaluate(()=>LoadnoteRestTimer.snapshot().totalMs)).toBe(180000);
  expect(await page.evaluate(()=>JSON.stringify(readLoggerDraft().rows))).toBe(before);

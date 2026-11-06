@@ -135,7 +135,7 @@ test('v2.62 mobile dock follows the draft, rest timer and navigation without los
  await expect(page.locator('#mobile-nav [data-tab="workouts"]')).toHaveClass(/workout-draft-active/);
  await dock.locator('[data-gym-rest]').click();
  await expect(dock.locator('#rest-timer-sticky')).toContainText('90s');
- await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('90s');
+ await expect(page.locator('#training-cockpit [data-cockpit-rest]')).toContainText('1:30');
  await dock.locator('[data-gym-rest]').click();
  await expect(dock.locator('#rest-timer-sticky')).toContainText('paused');
  await dock.locator('[data-gym-rest]').click();

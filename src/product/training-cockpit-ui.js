@@ -253,16 +253,28 @@
   return '<div class="training-cockpit-transition" data-cockpit-transition><div><span>'+esc(transitionState.from)+' complete</span><b>Up next: '+esc(transitionState.to)+'</b><small>'+transitionState.setCount+' set'+(transitionState.setCount===1?'':'s')+'</small></div><button type="button" class="btn-primary" data-cockpit-next>Start next exercise</button></div>';
  }
  function restHtml(){
-  const snap=window.LoadnoteRestTimer?.snapshot?.();
-  if(!snap?.active)return '<div class="cockpit-rest-start"><span>Rest</span><button type="button" class="btn-secondary" data-cockpit-rest-start="90" aria-label="Start 90 seconds of rest">90s</button><button type="button" class="btn-secondary" data-cockpit-rest-start="180" aria-label="Start 3 minutes of rest">3m</button></div>';
-  return '<div class="training-cockpit-rest" data-cockpit-rest><div><span>REST</span><b>'+esc(snap.label)+'</b></div><div class="training-cockpit-rest-actions">'+
+  const snap=window.LoadnoteRestTimer?.snapshot?.(),display=window.LoadnoteTrainingExecution.restDisplay(snap),ctx=current();
+  if(!snap?.active)return '<div class="cockpit-rest-start"><span>Rest</span><button type="button" class="btn-secondary" data-cockpit-rest-start="90" aria-label="Start 90 seconds of rest">1:30</button><button type="button" class="btn-secondary" data-cockpit-rest-start="180" aria-label="Start 3 minutes of rest">3:00</button></div>';
+  return '<div class="training-cockpit-rest" data-cockpit-rest><div><span data-rest-state>'+esc(display.state)+'</span><b role="timer" aria-live="off" aria-label="Rest time remaining" data-rest-clock>'+esc(display.clock)+'</b></div><div class="training-cockpit-rest-actions">'+
    '<button type="button" data-cockpit-rest-pause>'+(snap.paused?'Resume':'Pause')+'</button>'+
    '<button type="button" data-cockpit-rest-add aria-label="Add 30 seconds of rest">+30s</button>'+
    '<button type="button" data-cockpit-rest-stop>Stop</button>'+
+   (ctx.row?'<button type="button" class="btn-primary" data-cockpit-rest-return>'+(ctx.set?'Back to set':'Back to exercise')+'</button>':'')+
    '</div></div>';
+ }
+ function returnToEntry(){
+  const ctx=current();if(!ctx.row||!visible())return false;
+  const input=ctx.set?.querySelector('.set-weight')||ctx.row.querySelector('.cardio-duration');
+  if(!input||!input.isConnected)return false;
+  window.LoadnoteRestTimer?.stop?.();
+  if(ctx.row.classList.contains('training-collapsed'))ctx.row.querySelector('[data-workout-action="expand-exercise"]')?.click();
+  input.scrollIntoView({block:'center',behavior:'instant'});input.focus({preventScroll:true});
+  try{input.select();}catch{}
+  return true;
  }
  function bindRest(host){
   host.querySelectorAll('[data-cockpit-rest-start]').forEach(button=>button.addEventListener('click',()=>{startRest(Number(button.dataset.cockpitRestStart));refreshRest();}));
+  host.querySelector('[data-cockpit-rest-return]')?.addEventListener('click',returnToEntry);
   host.querySelector('[data-cockpit-rest-pause]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.pause?.());
   host.querySelector('[data-cockpit-rest-add]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.add?.());
   host.querySelector('[data-cockpit-rest-stop]')?.addEventListener('click',()=>window.LoadnoteRestTimer?.stop?.());
@@ -273,7 +285,9 @@
   if(!snap?.active){if(current){current.remove();host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);}return;}
   host.querySelector('.cockpit-rest-start')?.remove();
   if(current){
-   const label=current.querySelector('b');if(label)label.textContent=snap.label;
+   const display=window.LoadnoteTrainingExecution.restDisplay(snap);
+   const label=current.querySelector('[data-rest-clock]');if(label&&label.textContent!==display.clock)label.textContent=display.clock;
+   const state=current.querySelector('[data-rest-state]');if(state&&state.textContent!==display.state)state.textContent=display.state;
    const pause=current.querySelector('[data-cockpit-rest-pause]');if(pause)pause.textContent=snap.paused?'Resume':'Pause';
    return;
   }
@@ -390,7 +404,7 @@
   timer=setInterval(()=>{if(!document.hidden)queueRefresh();},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRefresh();});
  }
- window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,useConfirmedLoad,undoConfirmedLoad,adjust,current,startNextExercise};
+ window.LoadnoteTrainingCockpitUI={init,refresh:render,refreshRest,onSetComplete,onSetUndone:()=>{transitionState=null;},useTarget,useConfirmedLoad,undoConfirmedLoad,adjust,current,startNextExercise,returnToEntry};
  window.refreshTrainingCockpit=render;
  window.refreshTrainingCockpitRest=refreshRest;
  window.refreshTrainingCockpitSaveStatus=refreshSaveStatus;

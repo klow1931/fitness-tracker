@@ -88,11 +88,11 @@ test('v2.75 active rest controls live in the cockpit while legacy rest controls 
  const cockpit=page.locator('#training-cockpit');
  await openOptions(page);
  await page.getByRole('button',{name:'1.5m',exact:true}).click();
- await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('90s');
+ await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('1:30');
  await cockpit.getByRole('button',{name:'Close options'}).click();
  await expect(page.locator('#rest-pause')).not.toBeVisible();
  await cockpit.locator('[data-cockpit-rest-add]').click();
- await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('120s');
+ await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('2:00');
  await cockpit.locator('[data-cockpit-rest-pause]').click();
  await expect(cockpit.locator('[data-cockpit-rest]')).toContainText('paused');
  await cockpit.locator('[data-cockpit-rest-stop]').click();

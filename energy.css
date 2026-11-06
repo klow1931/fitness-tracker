@@ -1135,3 +1135,10 @@ body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-
 .history-filter-status p{flex:1 1 15rem;min-width:0;overflow-wrap:anywhere;margin:0}
 .history-filter-status button{min-height:44px}
 .history-simple .history-session-actions>button,.history-simple .history-card-more>summary{font-size:.9rem;line-height:1.35;padding:.55rem .65rem}
+/* v7.5 — readable rest and a separate, explicit return to entry. */
+.training-cockpit-rest-actions [data-cockpit-rest-return]{min-height:44px}
+@media(max-width:640px){
+ .training-cockpit-rest{grid-template-columns:minmax(0,1fr)}
+ .training-cockpit-rest-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}
+ .training-cockpit-rest-actions [data-cockpit-rest-return]{grid-column:1/-1}
+}

@@ -34,5 +34,9 @@
    label:left>0?Math.ceil(left/1000)+'s'+(state.paused?' · paused':''):'—'
   };
  }
- return {meaningful,classify,restSnapshot};
+ function restDisplay(snapshot){
+  const ms=Number(snapshot?.remainingMs),seconds=Number.isFinite(ms)?Math.max(0,Math.ceil(ms/1000)):0;
+  return {clock:Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0'),state:snapshot?.active?(snapshot.paused?'Rest paused':'Rest'):'Rest finished'};
+ }
+ return {meaningful,classify,restSnapshot,restDisplay};
 });
