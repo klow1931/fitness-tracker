@@ -34,8 +34,14 @@
    const handoffHtml=window.LoadnoteAdaptiveHandoffUI?.render?.(handoff)||'';
    const compact=e?.comparison?(e.partial?'Partial workout saved':'Workout saved')+' · '+e.comparison.completedSets+'/'+e.comparison.plannedSets+' planned sets represented.':e?.linked?'Workout saved · linked to Calendar.':'Workout saved · free training.';
    section.innerHTML='<h3>Session result</h3><p class="session-result-summary"'+(e?.partial?' role="status"':'')+'>'+esc(compact)+'</p>'+reason+overdue+'<details class="session-result-evidence"><summary>Plan comparison</summary><p>'+esc(evidenceLine(e))+'</p></details>'+handoffHtml;
-   host.insertBefore(section,host.querySelector('.recap-details'));
-   if(handoffHtml)host.querySelector('.recap-dismiss')?.remove();
+   const guided=!!window.LoadnoteBeginnerUI?.early?.().guided&&!e?.linked&&!handoff?.lifecycle?.required&&
+    !['resolve-overdue','record-event','save-transition','review-next-program','review-handoff'].includes(handoff?.lifecycle?.nextAction?.kind);
+   const more=host.querySelector(':scope>.beginner-recap-details');
+   if(guided&&more){
+    more.append(section);
+    const done=document.createElement('button');done.type='button';done.className='btn-primary';done.textContent='Done';done.onclick=()=>{host.hidden=true;showTab('dashboard');};host.insertBefore(done,more);
+   }else host.insertBefore(section,more||host.querySelector('.recap-details'));
+   if(handoffHtml||guided)host.querySelector('.recap-dismiss')?.remove();
    window.LoadnoteAdaptiveHandoffUI?.bind?.(section,handoff,state);
    const lifecycleKind=handoff?.lifecycle?.nextAction?.kind;
    if(!handoff||['resolve-overdue','record-event','save-transition','review-next-program','review-handoff'].includes(lifecycleKind))window.LoadnoteProgramLifecycleUI?.recap?.(host,state,asOf);

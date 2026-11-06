@@ -1046,3 +1046,63 @@ body[data-active-tab]:not([data-active-tab="dashboard"]) #onboarding-card{displa
 @media(max-width:640px){
  .coach-chat-card:has(#coach-workout-continuity:not([hidden])) #chat-messages{height:clamp(160px,30dvh,320px);min-height:160px}
 }
+
+/* v7.1: calm first-session controls; all original inputs and options are retained. */
+.beginner-exercise-options{display:contents}
+.beginner-exercise-options>summary{display:none}
+.beginner-exercise-options>div{display:contents}
+body.loadnote-guided-training:not(.training-execution-active) .beginner-exercise-options{display:block;width:100%}
+body.loadnote-guided-training:not(.training-execution-active) .beginner-exercise-options>summary{display:flex;align-items:center;min-height:44px;cursor:pointer}
+body.loadnote-guided-training:not(.training-execution-active) .beginner-exercise-options>div{display:none}
+body.loadnote-guided-training:not(.training-execution-active) .beginner-exercise-options[open]>div{display:flex;gap:.5rem;flex-wrap:wrap}
+body.loadnote-guided-training:not(.training-execution-options-open) #exercise-rows .ex-note{display:none}
+body.loadnote-guided-training:not(.training-execution-options-open) #exercise-rows .mb-2:has(>.ex-note){display:none}
+body.loadnote-guided-training:not(.training-execution-options-open) .exercise-flow-buttons>[data-workout-action]:not([data-workout-action="expand-exercise"]){display:none}
+body.loadnote-guided-training .training-session-bar{display:none}
+body.loadnote-guided-training:not(.training-execution-options-open) #workout-actions>[data-workout-action]:not([data-workout-action="review"]){display:none}
+body.loadnote-guided-training #workout-actions .training-rest-controls{display:none}
+.beginner-recap>.workout-takeaway{border:0;padding:0}
+.beginner-recap details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.beginner-progress-list{display:grid;gap:.75rem;margin:1rem 0}
+.beginner-progress-list article{padding:.75rem;border:1px solid var(--line);border-radius:.75rem}
+.beginner-progress-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.beginner-progress-actions button,#beginner-coach-plan button{min-height:48px;white-space:normal}
+body.loadnote-guided-training:not(.beginner-coach-expanded) [data-panel="coach"][data-sub="co-programs"]>:not(#beginner-coach-plan){display:none!important}
+body.loadnote-guided-training:not(.beginner-coach-expanded) [data-panel="coach"][data-sub="co-today"]>:not(#beginner-coach-today){display:none!important}
+
+.quick-complete-guided{display:none}
+body.loadnote-guided-training .quick-complete-guided{display:block;min-height:48px;padding:.65rem 1rem;border-radius:.6rem;font-weight:700}
+body.loadnote-guided-training .quick-done-no-rpe{display:none}
+
+.beginner-effort-options{display:contents}
+.beginner-effort-options>summary,.beginner-set-label{display:none}
+body.loadnote-guided-training .beginner-effort-options{display:block;width:100%}
+body.loadnote-guided-training .beginner-effort-options>summary{display:flex;align-items:center;min-height:44px;cursor:pointer}
+body.loadnote-guided-training .beginner-effort-options:not([open])>.quick-rpe-chips{display:none}
+body.loadnote-guided-training .quick-set-label{display:none}
+body.loadnote-guided-training .beginner-set-label{display:block;grid-column:1/-1;font-size:.8rem;font-weight:600;margin:0 0 .25rem}
+body.loadnote-guided-training #beginner-workout-guide{padding:.65rem;margin:.65rem 0}
+body.loadnote-guided-training #beginner-workout-guide h3{font-size:1rem;margin:.2rem 0}
+body.loadnote-guided-training #beginner-workout-guide p{font-size:.85rem;line-height:1.4;margin:.2rem 0}
+body.loadnote-guided-training #beginner-workout-guide>p:last-child{display:none}
+body.loadnote-guided-training #beginner-workout-guide .beginner-actions{margin-top:.25rem}
+body.loadnote-guided-training:not(.training-execution-options-open) [data-cockpit-adjust],
+body.loadnote-guided-training:not(.training-execution-options-open) [data-cockpit-swap]{display:none}
+body.loadnote-guided-training[data-active-tab="workouts"] #loadnote-focus-message,
+body.loadnote-guided-training[data-active-tab="workouts"] #panel-workouts>.section-hint{display:none}
+
+body.loadnote-guided-training #panel-workouts>.workout-log-hint{display:none}
+@media(max-width:360px){
+ body.loadnote-guided-training #workout-log-card .logger-set .beginner-set-label{grid-row:1}
+ body.loadnote-guided-training #workout-log-card .logger-set .set-number,
+ body.loadnote-guided-training #workout-log-card .logger-set :is(.set-reps,.set-duration,.set-weight){grid-row:2}
+ body.loadnote-guided-training #workout-log-card .logger-set :is(.set-done-check,.set-rpe){grid-row:3}
+ body.loadnote-guided-training #workout-log-card .logger-set .quick-set-entry{grid-row:4}
+}
+
+body.loadnote-guided-training:not(.training-execution-options-open) .training-cockpit-quick:not(:has(>button:not([data-cockpit-adjust]))),
+body.loadnote-guided-training .training-cockpit-comparison:empty{display:none}
+
+body.loadnote-guided-training .training-cockpit{position:static!important}
+
+body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-sub="wo-log"] #workout-log-card{display:none}

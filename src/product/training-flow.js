@@ -76,7 +76,9 @@ function clearWorkoutRecap(){
 function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
  const host=document.getElementById('workout-recap');if(!host)return;host.replaceChildren();host.hidden=false;
  const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;host.appendChild(el);return el;};
- add('h2',editing?'Workout updated':'Session saved. Work logged.');
+ const guided=!editing&&!!window.LoadnoteBeginnerUI?.early?.().guided;
+ host.classList.toggle('beginner-recap',guided);
+ add('h2',editing?'Workout updated':guided?'Workout saved. Nice work.':'Session saved. Work logged.');
  const takeaway=window.LoadnoteTrainingCockpit?.workoutTakeaway?.(workout);
  if(takeaway){
   const section=add('section','');section.className='workout-takeaway';section.setAttribute('aria-label','Workout takeaway');
@@ -86,18 +88,25 @@ function showWorkoutRecap(workout,previousWorkouts,newPRs,editing){
    const p=document.createElement('p'),b=document.createElement('b');b.textContent=label+': ';p.append(b,document.createTextNode(text));
    (label==='Logged'||label==='Watch'&&caution?section:details).append(p);
   }
+  if(guided){for(const node of [...section.children])if(node!==details)details.append(node);}
   section.append(details);
  }
  const details=add('details','');details.className='recap-details';const summary=document.createElement('summary');summary.textContent='Session details and previous sets';details.append(summary);
  const detail=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;details.append(el);return el;};
  const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length||0),0);
  detail('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
+ if(guided){const saved=add('p',workout.exercises.length+' exercise'+(workout.exercises.length===1?'':'s')+' · '+count+' strength set'+(count===1?'':'s')+' saved to History.');host.querySelector('h2').after(saved);}
  for(const pr of newPRs)add('p',`★ New personal best: ${pr.exercise} · ${formatStrengthSet(pr)}`);
  for(const exercise of workout.exercises){
   const last=LoadnoteSession.previous(previousWorkouts,exercise.name,workout.date,workout.id,exercise.type,exercise.trackBy);
   if(exercise.type==='cardio'){detail('p',`${exercise.name}: ${exercise.duration||0} min · ${exercise.distance||0} ${exercise.distanceUnit}`);continue;}
   if(!last){detail('p',`${exercise.name}: first matching session logged.`);continue;}
   detail('h3',exercise.name);detail('p','This session: '+exercise.sets.map(formatStrengthSet).join(' / '));detail('p',`Previous (${last.date}): `+last.exercise.sets.map(formatStrengthSet).join(' / '));
+ }
+ if(guided){
+  const more=document.createElement('details');more.className='beginner-recap-details';const title=document.createElement('summary');title.textContent='More details';more.append(title);
+  for(const node of [...host.querySelectorAll(':scope>.workout-takeaway,:scope>.recap-details')])more.append(node);
+  host.append(more);
  }
  const close=add('button','Dismiss recap');close.type='button';close.className='btn-secondary recap-dismiss';close.onclick=()=>{host.hidden=true;};
 }

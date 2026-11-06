@@ -63,6 +63,8 @@ test('v3.70 quick edit copies an empty week and replaces a movement without carr
  await expect(page.locator('.custom-program-coverage')).toContainText('Week 3');
  await expect(page.locator('#custom-preview-result')).toContainText('Weeks without sessions: 3');
  await expect(page.locator('#custom-draft-status')).toContainText('Draft saved');
+ // A previous autosave status may still describe the pre-Undo snapshot.
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('loadnote:custom-program-studio-draft:v1'))?.snapshot?.rows?.[1]?.exercise)).toBe('Competition Bench');
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderCustomProgramStudio();});
  await expect(page.locator('#custom-resume')).toBeVisible();

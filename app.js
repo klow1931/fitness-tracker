@@ -2420,6 +2420,7 @@
       try { if (lastCoachSnapshot) renderCoachSnapshot(lastCoachSnapshot); else renderProactiveCoachPreview(); } catch (e) { console.warn(e); }
       try { refreshDeloadHelper(); } catch (e) { console.warn(e); }
       void updateCoachConnectionUI();
+      window.renderBeginnerCoach?.();
 
       // Goals list
       const goalsEl = document.getElementById('goals-list');

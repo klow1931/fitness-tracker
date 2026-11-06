@@ -52,7 +52,7 @@
   const understood=Language?.interpret(question,history).question||question;
   const route=(typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter)?.classify(understood,history);
   if(route?.kind==='capabilities')return (typeof module==='object'&&module.exports?require('./coach-intent-router'):globalThis.LoadnoteCoachIntentRouter).capabilities();
-  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live});if(beginner)return beginner;
+  const beginner=(typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram)?.coach(state,understood,{asOf,unit,history,selectedPlanId:live?.starterPlanId,live,timezoneOffsetMinutes:live?.starterDateOffsetMinutes||0});if(beginner)return beginner;
   // Memory never saves through chat: these are review/inspect actions only.
   // Existing explicit reply-length/encouragement settings remain canonical.
   const preferenceRequest=/\b(?:repl(?:y|ies)|responses?|tone|encouragement|brief|detailed|shorter)\b/i.test(String(question||''));

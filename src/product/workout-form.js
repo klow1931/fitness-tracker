@@ -79,7 +79,7 @@
       div.dataset.trackBy = trackBy;
       div.innerHTML = `
         <div class="flex gap-2 mb-2 items-end flex-wrap">
-          <div class="flex-1 min-w-[160px]">
+          <div class="flex-1 min-w-[160px] exercise-name-entry">
             <label class="label">Exercise</label>
             <input type="text" class="input ex-name" list="exercise-list" value="${escapeHtml(ex.name || '')}" placeholder="e.g. Bench Press, Prone Y-Raise" />
           </div>
@@ -102,6 +102,13 @@
         <p class="next-set-guidance text-sm" hidden role="status"></p>
         <button data-workout-action="add-set" class="text-sm text-indigo-600 hover:underline mt-2" title="Duplicates the previous set load and reps, leaving RPE blank">+ Same Set</button>
       `;
+      const options=document.createElement('details');options.className='beginner-exercise-options';options.open=true;
+      const summary=document.createElement('summary');summary.textContent='Exercise options';options.append(summary);
+      const optionsBody=document.createElement('div');options.append(optionsBody);
+      const header=div.querySelector('.exercise-name-entry')?.parentElement;
+      // The original nodes/handlers stay intact; this disclosure is only used
+      // before the execution shell takes over in the guided first sessions.
+      if(header){for(const child of [...header.children])if(!child.classList.contains('exercise-name-entry'))optionsBody.append(child);header.append(options);}
       container.appendChild(div);
       const nameInput = div.querySelector('.ex-name');
       nameInput.addEventListener('change', () => {

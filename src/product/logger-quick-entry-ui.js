@@ -26,7 +26,7 @@
   let host=set.querySelector('.quick-set-entry');if(host)return host;
   host=document.createElement('div');host.className='quick-set-entry';host.hidden=true;
   const chips=H().RPE_VALUES.map(v=>'<button type="button" class="quick-rpe-chip" data-quick-rpe="'+v+'">'+v+'</button>').join('');
-  host.innerHTML='<span class="quick-set-label">Log set · tap RPE</span><div class="quick-rpe-chips">'+chips+'</div><button type="button" class="quick-done-no-rpe" data-quick-done>Done without RPE</button>';
+  host.innerHTML='<span class="quick-set-label">Log set · tap RPE</span><details class="beginner-effort-options" open><summary>Effort (optional)</summary><div class="quick-rpe-chips">'+chips+'</div></details><button type="button" class="quick-done-no-rpe" data-quick-done>Done without RPE</button><button type="button" class="btn-primary quick-complete-guided" data-quick-complete>Complete set</button>';
   // Keep numeric-input focus until the completion click is delivered. Safari
   // can otherwise blur the input on mousedown, write a checkpoint, and move
   // this button when a save warning appears before mouseup. Keyboard clicks
@@ -37,12 +37,18 @@
  function setState(set,active){
   set.classList.toggle('logger-active-set',active);
   const host=bar(set);host.hidden=!(active&&H().entered(snapshot(set)));
+  const guided=!!window.LoadnoteBeginnerUI?.early?.().guided;
+  const effort=host.querySelector('.beginner-effort-options');
+  if(effort.dataset.guided!==String(guided)){effort.dataset.guided=String(guided);effort.open=!guided;}
+  let heading=set.querySelector('.beginner-set-label');
+  if(!heading){heading=document.createElement('p');heading.className='beginner-set-label';set.prepend(heading);}
+  const units=(set.querySelector('.set-duration')?'Seconds':'Reps')+' × weight ('+unitLabel()+') · effort optional';if(heading.textContent!==units)heading.textContent=units;
   const needsLoad=set.querySelector('.set-weight')?.value.trim()==='';
   const label=host.querySelector('.quick-set-label');
   const nextLabel=needsLoad?'Enter load (0 for bodyweight) to log':'Log set · tap RPE';
   // Avoid redundant DOM writes: the logger observes these rows for changes.
   if(label&&label.textContent!==nextLabel)label.textContent=nextLabel;
-  host.querySelectorAll('[data-quick-rpe],[data-quick-done]').forEach(button=>{if(button.disabled!==needsLoad)button.disabled=needsLoad;});
+  host.querySelectorAll('[data-quick-rpe],[data-quick-done],[data-quick-complete]').forEach(button=>{if(button.disabled!==needsLoad)button.disabled=needsLoad;});
  }
  function rows(){return [...document.querySelectorAll('#exercise-rows .sets-container > div')];}
  function activeSet(){
@@ -94,6 +100,7 @@
  });
  document.addEventListener('click',event=>{
   const chip=event.target.closest?.('[data-quick-rpe]');if(chip){const set=chip.closest('.sets-container > div');if(set)complete(set,chip.dataset.quickRpe);return;}
+  const completeButton=event.target.closest?.('[data-quick-complete]');if(completeButton){const set=completeButton.closest('.sets-container > div');if(set)complete(set,undefined);return;}
   const done=event.target.closest?.('[data-quick-done]');if(done){const set=done.closest('.sets-container > div');if(set)complete(set,null);}
  });
  window.refreshLoggerQuickEntry=refresh;

@@ -143,8 +143,10 @@
   const host=document.getElementById('progress-analytics');if(!host||!window.LoadnoteProgressStory)return;
   let report;try{report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks,movementKey:selectedMovementKey||null});}catch(error){host.innerHTML='<h2>Training progress</h2><p>'+esc(error.message)+'</p>';return;}
   if(selectedMovementKey&&!report.customMovement){selectedMovementKey='';report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks});}
-  host.innerHTML=summaryHtml(report);
-  const select=host.querySelector('[data-progress-window]');select.value=String(storyWeeks);select.onchange=()=>{storyWeeks=Number(select.value);render();};
+  const intro=window.LoadnoteBeginnerTrainingUI?.progress?.(report);
+  host.innerHTML=intro?intro.html:summaryHtml(report);
+  intro?.bind(host);
+  const select=host.querySelector('[data-progress-window]');if(select){select.value=String(storyWeeks);select.onchange=()=>{storyWeeks=Number(select.value);render();};}
   host.querySelectorAll('[data-progress-open-exercise]').forEach(button=>button.onclick=()=>openExerciseDetail(button.dataset.progressOpenExercise,'reps'));
   const details=ensureExplore(host);renderExplore(report,details);
  }

@@ -81,6 +81,8 @@ test('v2.75 current exercise stays expanded while upcoming and completed exercis
 });
 
 test('v2.75 active rest controls live in the cockpit while legacy rest controls stay behind Workout options',async({page})=>{
+ // Freeze Date.now while timers and animation frames continue normally.
+ await page.clock.setFixedTime(await page.evaluate(()=>new Date().toISOString()));
  await enter(page);
  await expect(page.locator('body')).toHaveClass(/training-execution-active/);
  const cockpit=page.locator('#training-cockpit');

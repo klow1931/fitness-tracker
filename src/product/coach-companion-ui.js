@@ -123,7 +123,7 @@
  }
  function companionContext(){
   const live=Core()?.buildContext({surface:surface(),workout:currentWorkout(),rest:window.LoadnoteRestTimer?.snapshot?.()||null});
-  return {...(live||{version:1,surface:surface(),liveWorkout:null,restTimer:{active:false}}),starterPlanId:window.LoadnoteBeginnerProgramUI?.selectedId?.()||null};
+  return {...(live||{version:1,surface:surface(),liveWorkout:null,restTimer:{active:false}}),starterPlanId:window.LoadnoteBeginnerProgramUI?.selectedId?.()||null,starterDateOffsetMinutes:window.LoadnoteBeginnerProgramUI?.dateOptions?.().timezoneOffsetMinutes||0};
  }
  function coachContext(){
   let base={version:'0.6',unit:displayUnit(),units:{storageWeight:'kg',displayWeight:displayUnit()}};
