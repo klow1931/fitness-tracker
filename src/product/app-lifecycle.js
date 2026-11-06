@@ -1,6 +1,6 @@
 (function(){
  'use strict';
- function connection(){const el=document.getElementById('connection-status');if(el)el.textContent=window.LoadnoteRuntime?.native?'Native beta · local training · account, cloud and online AI unavailable':navigator.onLine?'Online · food lookup and online coach available':'Offline · log workouts; online coach and food lookup need internet';}
+ function connection(){const el=document.getElementById('connection-status');if(el)el.textContent=window.LoadnoteRuntime?.native?'Native beta · local training · account, cloud and online AI unavailable':navigator.onLine?'Online · training saved on this device':'Offline · log workouts; online coach and food lookup need internet';}
  async function start(){
   const platform=window.LoadnotePlatform?.detect(window)||{surface:'browser',native:false,nativePlatform:null,standalone:false};
   window.LoadnoteRuntime=window.LoadnotePlatform?.apply(document,platform)||platform;

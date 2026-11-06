@@ -12,7 +12,7 @@
  const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&
    !Number.isNaN(Date.parse(s+'T12:00:00Z'))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s;
  const dayNumber=s=>Date.parse(s+'T12:00:00Z')/DAY_MS;
- function inspect(state,{asOf,entry=null,todayReport=null,continuity=null}={}){
+ function inspect(state,{asOf,entry=null,todayReport=null,continuity=null,timezoneOffsetMinutes=0}={}){
   if(!validDate(asOf))throw Error('Choose a valid local training date');
   // This is a small optional training handoff, not a general dashboard.
   if(entry!=='log'&&entry!=='help')return null;
@@ -33,7 +33,7 @@
   // Stop showing onboarding after the first actual week, or when a lifter
   // has already logged three sessions; previously saved history is untouched.
   const graduated=sorted.length>=3||!!(sorted.length&&dayNumber(asOf)-dayNumber(sorted[0])>6);
-  let plans=[];try{const Starter=typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram;plans=Starter?.saved(state,{asOf})||[];}catch{}
+  let plans=[];try{const Starter=typeof module==='object'&&module.exports?require('./beginner-program'):globalThis.LoadnoteBeginnerProgram;plans=Starter?.saved(state,{asOf,timezoneOffsetMinutes})||[];}catch{}
   if(graduated&&!plans.length)return null;
   const count=sorted.length;
   const report=todayReport||{},next=continuity?.next||null;

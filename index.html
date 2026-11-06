@@ -314,7 +314,7 @@
         <button type="button" class="section-tab" data-sub="wo-history" data-workout-action="tab-history">History</button>
         <button type="button" class="section-tab" data-sub="wo-templates" data-workout-action="tab-templates">Templates</button>
       </div>
-      <p class="text-xs text-slate-500 -mt-3">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
+      <p class="text-xs text-slate-500 -mt-3 workout-log-hint">Tip: most days you only need <b>Log</b>. History and templates are optional.</p>
       <div id="workout-recap" class="card workout-recap" aria-live="polite" hidden></div>
       <details id="training-blocks" class="card training-blocks"></details>
 
@@ -1428,7 +1428,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v7.0.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v7.1.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2258,6 +2258,7 @@
   <script src="src/product/beginner-program.js" defer></script>
   <script src="src/product/beginner-program-ui.js" defer></script>
   <script src="src/product/beginner-experience-ui.js" defer></script>
+  <script src="src/product/beginner-training-ui.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

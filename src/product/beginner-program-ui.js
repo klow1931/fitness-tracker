@@ -5,6 +5,11 @@
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  // Never directly alter completed workouts or issue an automatic schedule.
  let busy=false;
+ // Use the end of the athlete's LOCAL training day, including DST on that day.
+ function dateOptions(){
+  const asOf=today(),[y,m,d]=asOf.split('-').map(Number);
+  return {asOf,timezoneOffsetMinutes:new Date(y,m-1,d,23,59,59).getTimezoneOffset()};
+ }
  function open(){
   if(busy)return;
   let d=document.getElementById('beginner-program-dialog');
@@ -120,7 +125,7 @@
   if(d?.open){d.focus();return;}
   if(!d){d=document.createElement('dialog');d.id='starter-saved-dialog';d.className='card schedule-dialog';document.body.append(d);}
   d.setAttribute('aria-label','Review saved starter plan');
-  let plans=[];try{plans=B().saved(data,{asOf:today()});}catch{showToast('Could not validate starter plans. Review the program library.','error');return;}
+  let plans=[];try{plans=B().saved(data,dateOptions());}catch{showToast('Could not validate starter plans. Review the program library.','error');return;}
   if(!plans.length){showToast('No current reviewed starter plan is available.','info');return;}
   d.innerHTML='<h2>Review your saved starter plan</h2><p>Choose a reviewed workout. Loading creates an editable draft for today; it does not complete training or link it to Calendar.</p>'+
    '<label>Saved plan<select class="input" id="starter-saved-plan"><option value="">Choose a plan</option>'+plans.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.config.name)+' · '+(p.starterRevision?'Reviewed edit '+p.starterRevision:'Original')+' · saved '+esc(p.createdAt.slice(0,16).replace('T',' '))+'</option>').join('')+'</select></label>'+
@@ -130,7 +135,7 @@
    '<button type="button" class="btn-secondary" id="starter-saved-calendar">Open Calendar</button><p id="starter-saved-status" role="status"></p><button type="button" class="btn-secondary" id="starter-saved-close">Close</button>';
   const q=name=>d.querySelector('#starter-saved-'+name);
   let pending=false;
-  const current=()=>{const p=B().saved(data,{asOf:today(),id:q('plan').value})[0];if(!p)throw Error('Choose a current saved plan');return p;};
+  const current=()=>{const p=B().saved(data,{...dateOptions(),id:q('plan').value})[0];if(!p)throw Error('Choose a current saved plan');return p;};
   function renderWorkout(){
    q('load').disabled=true;q('preview').replaceChildren();q('schedule-panel').hidden=true;
    if(!q('plan').value)return;
@@ -165,9 +170,9 @@
   }catch(error){q('status').textContent=error.message;}finally{pending=false;}};
   q('calendar').onclick=()=>{if(pending)return;d.close();window.showTab?.('calendar');};
   q('close').onclick=()=>{if(!pending)d.close();};d.oncancel=e=>{if(pending)e.preventDefault();};
-  const remembered=id||B().selected(localStorage,data,{asOf:today()});
+  const remembered=id||B().selected(localStorage,data,dateOptions());
   if(remembered&&plans.some(p=>p.id===remembered)||plans.length===1){q('plan').value=remembered||plans[0].id;selectPlan();remember();}
   d.showModal();
  }
- window.LoadnoteBeginnerProgramUI={open,openSaved,selectedId:()=>B().selected(localStorage,data,{asOf:today()})};
+ window.LoadnoteBeginnerProgramUI={open,openSaved,dateOptions,selectedId:()=>B().selected(localStorage,data,dateOptions())};
 })();

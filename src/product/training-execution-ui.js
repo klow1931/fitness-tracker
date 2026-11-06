@@ -34,6 +34,7 @@
   return !!E()?.meaningful(rows,sessionFlags());
  }
  function decorateSecondary(){
+  window.LoadnoteBeginnerUI?.refreshPresentation?.();
   const card=document.getElementById('workout-log-card');if(!card)return;
   const top=card.querySelector(':scope > .flex.flex-wrap.items-center.justify-between');
   const date=document.getElementById('wo-date')?.closest('.grid');
@@ -70,7 +71,7 @@
   if(cockpit)cockpit.style.position=!active||optionsOpen||tallCockpit?'static':'';
   if(dock)dock.style.display=transitioning?'none':'';
   if(!active){root.style.scrollPaddingTop='';root.style.scrollPaddingBottom='';return;}
-  const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
+  const top=!optionsOpen&&!tallCockpit&&cockpit&&!cockpit.hidden&&getComputedStyle(cockpit).position!=='static'?Math.ceil(cockpit.getBoundingClientRect().height)+12:0;
   const nav=document.getElementById('mobile-nav'),navBounds=nav?.getBoundingClientRect();
   const navInset=navBounds?.height&&getComputedStyle(nav).position==='fixed'?Math.max(0,innerHeight-navBounds.top)+12:0;
   const dockInset=!inlineDock&&!transitioning&&dock?.classList.contains('gym-floor-dock-active')?Math.ceil(innerHeight-dock.getBoundingClientRect().top)+12:0;
@@ -85,10 +86,12 @@
   if(!next)optionsOpen=false;
   active=next;
   document.body.classList.toggle('training-execution-active',active);
+  window.LoadnoteBeginnerUI?.refreshPresentation?.();
   document.body.classList.toggle('training-execution-options-open',active&&optionsOpen);
   window.updateTrainingFlow?.();
   window.refreshTrainingCockpit?.();
   window.refreshGymFloorUI?.();
+  window.LoadnoteBeginnerUI?.renderGuide?.();
   syncViewportSoon();
  }
  function queue(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;update();});}

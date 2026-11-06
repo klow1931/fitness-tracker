@@ -1,6 +1,8 @@
 # Loadnote
 
-**v7.0.0 · Development build.**
+**v7.1.0 · Development build.**
+
+[Beginner training clarity v7.1](docs/releases-v7.1.md): saved starter plans remain available across local/UTC date boundaries. Guided first sessions offer simpler controls, a short save recap, compact Progress and direct access to the saved plan in Coach. Full view and optional training tools remain available.
 
 [Reliable workout draft checkpoints v6.7](docs/releases-v6.7.md): if the primary unfinished-workout save fails but the recovery copy succeeds, Loadnote correctly reports **saved in recovery copy**, retains the newest draft for offline recovery, and offers **Retry draft save** to restore redundancy. Total save failure remains a clear warning.
 

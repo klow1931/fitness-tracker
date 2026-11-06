@@ -302,8 +302,9 @@
   const position=complete?'All entered work checked complete':('Exercise '+Math.min(ctx.exerciseIndex+1,ctx.rows.length)+' of '+ctx.rows.length+(ctx.set?' · Set '+(ctx.setIndex+1)+' of '+ctx.setCount:''));
   const progress=counts.total?counts.done+'/'+counts.total+' sets':'';
   const elapsed=meta.elapsed==null?'':(' · '+meta.elapsed+' min');
-  const targetLine=ctx.set?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
-  const previousLine=ctx.set?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
+  const guided=!!window.LoadnoteBeginnerUI?.early?.().guided;
+  const targetLine=ctx.set&&(!guided||value)?'<div><span>Today</span><b>'+esc(targetText(ctx,value))+'</b></div>':'';
+  const previousLine=ctx.set&&(!guided||prior)?'<div><span>Last'+(prior?.date?' · '+esc(prior.date):'')+'</span><b>'+esc(previousText(ctx,prior))+'</b></div>':'';
   const canUseConfirmed=confirmedLoadValue(ctx,verified)!=null;
   const canUndoConfirmed=undoConfirmedAvailable(ctx);
   const verifiedLine=verified?'<div class="training-cockpit-verified"><span>Last confirmed · '+esc(verified.date)+' · '+verified.reps+' reps</span><b>'+esc(verified.weight)+' · '+(verified.rpe==null?'RPE unknown':'RPE '+verified.rpe)+'</b>'+(canUseConfirmed?'<button type="button" class="btn-secondary" data-cockpit-use-confirmed>Use confirmed load</button>':'')+'</div>':'';
@@ -325,10 +326,10 @@
     '<button type="button" data-cockpit-adjust="'+steps.small+'">+'+steps.small+'</button>'+
     '<button type="button" data-cockpit-adjust="'+steps.large+'">+'+steps.large+'</button>'+
     '</div>':'';
-  const timer=!meta.started&&document.getElementById('wo-date')?.value===today()?'<button type="button" class="btn-secondary" data-cockpit-start>Start session</button>':'';
+  const timer=!window.LoadnoteBeginnerUI?.early?.().guided&&!complete&&!meta.started&&document.getElementById('wo-date')?.value===today()?'<button type="button" class="btn-secondary" data-cockpit-start>Start session</button>':'';
   const why=meta.scheduled?'<button type="button" class="training-cockpit-link" data-cockpit-why>Why?</button>':'';
   const execution=!!window.LoadnoteTrainingExecutionUI?.isActive?.(),options=execution?'<button type="button" class="btn-secondary" data-cockpit-options aria-expanded="'+String(!!window.LoadnoteTrainingExecutionUI?.optionsOpen?.())+'">'+(window.LoadnoteTrainingExecutionUI?.optionsOpen?.()?'Close options':'Workout options')+'</button>':'';
-  host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(complete?'Review workout':'Finish')+'</button></div></div>'+
+  host.innerHTML='<div class="training-cockpit-top"><div class="training-cockpit-title"><span>'+esc(meta.program||'IN WORKOUT')+'</span><b>'+esc(meta.name)+'</b><small>'+esc(position+(progress?' · '+progress:'')+elapsed)+'</small></div><div class="training-cockpit-actions">'+timer+options+'<button type="button" class="btn-primary" data-cockpit-review>'+(window.LoadnoteBeginnerUI?.early?.().guided?'Finish workout':complete?'Review workout':'Finish')+'</button></div></div>'+
     '<div class="training-cockpit-current"><div><span>Current</span><b>'+esc(exerciseName)+'</b></div><div class="training-cockpit-comparison">'+targetLine+previousLine+verifiedLine+'</div>'+why+'</div>'+
     quick+'<div class="cockpit-help-actions">'+(compareAvailable?'<button type="button" class="training-cockpit-link" data-cockpit-compare>Compare checked set</button>':'')+'<button type="button" class="training-cockpit-link" data-cockpit-guidance>Exercise guidance</button>'+(ctx.row?'<button type="button" class="training-cockpit-link" data-cockpit-swap>Swap exercise</button>':'')+'</div>'+transitionHtml()+restHtml()+
     (window.LoadnoteQuickCompletionUndo?.canUndo?.()?'<div class="cockpit-undo"><span>Last set checked complete</span><button type="button" class="btn-secondary" data-cockpit-undo>Undo set completion</button></div>':'')+

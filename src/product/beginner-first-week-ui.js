@@ -5,7 +5,7 @@
  function render(host,state,{asOf,report,continuity}={}){
   if(!host||!window.LoadnoteBeginnerFirstWeek)return;
   let entry=null;try{entry=window.LoadnoteBeginnerUI?.entry?.()||null;}catch{}
-  const result=window.LoadnoteBeginnerFirstWeek.inspect(state,{asOf,entry,todayReport:report,continuity});
+  const result=window.LoadnoteBeginnerFirstWeek.inspect(state,{...window.LoadnoteBeginnerProgramUI?.dateOptions?.(),asOf,entry,todayReport:report,continuity});
   host.querySelector('#beginner-first-week')?.remove();
   if(!result)return;
   const section=document.createElement('section');section.id='beginner-first-week';

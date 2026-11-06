@@ -2,7 +2,7 @@
 (function(){
  'use strict';
  const model=window.LoadnoteBeginnerExperience;
- let preference=model.normalize(),loaded=false,viewIsExplicit=false;
+ let preference=model.normalize(),loaded=false,viewIsExplicit=false,guideAnchor=null;
  function load(){if(!loaded){try{preference=model.read(localStorage);}catch{}loaded=true;}return preference;}
  function initialize(state){
   try{
@@ -17,6 +17,16 @@
   catch{apply();window.showToast?.('Could not save your view preference on this device. Nothing was changed.','error');return false;}
   apply();return true;
  }
+ function early(){return model.earlyTraining(typeof data==='undefined'?{}:data,{asOf:typeof today==='function'?today():null,preference:load()});}
+ function refreshPresentation(){
+  const guided=early().guided;
+  document.body.classList.toggle('loadnote-guided-training',guided);
+  for(const options of document.querySelectorAll('.beginner-exercise-options')){
+   const compact=guided&&!document.body.classList.contains('training-execution-active');
+   if(options.dataset.guided!==String(compact)){options.dataset.guided=String(compact);options.open=!compact;}
+  }
+  return guided;
+ }
  function apply(){
   const p=load();
   document.body.classList.toggle('loadnote-simple-view',p.view==='simple');
@@ -26,7 +36,9 @@
   const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=p.view!=='simple';
   const choice=document.getElementById('beginner-simple-choice');if(choice)choice.checked=p.view==='simple';
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
-  renderGuide();
+  refreshPresentation();renderGuide();
+  if(typeof invalidateViews==='function')invalidateViews();
+  window.renderBeginnerCoach?.();
  }
  function enter(entry,{preserveView=false}={}){
   const simple=document.getElementById('beginner-simple-choice')?.checked;
@@ -49,7 +61,12 @@
   return {namedExercise,enteredSet,reviewOpen:!!document.getElementById('workout-review')?.open};
  }
  function renderGuide(){
+  refreshPresentation();
   const host=document.getElementById('beginner-workout-guide');if(!host)return;
+  if(!guideAnchor){guideAnchor=document.createComment('Workout guide position');host.before(guideAnchor);}
+  const rows=document.getElementById('exercise-rows');
+  if(early().guided&&document.body.classList.contains('training-execution-active')&&rows){if(rows.nextElementSibling!==host)rows.after(host);}
+  else if(guideAnchor.nextSibling!==host)guideAnchor.after(host);
   const p=load(),editing=typeof workoutEdit!=='undefined'&&!!workoutEdit;
   const workouts=typeof data!=='undefined'?(data.workouts||[]):[];
   host.hidden=p.guide!=='active'||editing||(workouts.length>0&&p.entry===null);
@@ -89,7 +106,7 @@
   });
  }
  function saved({editing=false}={}){if(!editing&&load().guide==='active')change({guide:'complete'});}
- window.LoadnoteBeginnerUI={start:entry=>enter(entry,{preserveView:true}),apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,selected:()=>!!load().entry,entry:()=>load().entry};
+ window.LoadnoteBeginnerUI={start:entry=>enter(entry,{preserveView:true}),apply,initialize,renderGuide,preferencesHTML,bindPreferences,saved,early,refreshPresentation,selected:()=>!!load().entry,entry:()=>load().entry};
  document.addEventListener('DOMContentLoaded',()=>{
   apply();
   document.querySelectorAll('[data-beginner-entry]').forEach(b=>b.addEventListener('click',()=>enter(b.dataset.beginnerEntry)));

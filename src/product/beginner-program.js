@@ -53,23 +53,27 @@
    notice:'Editable starting structure, not an individualized prescription. Loads and RPE are deliberately unspecified. Check exercise suitability and choose a manageable load before training. Nothing has been saved or scheduled.'};
  }
 
- function saved(state,{asOf,id=null,unscheduled=false}={}){
-  monday(asOf); // Reuse real-calendar date validation without changing the selected date.
-  const cutoff=asOf+'T23:59:59.999Z';
+ function dayCutoff(asOf,timezoneOffsetMinutes=0){
+  monday(asOf);
+  if(!Number.isInteger(timezoneOffsetMinutes)||Math.abs(timezoneOffsetMinutes)>840)throw Error('Choose a valid training-date timezone offset');
+  return new Date(Date.parse(asOf+'T23:59:59.999Z')+timezoneOffsetMinutes*60000).toISOString();
+ }
+ function saved(state,{asOf,id=null,unscheduled=false,timezoneOffsetMinutes=0}={}){
+  const cutoff=dayCutoff(asOf,timezoneOffsetMinutes);
   const records=Custom.validate(state?.customPrograms||[]).filter(p=>p.createdAt<=cutoff),byId=new Map(records.map(p=>[p.id,p]));
   function origin(p){const seen=new Set();let depth=0;while(p&&!seen.has(p.id)){seen.add(p.id);if(p.source.name==='Loadnote beginner starting structure')return {rootId:p.id,depth};p=byId.get(p.revision?.parentId);depth++;}return null;}
   return records.map(p=>({p,lineage:origin(p)})).filter(({p,lineage})=>lineage&&(!id||p.id===id)&&(!unscheduled||!p.scheduledAt||p.scheduledAt>cutoff)&&(!p.replacedBy||p.replacedAt>cutoff)).map(({p,lineage})=>{if(p.scheduledAt>cutoff)delete p.scheduledAt;if(p.replacedAt>cutoff){delete p.replacedBy;delete p.replacedAt;}return {...p,starterRootId:lineage.rootId,starterRevision:lineage.depth};});
  }
  const SELECTION_KEY='loadnote.starter-selection.v1';
- function selected(storage,state,{asOf}={}){try{const id=storage.getItem(SELECTION_KEY);return saved(state,{asOf}).some(p=>p.id===id)?id:null;}catch{return null;}}
- function coach(state,question,{asOf,unit='kg',history=[],selectedPlanId=null,live=null}={}){
+ function selected(storage,state,options={}){try{const id=storage.getItem(SELECTION_KEY);return saved(state,options).some(p=>p.id===id)?id:null;}catch{return null;}}
+ function coach(state,question,{asOf,unit='kg',history=[],selectedPlanId=null,live=null,timezoneOffsetMinutes=0}={}){
   const q=String(question||'').trim();
   const base={source:'Offline Coach · getting started',readOnly:true,evidence:[],intent:{topic:'beginner-help'}};
 
   const todayQuestion=/\b(?:what should i (?:train|do)(?: today| next)|what(?:'s| is) my (?:next workout|workout today))\b/i.test(q);
   const progression=/\b(?:progression|when (?:to|should i|can i) (?:add|increase)|how do i know when to add|should i (?:add|increase) (?:the )?(?:weight|load))\b/i.test(q);
   if(todayQuestion||progression){
-   let plans=[];try{plans=saved(state,{asOf});}catch{return {...base,text:'I could not validate your saved plans. Review the program library before changing training.',actions:[{kind:'custom-programs',label:'Review program library'}]};}
+   let plans=[];try{plans=saved(state,{asOf,timezoneOffsetMinutes});}catch{return {...base,text:'I could not validate your saved plans. Review the program library before changing training.',actions:[{kind:'custom-programs',label:'Review program library'}]};}
    if(plans.length){
     if(todayQuestion&&live?.liveWorkout?.active)return {...base,text:'You have an unfinished workout open. Resume that draft before choosing a new plan or workout; no existing work has been replaced.',actions:[{kind:'beginner-log',label:'Resume my current workout'}]};
     if(progression&&/\b(?:competition|powerlifting|meet|cycle|phase|olympic|hypertrophy)\b/i.test(q)&&!plans.some(p=>q.toLowerCase().includes(p.config.name.toLowerCase())))return null;
@@ -90,12 +94,13 @@
   if(/\b(?:what (?:weight|load) should i start with|how (?:much|heavy) should i (?:lift|start)|i (?:do not|don't) know (?:my |a )?(?:starting weight|one.rep max|1rm))\b/i.test(q))return {...base,
    text:'You do not need a tested one-rep max to start. Choose a load only after a lighter warm-up lets you control the movement comfortably. There is no universally safe starting number, so I will not guess one. Stop if you have pain and get qualified help if you cannot assess the movement. When logging, enter the weight actually used, or 0 for bodyweight / no added load. Effort ratings are optional.',actions:[{kind:'starter-plan',label:'Build a first training plan'}]};
   if(/\b(?:show|review|open|find)\b.*\bmy (?:first|starter|beginner)(?: training)? plan\b/i.test(q)){
-   let plans=[];try{plans=saved(state,{asOf});}catch{return {...base,text:'I could not validate the saved starter plans. Review your program library before training.',actions:[{kind:'custom-programs',label:'Review program library'}]};}
+   let plans=[];try{plans=saved(state,{asOf,timezoneOffsetMinutes});}catch{return {...base,text:'I could not validate the saved starter plans. Review your program library before training.',actions:[{kind:'custom-programs',label:'Review program library'}]};}
    return {...base,text:plans.length?plans.length+' reviewed starter plan'+(plans.length===1?' is':'s are')+' saved: '+plans.map(p=>p.config.name).join('; ')+'. Open the plan review to choose a workout. Nothing has been loaded, scheduled or completed.':'No reviewed starter plan is saved yet. The first-plan builder needs your goal, available days and equipment; no tested max is required.',actions:[{kind:plans.length?'saved-starter':'starter-plan',label:plans.length?'Review my saved starter plans':'Build a first training plan'}],evidence:plans.map(p=>({id:p.id,name:p.config.name,scheduled:!!p.scheduledAt}))};
   }
+  if(/\b(?:what (?:is|does)|explain|how (?:does|do))\b.*\b(?:rpe|effort|reps?|sets?|rest|training max|1rm)\b/i.test(q))return null;
   if(/\b(?:i(?:'m| am) (?:a )?(?:beginner|new to (?:lifting|training|weights))|i (?:have never|haven't|have not|never) (?:lifted|trained)(?: weights)? before|i(?:'ve| have) never (?:lifted|trained)(?: weights)?(?: before)?|help me (?:get started|start lifting|start)|how (?:do|can) i (?:start lifting|get started))\b/i.test(q))return {...base,
    text:'Start with one manageable session. If you already know your exercises, open the workout log. If you need ideas, build a first plan by choosing your goal, days and equipment. Review the movements before training; you do not need a tested max or an account. Only save the work you actually complete.',actions:[{kind:'starter-plan',label:'Help me build my first plan'},{kind:'beginner-log',label:'Open my first workout log'}]};
   return null;
  }
- return {GOALS,EQUIPMENT,DAY_NAMES,setup,suggested,monday,make,saved,coach,SELECTION_KEY,selected};
+ return {GOALS,EQUIPMENT,DAY_NAMES,setup,suggested,monday,make,saved,dayCutoff,coach,SELECTION_KEY,selected};
 });

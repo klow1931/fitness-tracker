@@ -1,3 +1,13 @@
+# v7.1.0 — Simpler first workouts and reliable starter-plan access
+
+- Keep reviewed starter plans, Home links and Coach access available on the athlete's local training day, including evening saves across the UTC date boundary. Historical UTC defaults and future-data exclusion remain intact.
+- Tuck first-session exercise setup behind Exercise options; retain the original input nodes and save pipeline. Complete set preserves typed actual RPE and supports an unknown effort rating.
+- Remove the optional Start session timer from guided workouts and from completed workouts; use Finish workout for the guided review action.
+- Lead early free-training recaps with a short success message and move optional analysis into details. Linked session differences and lifecycle review actions keep their existing presentation.
+- Show a small early Progress summary and saved-plan actions in Coach, with reversible access to full analytics and training tools.
+- Give explicit RPE questions priority over general beginner introductions. Connection status no longer equates internet access with configured online Coach availability.
+- No storage schema, migration, progression policy or internal weight-unit change. Native build 39100 remains unsigned and local-only.
+
 # v7.0.0 — Clearer workout review and corrections
 
 
