@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const {describe}=require('../src/product/history-view');
+assert.deepEqual(describe(),{labels:[],filtered:false,changed:false,invalidRange:false});
+assert.equal(describe({query:'   ',sourceKind:'all',quality:'all',sort:'newest'}).changed,false);
+const options={query:'  Bench <script>  ',from:'2026-10-02',to:'2026-10-01',sourceKind:'repeated',quality:'review',sort:'oldest'},before=JSON.stringify(options);
+assert.deepEqual(describe(options),{labels:['Search: Bench <script>','From 2026-10-02','To 2026-10-01','Source: Repeated workout','Status: Needs review','Oldest first'],filtered:true,changed:true,invalidRange:true});
+assert.equal(JSON.stringify(options),before);
+assert.deepEqual(describe({sort:'oldest'}),{labels:['Oldest first'],filtered:false,changed:true,invalidRange:false});
+assert.equal(describe({from:'2026-10-01',to:'2026-10-01'}).invalidRange,false);
+assert.equal(describe({sourceKind:'scheduled',quality:'clear'}).labels.join(' · '),'Source: Calendar-linked · Status: No current flags');
+console.log('History view descriptions distinguish filtering, ordering and invalid ranges without mutation');

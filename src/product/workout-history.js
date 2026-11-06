@@ -34,7 +34,7 @@ function workoutHistoryCardHtml(w,report){
   return '<div class="history-exercise"><button type="button" class="btn-secondary" data-workout-action="exercise-detail" data-exercise-name="'+escapeHtml(ex.name)+'" data-tracking="'+tracking+'">'+escapeHtml(ex.name)+'</button><p>'+escapeHtml(values)+'</p></div>';
  }).join('');
  return '<article class="card history-session" data-hist-id="'+id+'"><div class="history-session-heading"><div><strong>'+formatDate(w.date)+'</strong>'+badges+'</div><span>'+(w.exercises||[]).length+' exercises · '+Math.round(toDisplay(vol))+' '+unitLabel()+' weighted tonnage</span></div>'+intentSummary+issueHtml+
-  '<div class="history-session-actions"><button data-workout-id="'+id+'" data-workout-action="edit" class="btn-secondary">Edit</button><button data-workout-id="'+id+'" data-workout-action="duplicate" class="btn-secondary">Duplicate</button><button data-workout-id="'+id+'" data-workout-action="history-template" class="btn-secondary">Template</button><button data-workout-id="'+id+'" data-workout-action="compare-session" class="btn-secondary">Compare</button><button data-workout-id="'+id+'" data-workout-action="delete" class="btn-danger">Delete</button></div>'+
+  '<div class="history-session-actions"><button data-workout-id="'+id+'" data-workout-action="edit" class="btn-secondary">Edit</button><button data-workout-id="'+id+'" data-workout-action="duplicate" class="btn-secondary">Repeat workout</button><button data-workout-id="'+id+'" data-workout-action="history-template" class="btn-secondary">Template</button><button data-workout-id="'+id+'" data-workout-action="compare-session" class="btn-secondary">Compare</button><button data-workout-id="'+id+'" data-workout-action="delete" class="btn-danger">Delete</button></div>'+
   '<details><summary>View exercises and notes</summary>'+exercises+(w.notes?'<p>'+escapeHtml(w.notes)+'</p>':'')+'</details></article>';
 }
 function workoutChangesHtml(){const changes=window.LoadnoteIntegrity?.undoableWorkoutRevisions(data,5)||[];if(!changes.length)return '';
@@ -67,11 +67,16 @@ function renderWorkoutHistory(){
   sourceKind:document.getElementById('history-source')?.value||'all',quality:document.getElementById('history-quality')?.value||'all',sort:document.getElementById('history-sort')?.value||'newest'
  };
  const signature=JSON.stringify(options);if(signature!==historyFilterSignature){historyPage=0;historyFilterSignature=signature;}
- if(options.from&&options.to&&options.from>options.to){el.textContent='Choose an end date on or after the start date.';return;}
+ const description=LoadnoteHistoryView.describe(options);
+ window.LoadnoteHistoryClarityUI?.status?.(description);
  const report=window.LoadnoteHistoryReliability?.inspect(data)||{counts:{total:(data.workouts||[]).length,needsReview:0},duplicates:[],issues:{},lastExportDate:data.lastExportDate||null,backupLabel:data.lastExportDate?'Last JSON backup: '+data.lastExportDate:'No JSON backup recorded on this device'};
- const list=window.LoadnoteHistoryReliability?.filter(data,{...options,issuesById:report.issues})||LoadnoteProgress.filter(data.workouts,options),pages=Math.max(1,Math.ceil(list.length/HISTORY_PAGE_SIZE));historyPage=Math.min(historyPage,pages-1);
+ const list=description.invalidRange?[]:window.LoadnoteHistoryReliability?.filter(data,{...options,issuesById:report.issues})||LoadnoteProgress.filter(data.workouts,options),pages=Math.max(1,Math.ceil(list.length/HISTORY_PAGE_SIZE));historyPage=Math.min(historyPage,pages-1);
  const summary=document.getElementById('history-reliability-summary');if(summary)summary.innerHTML=historyReliabilityHtml(report,list.length);duplicateReviewHtml(report);
- if(!list.length){el.innerHTML=workoutChangesHtml()+'<div class="empty-state"><p class="empty-title">'+(options.query||options.from||options.to||options.sourceKind!=='all'||options.quality!=='all'?'No matches':'No workouts yet')+'</p><p>Adjust the filters or log a workout.</p></div>';window.LoadnoteHistoryClarityUI?.decorate?.(report);return;}
+ if(!list.length){
+  const title=description.invalidRange?'Check the date range':description.filtered?'No matching workouts':'No workouts yet';
+  const body=description.invalidRange?'Choose an end date on or after the start date.':description.filtered?'No saved workout matches these filters. Change or clear the filters to see all workouts.':'Log your first workout to see it here.';
+  el.innerHTML=workoutChangesHtml()+'<div class="empty-state"><p class="empty-title">'+title+'</p><p>'+body+'</p>'+(!description.filtered&&!description.invalidRange?'<button type="button" class="btn-primary" data-workout-action="tab-log">Go to Train</button>':'')+'</div>';window.LoadnoteHistoryClarityUI?.decorate?.(report);return;
+ }
  el.innerHTML=workoutChangesHtml()+'<p role="status">'+list.length+' workouts · Page '+(historyPage+1)+' of '+pages+'</p>'+list.slice(historyPage*HISTORY_PAGE_SIZE,(historyPage+1)*HISTORY_PAGE_SIZE).map(w=>workoutHistoryCardHtml(w,report)).join('')+
   '<div class="history-pagination"><button class="btn-secondary" data-workout-action="history-prev" '+(historyPage===0?'disabled':'')+'>Previous page</button><button class="btn-secondary" data-workout-action="history-next" '+(historyPage===pages-1?'disabled':'')+'>Next page</button></div>';
  window.LoadnoteHistoryClarityUI?.decorate?.(report);

@@ -14,6 +14,7 @@
   const panel=document.querySelector('[data-panel="workouts"][data-sub="wo-history"]'),list=document.getElementById('workout-history');if(!panel||!list)return;
   const simple=document.body.classList.contains('loadnote-simple-view')&&(window.LoadnoteBeginnerUI?.selected?.()||document.body.classList.contains('loadnote-first-workout'));
   compact=!!simple;panel.classList.toggle('history-simple',compact);
+  const help=document.getElementById('history-action-help');if(help)help.hidden=!compact;
   const filters=document.querySelector('.history-filter-grid'),search=document.getElementById('history-search')?.closest('label');
   const filterDetails=disclosure('history-extra-filters','Filters & order',filters,search);
   const manage=disclosure('history-manage','Manage history',panel.querySelector('.card'),list);
@@ -48,10 +49,18 @@
    const actions=card.querySelector('.history-session-actions');if(!actions||actions.querySelector('.history-card-more'))continue;
    const more=document.createElement('details');more.className='history-card-more';const summary=document.createElement('summary');summary.textContent='More actions';more.append(summary);
    const body=document.createElement('div');more.append(body);
-   for(const button of [...actions.children])if(button.dataset.workoutAction!=='edit')body.append(button);
+   for(const button of [...actions.children]){
+    if(button.dataset.workoutAction==='duplicate'){button.className='btn-primary';continue;}
+    if(button.dataset.workoutAction!=='edit')body.append(button);
+   }
    const metric=card.querySelector('.history-session-heading>span');if(metric)body.prepend(metric);
    actions.append(more);
   }
  }
- window.LoadnoteHistoryClarityUI={layout,decorate};
+ function status(description){
+  const host=document.getElementById('history-filter-status');if(!host)return;
+  host.hidden=!description.changed;
+  host.querySelector('[data-history-filter-description]').textContent=description.labels.join(' · ');
+ }
+ window.LoadnoteHistoryClarityUI={layout,decorate,status};
 })();

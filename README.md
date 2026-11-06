@@ -1,8 +1,8 @@
 # Loadnote
 
-**v7.2.0 · Development build.**
+**v7.3.0 · Development build.**
 
-[History, setup and resilient offline repair v7.2](docs/releases-v7.2.md): Simple history puts sessions and search first, new users can choose kg/lb before logging, setup stays optional, and offline repair keeps completed downloads with visible progress and retry feedback.
+[Returning to training v7.3](docs/releases-v7.3.md): Repeat workout is visible in Simple History, active filters remain clearable with controls closed, and empty or invalid-date results offer a clear next step.
 
 [Beginner training clarity v7.1](docs/releases-v7.1.md): saved starter plans remain available across local/UTC date boundaries. Guided first sessions offer simpler controls, a short save recap, compact Progress and direct access to the saved plan in Coach. Full view and optional training tools remain available.
 

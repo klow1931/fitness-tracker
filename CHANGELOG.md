@@ -1,3 +1,11 @@
+# v7.3.0 — Returning to training
+
+- Promote Repeat workout in Simple History and explain its new-draft behavior alongside Edit.
+- Keep active search, date, source, status and order descriptions visible, with one Clear filters action outside optional controls.
+- Give invalid date ranges a recovery path and empty History a Go to Train action that preserves the current draft.
+- Reuse existing repeat, kg/lb conversion, draft replacement, review/save, filtering and revision logic. No schema or training-policy changes.
+- Add presentation-model and desktop/mobile/WebKit acceptance coverage for repeat/save, cancellation, retained drafts and filter recovery.
+
 # v7.2.0 — Clearer history, optional setup and resilient offline repair
 
 - Keep search and workout cards first in explicitly selected Simple view. Filters, export/restore, reliability summaries and cleanup stay available in expandable controls; review warnings remain visible.
