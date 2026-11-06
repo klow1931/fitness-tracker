@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test'),{outcomesFixture}=require('../fixtures/program-outcomes');
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{
@@ -19,7 +20,7 @@ test('compact outcome timeline and historical cutoff preserve all stored trainin
 test('outcomes work offline in night mode with lb display and unchanged kg records',async({page,context})=>{
   await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);renderProgramOutcomes();});
   const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,reviews:data.programReviews,schedule:data.scheduledSessions}));
-  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
+  await waitForOfflineReady(page);await context.setOffline(true);await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
   await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-programs');renderProgramOutcomes();});await page.locator('#program-outcomes-panel > summary').click();await page.locator('.outcome-review > summary').click();
   const squat=page.locator('[data-outcome-lift="squat"]');await squat.locator('details > summary').click();await expect(squat).toContainText(' lb');await expect(squat).toContainText('All comparable sessions within RPE caps');
   expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,reviews:data.programReviews,schedule:data.scheduledSessions}))).toBe(before);

@@ -41,6 +41,7 @@
     }
 
     function updateUnitToggle() {
+      window.LoadnoteStartingUnitsUI?.refresh?.();
       const isKg = currentUnit() === 'kg';
       const kgBtn = document.getElementById('unit-kg');
       const lbBtn = document.getElementById('unit-lb');

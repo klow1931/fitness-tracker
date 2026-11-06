@@ -15,7 +15,7 @@ test('v2.60 onboarding leads into reusable training setup and Profile stays comp
  await page.locator('#programming-profile-dialog').getByRole('button',{name:'Close',exact:true}).click();
  await page.evaluate(()=>showTab('profile'));
  await expect(page.locator('#panel-profile')).toBeVisible();
- await expect(page.locator('#profile-training-setup')).toContainText('Training setup not completed');
+ await expect(page.locator('#profile-training-setup')).toContainText('Training setup is optional');
 
  await page.locator('#profile-edit-training').click();
  await expect(page.locator('#programming-profile-dialog')).toBeVisible();

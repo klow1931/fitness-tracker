@@ -1,3 +1,13 @@
+# v7.2.0 — Clearer history, optional setup and resilient offline repair
+
+- Keep search and workout cards first in explicitly selected Simple view. Filters, export/restore, reliability summaries and cleanup stay available in expandable controls; review warnings remain visible.
+- Keep Edit prominent and group less frequent saved-session actions under More actions, without changing history operations or their safeguards.
+- Offer kg/lb on the starting screen through the existing display-unit conversion and persistence path.
+- Label planning setup and intake as optional; show competition mapping in Advanced setup until a powerlifting goal is saved.
+- Cache offline files independently with four bounded downloads, progress counts, shared concurrent repair, request timeouts and missing-only retries. Failed downloads no longer discard successful files from an atomic batch.
+- Show partial failure counts and a retryable no-response state without clearing workout storage or drafts.
+- Training schema 34 and programming engines unchanged. Native build 39200 remains unsigned and local-only.
+
 # v7.1.0 — Simpler first workouts and reliable starter-plan access
 
 - Keep reviewed starter plans, Home links and Coach access available on the athlete's local training day, including evening saves across the UTC date boundary. Historical UTC defaults and future-data exclusion remain intact.

@@ -22,7 +22,7 @@ async function startApp(){
  const window={LoadnotePlatform:{detect:()=>({native:false}),apply:(_,platform)=>platform},
   addEventListener(name,listener){listeners.window[name]=listener;}};
  vm.runInNewContext(script,{window,document,navigator,location:{reload(){}},
-  data:{workouts:[]},saveTimer:0,clearTimeout(){},saveLoggerDraft:()=>true,
+  data:{workouts:[]},saveTimer:0,setTimeout(fn){listeners.timeout=fn;return 1;},clearTimeout(){listeners.timeout=null;},saveLoggerDraft:()=>true,
   persistNow:async()=>{saved++;},reportStorageFailure(){}});
  await window.LoadnoteLifecycle.start();
  return {ui,listeners,registration,messages,controller,stats:()=>({saved,checked}),navigator};
@@ -40,6 +40,11 @@ const settle=()=>new Promise(resolve=>setImmediate(resolve));
  assert(h.ui['app-update-status'].textContent.includes('Do not clear website data'));
  h.ui['repair-offline-cache'].click();
  assert.equal(h.messages.at(-1).type,'REPAIR_OFFLINE_CACHE');
+ h.listeners.sw.message({data:{type:'OFFLINE_CACHE_PROGRESS',cached:200,total:315,failed:0}});
+ assert.match(h.ui['update-check-status'].textContent,/200 of 315/);assert.equal(h.ui['repair-offline-cache'].disabled,true);
+ h.listeners.timeout();assert.equal(h.ui['repair-offline-cache'].disabled,false);assert.match(h.ui['update-check-status'].textContent,/taking longer/);
+ h.listeners.sw.message({data:{type:'OFFLINE_CACHE_STATUS',ready:false,cached:314,total:315,failed:1}});
+ assert.match(h.ui['update-check-status'].textContent,/1 of 315/);assert.match(h.ui['update-check-status'].textContent,/Completed downloads are kept/);
  h.listeners.sw.message({data:{type:'OFFLINE_CACHE_STATUS',ready:true}});
  assert.equal(h.ui['repair-offline-cache'].hidden,true);
  assert.equal(h.ui['app-update'].hidden,true);

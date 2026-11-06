@@ -39,6 +39,7 @@
   refreshPresentation();renderGuide();
   if(typeof invalidateViews==='function')invalidateViews();
   window.renderBeginnerCoach?.();
+  window.LoadnoteHistoryClarityUI?.layout?.();
  }
  function enter(entry,{preserveView=false}={}){
   const simple=document.getElementById('beginner-simple-choice')?.checked;
@@ -86,7 +87,7 @@
   });
  }
  function preferencesHTML(){
-  const p=load();return '<div class="profile-preference-row"><div><b>Simple view</b><p class="more-hint">Keep Home focused on training. Your workouts and programming are unchanged. Saved on this device.</p></div><button type="button" class="btn-secondary" id="profile-simple-view" aria-pressed="'+(p.view==='simple')+'">'+(p.view==='simple'?'On':'Off')+'</button></div><div class="profile-guide-actions"><button type="button" class="btn-secondary" id="profile-replay-guide">Replay workout tips</button><button type="button" class="btn-secondary" id="profile-starting-choices">Choose how to start</button></div>';
+  const p=load();return '<div class="profile-preference-row"><div><b>Simple view</b><p class="more-hint">Simpler training screens and history. Your workouts and programming are unchanged. Saved on this device.</p></div><button type="button" class="btn-secondary" id="profile-simple-view" aria-pressed="'+(p.view==='simple')+'">'+(p.view==='simple'?'On':'Off')+'</button></div><div class="profile-guide-actions"><button type="button" class="btn-secondary" id="profile-replay-guide">Replay workout tips</button><button type="button" class="btn-secondary" id="profile-starting-choices">Choose how to start</button></div>';
  }
  function bindPreferences(host){
   host.querySelector('#profile-simple-view')?.addEventListener('click',()=>{if(change({view:load().view==='simple'?'full':'simple'}))window.renderProfileHub?.();});

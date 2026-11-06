@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test');
 test.use({serviceWorkers:'allow'});
 async function openProgressExplore(page){
@@ -32,7 +33,7 @@ test('review separates trends, escapes evidence without changing saved workouts'
 });
 test('review loads offline in dark mode and converts display without rewriting kg',async({page,context})=>{
  await page.evaluate(async()=>{data.dark=true;data.unit='lb';applyDark();await persistNow(data);});
- await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+ await waitForOfflineReady(page);
  await context.setOffline(true);await page.reload();await page.evaluate(()=>{showTab('prs');renderTrainingReview();});
  await openProgressExplore(page);
  await page.locator('#training-review-panel > summary').click();

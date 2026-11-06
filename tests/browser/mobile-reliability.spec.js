@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test');
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{
@@ -31,8 +32,7 @@ test('offline interruption checkpoints cardio, units, notes and completion witho
  await page.evaluate(()=>{setUnit('lb');document.getElementById('wo-notes').value='Interrupted session';addExerciseRow({name:'Cycling',type:'cardio'});const row=document.querySelector('#exercise-rows').lastElementChild;row.querySelector('.cardio-duration').value='12';row.querySelector('.cardio-done').checked=true;window.dispatchEvent(new Event('pagehide'));});
  const before=await page.evaluate(()=>{const d=readLoggerDraft();delete d.updatedAt;return d;});
  // Cached offline app must resume from an acknowledged draft, not invent a workout.
- await page.evaluate(()=>navigator.serviceWorker.ready);
- await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+ await waitForOfflineReady(page);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.set-weight')).toHaveValue('220.46');
  expect(await page.evaluate(()=>currentUnit())).toBe('lb');

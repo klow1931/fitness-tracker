@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v7.1.0';
+const CACHE = 'loadnote-v7.2.0';
 const ASSETS = [
   './src/product/coach-workspace.js',
   './src/product/coach-workspace-ui.js',
@@ -32,6 +32,8 @@ const ASSETS = [
   './src/product/beginner-program.js',
   './src/product/beginner-program-ui.js',
   './src/product/beginner-experience-ui.js',
+  './src/product/starting-units-ui.js',
+  './src/product/history-clarity-ui.js',
   './src/product/beginner-training-ui.js',
   './src/product/beginner-first-week.js',
   './src/product/beginner-first-week-ui.js',
@@ -315,6 +317,43 @@ const ASSETS = [
 ];
 const SCOPE = self.registration.scope;
 const assetURLs = new Set(ASSETS.map(path => new URL(path, SCOPE).href));
+// Cache each file independently: one failed response must not discard other
+// successful downloads. Retries only fetch missing files, with bounded concurrency.
+let offlineWarming=null,offlineProgress=null;
+async function offlineStatus(cache){
+  let cached=0;
+  for(const url of assetURLs)if(await cache.match(url))cached++;
+  return {type:'OFFLINE_CACHE_STATUS',ready:cached===assetURLs.size,cached,total:assetURLs.size,failed:assetURLs.size-cached};
+}
+async function warmOffline(cache,notify){
+  if(offlineWarming){if(offlineProgress)await notify(offlineProgress);return offlineWarming;}
+  offlineWarming=(async()=>{
+    const missing=[];let cached=0,failed=0,completed=0;
+    for(const url of assetURLs){if(await cache.match(url))cached++;else missing.push(url);}
+    const report=async()=>{offlineProgress={type:'OFFLINE_CACHE_PROGRESS',cached,total:assetURLs.size,failed};await notify(offlineProgress);};
+    await report();
+    let cursor=0;
+    await Promise.all(Array.from({length:Math.min(4,missing.length)},async()=>{
+      while(cursor<missing.length){
+        const url=missing[cursor++],controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),20000);
+        try{
+          const response=await fetch(new Request(url,{cache:'reload',signal:controller.signal}));
+          if(!response.ok)throw Error('Offline asset unavailable');
+          await cache.put(url,response);cached++;
+        }catch(error){failed++;}
+        finally{clearTimeout(timeout);}
+        completed++;if(completed%8===0||completed===missing.length)await report();
+      }
+    }));
+    return offlineStatus(cache);
+  })();
+  try{return await offlineWarming;}finally{offlineWarming=null;offlineProgress=null;}
+}
+async function broadcastOffline(message){
+  const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  for(const client of clients.filter(client=>client.url.startsWith(SCOPE))){try{client.postMessage(message);}catch(error){/* Closed window. */}}
+}
 // Install a small entry point first. Previous releases cached the entire shell
 // before an update could reach "waiting", which could fail on storage-constrained
 // Home Screen apps retaining several older version caches.
@@ -324,17 +363,16 @@ self.addEventListener('install', event => {
 self.addEventListener('message', event => {
   if(event.data?.type==='CHECK_OFFLINE_CACHE'||event.data?.type==='REPAIR_OFFLINE_CACHE'){
     event.waitUntil((async()=>{
-      const cache=await caches.open(CACHE);
-      let ready=true;
-      if(event.data.type==='REPAIR_OFFLINE_CACHE'){
-        try{await cache.addAll(ASSETS);}catch(error){ready=false;}
-      }
-      if(ready){
-        for(const path of ASSETS){
-          if(!await cache.match(new URL(path,SCOPE).href)){ready=false;break;}
-        }
-      }
-      event.source?.postMessage({type:'OFFLINE_CACHE_STATUS',ready});
+      const send=message=>{try{event.source?.postMessage(message);}catch(error){/* Closed window. */}};
+      try{
+        const cache=await caches.open(CACHE);
+        if(event.data.type==='CHECK_OFFLINE_CACHE'&&offlineWarming){if(offlineProgress)send(offlineProgress);return;}
+        const result=event.data.type==='REPAIR_OFFLINE_CACHE'?await warmOffline(cache,send):await offlineStatus(cache);
+        // A check can start just before activation begins warming. Do not report
+        // a moving partial snapshot as a finished failure while that work runs.
+        if(event.data.type==='CHECK_OFFLINE_CACHE'&&offlineWarming){send(offlineProgress||{type:'OFFLINE_CACHE_PROGRESS',cached:0,total:assetURLs.size,failed:0});return;}
+        send(result);
+      }catch(error){send({type:'OFFLINE_CACHE_STATUS',ready:false,cached:0,total:assetURLs.size,failed:assetURLs.size});}
     })());
     return;
   }
@@ -346,20 +384,16 @@ self.addEventListener('message', event => {
 // localStorage, workout drafts, other app caches, or the current cache.
 self.addEventListener('activate', event => {
   event.waitUntil((async()=>{
-    let offlineReady=true;
     try{
       const names=await caches.keys();
       await Promise.all(names.filter(name=>name.startsWith('loadnote-v')&&name!==CACHE).map(name=>caches.delete(name)));
-    }catch(error){offlineReady=false;}
-    try{await (await caches.open(CACHE)).addAll(ASSETS);}
-    catch(error){offlineReady=false;/* A failed asset should not strand a saved workout on the old version. */}
+    }catch(error){/* Retaining old asset caches does not by itself make the current cache incomplete. */}
+    // Control the online page promptly; readiness is reported independently.
     await self.clients.claim();
-    if(!offlineReady){
-      const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-      for(const client of clients.filter(client=>client.url.startsWith(SCOPE))){
-        try{client.postMessage({type:'OFFLINE_CACHE_INCOMPLETE'});}catch(error){/* The window may have closed during activation. */}
-      }
-    }
+    let result;
+    try{result=await warmOffline(await caches.open(CACHE),broadcastOffline);}
+    catch(error){result={type:'OFFLINE_CACHE_STATUS',ready:false,cached:0,total:assetURLs.size,failed:assetURLs.size};}
+    await broadcastOffline(result.ready?result:{...result,type:'OFFLINE_CACHE_INCOMPLETE'});
   })());
 });
 self.addEventListener('fetch', event => {

@@ -43,10 +43,16 @@
      finally{checking=false;checkButton.disabled=false;}
    };
    checkButton.addEventListener('click',()=>{void check(true);});
+   let repairTimer=null;
+   const clearRepairTimer=()=>{clearTimeout(repairTimer);repairTimer=null;};
+   const watchRepair=()=>{clearRepairTimer();repairTimer=setTimeout(()=>{
+     repairButton.hidden=false;repairButton.disabled=false;
+     checkStatus.textContent='Offline repair is taking longer than expected. Keep Loadnote online and retry. Your saved workouts are unchanged.';
+   },45000);};
    repairButton.addEventListener('click',()=>{
      if(!navigator.onLine){checkStatus.textContent='Connect to the internet before repairing offline files.';return;}
      if(!navigator.serviceWorker.controller){checkStatus.textContent='Reopen Loadnote before repairing offline files.';return;}
-     repairButton.disabled=true;checkStatus.textContent='Repairing offline files…';
+     repairButton.disabled=true;checkStatus.textContent='Repairing offline files…';watchRepair();
      navigator.serviceWorker.controller.postMessage({type:'REPAIR_OFFLINE_CACHE'});
    });
    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check();});
@@ -59,11 +65,24 @@
    navigator.serviceWorker.addEventListener('controllerchange',()=>{if(requested)location.reload();else checkOfflineCache();});
    navigator.serviceWorker.addEventListener('message',event=>{
      if(event.data?.type==='UPDATE_BLOCKED'){requested=false;button.disabled=false;status.textContent='Close other Loadnote tabs before updating, then try again.';}
+     if(event.data?.type==='OFFLINE_CACHE_PROGRESS'){
+       const value=event.data,cached=Number(value.cached),total=Number(value.total);
+       if(!Number.isInteger(cached)||!Number.isInteger(total)||total<1||cached<0||cached>total)return;
+       repairButton.hidden=false;repairButton.disabled=true;watchRepair();
+       checkStatus.textContent='Preparing offline use · '+cached+' of '+total+' files saved. Keep Loadnote online.';
+       if(!registration.waiting){banner.hidden=false;button.hidden=true;status.textContent='Preparing Loadnote for offline use. Your training data is saved separately.';}
+       return;
+     }
      if(event.data?.type==='OFFLINE_CACHE_INCOMPLETE'||event.data?.type==='OFFLINE_CACHE_STATUS'&&!event.data.ready){
+       clearRepairTimer();
        repairButton.hidden=false;repairButton.disabled=false;
-       checkStatus.textContent='Offline files are incomplete. Keep Loadnote online and use Repair offline files. Your workouts are unchanged.';
+       const missing=Number(event.data.failed),total=Number(event.data.total);
+       checkStatus.textContent=Number.isInteger(missing)&&Number.isInteger(total)&&missing>0&&missing<=total
+        ?missing+' of '+total+' offline files could not be saved. Completed downloads are kept. Retry Repair offline files online; your workouts are unchanged.'
+        :'Offline files are incomplete. Keep Loadnote online and use Repair offline files. Your workouts are unchanged.';
        if(!registration.waiting)warn('Loadnote needs to finish downloading offline files. Open Device & backup, then tap Repair offline files. Do not clear website data.');
      }else if(event.data?.type==='OFFLINE_CACHE_STATUS'&&event.data.ready){
+       clearRepairTimer();
        repairButton.hidden=true;repairButton.disabled=false;checkStatus.textContent='Offline app files are ready.';
        if(!registration.waiting&&button.hidden)banner.hidden=true;
      }
