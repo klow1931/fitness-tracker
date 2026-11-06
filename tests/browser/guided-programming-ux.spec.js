@@ -72,6 +72,8 @@ test('calendar Undo appends a revision and remains retryable after failed storag
   data.scheduledSessions=LoadnoteSchedule.create([],{name:'Bench day',date:'2026-09-29',prescription},{id:'undo-calendar'});showTab('calendar');renderSchedule();
  });
  await page.locator('#calendar-plan [data-change=undo-calendar]').click();await page.locator('#schedule-date').fill('2026-09-30');await page.locator('#schedule-state').selectOption('skipped');await page.locator('#schedule-reason').fill('Travel');await page.locator('#schedule-dialog button[type=submit]').click();
+ await expect(page.locator('#schedule-dialog')).not.toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>LoadnoteSchedule.list(data.scheduledSessions)[0].date)).toBe('2026-09-30');
  const before=await page.evaluate(()=>JSON.stringify(data));await page.evaluate(()=>{window.uxPersist=persistNow;persistNow=async()=>{throw Error('Undo storage failure');};});await page.locator('[data-undo-action=calendar]').click();await expect(page.locator('[data-undo-scope=calendar] [role=status]')).toContainText('Undo storage failure');expect(await page.evaluate(()=>JSON.stringify(data))).toBe(before);
  await page.evaluate(()=>{persistNow=window.uxPersist;});await page.locator('[data-undo-action=calendar]').click();await expect.poll(()=>page.evaluate(()=>LoadnoteSchedule.list(data.scheduledSessions)[0].date)).toBe('2026-09-29');expect(await page.evaluate(()=>data.scheduledSessions[0].revisions.length)).toBe(3);
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);expect(await page.evaluate(()=>LoadnoteSchedule.list(data.scheduledSessions)[0].status)).toBe('scheduled');

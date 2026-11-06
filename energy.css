@@ -1128,3 +1128,10 @@ body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-
 .history-optional>summary::after,.history-card-more>summary::after{content:'⌄';margin-left:auto;display:inline-block}
 .history-optional[open]>summary::after,.history-card-more[open]>summary::after{transform:rotate(180deg)}
 .history-optional>summary::-webkit-details-marker,.history-card-more>summary::-webkit-details-marker{display:none}
+
+/* v7.3 — active filters remain visible when optional controls are closed. */
+.history-filter-status{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;padding:.75rem;margin:.75rem 0;border:1px solid var(--line);border-radius:.65rem}
+.history-filter-status[hidden]{display:none}
+.history-filter-status p{flex:1 1 15rem;min-width:0;overflow-wrap:anywhere;margin:0}
+.history-filter-status button{min-height:44px}
+.history-simple .history-session-actions>button,.history-simple .history-card-more>summary{font-size:.9rem;line-height:1.35;padding:.55rem .65rem}

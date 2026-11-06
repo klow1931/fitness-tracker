@@ -455,8 +455,9 @@
           <label>Source<select id="history-source" class="input" data-workout-change="history-filter"><option value="all">All sources</option><option value="scheduled">Calendar-linked</option><option value="planned">Planned manual</option><option value="repeated">Repeated workout</option><option value="manual">Manual</option></select></label>
           <label>Record status<select id="history-quality" class="input" data-workout-change="history-filter"><option value="all">All records</option><option value="review">Needs review</option><option value="clear">No current flags</option></select></label>
           <label>Order<select id="history-sort" class="input" data-workout-change="history-filter"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
-          <button type="button" class="btn-secondary" data-workout-action="clear-history-filters">Clear filters</button>
         </div>
+        <div id="history-filter-status" class="history-filter-status" hidden><p data-history-filter-description role="status" aria-live="polite"></p><button type="button" class="btn-secondary" data-workout-action="clear-history-filters">Clear filters</button></div>
+        <p id="history-action-help" class="more-hint" hidden>Repeat starts a new draft for today. Edit changes a saved workout.</p>
         <details id="history-duplicate-review" class="history-duplicate-review" hidden></details>
         <details id="history-cleanup" class="history-cleanup"></details>
         <div id="workout-history" class="space-y-3"></div>
@@ -1432,7 +1433,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v7.2.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v7.3.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2034,6 +2035,7 @@
   <script src="src/product/data-transfer.js" defer></script>
   <script src="src/product/data-integrity-ui.js" defer></script>
   <script src="src/product/history-reliability.js" defer></script>
+  <script src="src/product/history-view.js" defer></script>
   <script src="src/product/workout-events.js" defer></script>
   <script src="src/product/draft-model.js" defer></script>
   <script src="src/product/persistence.js" defer></script>
