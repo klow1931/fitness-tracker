@@ -134,7 +134,7 @@ function initCalmNavigation(){
     if(legacy.length){const details=document.createElement('details');details.className='card calm-advanced-programming';details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);}
   }
   const simple=document.getElementById('simple-view-banner');if(simple){const p=simple.querySelector('p');if(p)p.textContent='Simple Home';}
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v7.5.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v7.6.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});

@@ -46,3 +46,11 @@ assert.deepEqual(S.catalogIdentity([{id:'b',name:'Competition Bench',aliases:['B
 assert.deepEqual(S.catalogIdentity([{id:'b',name:'Bench Press'},{id:'b2',name:'Special Bench',aliases:['Bench Press']}],'Bench Press'),{exerciseId:null,ambiguous:true});
 assert.equal(S.findPerformance([named('other','2026-09-01','other','Bench Press',222)],'Bench Press',()=>true,'bench'),null,'Never borrow an explicitly different exercise');
 console.log('v3.34 previous-performance identity, catalog ambiguity, future cutoff, rename, legacy fallback, edit exclusion and imports passed');
+
+// v7.6 continuation checkpoints are not evidence of an extra performed set.
+for(const unit of ['kg','lb'])for(const trackBy of ['reps','duration']){
+ const row={name:'Continuation',type:'strength',trackBy,sets:[{reps:trackBy==='reps'?'5':'',duration:trackBy==='duration'?'30':'',weight:'100',rpe:'8',done:true},{reps:'',duration:'',weight:'',rpe:'',done:false}]};
+ const draft={date:'2026-11-06',unit,rows:[row]},before=JSON.stringify(draft),saved=S.fromDraft(draft,'continued');
+ assert.equal(saved.exercises[0].sets.length,1);assert.equal(JSON.stringify(draft),before);
+}
+console.log('Blank continuation rows remain draft-only across weight units and tracking modes');
