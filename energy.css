@@ -1142,3 +1142,8 @@ body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-
  .training-cockpit-rest-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}
  .training-cockpit-rest-actions [data-cockpit-rest-return]{grid-column:1/-1}
 }
+
+/* v7.6 — continuation is secondary to finishing and stays in document flow. */
+.workout-continuation{display:flex;flex-wrap:wrap;gap:.5rem;padding:.65rem 0;min-width:0}
+.workout-continuation p{flex-basis:100%;font-size:.8rem;margin:0;color:var(--muted)}
+.workout-continuation button{min-height:44px;font-size:.8rem;white-space:normal;overflow-wrap:anywhere;max-width:100%}

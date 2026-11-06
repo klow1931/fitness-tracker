@@ -1,8 +1,8 @@
 # Loadnote
 
-**v7.5.0 · Development build.**
+**v7.6.0 · Development build.**
 
-[Clearer rest and return to entry v7.5](docs/releases-v7.5.md): A minutes-and-seconds rest clock and an explicit return to the next unfinished set, without marking it complete or saving a workout.
+[Continue a workout v7.6](docs/releases-v7.6.md): After the last entered set, add a blank set or another exercise directly from the workout cockpit. Finish remains the primary action; adding blank fields does not record performed work.
 
 [Beginner training clarity v7.1](docs/releases-v7.1.md): saved starter plans remain available across local/UTC date boundaries. Guided first sessions offer simpler controls, a short save recap, compact Progress and direct access to the saved plan in Coach. Full view and optional training tools remain available.
 
