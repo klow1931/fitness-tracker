@@ -98,6 +98,10 @@
         </div>
         <button onclick="dismissOnboarding()" class="btn-secondary text-xs py-1 px-2">Dismiss</button>
       </div>
+      <div id="onboarding-unit-choice" class="starting-units" role="group" aria-label="Weights at your gym">
+        <span>Weights at your gym</span><div><button type="button" class="btn-secondary" data-start-unit="kg" aria-pressed="false">kg</button><button type="button" class="btn-secondary" data-start-unit="lb" aria-pressed="false">lb</button></div>
+        <small>Choose your display unit. You can change it in Profile.</small>
+      </div>
       <button type="button" class="onboard-tip beginner-first-workout" data-beginner-entry="log">
         <span aria-hidden="true">▶</span>
         <span><b>Start my first workout</b><span class="beginner-entry-desc">Add an exercise, enter your sets, and save. No program or max required.</span></span>
@@ -435,7 +439,7 @@
       <div class="sub-panel hidden" data-panel="workouts" data-sub="wo-history">
       <div class="card">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <div><h2 class="font-semibold">Workout History</h2><p class="more-hint">Find a session quickly, review questionable records, and keep backups close to the data they protect.</p></div>
+          <div><h2 class="font-semibold">Workout History</h2><p class="more-hint">Find saved workouts and review your sets.</p></div>
           <div class="flex flex-wrap gap-2">
             <button data-workout-action="export-json" class="btn-primary text-sm">Back up JSON</button>
             <button data-workout-action="export-csv" class="btn-secondary text-sm">Export CSV</button>
@@ -1428,7 +1432,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v7.1.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v7.2.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2258,6 +2262,8 @@
   <script src="src/product/beginner-program.js" defer></script>
   <script src="src/product/beginner-program-ui.js" defer></script>
   <script src="src/product/beginner-experience-ui.js" defer></script>
+  <script src="src/product/starting-units-ui.js" defer></script>
+  <script src="src/product/history-clarity-ui.js" defer></script>
   <script src="src/product/beginner-training-ui.js" defer></script>
   <script src="app.js" defer></script>
 </body>

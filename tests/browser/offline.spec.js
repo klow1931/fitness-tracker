@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test');
 const http=require('http'),fs=require('fs'),path=require('path');
 test.use({serviceWorkers:'allow'});
@@ -15,7 +16,7 @@ test.beforeAll(async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin=`http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(async()=>{await new Promise(resolve=>server.close(resolve));});
-async function ready(page){await page.goto(origin);await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await page.evaluate(()=>showTab('workouts'));}
+async function ready(page){await page.goto(origin);await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await waitForOfflineReady(page);await page.evaluate(()=>showTab('workouts'));}
 test('Real assets support offline draft reload, timer, save and chart',async({page,context})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await ready(page);
  await page.locator('.ex-name').fill('Offline Bench');await page.locator('.set-weight').fill('80');await page.locator('.set-reps').fill('5');

@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test'),fs=require('fs');
 test.use({serviceWorkers:'allow'});
 test.beforeEach(async({page})=>{await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);await page.evaluate(()=>showTab('workouts'));await page.locator('#training-blocks summary').click();});
@@ -7,7 +8,7 @@ async function create(page,name='Return to Powerlifting'){
 test('Block CRUD preserves historical workouts, draft and lb benchmarks offline',async({page,context})=>{
  await page.evaluate(()=>{data.unit='lb';data.workouts=[{id:'historic',date:'2026-06-15',exercises:[]}];});
  await page.locator('.ex-name').fill('Unfinished bench');
- await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);
+ await waitForOfflineReady(page);await context.setOffline(true);
  await create(page);await page.locator('#block-dialog details summary').click();await page.locator('#block-add-max').click();await page.locator('#block-maxes [data-exercise]').fill('Squat');await page.locator('#block-maxes [data-load]').fill('365');await page.locator('#block-add-known').click();await page.locator('#block-known [data-exercise]').fill('Squat');await page.locator('#block-known [data-load]').fill('446');
  await page.getByRole('button',{name:'Save block',exact:true}).click();await expect(page.locator('#block-dialog')).not.toBeVisible();
  const stored=await page.evaluate(()=>LoadnoteBlocks.list(data.trainingBlocks)[0]);expect(stored.trainingMaxes[0].kg).toBeCloseTo(365/2.2046226218,5);expect(stored.known1RMs[0].kg).toBeCloseTo(446/2.2046226218,5);

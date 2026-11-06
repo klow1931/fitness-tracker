@@ -6,7 +6,7 @@
  function setupSummary(){
   const record=window.LoadnoteProgrammingProfile?.current?.(data.programmingProfiles||[]);
   const p=record?.context;
-  if(!p)return {ready:false,title:'Training setup not completed',body:'Start with your goal, available days and equipment. Existing workouts stay unchanged.',meta:''};
+  if(!p)return {ready:false,title:'Training setup is optional',body:'You can log workouts now. Add your goal, days and equipment when you want help planning.',meta:''};
   const goal=window.LoadnoteProgrammingProfile?.GOALS?.[p.goal]||p.goal;
   const available=(p.availableDays||[]).map(i=>days[i]).join(', ');
   const equipment=(p.equipment||[]).length;
@@ -16,7 +16,7 @@
   const host=document.getElementById('profile-hub');if(!host)return;
   const setup=setupSummary();
   const context=window.LoadnoteProgrammingProfile?.current?.(data.programmingProfiles||[])?.context;
-  const powerlifting=!context||['general','meet'].includes(context.goal);
+  const powerlifting=!!context&&['general','meet'].includes(context.goal);
   let competitionCount=0;
   try{competitionCount=new Set((window.LoadnoteReadiness?.list?.(data.exerciseRoles||[])||[]).filter(row=>row.role==='competition'&&row.competitionLift).map(row=>row.competitionLift)).size;}catch{}
   host.innerHTML=
@@ -26,10 +26,10 @@
      '<h2>'+esc(setup.title)+'</h2>'+
      (setup.meta?'<p class="profile-meta">'+esc(setup.meta)+'</p>':'')+
      '<p class="more-hint">'+esc(setup.body)+'</p>'+
-     '<ol class="setup-checklist" aria-label="Training setup steps"><li><div><b>1. Goal &amp; schedule</b><p class="more-hint">'+(setup.ready?'Saved · edit when your availability changes.':'Choose your training defaults first.')+'</p></div><div class="profile-actions">'+
+     '<ol class="setup-checklist" aria-label="Training setup steps"><li><div><b>Goal &amp; schedule</b><p class="more-hint">'+(setup.ready?'Saved · edit when your availability changes.':'Optional · defaults for planning, not a requirement for logging.')+'</p></div><div class="profile-actions">'+
       '<button type="button" class="btn-primary" id="profile-edit-training">'+(setup.ready?'Edit training setup':'Set up training')+'</button>'+
-     '</div></li><li><div><b>2. Training background</b><p class="more-hint" id="profile-intake-hint">'+(context?.intake?'Recorded · review if your history or limits change.':setup.ready?'Optional · history, priorities and reported limits.':'Optional · opens training setup first, then your intake.')+'</p></div><button type="button" class="btn-secondary" id="profile-athlete-intake" aria-describedby="profile-intake-hint">Athlete intake</button></li>'+
-     (powerlifting?'<li><div><b>3. Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Match your squat, bench and deadlift names.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></li>':'')+
+     '</div></li><li><div><b>Training background · optional</b><p class="more-hint" id="profile-intake-hint">'+(context?.intake?'Recorded · review if your history or limits change.':setup.ready?'Optional · history, priorities and reported limits.':'Optional · opens training setup first, then your intake.')+'</p></div><button type="button" class="btn-secondary" id="profile-athlete-intake" aria-describedby="profile-intake-hint">Athlete intake</button></li>'+
+     (powerlifting?'<li><div><b>Powerlifting lift mapping</b><p class="more-hint">'+competitionCount+'/3 competition lifts confirmed. Match your squat, bench and deadlift names.</p></div><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button></li>':'')+
      '</ol><details class="setup-details"><summary>Advanced setup</summary><p class="more-hint">Availability, equipment and avoided exercises constrain generated plans. Free-text notes are context, not automatic prescriptions. Athlete intake is optional; review reported limits before programming.</p>'+
      (!powerlifting?'<p class="more-hint">Powerlifting mapping is only needed for squat/bench/deadlift-specific Decisions.</p><button type="button" class="btn-secondary" id="profile-lift-mapping">Review mappings</button>':'')+
      '<button type="button" class="btn-secondary" id="profile-go-train">Go to Train</button></details>'+

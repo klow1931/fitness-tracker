@@ -1,9 +1,10 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {test,expect}=require('playwright/test');
 test.use({serviceWorkers:'allow',timezoneId:'America/New_York'});
 test.beforeEach(async({page})=>{await page.clock.install({time:new Date('2026-10-31T02:00:00Z')});await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(()=>{data.templates=[{id:'t',name:'Squat day',exercises:[{name:'Squat',type:'strength',sets:[{weight:100,reps:5,rpe:7}]}]}];showTab('dashboard');});});
 async function schedule(page){await page.locator('#home-week-plan > summary').click();await page.locator('#week-plan [data-new-session]').click();await page.locator('#schedule-name').fill('Planned squat');await page.locator('#schedule-source').selectOption('template:0');await page.getByRole('button',{name:'Save schedule',exact:true}).click();await expect(page.locator('#schedule-dialog')).not.toBeVisible();}
 test('offline planned draft survives reload and completes only after saving',async({page,context})=>{
- await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);await context.setOffline(true);await schedule(page);
+ await waitForOfflineReady(page);await context.setOffline(true);await schedule(page);
  await page.locator('#week-plan [data-start]').click();await expect(page.locator('.set-weight')).toHaveValue('100');await expect(page.locator('.set-rpe')).toHaveValue('');
  await page.reload();await page.evaluate(()=>showTab('workouts'));expect(await page.evaluate(()=>pendingScheduledSession.id)).toBeTruthy();
  await page.locator('.set-rpe').fill('8');await page.locator('.set-done-check').check();await page.locator('#training-cockpit [data-cockpit-review]').click();await page.getByRole('button',{name:'Save workout',exact:true}).click();await expect(page.locator('#workout-review')).not.toBeVisible();
