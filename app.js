@@ -2324,27 +2324,7 @@
     }
 
     async function updateCoachConnectionUI() {
-      const status = document.getElementById('coach-online-status');
-      const accountLink = document.getElementById('coach-account-link');
-      if (!status || !window.LoadnoteCoachClient) return;
-      if(window.LoadnoteLocalCoachAI?.snapshot().conversationConsent){status.textContent='Local conversation selected · '+window.LoadnoteLocalCoachAI.snapshot().status+'. Online Coach is paused.';status.className='text-xs text-slate-500 mt-1';accountLink?.setAttribute('hidden','');return;}
-      const signedIn = await window.LoadnoteCoachClient.ensureSignedIn();
-      accountLink?.toggleAttribute('hidden', signedIn);
-      if (!signedIn) {
-        status.textContent = 'Offline coaching is available now. Sign in from Profile to use the secure online Coach.';
-        status.className = 'text-xs text-slate-500 mt-1';
-        return;
-      }
-      status.textContent = 'Checking secure online Coach…';
-      status.className = 'text-xs text-slate-500 mt-1';
-      const availability = await window.LoadnoteCoachClient.availability();
-      if (availability.online) {
-        status.textContent = 'Secure online Coach available · provider credentials stay on the Loadnote server.';
-        status.className = 'text-xs text-emerald-600 font-medium mt-1';
-      } else {
-        status.textContent = 'Online Coach is unavailable right now. Built-in training guidance still works offline.';
-        status.className = 'text-xs text-slate-500 mt-1';
-      }
+      return window.LoadnoteCoachWorkspaceUI?.connection();
     }
 
     async function requestStructuredCoach(userMessage) {

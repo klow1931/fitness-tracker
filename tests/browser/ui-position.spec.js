@@ -21,6 +21,7 @@ test('Workout actions stay in document flow in both gym modes',async({page})=>{
 });
 test('Coach quick links have readable contrast in light and night modes',async({page})=>{
  await page.evaluate(()=>{showTab('coach');showSubTab('coach','co-chat');});
+ await page.locator('#coach-more-topics > summary').click();
  const links=page.locator('#coach-quick-links button');await expect(links).toHaveCount(11);
  for(const dark of [false,true]){
   await page.evaluate(dark=>document.body.classList.toggle('dark',dark),dark);

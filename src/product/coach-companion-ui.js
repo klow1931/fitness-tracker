@@ -165,7 +165,7 @@
   panel.querySelector('#cc-form').addEventListener('submit',event=>{event.preventDefault();const input=panel.querySelector('#cc-input');const text=input.value.trim();if(!text||asking)return;input.value='';void serialAsk(text);});
   panel.querySelector('#cc-full').addEventListener('click',()=>{close();document.querySelector('#sp-record-dialog[open]')?.close();try{showTab('coach');showSubTab('coach','co-chat');}catch{}});
   const aiButton=document.createElement('button');aiButton.type='button';aiButton.id='cc-local-ai';aiButton.textContent='Local AI · developer';aiButton.hidden=new URLSearchParams(location.search).get('developer')!=='1';aiButton.onclick=()=>{close();window.LoadnoteCoachingLibraryUI?.open({localAI:true});};panel.querySelector('#cc-options-body').append(aiButton);
-  const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research & saved sources';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open();};panel.querySelector('#cc-options-body').append(researchButton);
+  const researchButton=document.createElement('button');researchButton.type='button';researchButton.id='cc-research';researchButton.textContent='Research & saved sources';researchButton.onclick=()=>{close();window.LoadnoteCoachResearchUI?.open({returnToCoach:'quick'});};panel.querySelector('#cc-options-body').append(researchButton);
   const memoryButton=document.createElement('button');memoryButton.type='button';memoryButton.id='cc-memory';memoryButton.textContent='Things Coach remembers';memoryButton.style.minHeight='44px';memoryButton.onclick=()=>{close();window.LoadnoteCoachMemoryUI?.open();};panel.querySelector('#cc-options-body').append(memoryButton);
   const communicationButton=document.createElement('button');communicationButton.type='button';communicationButton.id='cc-communication';communicationButton.textContent='Reply preferences';communicationButton.style.minHeight='44px';communicationButton.onclick=()=>{close();window.LoadnoteCoachConversationPreferencesUI?.open();};panel.querySelector('#cc-options-body').append(communicationButton);
   const talkButton=document.createElement('button');talkButton.type='button';talkButton.textContent='Talk it through';talkButton.style.minHeight='44px';talkButton.onclick=()=>serialAsk('Let’s talk it through');panel.querySelector('#cc-options-body').append(talkButton);
@@ -266,6 +266,7 @@
    quick.innerHTML=questions.map(text=>`<button type="button" data-cc-q="${esc(text)}">${esc(text)}</button>`).join('');
    quick.querySelectorAll('[data-cc-q]').forEach(button=>button.addEventListener('click',()=>void serialAsk(button.dataset.ccQ)));
   }
+  window.LoadnoteCoachWorkspaceUI?.refresh();
  }
  function queueRefresh(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refresh();});}
  function execute(command){
@@ -360,5 +361,6 @@
  function resetConversation(){window.LoadnoteCoachResearch?.cancel();conversationGeneration++;modeRequest++;history.length=0;onlineConversation=false;onlineHistory.length=0;updateConversationMode();document.getElementById('cc-messages')?.replaceChildren();document.getElementById('chat-messages')?.replaceChildren();append('Conversation cleared. Ask about training or choose Talk it through.');}
  function clearConversation(){if(asking)return;resetConversation();}
  function appendTranscript(text,role='assistant',meta='Voice Companion'){if(['user','assistant'].includes(role)){history.push({role,content:String(text??'').slice(0,role==='user'?500:2000)});if(history.length>24)history.splice(0,history.length-24);}return append(text,role,meta);}
- window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,toggleOnlineConversation,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext};
+ window.LoadnoteCoachCompanionUI={open,close,toggle,refresh,syncLauncherPosition,ask:serialAsk,toggleOnlineConversation,append:appendTranscript,clearConversation,history:()=>history.map(r=>({...r})),context:coachContext,liveContext:companionContext,suggestedQuestions:()=>[...quickButtons(companionContext()),'Give me encouragement']};
+ window.LoadnoteCoachWorkspaceUI?.refresh();
 })();

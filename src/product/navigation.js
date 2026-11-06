@@ -52,6 +52,7 @@ function navigateTab(name) {
   if(nav.active)nav.scroll[navigationKey(nav.active)]=window.scrollY;
   const changed=nav.active!==name;
   nav.active=name;
+  document.body?.setAttribute?.('data-active-tab',name);
   for(const panel of ['dashboard','calendar','workouts','nutrition','prs','measures','photos','coach','profile','tools']) {
     document.getElementById('panel-'+panel)?.classList.toggle('hidden',panel!==name);
     const tab=document.getElementById('tab-'+panel);if(tab){tab.classList.toggle('nav-active',panel===name);tab.setAttribute('aria-pressed',String(panel===name));}
@@ -133,7 +134,7 @@ function initCalmNavigation(){
     if(legacy.length){const details=document.createElement('details');details.className='card calm-advanced-programming';details.innerHTML='<summary>Advanced programming <span class="more-hint">Legacy generator and library</span></summary><div class="calm-advanced-programming-body"></div>';legacy[0].before(details);const body=details.querySelector('.calm-advanced-programming-body');for(const card of legacy)body.append(card);}
   }
   const simple=document.getElementById('simple-view-banner');if(simple){const p=simple.querySelector('p');if(p)p.textContent='Simple Home';}
-  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v6.8.0 · local-first training log';
+  const footer=document.getElementById('app-version');if(footer)footer.textContent='Loadnote web v6.9.0 · local-first training log';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCalmNavigation,{once:true});else initCalmNavigation();
 document.addEventListener('click',event=>{const menu=document.getElementById('desktop-more');if(menu?.open&&!menu.contains(event.target))menu.open=false;});
