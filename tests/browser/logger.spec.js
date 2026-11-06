@@ -28,6 +28,7 @@ test('delegated history export and import preserve workout identity',async({page
  await enter(page);await review(page);await page.locator('#confirm-workout-save').click();await expect(page.locator('#workout-review')).not.toBeVisible();
  const original=await page.evaluate(()=>JSON.stringify(data));
  await page.locator('[data-workout-action="tab-history"]').click();
+ await page.locator('#history-manage>summary').click();
  const download=page.waitForEvent('download');await page.locator('#panel-workouts [data-workout-action="export-json"]').click();expect((await download).suggestedFilename()).toMatch(/\.json$/);
  await page.locator('#import-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(original)});
  await expect(page.locator('#import-review')).toBeVisible();await page.locator('#import-review').getByRole('button',{name:'Replace current data'}).click();
@@ -51,6 +52,7 @@ test('UUID history template and delete buttons work; text stays text',async({pag
  expect(await page.evaluate(()=>window.injected)).toBeUndefined();await expect(page.locator('#workout-history img')).toHaveCount(0);
  // The legacy template action displays a second informational alert.
  const accept=d=>d.accept(d.type()==='prompt'?'Bench template':undefined);page.on('dialog',accept);
+ await page.locator('#workout-history .history-card-more>summary').click();
  await page.locator('#workout-history button').filter({hasText:'Template'}).click();
  expect(await page.evaluate(()=>data.templates.length)).toBe(1);
  await page.locator('#workout-history button').filter({hasText:'Delete'}).click();

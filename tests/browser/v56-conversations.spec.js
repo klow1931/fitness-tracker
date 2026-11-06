@@ -1,3 +1,4 @@
+const {waitForOfflineReady}=require('./helpers/offline-ready');
 const {showCoachOptions}=require('./helpers/coach-options');
 const {test,expect}=require('playwright/test');
 const {phaseFixture}=require('../fixtures/phase-builder');
@@ -52,7 +53,7 @@ test('narrow large-text reflection stays usable and renders user text literally'
 });
 test('cached Coach reloads with its origin stopped; Chromium also emulates offline',async({browser,browserName})=>{
  const host=await require('./helpers/offline-origin').start(),context=await browser.newContext({serviceWorkers:'allow'}),page=await context.newPage();
- try{await page.goto(host.origin);await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+ try{await page.goto(host.origin);await waitForOfflineReady(page);
   const cached=await page.evaluate(async()=>{const names=['coach-intent-model','coach-text-features','coach-understanding','coach-open-dialogue','coach-knowledge-links'];return Promise.all(names.map(name=>caches.match(new URL('src/product/'+name+'.js',location.href)).then(Boolean)));});expect(cached.every(Boolean)).toBe(true);
   await host.stop();
   // WebKit's pinned offline emulation rejects even literal SW responses:

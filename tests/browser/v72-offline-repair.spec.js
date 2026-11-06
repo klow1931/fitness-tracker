@@ -16,7 +16,7 @@ test.beforeEach(async()=>{
 });
 async function stop(){if(server.listening){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}}
 test.afterEach(stop);
-test('one unavailable asset preserves completed downloads and retry fetches only the missing file',async({page,context})=>{
+test('one unavailable asset preserves completed downloads and retry fetches only the missing file',async({page,context,browserName})=>{
  await page.goto(origin);await expect(page.locator('.ex-name')).toHaveCount(1);await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await expect(page.locator('#repair-offline-cache')).not.toHaveAttribute('hidden');
  await page.locator('#device-status-details>summary').click();await expect(page.locator('#update-check-status')).toHaveText(/^1 of \d+ offline files could not be saved/,{timeout:30000});
@@ -24,7 +24,9 @@ test('one unavailable asset preserves completed downloads and retry fetches only
  const good=requests.get('/src/release.js'),bad=requests.get('/assets/vendor/local-coach-manifest.json');broken=false;
  await page.locator('#repair-offline-cache').click();await expect(page.locator('#update-check-status')).toContainText('Offline app files are ready');
  expect(requests.get('/src/release.js')).toBe(good);expect(requests.get('/assets/vendor/local-coach-manifest.json')).toBe(bad+1);
- await context.setOffline(true);await stop();await page.reload();await page.evaluate(()=>showTab('workouts'));await expect(page.locator('.ex-name').first()).toHaveValue('Keep this draft');await expect(page.locator('.set-weight').first()).toHaveValue('10');
+ // WebKit offline emulation rejects service-worker responses (Playwright #42775).
+ // Stopping the dedicated origin verifies real cached navigation on every engine.
+ if(browserName!=='webkit')await context.setOffline(true);await stop();const response=await page.reload();expect(response.fromServiceWorker()).toBe(true);await page.evaluate(()=>showTab('workouts'));await expect(page.locator('.ex-name').first()).toHaveValue('Keep this draft');await expect(page.locator('.set-weight').first()).toHaveValue('10');
  expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
 });
 test('failed retry stays clear and retryable while completed cache entries and training remain untouched',async({page})=>{
