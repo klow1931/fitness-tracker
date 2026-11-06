@@ -1,6 +1,6 @@
 # Loadnote
 
-**v6.9.0 · Development build.**
+**v7.0.0 · Development build.**
 
 [Reliable workout draft checkpoints v6.7](docs/releases-v6.7.md): if the primary unfinished-workout save fails but the recovery copy succeeds, Loadnote correctly reports **saved in recovery copy**, retains the newest draft for offline recovery, and offers **Retry draft save** to restore redundancy. Total save failure remains a clear warning.
 
@@ -770,3 +770,5 @@ Native packaging remains an unsigned local-only beta; see [native beta](docs/nat
 Workout drafts, recovery snapshots, progress-photo binaries and device preferences remain device-local. Signed-in athletes may manually sync the verified structured account/training record through the configured Loadnote backend; GitHub stores app code, not personal training backups. Export JSON before destructive import or upgrade testing. The current data schema is v32, with migrations preserving older supported records. Background sync and simultaneous-tab data coordination remain unimplemented.
 
 See [CHANGELOG.md](CHANGELOG.md) and [architecture](docs/architecture.md). Automated checks are not a public-release sign-off or a comprehensive security audit.
+
+Release v7.0: scannable performed-set review, explicit missing-effort/excluded-target notes, and direct corrections in the existing logger. See [release notes](docs/releases-v7.0.md).

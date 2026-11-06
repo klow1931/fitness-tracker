@@ -55,11 +55,7 @@ function reviewWorkout(){
   if(workoutEdit)add('p','This replaces the saved session. The previous version remains available from History → Recent workout changes.');
   const count=workout.exercises.reduce((n,e)=>n+(e.sets?.length || 0),0);
   add('p',`${workout.exercises.length} exercises · ${count} strength sets · ${Math.round(toDisplay(calcVolume(workout)))} ${unitLabel()} rep volume`);
-  for(const exercise of workout.exercises){
-    add('h3',exercise.name);
-    if(exercise.type==='cardio')add('p',`${exercise.duration} min · ${exercise.distance} ${exercise.distanceUnit}${exercise.avgHr?' · HR '+exercise.avgHr:''}`);
-    else add('p',exercise.sets.map((s,i)=>`${i+1}. ${formatStrengthSet(s)}`).join(' / '));
-  }
+  window.LoadnoteWorkoutReviewSetsUI.render(content,draft);
   if(workout.notes)add('p','Notes: '+workout.notes);
   if(duplicateMatches.length){const warning=add('p','Possible duplicate: '+duplicateMatches.length+' saved workout'+(duplicateMatches.length===1?' has':'s have')+' the same date and recorded content. Save only if this is intentionally a separate session.');warning.className='workout-duplicate-warning';}
   if(workout.sessionIntent&&(workout.sessionIntent.deviationReason!=='none'||workout.sessionIntent.deviationNotes)){const reason=window.LoadnoteIntent.DEVIATION_REASONS[workout.sessionIntent.deviationReason]||'Other';add('p','Plan change: '+reason+(workout.sessionIntent.deviationNotes?' · '+workout.sessionIntent.deviationNotes:''));}

@@ -1428,7 +1428,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v6.9.0 · local-first training log</p>
+      <p id="app-version">Loadnote web v7.0.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2035,7 +2035,7 @@
   <script src="src/product/persistence.js" defer></script>
   <script src="src/product/workout-history.js" defer></script>
   <dialog id="workout-review" aria-labelledby="workout-review-title" class="session-review">
-    <h2 id="workout-review-title">Review your workout</h2>
+    <h2 id="workout-review-title" tabindex="-1" autofocus>Review your workout</h2>
     <div id="workout-review-content"></div>
     <p id="beginner-review-tip" class="beginner-review-tip" hidden>Check your actual exercises and sets, then choose <b>Save workout</b>. Opening this review has not saved your session.</p>
     <p id="workout-save-status" role="status"></p>
@@ -2168,6 +2168,8 @@
   <script src="src/product/progress-story.js" defer></script>
   <script src="src/product/progress-highlights.js" defer></script>
   <script src="src/product/progress-analytics-ui.js" defer></script>
+  <script src="src/product/workout-review-sets.js" defer></script>
+  <script src="src/product/workout-review-sets-ui.js" defer></script>
   <script src="src/product/session-ui.js" defer></script>
   <script src="src/product/draft-recovery.js" defer></script>
 <script src="src/product/workout-logger.js" defer></script>
