@@ -1,4 +1,14 @@
+# v7.0.0 — Clearer workout review and corrections
+
+
+- Show performed strength sets as individual rows with original set numbers, including timed strength and bodyweight work.
+- Show missing actual RPE and excluded unchecked prescription targets without blocking save or inventing effort.
+- Jump from an exercise in review to its existing logger inputs; retain values, completion flags, units, date and edit identity.
+- Keep save/back actions accessible in the mobile review. Preserve duplicate warnings, stale-review checks, failed-save recovery and all existing persistence rules.
+- Extract read-only review projection and rendering into focused modules. No schema change; native build 39000.
+
 # v6.9.0 — Clearer Coach and workout continuity
+
 
 - Show honest offline/online capability states before offering sign-in. An unavailable backend, native-only beta, disconnected network or local-model selection cannot advertise an online conversation.
 - Reuse quick Coach’s context-aware question selection in full Coach. Keep the eleven existing educational shortcuts under More topics.

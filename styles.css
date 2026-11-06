@@ -2172,3 +2172,17 @@ body.dark .weekly-target{border-color:#475569}
 .adaptive-handoff-learning h4{font-size:.86rem;font-weight:800;margin:0 0 .3rem}
 .adaptive-handoff-learning p{margin:.2rem 0;font-size:.84rem;line-height:1.45}
 .adaptive-handoff-learning .more-hint{font-size:.77rem}
+
+/* v7.0 — readable performed-set review, including narrow phones and enlarged text. */
+.review-recording-notice{padding:.65rem .8rem;border:1px solid var(--border);border-radius:.7rem;background:var(--surface-soft,#f8fafc)}
+.review-exercise{margin:1rem 0;border-top:1px solid var(--border);padding-top:.75rem}
+.review-exercise-head{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap}
+.review-exercise-head h3{margin:0;flex:1 1 12rem;overflow-wrap:anywhere}
+.review-set-list{list-style:none;padding:0;margin:.5rem 0}
+.review-set-list li{display:flex;flex-wrap:wrap;gap:.35rem .8rem;align-items:baseline;padding:.65rem 0;border-bottom:1px solid var(--border)}
+.review-set-list li>span:first-child{min-width:3rem}
+.review-set-list strong{overflow-wrap:anywhere}
+.review-rpe-missing{width:100%;font-size:.85em}
+body.dark .review-recording-notice{background:#172033}
+@media(max-width:640px){#workout-review{padding:16px}#workout-review>.session-review-actions{position:sticky;bottom:-16px;padding:12px 0;background:#fff;margin-top:16px}body.dark #workout-review>.session-review-actions{background:#0f172a}#workout-review>.session-review-actions button{flex:1 1 8rem}}
+@media(max-width:640px){#workout-review>.session-review-actions{flex-wrap:nowrap;gap:8px}#workout-review>.session-review-actions button{flex:1 1 0;min-width:0;padding:.6rem .4rem;font-size:.9rem}}
