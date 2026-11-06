@@ -13,7 +13,7 @@ test('History date filters and pages handle varied card heights',async({page})=>
  await expect(page.locator('[data-hist-id]')).toHaveCount(20);await page.locator('#workout-history summary').first().click();
  await page.getByRole('button',{name:'Next page',exact:true}).click();await expect(page.locator('#workout-history')).toContainText('Page 2 of 3');
  await page.getByRole('button',{name:'Next page',exact:true}).click();await expect(page.locator('[data-hist-id]')).toHaveCount(5);
- await page.locator('#history-from').fill('2026-02-01');await expect(page.locator('#workout-history')).toContainText('No matches');
+ await page.locator('#history-from').fill('2026-02-01');await expect(page.locator('#workout-history')).toContainText('No matching workouts');
  await page.getByRole('button',{name:'Clear filters',exact:true}).click();await expect(page.locator('#workout-history')).toContainText('Page 1 of 3');
 });
 test('Exercise details distinguish actual loads, estimates and hold tracking',async({page})=>{
