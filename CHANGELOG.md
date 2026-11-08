@@ -1,3 +1,11 @@
+# v7.6.0 — Continue a workout without leaving the training flow
+
+- Offer Add blank set for the last strength exercise and Add exercise after all entered work is checked complete, with Finish still prominent.
+- Keep new set measures, load and actual RPE blank and completion unchecked; never copy performed work merely to create another row.
+- Preserve prior sets, captured prescriptions, rest deadlines, history and the existing review/save pipeline. Blank rows checkpoint in the draft and are excluded from saved performance.
+- Recheck eligibility at activation; block continuation during review/saving and when another unfinished or unnamed row already exists.
+- Add focused continuation UI without expanding the app monolith. Schema 34 unchanged; native build 39600 remains unsigned and local-only.
+
 # v7.5.0 — Clearer rest and return to entry
 
 - Show the current-workout rest clock as minutes:seconds, with an explicit paused state and unchanged deadline/pause/extension behavior.

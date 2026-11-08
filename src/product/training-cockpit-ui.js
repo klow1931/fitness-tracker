@@ -368,6 +368,7 @@
   host.querySelector('[data-cockpit-why]')?.addEventListener('click',openWhy);
   host.querySelector('[data-cockpit-next]')?.addEventListener('click',startNextExercise);
   bindRest(host);
+  window.LoadnoteWorkoutContinuationUI?.render?.(host,complete);
  }
  function queueRefresh(){
   if(scheduledRefresh)return;scheduledRefresh=true;requestAnimationFrame(()=>{scheduledRefresh=false;render();});
