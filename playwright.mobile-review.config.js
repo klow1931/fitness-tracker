@@ -1,0 +1,30 @@
+const { defineConfig } = require('playwright/test');
+
+process.env.LOADNOTE_WEBKIT = '1';
+const base = require('./playwright.config');
+
+const areas = {
+  'Onboarding and first workout': ['v71-beginner-training.spec.js', 'v72-history-setup.spec.js'],
+  'Navigation and History': ['mobile-navigation.spec.js', 'v73-history-return.spec.js'],
+  'Workout logging and rest': ['v70-workout-review.spec.js', 'v75-rest-entry.spec.js', 'v76-workout-continuation.spec.js'],
+  'Coach and research': ['v68-mobile-coach-ux.spec.js', 'v69-coach-continuity.spec.js'],
+  'Accessibility and layout': ['iphone-interface.spec.js'],
+  'Offline Coach and cache repair': ['v44-offline-dialogue.spec.js', 'v72-offline-repair.spec.js'],
+};
+
+module.exports = defineConfig({
+  ...base,
+  workers: 2,
+  projects: base.projects
+    .filter(project => project.name.startsWith('mobile-'))
+    .map(project => ({
+      ...project,
+      testMatch: Object.values(areas).flat(),
+      use: { ...project.use, screenshot: 'only-on-failure' },
+    })),
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ['./scripts/mobile-review-reporter.js', { areas }],
+  ],
+});
