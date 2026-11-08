@@ -1,0 +1,52 @@
+name: Loadnote mobile review
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 12 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loadnote-mobile-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Beginner mobile journeys
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/vendor-program-readers.js
+      - name: Run beginner mobile review
+        run: npx playwright test --config=playwright.mobile-review.config.js
+      - name: Check update and draft protection
+        if: ${{ !cancelled() }}
+        run: |
+          set +e
+          node tests/service-worker-update.test.js
+          worker=$?
+          node tests/app-update-lifecycle.test.js
+          lifecycle=$?
+          printf '\n## Update verification\n\n' >> "$GITHUB_STEP_SUMMARY"
+          for status in "Service worker:$worker" "App update and draft protection:$lifecycle"; do
+            if [ "${status##*:}" -eq 0 ]; then result=Passed; else result=Failed; fi
+            printf -- '- %s · %s\n' "${status%:*}" "$result" >> "$GITHUB_STEP_SUMMARY"
+          done
+          test "$worker" -eq 0 && test "$lifecycle" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: loadnote-mobile-review
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
