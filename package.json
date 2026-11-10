@@ -1,12 +1,16 @@
 {
   "name": "loadnote",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "private": true,
-  "description": "Loadnote \u2014 adaptive strength-training log",
+  "description": "Loadnote — adaptive strength-training log",
   "scripts": {
     "postinstall": "node scripts/vendor-program-readers.js",
     "start": "node backend/server.js",
     "check": "node scripts/check.js",
+    "release:prepare": "node scripts/release.js",
+    "release:manifest": "node scripts/release.js --manifest",
+    "release:check": "node scripts/release.js --check",
+    "release:verify": "node scripts/verify-deployment.js",
     "test": "node scripts/test.js",
     "test:browser": "playwright test",
     "build:assets": "node scripts/build-assets.js",

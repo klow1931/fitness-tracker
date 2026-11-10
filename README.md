@@ -1,6 +1,8 @@
 # Loadnote
 
-**v7.6.0 · Development build.**
+**v7.7.0 · Development build.**
+
+[Reliable releases and clear update status v7.7](docs/releases-v7.7.md): Device & backup distinguishes the version in use from a freshly checked live release. Release preparation keeps web/native versions together; Pages verifies every deployed app/offline file against the release manifest.
 
 [Continue a workout v7.6](docs/releases-v7.6.md): After the last entered set, add a blank set or another exercise directly from the workout cockpit. Finish remains the primary action; adding blank fields does not record performed work.
 

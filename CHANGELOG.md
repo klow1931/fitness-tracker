@@ -1,3 +1,11 @@
+# v7.7.0 — Reliable releases and clear update status
+
+- Distinguish installed and freshly checked live versions in Device & backup, with clear offline, unverified, preparing and ready-to-update states.
+- Prepare web/cache/native versions together, preview metadata changes, and pin all app/offline assets in a reproducible release manifest.
+- Check the manifest before Pages publication and verify the actual deployed version and every listed file afterward. Fail on stale, missing or mixed content.
+- Cancel superseded main check runs and extend the mobile review with real worker upgrades, unfinished kg/lb recovery and stale-cache checks.
+- Preserve the existing guarded update flow, training data format and schema 34. Native build 39700 remains unsigned and local-only.
+
 # v7.6.0 — Continue a workout without leaving the training flow
 
 - Offer Add blank set for the last strength exercise and Add exercise after all entered work is checked complete, with Finish still prominent.

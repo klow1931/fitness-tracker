@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v7.6.0';
+const CACHE = 'loadnote-v7.7.0';
 const ASSETS = [
   './src/product/coach-workspace.js',
   './src/product/coach-workspace-ui.js',
@@ -160,6 +160,7 @@ const ASSETS = [
   './assets/chart.umd.js',
   './src/product/platform-runtime.js',
   './src/product/app-lifecycle.js',
+  './src/product/app-version.js',
   './src/product/data-integrity.js',
   './src/product/sync-model.js',
   './src/product/account-session.js',
@@ -400,6 +401,8 @@ self.addEventListener('activate', event => {
 });
 self.addEventListener('fetch', event => {
   const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);url.hash='';url.search='';
+  // A version check must reach the server. Never certify a cached release as live.
+  if(url.href===new URL('./release.json',SCOPE).href){event.respondWith(fetch(req));return;}
   if(url.origin!==self.location.origin||!assetURLs.has(url.href))return;
   event.respondWith(caches.open(CACHE).then(async cache=>{
     const cached=await cache.match(url.href);if(cached)return cached;
