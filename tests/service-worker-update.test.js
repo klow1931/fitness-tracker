@@ -72,6 +72,11 @@ function harness(failWarm=false){
   assert.equal(reply.ok,true);
   assert.equal(sw.stats().networkRequests,beforeMiss+1);
   assert(await sw.getCache(currentCache).match(url));
+  const releaseURL=scope+'release.json?check=1',beforeLive=sw.stats().networkRequests;
+  sw.getCache(currentCache).entries.set(scope+'release.json',{ok:true,stale:true});
+  const live=await sw.fire('fetch',{request:{method:'GET',url:releaseURL}});
+  assert.equal(sw.stats().networkRequests,beforeLive+1,'Live release checks bypass any cached manifest');
+  assert.equal(live.stale,undefined);
 
   const recovery=harness(true);
   recovery.getCache('loadnote-v3.62.0');

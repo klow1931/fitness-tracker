@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict');
+const version=require('../src/product/app-version');
+(async()=>{
+ assert.equal(version.compare('7.10.0','7.9.0'),1);
+ assert.equal(version.compare('8.0.0','7.99.99'),1);
+ assert.equal(version.compare('7.7.0','7.7.0'),0);
+ assert.throws(()=>version.compare('7.7','7.7.0'));
+ assert.match(version.describe('7.7.0',null,'offline'),/Connect to check/);
+ assert.match(version.describe('7.7.0',null,'failed'),/could not be verified/);
+ assert.doesNotMatch(version.describe('7.7.0',null,'unchecked'),/current version/);
+ assert.match(version.describe('7.7.0','7.8.0','checked'),/available/);
+ assert.match(version.describe('7.7.0','7.7.0','checked'),/current version/);
+ assert.match(version.describe('7.7.0','7.6.0','checked'),/newer than the live/);
+ assert.match(version.describe('7.7.0',null,'waiting'),/Save and update/);
+ assert.match(version.describe('7.7.0',null,'native'),/new app build/);
+ let request;
+ assert.equal(await version.fetchLatest(async(...args)=>{request=args;return {ok:true,json:async()=>({version:'7.10.0'})};}),'7.10.0');
+ assert.match(request[0],/^\.\/release.json\?check=\d+$/);assert.equal(request[1].cache,'no-store');
+ await assert.rejects(version.fetchLatest(async()=>({ok:false})),/unavailable/);
+ await assert.rejects(version.fetchLatest(async()=>({ok:true,json:async()=>({version:'not a version'})})),/Invalid/);
+ console.log('Installed/live version states, numeric comparison and uncached verification passed');
+})().catch(error=>{console.error(error);process.exitCode=1;});

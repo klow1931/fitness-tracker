@@ -6,6 +6,8 @@ The summary groups existing beginner journeys by review area and flags failures 
 
 For a confirmed failure, record the version, browser profile, scenario, reproduction steps, and impact in the review backlog. Prioritize interrupted workout logging, draft loss, and inaccessible controls. Compare the same scenario after the fix.
 
+The offline/update area also runs a real waiting-worker upgrade with unfinished kg and lb entries, an offline reload, and a fresh live-version check with a deliberately stale cached manifest. These use a dedicated local origin. Pages separately checks the actual published release and every app/offline asset after deployment; see [v7.7 release preparation](releases-v7.7.md).
+
 The review uses synthetic workouts and deterministic research fixtures. Offline Coach scenarios exercise local answers without downloading an LLM. Internet-enabled research paths use controlled responses. Physical keyboards, touch ergonomics, screen readers, installation, and real low-storage behavior remain separate device checks.
 
 To run locally with the repository's Playwright browsers installed:

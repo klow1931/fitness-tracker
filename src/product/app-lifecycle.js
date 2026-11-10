@@ -8,6 +8,10 @@
   connection();window.addEventListener('online',connection);window.addEventListener('offline',connection);
   const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh().then(()=>window.renderAccountStatus?.());};
   refreshAccount();window.addEventListener('online',refreshAccount);
+  const versionStatus=document.getElementById('app-version-status'),versionAPI=window.LoadnoteAppVersion,installed=window.LoadnoteCore?.RELEASE_VERSION;
+  let latest=null,versionState=platform.native?'native':navigator.onLine?'unchecked':'offline';
+  const renderVersion=()=>{if(versionStatus&&versionAPI&&installed)versionStatus.textContent=versionAPI.describe(installed,latest,versionState);};
+  renderVersion();window.addEventListener('offline',()=>{if(!platform.native){latest=null;versionState='offline';renderVersion();}});
   // Installed native assets update through the signed app, not a web cache.
   if(platform.native||!('serviceWorker' in navigator))return;
   const banner=document.getElementById('app-update'),status=document.getElementById('app-update-status'),button=document.getElementById('apply-app-update');
@@ -20,7 +24,7 @@
    }
    checkButton.hidden=false;
    const warn=message=>{banner.hidden=false;button.hidden=true;status.textContent=message;};
-   const show=()=>{if(registration.waiting&&navigator.serviceWorker.controller){banner.hidden=false;button.hidden=false;status.textContent='A newer Loadnote version is ready. Save your workout and update when you are ready.';}};
+   const show=()=>{if(registration.waiting&&navigator.serviceWorker.controller){banner.hidden=false;button.hidden=false;status.textContent='A newer Loadnote version is ready. Save your workout and update when you are ready.';versionState='waiting';renderVersion();}};
    const workerState=worker=>{
      if(worker?.state==='redundant'&&!registration.waiting)warn('The update could not finish installing. Your workouts are unchanged. Keep this app and its data; open Device & backup to retry or export a backup.');
      else show();
@@ -30,17 +34,26 @@
    // Only ask the browser to fetch the service worker; never activate a new app during a workout.
    let lastCheck=0,checking=false;
    const check=async(force=false)=>{
-     if(registration.waiting){show();if(force)checkStatus.textContent='An update is ready above. Save your workout before applying it.';return;}
-     if(!navigator.onLine){if(force)checkStatus.textContent='Connect to the internet to check for updates. Your saved data is unchanged.';return;}
+     if(registration.waiting&&!force){show();return;}
+     if(!navigator.onLine){if(force){checkStatus.textContent='Connect to the internet to check for updates. Your saved data is unchanged.';latest=null;versionState='offline';renderVersion();}return;}
      if(!force&&(document.hidden||Date.now()-lastCheck<60000))return;
      if(checking)return;
      lastCheck=Date.now();
      checking=true;if(force){checkButton.disabled=true;checkStatus.textContent='Checking for an update…';}
+     let versionTimer;
      try{
-       await registration.update();show();
+       if(force&&versionAPI){
+         latest=null;versionState='checking';renderVersion();
+         const controller=new AbortController();versionTimer=setTimeout(()=>controller.abort(),10000);
+         try{latest=await versionAPI.fetchLatest(window.fetch.bind(window),controller.signal);versionState='checked';}
+         catch(error){versionState=navigator.onLine?'failed':'offline';}
+         finally{clearTimeout(versionTimer);renderVersion();}
+       }
+       if(!registration.waiting)await registration.update();show();
+       if(force&&registration.waiting)checkStatus.textContent='An update is ready above. Save your workout before applying it.';
        if(force&&!registration.waiting)checkStatus.textContent='Update check completed. If a new version is installing, the update prompt will appear shortly.';
      }catch(error){if(force)checkStatus.textContent='Update check failed. Keep your data and try again online; no reset is needed.';}
-     finally{checking=false;checkButton.disabled=false;}
+     finally{clearTimeout(versionTimer);checking=false;checkButton.disabled=false;}
    };
    checkButton.addEventListener('click',()=>{void check(true);});
    let repairTimer=null;
