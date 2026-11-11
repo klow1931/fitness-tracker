@@ -1,8 +1,8 @@
 {
-  "version": "7.7.0",
-  "buildNumber": 39700,
+  "version": "7.7.1",
+  "buildNumber": 39701,
   "assets": {
-    "./": "61de1eaa32ad92278ac54e7563c67357177d205849f3bdda722a25e7cd3d0ce0",
+    "./": "4212b0ea08d9445005ce740f4462291ba2ab041ecbf64187531ae6c0581364ed",
     "./app.js": "62b981137ef046adb65d99fed1855d34dd9aec779488f0107b9195a5d4ce0c8d",
     "./appearance.css": "90b7a9f4e22a918070f5acff5877ccb0dc809438d7168de13f46b453789f63ba",
     "./apple-touch-icon.png": "31ef27e6dc357259c7830bc70c98f1d9e549463c282fede7b8a3a5e9cdac0298",
@@ -17,11 +17,11 @@
     "./energy.css": "f54659b844739de10853bc52d7b0f5345b603e179f485e81dd2d05e8a1a10511",
     "./icon-192.png": "721422a6ac708c6a221fbac82a0ac591dc6f6b522367c363c591affa17710d85",
     "./icon-512.png": "c3b3beb18338028add264ba40fdc1b69dd98ebba521685378dde1d2394d4144b",
-    "./index.html": "61de1eaa32ad92278ac54e7563c67357177d205849f3bdda722a25e7cd3d0ce0",
+    "./index.html": "4212b0ea08d9445005ce740f4462291ba2ab041ecbf64187531ae6c0581364ed",
     "./manifest.webmanifest": "9ce25a6a821c597fc4df12c4fe4cb5c3264dcdc57dc859f6494b294571385722",
     "./privacy.html": "baf7d27a0cf880ca8ed142d34650d085ee24096372ca8cc6daf119edf96c930f",
     "./src/coach/coach-engine.js": "8b9bc98dec09cfbf781801e68501118cb1c398c24ad6aedbd11e1626ca1de353",
-    "./src/core/loadnote-core.js": "790a0362d0f355d356a2d1b162437e2775c662e3d44801ca5ce543584a3fe5fb",
+    "./src/core/loadnote-core.js": "8e56666c64925bcc8983ed1ece3fbd755fce514b7cc5fe1f17aaa4d27ec57cbf",
     "./src/core/ui-utils.js": "268699808033eb3abea0cd3f1cdb60d06a5016280005dd631e7d274cf66990d7",
     "./src/local-ai/coach-worker.mjs": "052a05b460ee6d19f436671433f139b6341cee837e19e3f5d8b0f2c76a01eeb4",
     "./src/product/accessory-follow-up-ui.js": "ea29c8037e9e7f2929e3494f00e8305f154cbb6028f332948a3ae24bf5b1746a",
@@ -41,7 +41,7 @@
     "./src/product/adaptive-outcome-learning.js": "6e7d5b3a2afc2284b6a23f120c7b755da66b96e82857567bb4c0a90614504f3c",
     "./src/product/adaptive-session-ui.js": "cd0ff72dca18303dc0b0fe8daae07dddd8687dc5d1059b3b4ac76f05581db0c6",
     "./src/product/adaptive-session.js": "23b6db2faa1bc6fb3f82a3816774ea4114f840a70cf58674a69116e8572b9d02",
-    "./src/product/app-lifecycle.js": "309715bd33c9f2a95c575a039a749c80a50102862514eab9a0fc881e93d61797",
+    "./src/product/app-lifecycle.js": "44ef239ba2d199d2802f2b5ac12fadc5c0447aeab0e124be3d1e3767ac672a8b",
     "./src/product/app-version.js": "b8c46aeb467b60bfd96af0cd5ea5864caf38cb9a4c1aadcb14654423c3c19311",
     "./src/product/appearance-ui.js": "c93014e4fb62ed32f8bded3174efc283233a67f671fce503a3ca221b31b5daf3",
     "./src/product/appearance.js": "2d58aec5647930377f25690de3963f45e03f72cc13b771ba11ce3550a29af8a0",
@@ -186,7 +186,7 @@
     "./src/product/muscle-workload-review-ui.js": "88e53f108e007a7e0b13c4ff22239da0eda2707a12fb5eadaba06319fcd4c506",
     "./src/product/muscle-workload-review.js": "1fc2cc5eee60ecaf237a17db330bb512e3698404cb14dd86f6932779df108e5f",
     "./src/product/native-backup.js": "6b1caf8f60adfc95238be3b80f4c003c79e48d78c1ce6d0f1ba27ec481738fcd",
-    "./src/product/navigation.js": "3d0e1f6f27415b599a07cf2d08ce597190f8304bb954bde355fffbd8bd17230b",
+    "./src/product/navigation.js": "d94109d8359e77bf46562e333ca3855499137c8ccd5ff4a24cbe52f4f686d5ff",
     "./src/product/next-block-handoff-ui.js": "9ac18971082f69fde8df9c1080f2e38227af509d1c869e466867499cffa48599",
     "./src/product/next-block-handoff.js": "30b8a1ce851e297fd9884a44664d125e5772256b11037662b7e9ea12453d324f",
     "./src/product/nutrition-forms.js": "4ca8c5fa12fb6d0bfa6e4774206d98ba41d2db52831ddc98e855298db43fa42f",
@@ -312,7 +312,7 @@
     "./src/programming-adaptive.js": "04b77fe3d8ac098592ecf2318a072052d751bd0d0aa96d140e50255ea33dbd28",
     "./src/programming-athlete.js": "b45009db5f2ece531060a62b394617fc3f3472cfe22258dcf583ca30ee4209da",
     "./src/programming-mesocycle.js": "d1c056e1847388f29ccc98b260c9efe05cb35db61e4dc667ec4146a60fabeaf9",
-    "./src/release.js": "a54783307137533c699f650a6db12ffb81df1f712090efc6edf2b1687d2e09bc",
+    "./src/release.js": "e36f626e3dfa0028dff423131f658517b9225a2b4392436a52721036cbb35422",
     "./src/training/adaptive.js": "31d9fafe56f1dea6fb13ccca789f07a84ad4066b3f4806464d4902ac2257ede8",
     "./src/training/analytics.js": "d54d971278c6b405ecaf039ba7c00f6c0a77d074cd46e8f090f3cf3ca5efad86",
     "./src/training/exercises.js": "f5f8ab5214ce2216491d58c953bfc2fc89bf0f0b34a193a27d26dff23963310d",
@@ -320,6 +320,6 @@
     "./src/training/progression.js": "d9a2f08bbfc2d4abc5f86fa48cf9c34b5f9a12660a7b2ab1be88326d02bec6c5",
     "./styles.css": "98a9ed01dad5c27bd8322fe213f0e87c4d5e1c9c68864606023be67605288258",
     "./support.html": "7cd702f02f103f1d1cbedbe86ed832c964ec3ee424c28bc86767b9de9b2dab14",
-    "./sw.js": "341903bfb3212ba273f276b54b0393694d86fca02a36429880a8f5f3b16e6aa6"
+    "./sw.js": "b413cb096d4cefef6ab41a5611d998e8e4a3669e622ae4e5636f8e89175197a5"
   }
 }

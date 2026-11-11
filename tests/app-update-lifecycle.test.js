@@ -81,6 +81,29 @@ const settle=()=>new Promise(resolve=>setImmediate(resolve));
  assert.match(network.ui['app-version-status'].textContent,/could not be verified/);
  network.navigator.onLine=false;network.ui['check-app-update'].click();await settle();
  assert.match(network.ui['app-version-status'].textContent,/Connect to check/);
+ // First-install worker takeover can briefly look like a waiting update.
+ // Removing that worker must restore the last honest version-check result.
+ for(const state of ['unchecked','checked','failed','offline']){
+  const takeover=await startApp({fetchFailed:state==='failed'});
+  if(state==='checked'||state==='failed'){takeover.ui['check-app-update'].click();await settle();}
+  if(state==='offline'){takeover.navigator.onLine=false;takeover.listeners.window.offline();}
+  const before=takeover.ui['app-version-status'].textContent;
+  takeover.registration.waiting={postMessage(message){takeover.messages.push(message);}};
+  takeover.listeners.window.focus();
+  assert.match(takeover.ui['app-version-status'].textContent,/An update is ready/);
+  takeover.registration.waiting=null;
+  takeover.listeners.sw.controllerchange();
+  takeover.listeners.sw.message({data:{type:'OFFLINE_CACHE_STATUS',ready:true}});
+  assert.equal(takeover.ui['app-version-status'].textContent,before,'Controller takeover restores '+state+' without claiming a live check');
+  assert.equal(takeover.ui['apply-app-update'].hidden,true);
+  assert.equal(takeover.ui['app-update'].hidden,true);
+  assert.equal(takeover.stats().saved,0,'Unrequested takeover must not save or activate an update');
+ }
+ const waiting=await startApp();waiting.registration.waiting={postMessage(){}};
+ waiting.listeners.window.focus();waiting.listeners.sw.controllerchange();
+ waiting.listeners.sw.message({data:{type:'OFFLINE_CACHE_STATUS',ready:true}});
+ assert.match(waiting.ui['app-version-status'].textContent,/An update is ready/,'A genuine waiting worker remains offered after cache readiness');
+ assert.equal(waiting.ui['apply-app-update'].hidden,false);
  const native=await startApp({native:true});assert.match(native.ui['app-version-status'].textContent,/new app build/);assert.equal(native.stats().checked,0);
  console.log('PWA manual checks, offline repair, guarded activation and failure messages passed');
 })().catch(error=>{console.error(error);process.exitCode=1;});

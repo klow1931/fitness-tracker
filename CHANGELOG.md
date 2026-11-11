@@ -1,3 +1,7 @@
+# v7.7.1 — Restore update status after worker takeover
+
+See [7.7.1](docs/releases-v7.7.1.md) for behavior and validation.
+
 # v7.7.0 — Reliable releases and clear update status
 
 - Distinguish installed and freshly checked live versions in Device & backup, with clear offline, unverified, preparing and ready-to-update states.

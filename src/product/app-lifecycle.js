@@ -9,8 +9,8 @@
   const refreshAccount=()=>{if(navigator.onLine)void window.LoadnoteAccountSession?.refresh().then(()=>window.renderAccountStatus?.());};
   refreshAccount();window.addEventListener('online',refreshAccount);
   const versionStatus=document.getElementById('app-version-status'),versionAPI=window.LoadnoteAppVersion,installed=window.LoadnoteCore?.RELEASE_VERSION;
-  let latest=null,versionState=platform.native?'native':navigator.onLine?'unchecked':'offline';
-  const renderVersion=()=>{if(versionStatus&&versionAPI&&installed)versionStatus.textContent=versionAPI.describe(installed,latest,versionState);};
+  let waitingShown=false,latest=null,versionState=platform.native?'native':navigator.onLine?'unchecked':'offline';
+  const renderVersion=()=>{if(versionStatus&&versionAPI&&installed)versionStatus.textContent=versionAPI.describe(installed,latest,waitingShown?'waiting':versionState);};
   renderVersion();window.addEventListener('offline',()=>{if(!platform.native){latest=null;versionState='offline';renderVersion();}});
   // Installed native assets update through the signed app, not a web cache.
   if(platform.native||!('serviceWorker' in navigator))return;
@@ -24,7 +24,15 @@
    }
    checkButton.hidden=false;
    const warn=message=>{banner.hidden=false;button.hidden=true;status.textContent=message;};
-   const show=()=>{if(registration.waiting&&navigator.serviceWorker.controller){banner.hidden=false;button.hidden=false;status.textContent='A newer Loadnote version is ready. Save your workout and update when you are ready.';versionState='waiting';renderVersion();}};
+   const show=()=>{
+     if(registration.waiting&&navigator.serviceWorker.controller){
+       waitingShown=true;banner.hidden=false;button.hidden=false;status.textContent='A newer Loadnote version is ready. Save your workout and update when you are ready.';renderVersion();
+     }else if(waitingShown){
+       // First-install takeover can consume a briefly waiting worker. Restore the
+       // previous check result; cache readiness alone never proves live currency.
+       waitingShown=false;banner.hidden=true;button.hidden=true;renderVersion();
+     }
+   };
    const workerState=worker=>{
      if(worker?.state==='redundant'&&!registration.waiting)warn('The update could not finish installing. Your workouts are unchanged. Keep this app and its data; open Device & backup to retry or export a backup.');
      else show();
@@ -75,7 +83,7 @@
    if(registration.installing){const worker=registration.installing;worker.addEventListener('statechange',()=>workerState(worker));}
    void check();
    let requested=false;
-   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(requested)location.reload();else checkOfflineCache();});
+   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(requested)location.reload();else{show();checkOfflineCache();}});
    navigator.serviceWorker.addEventListener('message',event=>{
      if(event.data?.type==='UPDATE_BLOCKED'){requested=false;button.disabled=false;status.textContent='Close other Loadnote tabs before updating, then try again.';}
      if(event.data?.type==='OFFLINE_CACHE_PROGRESS'){
@@ -95,7 +103,7 @@
         :'Offline files are incomplete. Keep Loadnote online and use Repair offline files. Your workouts are unchanged.';
        if(!registration.waiting)warn('Loadnote needs to finish downloading offline files. Open Device & backup, then tap Repair offline files. Do not clear website data.');
      }else if(event.data?.type==='OFFLINE_CACHE_STATUS'&&event.data.ready){
-       clearRepairTimer();
+       clearRepairTimer();show();
        repairButton.hidden=true;repairButton.disabled=false;checkStatus.textContent='Offline app files are ready.';
        if(!registration.waiting&&button.hidden)banner.hidden=true;
      }
