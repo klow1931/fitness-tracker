@@ -26,6 +26,8 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: node scripts/vendor-program-readers.js
+      - name: Repeat update lifecycle journeys without retries
+        run: npx playwright test tests/browser/v77-update-status.spec.js --config=playwright.mobile-review.config.js --repeat-each=3 --retries=0
       - name: Run beginner mobile review
         run: npx playwright test --config=playwright.mobile-review.config.js
       - name: Check update and draft protection
