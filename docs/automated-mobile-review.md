@@ -8,6 +8,8 @@ For a confirmed failure, record the version, browser profile, scenario, reproduc
 
 The offline/update area also runs a real waiting-worker upgrade with unfinished kg and lb entries, an offline reload, and a fresh live-version check with a deliberately stale cached manifest. These use a dedicated local origin. Pages separately checks the actual published release and every app/offline asset after deployment; see [v7.7 release preparation](releases-v7.7.md).
 
+Scheduled and manual reviews on main additionally verify the current live release and every manifest asset. PRs do not compare unpublished assets to production. A failure in this step is a deployment finding, separate from browser journey results. The publication workflow checks that Pages uses a single GitHub Actions publisher before deploying; see [publisher recovery](pages-publisher-recovery.md).
+
 The review uses synthetic workouts and deterministic research fixtures. Offline Coach scenarios exercise local answers without downloading an LLM. Internet-enabled research paths use controlled responses. Physical keyboards, touch ergonomics, screen readers, installation, and real low-storage behavior remain separate device checks.
 
 To run locally with the repository's Playwright browsers installed:

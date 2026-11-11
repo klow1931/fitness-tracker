@@ -42,6 +42,11 @@ jobs:
             printf -- '- %s · %s\n' "${status%:*}" "$result" >> "$GITHUB_STEP_SUMMARY"
           done
           test "$worker" -eq 0 && test "$lifecycle" -eq 0
+      # PRs may contain an unreleased manifest. Compare live files only for
+      # scheduled/manual reviews of the approved default branch.
+      - name: Verify approved live release and offline assets
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+        run: npm run release:verify -- https://klow1931.github.io/fitness-tracker/
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
