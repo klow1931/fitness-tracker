@@ -191,42 +191,6 @@
     // Nutrition is maintained in src/product/nutrition-ui.js.
 
     // ========== PRs ==========
-    function savePR() {
-      const exercise = document.getElementById('pr-exercise').value.trim();
-      const weightRaw = parseFloat(document.getElementById('pr-weight').value);
-      const reps = parseInt(document.getElementById('pr-reps').value) || 1;
-      const date = document.getElementById('pr-date').value || today();
-
-      if (!exercise || !weightRaw) return alert('Exercise and weight required');
-
-      const weight = toStorage(weightRaw);
-      const est = estimated1RM(weight, reps);
-      const existing = data.prs.find(p => p.exercise.toLowerCase() === exercise.toLowerCase());
-      const newBest = !existing || est > estimated1RM(existing.weight, existing.reps);
-      if (existing) {
-        existing.weight = weight;
-        existing.reps = reps;
-        existing.date = date;
-        existing.estimated1RM = est;
-        delete existing.source; delete existing.sourceWorkoutId; delete existing.baselinePR;
-      } else {
-        data.prs.push({
-          id: Date.now(),
-          exercise,
-          weight,
-          reps,
-          date,
-          estimated1RM: est
-        });
-      }
-      data.prs.sort((a, b) => a.exercise.localeCompare(b.exercise));
-      saveData(data);
-      document.getElementById('pr-exercise').value = '';
-      document.getElementById('pr-weight').value = '';
-      document.getElementById('pr-reps').value = '1';
-      renderPRs();
-      showToast(newBest ? 'PR saved · New personal best!' : 'PR updated', newBest ? 'milestone' : 'success');
-    }
 
     function deletePR(id) {
       if (!confirm('Delete this PR?')) return;
@@ -1588,49 +1552,6 @@
       document.getElementById('goal-consistency-fields').classList.toggle('hidden', type !== 'consistency');
     }
 
-    function saveGoal() {
-      const type = document.getElementById('goal-type').value;
-      const deadline = document.getElementById('goal-deadline').value || null;
-      const notes = document.getElementById('goal-notes').value.trim();
-      let goal = { id: Date.now(), type, deadline, notes, created: today(), completed: false };
-
-      if (type === 'strength') {
-        const exercise = document.getElementById('goal-exercise').value.trim();
-        const weightRaw = parseFloat(document.getElementById('goal-weight').value);
-        if (!exercise || !Number.isFinite(weightRaw) || weightRaw<=0) return alert('Exercise and positive target weight required');
-        goal.exercise = exercise;
-        goal.targetWeight = toStorage(weightRaw);
-        goal.exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,exercise)?.id||null;
-        goal.startDate=today();const starting=document.getElementById('goal-start-weight').value;
-        goal.startWeight=starting===''?LoadnoteGoalProgress.best(data,goal,today()):toStorage(Number(starting));
-        if(goal.startWeight===null||!Number.isFinite(goal.startWeight)||goal.startWeight<0)return alert('Enter a starting estimated 1RM or log a performance first.');
-        if(goal.targetWeight<=goal.startWeight)return alert('Choose a target above your starting estimated 1RM.');
-      } else if(type==='workout-count'){
-        const target=Number(document.getElementById('goal-session-target').value);if(!Number.isSafeInteger(target)||target<1||target>10000)return alert('Choose 1–10000 workouts.');goal.targetSessions=target;goal.startDate=today();
-      } else if (type === 'protein') {
-        const target = parseFloat(document.getElementById('goal-protein-target').value);
-        if (!target) return alert('Protein target required');
-        goal.targetProtein = target;
-      } else if (type === 'consistency') {
-        const perWeek = parseInt(document.getElementById('goal-workouts-week').value);
-        if (!perWeek) return alert('Workouts per week required');
-        goal.targetPerWeek = perWeek;
-      }
-
-      data.goals = data.goals || [];
-      data.goals.push(goal);
-      saveData(data);
-      // Clear form
-      document.getElementById('goal-start-weight').value='';document.getElementById('goal-session-target').value='';
-      document.getElementById('goal-exercise').value = '';
-      document.getElementById('goal-weight').value = '';
-      document.getElementById('goal-protein-target').value = '';
-      document.getElementById('goal-workouts-week').value = '';
-      document.getElementById('goal-deadline').value = '';
-      document.getElementById('goal-notes').value = '';
-      renderCoach();
-      alert('Goal saved!');
-    }
 
     function deleteGoal(id) {
       if (!confirm('Delete this goal?')) return;

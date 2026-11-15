@@ -2,8 +2,8 @@
   "version": "7.8.0",
   "buildNumber": 39800,
   "assets": {
-    "./": "f2b532e161f6fc950ef6c5684ba7cdb06776799c406a08b472d3e61cc1057b02",
-    "./app.js": "6a828fb78c6be3f12051278b6bbf653084dd3f76508c88e37a3dff0b4ab1b3eb",
+    "./": "10d1a8357c94fdb5bff53404412fba4f09dc2ffa78e405ce4fd2fe499cc9a359",
+    "./app.js": "ada20c2e3f40edf9f4d33ef91fcff8b3706f45192f382a54bcc3d5993cebd868",
     "./appearance.css": "90b7a9f4e22a918070f5acff5877ccb0dc809438d7168de13f46b453789f63ba",
     "./apple-touch-icon.png": "31ef27e6dc357259c7830bc70c98f1d9e549463c282fede7b8a3a5e9cdac0298",
     "./assets/chart.umd.js": "74401d738dd3e03ee5dfb3b6841210fe2c4ead8a960c4011ca4ba0b78a9fd8f3",
@@ -17,7 +17,7 @@
     "./energy.css": "f54659b844739de10853bc52d7b0f5345b603e179f485e81dd2d05e8a1a10511",
     "./icon-192.png": "721422a6ac708c6a221fbac82a0ac591dc6f6b522367c363c591affa17710d85",
     "./icon-512.png": "c3b3beb18338028add264ba40fdc1b69dd98ebba521685378dde1d2394d4144b",
-    "./index.html": "f2b532e161f6fc950ef6c5684ba7cdb06776799c406a08b472d3e61cc1057b02",
+    "./index.html": "10d1a8357c94fdb5bff53404412fba4f09dc2ffa78e405ce4fd2fe499cc9a359",
     "./manifest.webmanifest": "9ce25a6a821c597fc4df12c4fe4cb5c3264dcdc57dc859f6494b294571385722",
     "./privacy.html": "baf7d27a0cf880ca8ed142d34650d085ee24096372ca8cc6daf119edf96c930f",
     "./src/coach/coach-engine.js": "8b9bc98dec09cfbf781801e68501118cb1c398c24ad6aedbd11e1626ca1de353",
@@ -250,6 +250,7 @@
     "./src/product/reviewed-planning-ui.js": "ad2ded760bfb339d27b998b58dcf4451492eaff43a7fb51c784839575ef5eb41",
     "./src/product/save-diagnostics-ui.js": "8bb192f9f495c0efe772b6bc8cfc23b0f41df9ff63ec6301d2176d3c7dd9e78f",
     "./src/product/save-diagnostics.js": "3b54dce7f0892ad6d13870721bcadc80b8e585dc7d8b1c0db1833821549984a4",
+    "./src/product/saved-records-ui.js": "df96b5d8b500f03c5e5cd780e842008a5d194453bc88858216acba87f86181bf",
     "./src/product/schedule-ui.js": "8673f1a5cd21f7b5f35a1ddff5d5a2f1ad6ca48fcdbcd085e5c9e88a8dc841b3",
     "./src/product/schedule.js": "40be418d38d309c5ea64325a49c12fbd048aaac5e7a327b7caed39806d54feb6",
     "./src/product/session-intent-ui.js": "a40187351bf3d7feea9719dd94bd6975c29e8053f451a0a8a1a06296ed6e5973",
@@ -322,6 +323,6 @@
     "./src/training/progression.js": "d9a2f08bbfc2d4abc5f86fa48cf9c34b5f9a12660a7b2ab1be88326d02bec6c5",
     "./styles.css": "f7798cfd28ab6d91e46cfb8421b305896887e36ee9a79a36b02233886cfa504b",
     "./support.html": "7cd702f02f103f1d1cbedbe86ed832c964ec3ee424c28bc86767b9de9b2dab14",
-    "./sw.js": "2bae8a891c95767141855cd58be93f026f5ee0637b231261d7420c5118e1870f"
+    "./sw.js": "eb4758164bc074105d673154354c0ae6ae98dbf58e3edef88f52464db53dd6cb"
   }
 }

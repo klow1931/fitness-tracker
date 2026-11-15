@@ -297,6 +297,7 @@ const ASSETS = [
   './src/product/progress-ui.js',
   './src/product/goal-progress.js',
   './src/product/goal-progress-ui.js',
+  './src/product/saved-records-ui.js',
   './src/product/workout-review-sets.js',
   './src/product/workout-review-sets-ui.js',
   './src/product/session-ui.js',
