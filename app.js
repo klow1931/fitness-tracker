@@ -236,6 +236,7 @@
     }
 
     function renderPRs() {
+      window.renderGoalJourneys?.();
       const el = document.getElementById('pr-list');
       if (!el) return;
       const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);const cutoffStr=cutoff.toISOString().slice(0,10);
@@ -1580,6 +1581,8 @@
     // ========== AI Coach ==========
     function toggleGoalFields() {
       const type = document.getElementById('goal-type').value;
+      document.getElementById('goal-strength-start').classList.toggle('hidden',type!=='strength');
+      document.getElementById('goal-workout-count-fields').classList.toggle('hidden',type!=='workout-count');
       document.getElementById('goal-strength-fields').classList.toggle('hidden', type !== 'strength');
       document.getElementById('goal-protein-fields').classList.toggle('hidden', type !== 'protein');
       document.getElementById('goal-consistency-fields').classList.toggle('hidden', type !== 'consistency');
@@ -1594,9 +1597,16 @@
       if (type === 'strength') {
         const exercise = document.getElementById('goal-exercise').value.trim();
         const weightRaw = parseFloat(document.getElementById('goal-weight').value);
-        if (!exercise || !weightRaw) return alert('Exercise and target weight required');
+        if (!exercise || !Number.isFinite(weightRaw) || weightRaw<=0) return alert('Exercise and positive target weight required');
         goal.exercise = exercise;
         goal.targetWeight = toStorage(weightRaw);
+        goal.exerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,exercise)?.id||null;
+        goal.startDate=today();const starting=document.getElementById('goal-start-weight').value;
+        goal.startWeight=starting===''?LoadnoteGoalProgress.best(data,goal,today()):toStorage(Number(starting));
+        if(goal.startWeight===null||!Number.isFinite(goal.startWeight)||goal.startWeight<0)return alert('Enter a starting estimated 1RM or log a performance first.');
+        if(goal.targetWeight<=goal.startWeight)return alert('Choose a target above your starting estimated 1RM.');
+      } else if(type==='workout-count'){
+        const target=Number(document.getElementById('goal-session-target').value);if(!Number.isSafeInteger(target)||target<1||target>10000)return alert('Choose 1–10000 workouts.');goal.targetSessions=target;goal.startDate=today();
       } else if (type === 'protein') {
         const target = parseFloat(document.getElementById('goal-protein-target').value);
         if (!target) return alert('Protein target required');
@@ -1611,6 +1621,7 @@
       data.goals.push(goal);
       saveData(data);
       // Clear form
+      document.getElementById('goal-start-weight').value='';document.getElementById('goal-session-target').value='';
       document.getElementById('goal-exercise').value = '';
       document.getElementById('goal-weight').value = '';
       document.getElementById('goal-protein-target').value = '';
@@ -2432,6 +2443,7 @@
         goalsEl.innerHTML = goals.slice().reverse().map(g => {
           let detail = '';
           if (g.type === 'strength') detail = `${g.exercise} → ${toDisplay(g.targetWeight)} ${unitLabel()}`;
+          else if (g.type === 'workout-count') detail = `${g.targetSessions} logged workouts · start to finish`;
           else if (g.type === 'protein') detail = `${g.targetProtein}g protein / day`;
           else if (g.type === 'consistency') detail = `${g.targetPerWeek} workouts / week`;
           const status = g.completed

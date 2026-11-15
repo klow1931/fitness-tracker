@@ -1,3 +1,7 @@
+# v7.8.0 — Exercise graphs and goal journeys
+
+See [7.8.0](docs/releases-v7.8.md) for behavior and validation.
+
 # v7.7.1 — Restore update status after worker takeover
 
 See [7.7.1](docs/releases-v7.7.1.md) for behavior and validation.

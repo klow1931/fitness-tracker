@@ -140,6 +140,7 @@
   detailHost.querySelectorAll('[data-progress-open-exercise]').forEach(button=>button.onclick=()=>openExerciseDetail(button.dataset.progressOpenExercise,'reps'));
  }
  function render(){
+  window.renderGoalJourneys?.();window.renderExerciseExplorer?.();
   const host=document.getElementById('progress-analytics');if(!host||!window.LoadnoteProgressStory)return;
   let report;try{report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks,movementKey:selectedMovementKey||null});}catch(error){host.innerHTML='<h2>Training progress</h2><p>'+esc(error.message)+'</p>';return;}
   if(selectedMovementKey&&!report.customMovement){selectedMovementKey='';report=window.LoadnoteProgressStory.analyze(data,{asOf:today(),weeks:storyWeeks});}

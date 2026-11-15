@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),P=require('../src/product/progress-model'),C=require('../src/core/loadnote-core');
+const workouts=[{id:'a',date:'2026-11-01',exercises:[{name:'Custom press',exerciseId:'a',sets:[{weight:100,reps:5,rpe:8}]},{name:'Custom press',exerciseId:'b',sets:[{weight:900,reps:5}]},{name:'Hold',trackBy:'duration',sets:[{duration:40}]},{name:'Run',type:'cardio',duration:20,distance:2,distanceUnit:'mi'},{name:'Bodyweight',sets:[{weight:0,reps:12}]}]},{id:'b',date:'2026-11-02',exercises:[{name:'Renamed press',exerciseId:'a',sets:[{weight:110,reps:4,rpe:9},{weight:900,reps:5,completed:false}]}]}];
+const options=P.options(workouts),selection=options.find(o=>o.exerciseId==='a');assert.equal(options.length,5);const before=JSON.stringify(workouts);
+assert.deepEqual(P.chartSeries(workouts,selection,{metric:'load',end:'2026-11-03'},C.estimated1RM).map(p=>p.value),[100,110]);
+assert.equal(P.chartSeries(workouts,selection,{metric:'estimate',end:'2026-11-01'},C.estimated1RM)[0].value,C.estimated1RM(100,5,8));
+assert.equal(P.chartSeries(workouts,options.find(o=>o.name==='Hold'),{metric:'seconds',end:'2026-11-03'})[0].value,40);
+assert.equal(P.chartSeries(workouts,options.find(o=>o.name==='Run'),{metric:'distance',end:'2026-11-03'})[0].value,3.218688);
+assert.equal(P.chartSeries(workouts,options.find(o=>o.name==='Bodyweight'),{metric:'reps',end:'2026-11-03'})[0].value,12);
+assert.equal(P.chartSeries(workouts,selection,{end:'2026-10-01'},C.estimated1RM).length,0);assert.equal(JSON.stringify(workouts),before);
+console.log('Any-exercise charts preserve modes, identity, RPE estimates, zero load and distance units');
