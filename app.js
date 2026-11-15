@@ -1993,11 +1993,10 @@
       // Strength goals progress
       const strengthGoals = (data.goals || []).filter(g => g.type === 'strength' && !g.completed);
       strengthGoals.forEach(g => {
-        const pr = data.prs.find(p => p.exercise.toLowerCase() === g.exercise.toLowerCase());
-        if (pr) {
-          const pct = Math.round((pr.estimated1RM / g.targetWeight) * 100);
-          if (pct >= 100) tips.push(`You’ve reached or passed your ${g.exercise} goal target. Time to set a new one!`);
-          else tips.push(`${g.exercise}: current est. 1RM ${toDisplay(pr.estimated1RM)} ${unitLabel()} → goal ${toDisplay(g.targetWeight)} ${unitLabel()} (${pct}%).`);
+        const progress=window.LoadnoteGoalProgress?.inspect(data,g,today());
+        if(progress?.current!=null){
+          if(progress.current>=progress.target)tips.push(`You’ve reached or passed your ${g.exercise} estimated 1RM goal target. Review it before setting a new one.`);
+          else tips.push(`${g.exercise}: current est. 1RM ${toDisplay(progress.current)} ${unitLabel()} → goal ${toDisplay(progress.target)} ${unitLabel()}${progress.percent===null?'':` (${progress.percent}% of your start-to-finish distance)`}.`);
         }
       });
 
@@ -2442,7 +2441,7 @@
       } else {
         goalsEl.innerHTML = goals.slice().reverse().map(g => {
           let detail = '';
-          if (g.type === 'strength') detail = `${g.exercise} → ${toDisplay(g.targetWeight)} ${unitLabel()}`;
+          if (g.type === 'strength') detail = `${g.exercise} estimated 1RM → ${toDisplay(g.targetWeight)} ${unitLabel()}`;
           else if (g.type === 'workout-count') detail = `${g.targetSessions} logged workouts · start to finish`;
           else if (g.type === 'protein') detail = `${g.targetProtein}g protein / day`;
           else if (g.type === 'consistency') detail = `${g.targetPerWeek} workouts / week`;
