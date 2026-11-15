@@ -244,7 +244,7 @@
     "./src/product/progress-highlights.js": "03b00e1b3c36ae7c4b7fc26b635caedd4868b57be090b283e8d085da5bcb6efa",
     "./src/product/progress-model.js": "03208c9609acb848c08fce4634aa1125018c6836042271914ee3a36f77f49011",
     "./src/product/progress-story.js": "e0d423dd84c5d3d81926048ce14a78e732d63974f9ff09a0e1acf95c2b483a85",
-    "./src/product/progress-ui.js": "cab8cef5565f2d4d7db04f4f989a9b3eb21e53d9e9d7e095dc495fc4e12d50dd",
+    "./src/product/progress-ui.js": "15a36d00649c80465a54f02476f5c132947854cf48e0e0c231c2ac1a996ee104",
     "./src/product/remote-sync.js": "c8a5278c14ba37825ec882bc27890e16b2cd685f83f68feb5e61c8e6a47fb1c9",
     "./src/product/rest-timer.js": "7e229770bb42176dd84fc50eb6b791c9ddb945448247d45e5433471ab7014cc0",
     "./src/product/reviewed-planning-ui.js": "ad2ded760bfb339d27b998b58dcf4451492eaff43a7fb51c784839575ef5eb41",
