@@ -191,42 +191,6 @@
     // Nutrition is maintained in src/product/nutrition-ui.js.
 
     // ========== PRs ==========
-    function savePR() {
-      const exercise = document.getElementById('pr-exercise').value.trim();
-      const weightRaw = parseFloat(document.getElementById('pr-weight').value);
-      const reps = parseInt(document.getElementById('pr-reps').value) || 1;
-      const date = document.getElementById('pr-date').value || today();
-
-      if (!exercise || !weightRaw) return alert('Exercise and weight required');
-
-      const weight = toStorage(weightRaw);
-      const est = estimated1RM(weight, reps);
-      const existing = data.prs.find(p => p.exercise.toLowerCase() === exercise.toLowerCase());
-      const newBest = !existing || est > estimated1RM(existing.weight, existing.reps);
-      if (existing) {
-        existing.weight = weight;
-        existing.reps = reps;
-        existing.date = date;
-        existing.estimated1RM = est;
-        delete existing.source; delete existing.sourceWorkoutId; delete existing.baselinePR;
-      } else {
-        data.prs.push({
-          id: Date.now(),
-          exercise,
-          weight,
-          reps,
-          date,
-          estimated1RM: est
-        });
-      }
-      data.prs.sort((a, b) => a.exercise.localeCompare(b.exercise));
-      saveData(data);
-      document.getElementById('pr-exercise').value = '';
-      document.getElementById('pr-weight').value = '';
-      document.getElementById('pr-reps').value = '1';
-      renderPRs();
-      showToast(newBest ? 'PR saved · New personal best!' : 'PR updated', newBest ? 'milestone' : 'success');
-    }
 
     function deletePR(id) {
       if (!confirm('Delete this PR?')) return;
@@ -236,6 +200,7 @@
     }
 
     function renderPRs() {
+      window.renderGoalJourneys?.();
       const el = document.getElementById('pr-list');
       if (!el) return;
       const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);const cutoffStr=cutoff.toISOString().slice(0,10);
@@ -1580,46 +1545,13 @@
     // ========== AI Coach ==========
     function toggleGoalFields() {
       const type = document.getElementById('goal-type').value;
+      document.getElementById('goal-strength-start').classList.toggle('hidden',type!=='strength');
+      document.getElementById('goal-workout-count-fields').classList.toggle('hidden',type!=='workout-count');
       document.getElementById('goal-strength-fields').classList.toggle('hidden', type !== 'strength');
       document.getElementById('goal-protein-fields').classList.toggle('hidden', type !== 'protein');
       document.getElementById('goal-consistency-fields').classList.toggle('hidden', type !== 'consistency');
     }
 
-    function saveGoal() {
-      const type = document.getElementById('goal-type').value;
-      const deadline = document.getElementById('goal-deadline').value || null;
-      const notes = document.getElementById('goal-notes').value.trim();
-      let goal = { id: Date.now(), type, deadline, notes, created: today(), completed: false };
-
-      if (type === 'strength') {
-        const exercise = document.getElementById('goal-exercise').value.trim();
-        const weightRaw = parseFloat(document.getElementById('goal-weight').value);
-        if (!exercise || !weightRaw) return alert('Exercise and target weight required');
-        goal.exercise = exercise;
-        goal.targetWeight = toStorage(weightRaw);
-      } else if (type === 'protein') {
-        const target = parseFloat(document.getElementById('goal-protein-target').value);
-        if (!target) return alert('Protein target required');
-        goal.targetProtein = target;
-      } else if (type === 'consistency') {
-        const perWeek = parseInt(document.getElementById('goal-workouts-week').value);
-        if (!perWeek) return alert('Workouts per week required');
-        goal.targetPerWeek = perWeek;
-      }
-
-      data.goals = data.goals || [];
-      data.goals.push(goal);
-      saveData(data);
-      // Clear form
-      document.getElementById('goal-exercise').value = '';
-      document.getElementById('goal-weight').value = '';
-      document.getElementById('goal-protein-target').value = '';
-      document.getElementById('goal-workouts-week').value = '';
-      document.getElementById('goal-deadline').value = '';
-      document.getElementById('goal-notes').value = '';
-      renderCoach();
-      alert('Goal saved!');
-    }
 
     function deleteGoal(id) {
       if (!confirm('Delete this goal?')) return;
@@ -1982,11 +1914,10 @@
       // Strength goals progress
       const strengthGoals = (data.goals || []).filter(g => g.type === 'strength' && !g.completed);
       strengthGoals.forEach(g => {
-        const pr = data.prs.find(p => p.exercise.toLowerCase() === g.exercise.toLowerCase());
-        if (pr) {
-          const pct = Math.round((pr.estimated1RM / g.targetWeight) * 100);
-          if (pct >= 100) tips.push(`You’ve reached or passed your ${g.exercise} goal target. Time to set a new one!`);
-          else tips.push(`${g.exercise}: current est. 1RM ${toDisplay(pr.estimated1RM)} ${unitLabel()} → goal ${toDisplay(g.targetWeight)} ${unitLabel()} (${pct}%).`);
+        const progress=window.LoadnoteGoalProgress?.inspect(data,g,today());
+        if(progress?.current!=null){
+          if(progress.current>=progress.target)tips.push(`You’ve reached or passed your ${g.exercise} estimated 1RM goal target. Review it before setting a new one.`);
+          else tips.push(`${g.exercise}: current est. 1RM ${toDisplay(progress.current)} ${unitLabel()} → goal ${toDisplay(progress.target)} ${unitLabel()}${progress.percent===null?'':` (${progress.percent}% of your start-to-finish distance)`}.`);
         }
       });
 
@@ -2431,7 +2362,8 @@
       } else {
         goalsEl.innerHTML = goals.slice().reverse().map(g => {
           let detail = '';
-          if (g.type === 'strength') detail = `${g.exercise} → ${toDisplay(g.targetWeight)} ${unitLabel()}`;
+          if (g.type === 'strength') detail = `${g.exercise} estimated 1RM → ${toDisplay(g.targetWeight)} ${unitLabel()}`;
+          else if (g.type === 'workout-count') detail = `${g.targetSessions} logged workouts · start to finish`;
           else if (g.type === 'protein') detail = `${g.targetProtein}g protein / day`;
           else if (g.type === 'consistency') detail = `${g.targetPerWeek} workouts / week`;
           const status = g.completed

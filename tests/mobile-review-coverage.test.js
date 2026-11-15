@@ -13,6 +13,8 @@ const config=require('../playwright.mobile-review.config');
 const [,options]=config.reporter.find(([name])=>name.includes('mobile-review-reporter'));
 const area='Verified history and adaptation evidence';
 for(const file of files)assert(options.areas[area]?.includes(file),'Grouped report must map '+file+' to the training evidence area');
+for(const project of projects)assert(selected.some(test=>test.file==='v78-exercise-goals.spec.js'&&test.project===project),'Discover exercise/goal acceptance in '+project);
+assert(options.areas['Exercise graphs and goal journeys'].includes('v78-exercise-goals.spec.js'));
 // Exercise the real reporter with synthetic results: evidence failures and retries
 // must remain visible per profile, rather than looking like completed coverage.
 const Reporter=require('../scripts/mobile-review-reporter');

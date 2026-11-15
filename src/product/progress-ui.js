@@ -1,31 +1,45 @@
 /* Detail and comparison views share the same mode-aware progress model. */
 let detailExercise='',detailExerciseId=null,detailTracking='reps',exerciseDetailChart=null;
+let detailSelection=null;
+function renderExerciseExplorer(){
+ const host=document.getElementById('exercise-explorer');if(!host)return;const previous=host.querySelector('select')?.value,rows=LoadnoteProgress.options(data.workouts);
+ host.replaceChildren();const title=document.createElement('h2');title.textContent='Exercise progression';host.append(title);const label=document.createElement('label');label.textContent='Choose any logged exercise';const select=document.createElement('select');select.className='input';select.id='exercise-chart-picker';
+ for(const row of rows){const option=document.createElement('option');option.value=row.key;option.textContent=row.name+' · '+row.tracking;select.append(option);}if(rows.some(r=>r.key===previous))select.value=previous;label.append(select);host.append(label);const button=document.createElement('button');button.type='button';button.className='btn-secondary';button.textContent='Show exercise graph';button.disabled=!rows.length;button.onclick=()=>{const row=rows.find(r=>r.key===select.value);if(row)openExerciseDetail(row.name,row.tracking,row.exerciseId);};host.append(button);if(!rows.length){const p=document.createElement('p');p.textContent='Log an exercise to see its progression here.';host.append(p);}
+}
 function progressDialog(id,title){
  let dialog=document.getElementById(id);if(dialog)return dialog;
  dialog=document.createElement('dialog');dialog.id=id;dialog.className='session-review progress-dialog';dialog.setAttribute('aria-label',title);
  document.body.appendChild(dialog);return dialog;
 }
 function detailSetText(ex){return ex.type==='cardio'?`${ex.duration||0} min · ${ex.distance||0} ${ex.distanceUnit||'km'}`:(ex.sets||[]).map(formatStrengthSet).join(' / ');}
-function openExerciseDetail(name,tracking='reps'){
+function openExerciseDetail(name,tracking='reps',exerciseId){
  detailExercise=name;detailExerciseId=window.LoadnoteIntegrity?.resolveExercise(data.exerciseCatalog,name)?.id||null;detailTracking=tracking;
+ const matching=LoadnoteProgress.options(data.workouts).filter(row=>row.name.trim().toLowerCase()===name.trim().toLowerCase()&&row.tracking===tracking);
+ detailSelection=exerciseId===undefined&&matching.length===1?matching[0]:{name,tracking,exerciseId:exerciseId===undefined?detailExerciseId:exerciseId};
  const dialog=progressDialog('exercise-detail','Exercise details');
- dialog.innerHTML='<h2 id="exercise-detail-title"></h2><div class="progress-controls"><label>Range <select id="detail-range" class="input"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="0" selected>All time</option></select></label><label id="detail-metric-label">Metric <select id="detail-metric" class="input"><option value="load">Heaviest actual set</option><option value="estimate">Estimated 1RM</option></select></label></div><p id="detail-summary"></p><div id="detail-chart-wrap"><canvas id="exercise-detail-chart" height="180" aria-label="Exercise strength trend"></canvas></div><div id="detail-sessions"></div><button type="button" class="btn-secondary" id="close-exercise-detail">Close</button>';
+ dialog.innerHTML='<h2 id="exercise-detail-title"></h2><div class="progress-controls"><label>Range <select id="detail-range" class="input"><option value="4">4 weeks</option><option value="12">12 weeks</option><option value="0" selected>All time</option></select></label><label>Graph <select id="detail-style" class="input"><option value="bar">Bar graph</option><option value="line">Line graph</option></select></label><label id="detail-metric-label">Metric <select id="detail-metric" class="input"><option value="load">Heaviest actual set</option><option value="estimate">Estimated 1RM</option></select></label></div><p id="detail-summary"></p><div id="detail-chart-wrap"><canvas id="exercise-detail-chart" height="180" aria-label="Exercise progression graph"></canvas></div><details><summary>Graph values</summary><div id="detail-values"></div></details><div id="detail-sessions"></div><button type="button" class="btn-secondary" id="close-exercise-detail">Close</button>';
  document.getElementById('exercise-detail-title').textContent=name+' · '+({reps:'Reps',duration:'Timed holds',cardio:'Cardio'}[tracking]||tracking);
  document.getElementById('detail-range').onchange=renderExerciseDetail;document.getElementById('detail-metric').onchange=renderExerciseDetail;
+ const metrics=tracking==='cardio'?[['minutes','Duration (minutes)'],['distance','Distance (km)']]:tracking==='duration'?[['seconds','Longest hold (seconds)']]:[['load','Heaviest actual set'],['estimate','Estimated 1RM'],['reps','Most reps in a set']];
+ const metricSelect=document.getElementById('detail-metric');metricSelect.replaceChildren();for(const [value,label] of metrics){const o=document.createElement('option');o.value=value;o.textContent=label;metricSelect.append(o);}
+ document.getElementById('detail-style').onchange=renderExerciseDetail;
  document.getElementById('close-exercise-detail').onclick=()=>dialog.close();
  if(!dialog.open)dialog.showModal();renderExerciseDetail();
 }
 function renderExerciseDetail(){
  const weeks=Number(document.getElementById('detail-range').value),metric=document.getElementById('detail-metric').value,end=today();
  const start=new Date(end+'T12:00:00Z');start.setUTCDate(start.getUTCDate()-weeks*7+1);
- const entries=LoadnoteProgress.entries(LoadnoteProgress.filter(data.workouts,{from:weeks?start.toISOString().slice(0,10):'',to:end}),detailExercise,detailTracking,detailExerciseId);
- const series=LoadnoteProgress.series(data.workouts,detailExercise,{weeks,metric,end,exerciseId:detailExerciseId},estimated1RM);
- const strength=detailTracking==='reps';document.getElementById('detail-metric-label').hidden=!strength;document.getElementById('detail-chart-wrap').hidden=!strength;
- const note=strength?'Heaviest actual set is logged load, not a tested 1RM. Estimated 1RM uses reps and load, adjusted for RPE on multi-rep sets when provided. Singles show observed load, not an RPE-adjusted capacity estimate; Training Review applies stricter evidence guards.':'Timed holds and cardio are shown separately from rep-based strength estimates.';
- const best=strength&&series.length?` Best ${metric==='load'?'logged load':'estimated 1RM'} in range: ${toDisplay(Math.max(...series.map(p=>p.value)))} ${unitLabel()}.`:'';
- document.getElementById('detail-summary').textContent=(entries.length?`${new Set(entries.map(e=>e.id)).size} sessions in range.`:'No matching sessions in this range.')+best+' '+note;
+ const entries=LoadnoteProgress.filter(data.workouts,{from:weeks?start.toISOString().slice(0,10):'',to:end}).flatMap(w=>(w.exercises||[]).filter(e=>LoadnoteProgress.key(e)===LoadnoteProgress.key({name:detailSelection.name,exerciseId:detailSelection.exerciseId,type:detailTracking==='cardio'?'cardio':'strength',trackBy:detailTracking})).map(exercise=>({id:w.id,date:w.date,exercise})));
+ const series=LoadnoteProgress.chartSeries(data.workouts,detailSelection,{weeks,metric,end},estimated1RM);
+ const weighted=detailTracking==='reps'&&['load','estimate'].includes(metric),unit=weighted?unitLabel():({reps:'reps',seconds:'seconds',minutes:'minutes',distance:'km'}[metric]||'');
+ const display=value=>weighted?toDisplay(value):Math.round(value*100)/100;
+ const metricLabel=document.getElementById('detail-metric').selectedOptions[0].textContent;
+ document.getElementById('detail-metric-label').hidden=detailTracking==='duration';document.getElementById('detail-chart-wrap').hidden=false;
+ const note=weighted?'Actual load is not necessarily a tested 1RM. Estimated 1RM is calculated from reps, load and optional RPE; singles use observed load.':'Each bar shows the highest logged value that day; different tracking modes stay separate.';
+ document.getElementById('detail-summary').textContent=(series.length?series.length+' logged days.':'No matching sessions in this range.')+(series.length?' Best in range: '+display(Math.max(...series.map(p=>p.value)))+' '+unit+'.':'')+' '+note;
  if(exerciseDetailChart){exerciseDetailChart.destroy();exerciseDetailChart=null;}
- if(strength&&typeof Chart!=='undefined')exerciseDetailChart=new Chart(document.getElementById('exercise-detail-chart').getContext('2d'),{type:'line',data:{labels:series.map(p=>p.date),datasets:[{label:metric==='load'?'Heaviest actual set ('+unitLabel()+')':'Estimated 1RM ('+unitLabel()+')',data:series.map(p=>toDisplay(p.value)),borderColor:data.dark?'#a5b4fc':'#4f46e5',tension:0}]},options:{animation:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,plugins:chartPluginOptions(false),scales:chartScaleOptions(unitLabel(),true)}});
+ if(typeof Chart!=='undefined')exerciseDetailChart=new Chart(document.getElementById('exercise-detail-chart').getContext('2d'),{type:document.getElementById('detail-style').value,data:{labels:series.map(p=>p.date),datasets:[{label:metricLabel+' ('+unit+')',data:series.map(p=>display(p.value)),backgroundColor:data.dark?'#818cf8':'#4f46e5',borderColor:data.dark?'#a5b4fc':'#4f46e5',tension:0}]},options:{animation:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,plugins:chartPluginOptions(false),scales:chartScaleOptions(unit,true)}});
+ const values=document.getElementById('detail-values');values.replaceChildren();for(const point of series){const p=document.createElement('p');p.textContent=point.date+' · '+display(point.value)+' '+unit;values.append(p);}
  const host=document.getElementById('detail-sessions');host.replaceChildren();
  const heading=document.createElement('h3');heading.textContent='Recent matching sessions (up to 20 entries)';host.appendChild(heading);
  for(const e of entries.slice(0,20)){const p=document.createElement('p');p.textContent=e.date+' · '+detailSetText(e.exercise);host.appendChild(p);}

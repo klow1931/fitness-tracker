@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),G=require('../src/product/goal-progress'),C=require('../src/core/loadnote-core');
+const lift=(weight,name='Bench',exerciseId='bench')=>({name,exerciseId,type:'strength',sets:[{weight,reps:5,rpe:8}]}),w=(id,date,exercises)=>({id,date,exercises});
+const state={workouts:[w('old','2026-10-01',[lift(100)]),w('a','2026-11-01',[lift(110)]),w('b','2026-11-02',[lift(120)]),w('b','2026-11-02',[lift(120)]),w('future','2026-12-01',[lift(900)]),w('empty','2026-11-03',[])],prs:[{exercise:'Bench',exerciseId:'bench',weight:130,reps:5,rpe:8,date:'2026-11-03'}]};
+const goal={type:'strength',exercise:'Bench',exerciseId:'bench',created:'2026-11-01',startWeight:C.estimated1RM(100,5,8),targetWeight:200};const before=JSON.stringify(state);
+let r=G.inspect(state,goal,'2026-11-04');assert.equal(r.current,C.estimated1RM(130,5,8));assert.equal(r.sessions,2);assert.ok(r.percent>0&&r.percent<100);assert.equal(JSON.stringify(state),before);
+assert.equal(G.inspect(state,{...goal,startWeight:undefined},'2026-11-04').percent,null);
+assert.equal(G.inspect(state,{...goal,targetWeight:120},'2026-11-04').percent,100);
+assert.equal(G.inspect(state,{type:'workout-count',created:'2026-11-01',targetSessions:4},'2026-11-04').percent,50);
+assert.equal(G.inspect({...state,workouts:state.workouts.filter(w=>w.id!=='b')},{type:'workout-count',created:'2026-11-01',targetSessions:4},'2026-11-04').percent,25);
+assert.equal(G.inspect(state,{...goal,created:'2026-12-01'},'2026-11-04'),null);
+assert.equal(G.best({workouts:[w('x','2026-11-01',[lift(900,'Bench','other'),{...lift(800),trackBy:'duration'}])]},goal,'2026-11-04'),null);
+assert.equal(G.best({workouts:[],prs:[{exercise:'Bench',exerciseId:'other',weight:900,reps:1,date:'2026-11-01'}]},goal,'2026-11-04'),null);
+assert.equal(G.best({workouts:[w('x','2026-11-01',[{...lift(800),sets:[{weight:800,reps:5,completed:false}]}])]},goal,'2026-11-04'),null);
+assert.equal(G.best({prs:[{exercise:'Bench',weight:130,reps:1,date:'2026-11-03'}]},goal,'2026-11-04'),130);
+assert.equal(G.validDate('2026-02-30'),false);assert.throws(()=>G.inspect(state,goal,'bad'));
+assert.equal(G.inspect(C.normalizeState({...state,goals:[goal]}),goal,'2026-11-04').current,r.current);
+console.log('Goal start/finish, exact identity, actual records, dates, duplicates, deletion and compatibility passed');

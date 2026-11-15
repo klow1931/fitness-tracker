@@ -1,0 +1,11 @@
+(function(){
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function render(){const host=document.getElementById('goal-journeys');if(!host)return;const goals=(data.goals||[]).filter(g=>!g.completed&&['strength','workout-count'].includes(g.type));
+ host.innerHTML='<h2>Your start → finish</h2><p>Every logged session builds consistency. Relevant strength records move your strength target forward.</p><div id="goal-journey-list"></div><button type="button" class="btn-secondary" id="progress-create-goal">Set a goal</button>';
+ const list=host.querySelector('#goal-journey-list');for(const g of goals){const r=LoadnoteGoalProgress.inspect(data,g,today());if(!r)continue;const weight=v=>v===null?'Not recorded':toDisplay(v)+' '+unitLabel(),label=r.kind==='sessions'?'Logged workouts':g.exercise+' · estimated 1RM',start=r.kind==='sessions'?'0 workouts':weight(r.start),finish=r.kind==='sessions'?r.target+' workouts':weight(r.target),current=r.kind==='sessions'?r.current+' workouts':weight(r.current);
+ const article=document.createElement('article');article.className='goal-journey';article.innerHTML='<h3>'+esc(label)+'</h3><div class="goal-finish-labels"><span>Start · '+esc(start)+'</span><span>Finish · '+esc(finish)+'</span></div>'+(r.percent===null?'<p>Starting strength was not captured for this older goal; no percentage invented.</p>':'<progress max="100" value="'+r.percent+'" aria-label="'+esc(label)+' progress"></progress>')+'<p>'+esc(current)+(r.percent===null?'':' · '+r.percent+'% of the start-to-finish distance')+'</p><p>'+r.sessions+' logged workouts since '+esc(r.startDate)+'. '+(r.kind==='strength'?'An estimate is not a tested maximum. Sessions support the goal without inventing strength gains.':'Saved sessions count once; drafts and future dates do not count.')+'</p>'+(r.percent===100?'<p>Target reached — review your goal in Coach.</p>':'');list.append(article);}
+ if(!list.children.length)list.textContent='Choose an exercise strength target or a total-workouts goal to see your journey.';
+ host.querySelector('#progress-create-goal').onclick=()=>{showTab('coach');showSubTab('coach','co-goals');document.getElementById('goal-type').focus();};
+ }
+ window.renderGoalJourneys=render;
+})();
