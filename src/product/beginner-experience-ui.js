@@ -35,6 +35,7 @@
   document.body.classList.toggle('loadnote-first-workout',p.entry==='log'||viewIsExplicit&&p.view==='simple');
   const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=p.view!=='simple';
   const choice=document.getElementById('beginner-simple-choice');if(choice)choice.checked=p.view==='simple';
+  const toggle=document.getElementById('profile-simple-view');if(toggle){toggle.setAttribute('aria-pressed',String(p.view==='simple'));toggle.textContent=p.view==='simple'?'On':'Off';}
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
   refreshPresentation();renderGuide();
   if(typeof invalidateViews==='function')invalidateViews();
@@ -87,10 +88,10 @@
   });
  }
  function preferencesHTML(){
-  const p=load();return '<div class="profile-preference-row"><div><b>Simple view</b><p class="more-hint">Simpler training screens and history. Your workouts and programming are unchanged. Saved on this device.</p></div><button type="button" class="btn-secondary" id="profile-simple-view" aria-pressed="'+(p.view==='simple')+'">'+(p.view==='simple'?'On':'Off')+'</button></div><div class="profile-guide-actions"><button type="button" class="btn-secondary" id="profile-replay-guide">Replay workout tips</button><button type="button" class="btn-secondary" id="profile-starting-choices">Choose how to start</button></div>';
+  const p=load();return '<div class="profile-preference-row simple-home-preference"><div><b>Simple Home</b><p class="more-hint" id="profile-simple-help">Simpler training screens and history. Your workouts and programming are unchanged. Saved on this device.</p></div><button type="button" class="btn-secondary" id="profile-simple-view" aria-label="Simple Home" aria-describedby="profile-simple-help" aria-pressed="'+(p.view==='simple')+'">'+(p.view==='simple'?'On':'Off')+'</button></div><div class="profile-guide-actions"><button type="button" class="btn-secondary" id="profile-replay-guide">Replay workout tips</button><button type="button" class="btn-secondary" id="profile-starting-choices">Choose how to start</button></div>';
  }
  function bindPreferences(host){
-  host.querySelector('#profile-simple-view')?.addEventListener('click',()=>{if(change({view:load().view==='simple'?'full':'simple'}))window.renderProfileHub?.();});
+  host.querySelector('#profile-simple-view')?.addEventListener('click',()=>change({view:load().view==='simple'?'full':'simple'}));
   host.querySelector('#profile-replay-guide')?.addEventListener('click',()=>{
    if(change({guide:'active',step:0,entry:load().entry||'log'})){
     const guide=document.getElementById('beginner-workout-guide');if(guide)delete guide.dataset.guideStage;
@@ -111,6 +112,7 @@
  document.addEventListener('DOMContentLoaded',()=>{
   apply();
   document.querySelectorAll('[data-beginner-entry]').forEach(b=>b.addEventListener('click',()=>enter(b.dataset.beginnerEntry)));
+  document.getElementById('beginner-simple-choice')?.addEventListener('change',event=>change({view:event.currentTarget.checked?'simple':'full'}));
   document.getElementById('simple-show-all')?.addEventListener('click',()=>change({view:'full'}));
   const refresh=event=>{
    if(!event.target?.closest?.('#exercise-rows,#workout-review,[data-workout-action],#training-cockpit'))return;

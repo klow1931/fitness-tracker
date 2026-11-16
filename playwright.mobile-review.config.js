@@ -10,7 +10,7 @@ const areas = {
   'Exercise graphs and goal journeys': ['v78-exercise-goals.spec.js'],
   'Workout logging and rest': ['v70-workout-review.spec.js', 'v75-rest-entry.spec.js', 'v76-workout-continuation.spec.js'],
   'Coach and research': ['v68-mobile-coach-ux.spec.js', 'v69-coach-continuity.spec.js'],
-  'Accessibility and layout': ['iphone-interface.spec.js'],
+  'Accessibility and layout': ['iphone-interface.spec.js','v781-simple-home.spec.js'],
   'Offline Coach, updates and cache repair': ['v44-offline-dialogue.spec.js', 'v72-offline-repair.spec.js', 'v77-update-status.spec.js'],
 };
 

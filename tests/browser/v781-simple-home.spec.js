@@ -1,0 +1,31 @@
+const {test,expect}=require('playwright/test');
+test.use({hasTouch:true});
+test.beforeEach(async({page})=>{await page.goto('/');await expect(page.locator('.ex-name')).toHaveCount(1);});
+async function reload(page){await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);}
+async function nav(page,name){await page.locator('#tab-'+name+':visible,#mobile-nav [data-tab="'+name+'"]:visible').click();}
+test('Home checkbox applies and persists immediately without choosing a workout path',async({page})=>{
+ await expect(page.locator('#beginner-simple-choice')).toBeChecked();await page.locator('#beginner-simple-choice').tap();await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);expect(await page.evaluate(()=>LoadnoteBeginnerExperience.read(localStorage).view)).toBe('full');
+ await reload(page);await expect(page.locator('#beginner-simple-choice')).not.toBeChecked();await page.locator('#beginner-simple-choice').tap();await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);await expect(page.locator('#home-details')).toBeHidden();expect(await page.evaluate(()=>LoadnoteBeginnerUI.entry())).toBe(null);await expect(page.locator('#onboarding-card')).toBeVisible();
+ await reload(page);await expect(page.locator('#beginner-simple-choice')).toBeChecked();await expect(page.locator('#home-details')).toBeHidden();expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
+});
+test('Profile touch changes once, keeps its button, updates Home and survives reload',async({page})=>{
+ await page.locator('[data-beginner-entry=log]').click();await nav(page,'profile');const toggle=page.locator('#profile-simple-view');await expect(toggle).toHaveAttribute('aria-pressed','true');await toggle.scrollIntoViewIfNeeded();await toggle.evaluate(el=>{window.originalSimpleToggle=el;});
+ await toggle.tap();await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toHaveText('Off');expect(await toggle.evaluate(el=>el===window.originalSimpleToggle)).toBe(true);await nav(page,'dashboard');await expect(page.locator('#home-details')).toBeVisible();
+ await reload(page);await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);await nav(page,'profile');await expect(toggle).toHaveAttribute('aria-pressed','false');await toggle.tap();await expect(toggle).toHaveAttribute('aria-pressed','true');await nav(page,'dashboard');await expect(page.locator('#home-details')).toBeHidden();await reload(page);await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);await expect(page.locator('#home-details')).toBeHidden();
+});
+test('keyboard toggles preserve focus and the untouched lb/RPE draft and saved history',async({page})=>{
+ await page.locator('[data-beginner-entry=log]').click();await page.evaluate(()=>setUnit('lb'));await page.locator('.ex-name').fill('Synthetic unfinished press');await page.locator('.set-weight').fill('135');await page.locator('.set-reps').fill('5');await page.locator('.set-rpe').fill('8');await page.locator('.set-rpe').blur();
+ const before=await page.evaluate(()=>JSON.stringify({workouts:data.workouts,prs:data.prs,plans:data.programs,unit:currentUnit()}));await nav(page,'profile');const toggle=page.locator('#profile-simple-view');await toggle.focus();await toggle.press('Space');await expect(toggle).toBeFocused();await expect(toggle).toHaveAttribute('aria-pressed','false');await toggle.press('Enter');await expect(toggle).toBeFocused();await expect(toggle).toHaveAttribute('aria-pressed','true');
+ await nav(page,'workouts');await expect(page.locator('.ex-name')).toHaveValue('Synthetic unfinished press');await expect(page.locator('.set-weight')).toHaveValue('135');await expect(page.locator('.set-reps')).toHaveValue('5');await expect(page.locator('.set-rpe')).toHaveValue('8');expect(await page.evaluate(()=>JSON.stringify({workouts:data.workouts,prs:data.prs,plans:data.programs,unit:currentUnit()}))).toBe(before);
+ await reload(page);await nav(page,'workouts');await expect(page.locator('.ex-name')).toHaveValue('Synthetic unfinished press');await expect(page.locator('.set-weight')).toHaveValue('135');await expect(page.locator('.set-rpe')).toHaveValue('8');
+});
+test('denied preference storage rolls back both controls honestly',async({page})=>{
+ await page.locator('#beginner-simple-choice').tap();await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);
+ await page.evaluate(()=>{window.originalSimpleSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===LoadnoteBeginnerExperience.KEY)throw Error('quota');return window.originalSimpleSet.call(this,k,v);};});
+ await page.locator('#beginner-simple-choice').tap();await expect(page.locator('#beginner-simple-choice')).not.toBeChecked();await expect(page.locator('body')).not.toHaveClass(/loadnote-simple-view/);await expect(page.locator('#toast-host')).toContainText('Could not save your view preference');
+ await nav(page,'profile');const toggle=page.locator('#profile-simple-view');await toggle.tap();await expect(toggle).toHaveAttribute('aria-pressed','false');await expect(toggle).toHaveText('Off');expect(await page.evaluate(()=>LoadnoteBeginnerExperience.read(localStorage).view)).toBe('full');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.originalSimpleSet;});await toggle.tap();await expect(toggle).toHaveAttribute('aria-pressed','true');await reload(page);await expect(page.locator('body')).toHaveClass(/loadnote-simple-view/);
+});
+test('narrow enlarged-text preference keeps a 44px touch target and no overflow',async({page},info)=>{
+ await page.setViewportSize({width:320,height:740});await page.evaluate(()=>document.documentElement.style.fontSize='20px');await nav(page,'profile');const toggle=page.locator('#profile-simple-view');await toggle.scrollIntoViewIfNeeded();const bounds=await toggle.boundingBox();expect(bounds.width).toBeGreaterThanOrEqual(44);expect(bounds.height).toBeGreaterThanOrEqual(44);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await toggle.tap();await expect(toggle).toHaveAttribute('aria-pressed','false');await page.screenshot({path:info.outputPath('simple-home-touch.png')});
+});

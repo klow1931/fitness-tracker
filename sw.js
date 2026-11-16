@@ -1,5 +1,5 @@
 /* Loadnote — app-shell service worker */
-const CACHE = 'loadnote-v7.8.0';
+const CACHE = 'loadnote-v7.8.1';
 const ASSETS = [
   './src/product/coach-workspace.js',
   './src/product/coach-workspace-ui.js',

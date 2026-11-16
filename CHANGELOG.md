@@ -1,3 +1,7 @@
+# v7.8.1 — Reliable Simple Home controls
+
+See [7.8.1](docs/releases-v7.8.1.md) for behavior and validation.
+
 # v7.8.0 — Exercise graphs and goal journeys
 
 See [7.8.0](docs/releases-v7.8.md) for behavior and validation.
