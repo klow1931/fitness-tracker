@@ -14,3 +14,5 @@ const testWorkflow=fs.readFileSync(path.join(root,'.github/workflows/test.yml'),
 const config=require('../playwright.offline.config');assert.equal(config.retries,0);assert.equal(config.use.serviceWorkers,'allow');assert.equal(config.use.trace,'on');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');assert.match(pages,/workflow_run:/);assert.match(pages,/check-publication-gates.js/);assert.match(pages,/LOADNOTE_OFFLINE_URL: https:\/\/klow1931.github.io\/fitness-tracker\//);assert.match(pages,/needs: deploy/);
 console.log('Offline integrity contract rejects unit/RPE/history corruption; both release profiles and isolated live Chromium are discovered and required');
+
+const mobile=fs.readFileSync(path.join(root,'.github/workflows/mobile-review.yml'),'utf8');const liveGuard=mobile.split('name: Verify approved live release and offline assets')[1].split('run:')[0];assert(liveGuard.includes("github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"),'Pre-publication push gate must not require unpublished assets already live');
