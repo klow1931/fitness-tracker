@@ -6,7 +6,7 @@ assert.match(workflow,/pull_request:/,'PR checks remain required');
 assert.match(workflow,/tests\/browser\/v57-flexible-conversation\.spec\.js.*tests\/browser\/v56-conversations\.spec\.js/,'WebKit includes v5.7 conversation regression');
 assert.match(workflow,/shard: \[1, 2, 3, 4\]/);
 assert.match(workflow,/run: npx playwright test --shard=\$\{\{ matrix.shard \}\}\/4/);
-assert.match(workflow,/test:\s+if: always\(\)\s+needs: \[smoke, browser, webkit\]/);
+assert.match(workflow,/test:\s+if: always\(\)\s+needs: \[smoke, browser, webkit, offline\]/);
 assert.match(workflow,/test "\$SMOKE_RESULT" = success/);
 assert.match(workflow,/test "\$BROWSER_RESULT" = success/);
 assert.match(workflow,/test "\$WEBKIT_RESULT" = success/);

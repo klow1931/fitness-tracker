@@ -1,12 +1,15 @@
 name: Publish Loadnote web
 
 on:
-  push:
+  workflow_run:
+    workflows: [Loadnote checks]
     branches: [main]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -16,19 +19,27 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Setup Node for offline reader bundling
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+      - name: Require all exact-head approved-main release gates
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LOADNOTE_PUBLICATION_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: node scripts/check-publication-gates.js
       - name: Bundle offline program readers
         run: npm ci --no-audit --no-fund
       - name: Verify release metadata and asset manifest
@@ -56,3 +67,38 @@ jobs:
         env:
           DEPLOYED_URL: ${{ steps.deployment.outputs.page_url }}
         run: npm run release:verify -- "$DEPLOYED_URL"
+
+  live-offline:
+    name: Published offline workout recovery
+    needs: deploy
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/vendor-program-readers.js
+      - name: Verify settled live assets twice
+        run: |
+          npm run release:verify -- https://klow1931.github.io/fitness-tracker/
+          sleep 15
+          npm run release:verify -- https://klow1931.github.io/fitness-tracker/
+      - name: Isolated live Chromium disconnected reload and save
+        env:
+          LOADNOTE_OFFLINE_URL: https://klow1931.github.io/fitness-tracker/
+          LOADNOTE_SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: npx playwright test --config=playwright.offline.config.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loadnote-offline-live
+          path: |
+            playwright-report/offline-live/
+            test-results/offline-live/
+          retention-days: 14
