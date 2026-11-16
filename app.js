@@ -279,6 +279,7 @@
       updateOnboardingUI();
       window.renderSchedule?.();
       window.renderTodayTraining?.();
+      window.LoadnoteSimpleHomeUI?.render?.();
       window.LoadnoteTrainingHubUI?.render();
       window.LoadnoteProgramLifecycleUI?.home?.();
       renderHomeActivity();

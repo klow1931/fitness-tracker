@@ -33,7 +33,8 @@
   // Fresh installs default to a calm presentation, but do not remove
   // established Home routes before an athlete explicitly chooses first logging.
   document.body.classList.toggle('loadnote-first-workout',p.entry==='log'||viewIsExplicit&&p.view==='simple');
-  const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=p.view!=='simple';
+  const banner=document.getElementById('simple-view-banner');if(banner)banner.hidden=false;
+  const homeToggle=document.getElementById('simple-show-all');if(homeToggle){homeToggle.setAttribute('aria-pressed',String(p.view==='simple'));const current=homeToggle.querySelector('[data-home-current]'),action=homeToggle.querySelector('[data-home-action]');if(current)current.textContent=p.view==='simple'?'Simple Home':'Full Home';if(action)action.textContent=p.view==='simple'?'Use Full Home':'Use Simple Home';}
   const choice=document.getElementById('beginner-simple-choice');if(choice)choice.checked=p.view==='simple';
   const toggle=document.getElementById('profile-simple-view');if(toggle){toggle.setAttribute('aria-pressed',String(p.view==='simple'));toggle.textContent=p.view==='simple'?'On':'Off';}
   const card=document.getElementById('onboarding-card');if(card&&p.entry)card.classList.add('hidden');
@@ -41,6 +42,7 @@
   if(typeof invalidateViews==='function')invalidateViews();
   window.renderBeginnerCoach?.();
   window.LoadnoteHistoryClarityUI?.layout?.();
+  window.LoadnoteSimpleHomeUI?.render?.();
  }
  function enter(entry,{preserveView=false}={}){
   const simple=document.getElementById('beginner-simple-choice')?.checked;
@@ -113,7 +115,7 @@
   apply();
   document.querySelectorAll('[data-beginner-entry]').forEach(b=>b.addEventListener('click',()=>enter(b.dataset.beginnerEntry)));
   document.getElementById('beginner-simple-choice')?.addEventListener('change',event=>change({view:event.currentTarget.checked?'simple':'full'}));
-  document.getElementById('simple-show-all')?.addEventListener('click',()=>change({view:'full'}));
+  document.getElementById('simple-show-all')?.addEventListener('click',()=>change({view:load().view==='simple'?'full':'simple'}));
   const refresh=event=>{
    if(!event.target?.closest?.('#exercise-rows,#workout-review,[data-workout-action],#training-cockpit'))return;
    requestAnimationFrame(renderGuide);

@@ -121,8 +121,9 @@
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="space-y-6">
-      <div id="simple-view-banner" class="card" hidden><p>Simple view keeps Home focused on your next workout. It does not change your program.</p><button type="button" class="btn-secondary" id="simple-show-all">Show all features · Full view</button></div>
+      <div id="simple-view-banner" class="card home-view-bar"><button type="button" class="home-view-switch" id="simple-show-all" aria-label="Simple Home" aria-pressed="false"><span data-home-current>Full Home</span><span data-home-action>Use Simple Home</span></button></div>
       <div id="today-training" class="card"></div>
+      <section id="simple-home-summary" class="card" aria-label="Simple Home training summary" hidden><h2>Your training</h2><p>Today’s workout and recent training will appear here.</p></section>
       <section class="card training-hub" data-training-hub="full" aria-label="Training journey"></section>
       <div id="program-lifecycle-home" class="card program-lifecycle-card hidden"></div>
       <div id="athlete-home-command" class="card v1-command-card"></div>
@@ -1439,7 +1440,7 @@
     </section>
 
     <footer class="mt-10 mb-6 text-center text-xs text-slate-400 space-y-1 app-footer">
-      <p id="app-version">Loadnote web v7.8.1 · local-first training log</p>
+      <p id="app-version">Loadnote web v7.9.0 · local-first training log</p>
       
       <p><button type="button" onclick="showTab('tools'); setTimeout(function(){ document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'}); }, 100);" class="underline text-slate-500 hover:text-indigo-600">Privacy policy</button></p>
     </footer>
@@ -2274,6 +2275,8 @@
   <script src="src/product/beginner-experience.js" defer></script>
   <script src="src/product/beginner-program.js" defer></script>
   <script src="src/product/beginner-program-ui.js" defer></script>
+  <script src="src/product/simple-home.js" defer></script>
+  <script src="src/product/simple-home-ui.js" defer></script>
   <script src="src/product/beginner-experience-ui.js" defer></script>
   <script src="src/product/starting-units-ui.js" defer></script>
   <script src="src/product/history-clarity-ui.js" defer></script>
