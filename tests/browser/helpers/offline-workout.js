@@ -6,7 +6,7 @@ const {waitForOfflineReady}=require('./offline-ready');
 const {assertSavedWorkout}=require('./offline-workout-contract');
 const release=require('../../../release.json');
 async function networkReachable(page){
- return page.evaluate(async()=>{try{await fetch('./release.json?offline-transport-proof='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(3000)});return true;}catch{return false;}});
+ return page.evaluate(async()=>{try{await fetch('./__loadnote_offline_network_probe__?attempt='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(3000)});return true;}catch{return false;}});
 }
 async function runOfflineWorkout({page,context,browserName},testInfo,{origin,disconnect,reconnect}){
  const evidence={targetURL:origin,sourceCommit:process.env.LOADNOTE_SOURCE_COMMIT||process.env.GITHUB_SHA||null,testedCommit:process.env.GITHUB_SHA||null,version:release.version,buildNumber:release.buildNumber,browser:browserName,project:testInfo.project.name,network:browserName==='webkit'?'dedicated loopback server stopped; WebKit service-worker/network-emulation limitation':'BrowserContext.setOffline(true/false)',stages:[]};
@@ -28,7 +28,9 @@ async function runOfflineWorkout({page,context,browserName},testInfo,{origin,dis
   expect(await page.evaluate(()=>data.workouts.length)).toBe(0);evidence.stages.push('135 lb ×5 @8 draft saved online; no completed history');
   await disconnect(context);await expect.poll(()=>networkReachable(page)).toBe(false);const response=await page.reload();expect(response.fromServiceWorker()).toBe(true);
   // navigator.onLine can reset to true after a Chromium worker-served reload.
-  // Require actual network-only manifest fetch rejection, before AND after reload.
+  // This uncached non-asset path bypasses worker handling, avoiding WebKit
+  // reporting our deliberately rejected worker promise as an app pageerror.
+  // Require actual network fetch rejection before AND after reload.
   await expect.poll(()=>networkReachable(page)).toBe(false);evidence.browserReportedOnlineAfterOfflineReload=await page.evaluate(()=>navigator.onLine);
   await page.evaluate(()=>showTab('workouts'));
   await expect(page.locator('.ex-name')).toHaveValue('Offline Acceptance Press');await expect(page.locator('.set-weight')).toHaveValue('135');await expect(page.locator('.set-reps')).toHaveValue('5');await expect(page.locator('.set-rpe')).toHaveValue('8');await expect(page.locator('.set-done-check')).toBeChecked();
