@@ -38,3 +38,6 @@ try{
  fs.rmSync(directory,{recursive:true,force:true});
 }
 console.log('Weekly review discovers history/adaptation cases in both mobile profiles and reports honest grouped outcomes');
+
+for(const project of projects)assert(selected.some(test=>test.file==='v781-simple-home.spec.js'&&test.project===project),'Discover touch preference regression in '+project);
+assert(options.areas['Accessibility and layout'].includes('v781-simple-home.spec.js'));
