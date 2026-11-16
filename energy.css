@@ -1147,3 +1147,23 @@ body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-
 .workout-continuation{display:flex;flex-wrap:wrap;gap:.5rem;padding:.65rem 0;min-width:0}
 .workout-continuation p{flex-basis:100%;font-size:.8rem;margin:0;color:var(--muted)}
 .workout-continuation button{min-height:44px;font-size:.8rem;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+
+/* Two-way Home mode control stays visible in both modes; summary is read-only. */
+#simple-view-banner{display:block;padding:0;margin-bottom:.8rem;overflow:hidden}
+#simple-view-banner[hidden],#simple-home-summary[hidden]{display:none!important}
+#simple-view-banner #simple-show-all{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:64px;margin:0;padding:.85rem 1rem;border:0;border-radius:inherit;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+#simple-show-all [data-home-current]{font-weight:750}
+#simple-show-all [data-home-action]{font-size:.85rem;color:var(--accent,#4f46e5)}
+#simple-show-all:focus-visible{outline:3px solid var(--accent,#4f46e5);outline-offset:-4px}
+#simple-home-summary{overflow-wrap:anywhere}
+.simple-home-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.simple-home-heading h2{font-size:1.15rem;margin:.2rem 0 .5rem}
+.simple-home-count{display:flex;align-items:center;gap:.65rem;max-width:14rem}
+.simple-home-count strong{font-size:2rem;line-height:1.1;color:var(--accent,#4f46e5)}
+.simple-home-count span{font-size:.82rem}
+.simple-home-latest{padding-block:1rem;border-block:1px solid var(--line,#cbd5e1);margin-block:.8rem}
+.simple-home-latest h3{font-size:1rem;font-weight:750;margin:0 0 .4rem}
+.simple-home-latest p{margin:.3rem 0 .6rem}
+.simple-home-links{display:flex;flex-wrap:wrap;gap:.6rem}
+#simple-home-summary button{min-height:44px;white-space:normal}
+@media(max-width:480px){.simple-home-heading{flex-direction:column}.simple-home-count{max-width:none}.simple-home-links>*{flex:1 1 8rem}#simple-show-all [data-home-action]{max-width:50%;text-align:right}}

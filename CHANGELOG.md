@@ -1,3 +1,7 @@
+# v7.9.0 — A focused Home for training
+
+See [7.9.0](docs/releases-v7.9.md) for behavior and validation.
+
 # v7.8.1 — Reliable Simple Home controls
 
 See [7.8.1](docs/releases-v7.8.1.md) for behavior and validation.
