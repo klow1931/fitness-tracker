@@ -50,7 +50,7 @@ test('v3.95 after a saved workout on an earlier day, the beginner can reach the 
  const card=page.locator('#beginner-first-week');
  await expect(card).toContainText('Repeat last workout');
  await expect(card).toContainText('No training day is assumed');
- await expect(card.locator('[data-first-week-history]')).toBeVisible();
+ await openFirstWeek(page);await expect(card.locator('[data-first-week-history]')).toBeVisible();
  await openFirstWeek(page);await card.locator('[data-first-week-history]').click();
  await expect(page.locator('#panel-workouts')).toBeVisible();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
@@ -74,7 +74,7 @@ test('v3.96 repeating workout two preserves historical data, leaves effort unkno
  await page.clock.setSystemTime(new Date('2026-10-24T15:00:00.000Z'));
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  const card=page.locator('#beginner-first-week');
- await expect(card.locator('[data-first-week-new]')).toBeVisible();
+ await openFirstWeek(page);await expect(card.locator('[data-first-week-new]')).toBeVisible();
  await expect(card).toContainText('mark only sets you complete');
  await openFirstWeek(page);await card.locator('[data-first-week-action]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();
