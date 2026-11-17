@@ -157,6 +157,7 @@
   if(train)train.setAttribute('aria-label',hasDraft?'Train — workout draft saved':'Train');
  }
  function viewportState(){
+  document.body.classList.toggle('logger-numeric-entry',document.body.dataset.activeTab==='workouts'&&!!document.activeElement?.matches?.('.set-weight,.set-reps,.set-rpe,.set-duration,.cardio-duration,.cardio-distance'));
   const vv=window.visualViewport;
   if(!vv){document.body.classList.remove('mobile-keyboard-open');return;}
   const field=document.activeElement;

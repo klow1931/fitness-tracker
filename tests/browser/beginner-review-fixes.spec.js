@@ -1,3 +1,4 @@
+const {openFirstWeek}=require('./helpers/first-week-tips');
 const {test,expect}=require('playwright/test');
 const {phaseFixture}=require('../fixtures/phase-builder');
 test.beforeEach(async({page})=>{await page.clock.install({time:new Date('2026-10-23T15:00:00.000Z')});await page.goto('/');await expect(page.locator('#exercise-rows .ex-name')).toHaveCount(1);});
@@ -12,15 +13,15 @@ test('blank performed load blocks review; explicitly entered zero remains valid 
 });
 test('repeating cardio keeps past heart rate as history and requires a new actual reading',async({page})=>{
  await page.locator('[data-beginner-entry=log]').click();await page.evaluate(()=>fillWorkoutForm([{name:'Bike',type:'cardio',duration:20,distance:5,distanceUnit:'km'}],'',false));await page.locator('.cardio-hr').fill('145');await page.evaluate(()=>reviewWorkout());await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
- const original=await page.evaluate(()=>JSON.stringify(data.workouts[0]));await page.clock.setSystemTime(new Date('2026-10-24T15:00:00.000Z'));await page.evaluate(()=>{showTab('dashboard');renderDashboard();});await page.locator('[data-first-week-action]').click();
+ const original=await page.evaluate(()=>JSON.stringify(data.workouts[0]));await page.clock.setSystemTime(new Date('2026-10-24T15:00:00.000Z'));await page.evaluate(()=>{showTab('dashboard');renderDashboard();});await openFirstWeek(page);await page.locator('[data-first-week-action]').click();
  await expect(page.locator('.cardio-hr')).toHaveValue('');await expect(page.locator('.cardio-done')).not.toBeChecked();await page.locator('.cardio-done').check();await page.evaluate(()=>reviewWorkout());await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(2);
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].avgHr)).toBeUndefined();expect(await page.evaluate(()=>JSON.stringify(data.workouts[1]))).toBe(original);
 });
 test('saved starter plan reviews and loads an unscheduled draft, with original targets and history preserved',async({page})=>{
- await starter(page);const original=await page.evaluate(()=>JSON.stringify(data.customPrograms));await page.evaluate(()=>{showTab('dashboard');renderDashboard();});await expect(page.locator('#beginner-first-week')).toContainText('Review a workout from your saved plan');await page.locator('[data-first-week-action]').click();
+ await starter(page);const original=await page.evaluate(()=>JSON.stringify(data.customPrograms));await page.evaluate(()=>{showTab('dashboard');renderDashboard();});await expect(page.locator('#beginner-first-week')).toContainText('Review a workout from your saved plan');await openFirstWeek(page);await page.locator('[data-first-week-action]').click();
  const d=page.locator('#starter-saved-dialog');await expect(d).toBeVisible();await expect(d.locator('#starter-saved-preview')).toContainText('Goblet Squat');expect(await page.evaluate(()=>data.workouts.length+data.scheduledSessions.length)).toBe(0);
  await d.locator('#starter-saved-load').click();await expect(d).toBeHidden();await expect(page.locator('#workout-log-card')).toBeVisible();await expect(page.locator('.ex-name').first()).toHaveValue('Goblet Squat');await expect(page.locator('.set-weight').first()).toHaveValue('');await expect(page.locator('.set-done-check').first()).not.toBeChecked();
- await page.reload();await expect(page.locator('.ex-name').first()).toHaveValue('Goblet Squat');await page.locator('#beginner-first-week [data-first-week-action]').click();await page.locator('.set-weight').first().fill('10');await page.locator('.set-done-check').first().check();await page.evaluate(()=>reviewWorkout());await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
+ await page.reload();await expect(page.locator('.ex-name').first()).toHaveValue('Goblet Squat');await openFirstWeek(page);await page.locator('#beginner-first-week [data-first-week-action]').click();await page.locator('.set-weight').first().fill('10');await page.locator('.set-done-check').first().check();await page.evaluate(()=>reviewWorkout());await page.locator('#confirm-workout-save').click();await expect.poll(()=>page.evaluate(()=>data.workouts.length)).toBe(1);
  expect(await page.evaluate(()=>data.workouts[0].exercises[0].sets.length)).toBe(1);expect(await page.evaluate(()=>data.scheduledSessions.length)).toBe(0);expect(await page.evaluate(()=>JSON.stringify(data.customPrograms))).toBe(original);
 });
 test('saved-plan scheduling requires confirmation, reports failed storage, then schedules separately',async({page})=>{

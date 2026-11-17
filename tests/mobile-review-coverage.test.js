@@ -44,3 +44,5 @@ assert(options.areas['Accessibility and layout'].includes('v781-simple-home.spec
 
 for(const project of projects)assert(selected.some(test=>test.file==='v79-focused-home.spec.js'&&test.project===project),'Discover useful Simple Home actions in '+project);
 assert(options.areas['Onboarding and first workout'].includes('v79-focused-home.spec.js'));
+
+for(const project of projects)assert(selected.some(test=>test.file==='v710-ui-flow.spec.js'&&test.project===project),'Discover flow, goals, pins and keyboard regressions in '+project);

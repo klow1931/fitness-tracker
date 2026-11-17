@@ -1,3 +1,7 @@
+# v7.10.0 — Clearer Home and workout flow
+
+See [7.10.0](docs/releases-v7.10.md) for behavior and validation.
+
 # v7.9.0 — A focused Home for training
 
 See [7.9.0](docs/releases-v7.9.md) for behavior and validation.
