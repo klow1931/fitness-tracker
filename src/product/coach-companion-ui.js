@@ -226,9 +226,11 @@
   const launcher=document.getElementById('coach-companion-launcher'),dock=document.getElementById('gym-floor-dock');
   if(!launcher)return;
   launcher.style.bottom='';
+  const homeBar=surface()==='home'?document.getElementById('simple-view-banner'):null;
   const training=surface()==='train'&&!document.body.classList.contains('train-launch-mode');
   let slot=document.getElementById('workout-coach-access');
-  if(training){
+  if(homeBar){if(launcher.parentElement!==homeBar)homeBar.prepend(launcher);}
+  else if(training){
    const rows=document.getElementById('exercise-rows');
    if(!slot&&rows){slot=document.createElement('div');slot.id='workout-coach-access';rows.before(slot);}
    const inDock=window.matchMedia('(max-width: 640px)').matches&&document.body.classList.contains('gym-floor-dock-visible')&&dock;
@@ -236,8 +238,9 @@
    if(destination&&launcher.parentElement!==destination)destination.append(launcher);
   }else if(launcher.parentElement!==document.body)document.body.append(launcher);
   launcher.classList.toggle('coach-workout-access',training);
+  launcher.classList.toggle('coach-home-access',!!homeBar);
   if(slot)slot.hidden=!training||launcher.parentElement!==slot;
-  if(training||!dock||!window.matchMedia('(max-width: 640px)').matches)return;
+  if(homeBar||training||!dock||!window.matchMedia('(max-width: 640px)').matches)return;
   const button=launcher.getBoundingClientRect(),controls=dock.getBoundingClientRect();
   if(controls.height&&controls.top<button.bottom&&controls.bottom>button.top&&controls.left<button.right&&controls.right>button.left){
    launcher.style.bottom=(window.innerHeight-controls.top+12)+'px';

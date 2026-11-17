@@ -1214,3 +1214,5 @@ body.loadnote-simple-view #today-training .today-training-actions>.btn-secondary
 .simple-home-method>summary,.home-goal-choice>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:.85rem;text-decoration:underline}
 .home-goal-name{font-size:1rem;overflow-wrap:anywhere;margin:.25rem 0}
 #simple-home-goal .home-goal-choice{margin:.5rem 0}
+#simple-view-banner.home-view-bar{justify-content:space-between;align-items:center;gap:.5rem;overflow:visible}
+#coach-companion-launcher.coach-home-access{position:static;flex:0 0 auto;min-height:44px;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;background:transparent;color:inherit;box-shadow:none;margin:0;padding:.5rem .7rem;font-size:.85rem}
