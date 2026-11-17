@@ -1207,3 +1207,10 @@ body.mobile-keyboard-open.logger-numeric-entry #coach-companion-launcher{display
 #beginner-first-week[open]>summary::after{content:"Hide"}
 .home-goal-picker,.home-goal-picker select{min-width:0;max-width:100%}
 .pinned-exercises button{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+/* Secondary routes stay thumb-accessible without becoming competing tiles. */
+body.loadnote-simple-view #today-training .today-training-actions>.btn-secondary{flex:1 1 auto;min-width:0;min-height:44px;padding:.4rem .6rem;font-size:.85rem}
+#simple-home-summary .simple-home-links>button{flex:1 1 calc(50% - .3rem);min-width:0;padding:.4rem .6rem;font-size:.85rem}
+#simple-home-summary [data-simple-history]{font-size:.85rem;padding:.4rem .6rem}
+.simple-home-method>summary,.home-goal-choice>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:.85rem;text-decoration:underline}
+.home-goal-name{font-size:1rem;overflow-wrap:anywhere;margin:.25rem 0}
+#simple-home-goal .home-goal-choice{margin:.5rem 0}

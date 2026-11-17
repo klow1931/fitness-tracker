@@ -13,7 +13,7 @@
   host.innerHTML='<div class="simple-home-heading"><div><p class="eyebrow">Your recent training</p><h2>Last 7 days</h2></div><div class="simple-home-count"><strong>'+report.sessions+'</strong><span>workout'+(report.sessions===1?'':'s')+' in the last 7 days</span></div></div>'+
    (last?'<div class="simple-home-latest"><h3>Last saved workout</h3><p>'+esc(format(last.date))+'</p><p>'+last.names.map(esc).join(' · ')+(last.exerciseCount>last.names.length?' · '+(last.exerciseCount-last.names.length)+' more':'')+'</p><button type="button" class="btn-secondary" data-simple-history>Recent workout history</button></div>':'<div class="simple-home-latest"><p>Your saved workouts will appear here. Start with today’s training action above.</p></div>')+
    '<div class="simple-home-links"><button type="button" class="btn-secondary" data-simple-progress>View progress</button><button type="button" class="btn-secondary" data-simple-calendar>Training calendar</button></div>'+
-   '<p class="more-hint">Saved sessions dated '+esc(format(report.from))+'–'+esc(format(report.to))+'. Open Full Home for detailed reports and tools.</p>';
+   '<details class="simple-home-method"><summary>Summary details</summary><p class="more-hint">Saved sessions dated '+esc(format(report.from))+'–'+esc(format(report.to))+'. Open Full Home for detailed reports and tools.</p></details>';
   bind(host);window.LoadnoteHomeGoalUI?.render?.();
  }
  function bind(host){
