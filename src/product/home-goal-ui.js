@@ -5,7 +5,7 @@
  function label(g){return g.type==='workout-count'?g.targetSessions+' logged workouts':g.exercise+' · estimated 1RM';}
  function render(){
   const host=document.getElementById('simple-home-goal');if(!host)return;host.hidden=!document.body.classList.contains('loadnote-simple-view');if(host.hidden)return;
-  const prefs=LoadnoteUIFlow.read(localStorage),report=LoadnoteUIFlow.homeGoal(data,prefs.goalId,today()),selected=report.selected;
+  const prefs=LoadnoteUIFlow.read(),report=LoadnoteUIFlow.homeGoal(data,prefs.goalId,today()),selected=report.selected;
   host.innerHTML='<h2>Your goal</h2>'+(selected?'<h3 class="home-goal-name">'+esc(label(selected.goal))+'</h3><details class="home-goal-choice"><summary>Change goal on Home</summary><label class="home-goal-picker">Goal on Home<select class="input" data-home-goal-picker>'+report.goals.map(r=>'<option value="'+esc(r.goal.id)+'">'+esc(label(r.goal))+'</option>').join('')+'</select></label></details>':'<p>Choose a strength target or a workout-count goal to see your start and finish here.</p>');
   if(selected){
    const {goal:g,progress:r}=selected,value=v=>r.kind==='sessions'?v+' workout'+(v===1?'':'s'):v===null?'Not recorded':toDisplay(v)+' '+unitLabel();

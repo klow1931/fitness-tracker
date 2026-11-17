@@ -9,3 +9,5 @@ const rows=P.options(state.workouts),key=rows[0].key;assert.deepEqual(Flow.pinne
 console.log('Device-only pin/goal preferences survive reload, fail honestly, retain exact identity and reuse immutable session/strength goal projections');
 
 const Integrity=require('../src/product/data-integrity'),normalized=Integrity.normalizeState(state),options=P.options(normalized.workouts);const stableKey=options[0].key;Flow.togglePin(storage,stableKey);assert.equal(Flow.pinned(P.options(Integrity.normalizeState(normalized).workouts),Flow.read(storage).pins)[0].key,stableKey,'Pins use the same normalized catalog identity before and after reload');
+
+const vm=require('node:vm'),fs=require('node:fs'),context={LoadnoteGoalProgress:require('../src/product/goal-progress')};Object.defineProperty(context,'localStorage',{get(){throw Error('SecurityError');}});vm.createContext(context);vm.runInContext(fs.readFileSync('src/product/ui-flow.js','utf8'),context);assert.equal(JSON.stringify(context.LoadnoteUIFlow.read()),JSON.stringify({pins:[],goalId:null}),'A blocked localStorage getter must not break read-only Home/Progress rendering');
