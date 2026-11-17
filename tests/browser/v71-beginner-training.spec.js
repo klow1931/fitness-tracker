@@ -1,3 +1,4 @@
+const {openFirstWeek}=require('./helpers/first-week-tips');
 const {test,expect}=require('playwright/test');
 test.use({timezoneId:'America/New_York'});
 test.beforeEach(async({page})=>{
@@ -24,7 +25,7 @@ test('evening saved plan opens immediately, survives reload and loads actual bla
  await expect(page.locator('#starter-saved-dialog')).toBeVisible();await expect(page.locator('#starter-saved-preview')).toContainText('Leg Press');
  const id=await page.evaluate(()=>data.customPrograms[0].id);await page.locator('#starter-saved-close').click();
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
- await page.locator('[data-first-week-action]').click();await expect(page.locator('#starter-saved-plan')).toHaveValue(id);
+ await openFirstWeek(page);await page.locator('[data-first-week-action]').click();await expect(page.locator('#starter-saved-plan')).toHaveValue(id);
  await page.locator('#starter-saved-load').click();await expect(page.locator('.ex-name').first()).toHaveValue('Leg Press');
  await expect(page.locator('.set-weight').first()).toHaveValue('');await expect(page.locator('.set-done-check').first()).not.toBeChecked();
  expect(await page.evaluate(()=>data.workouts.length+data.scheduledSessions.length)).toBe(0);

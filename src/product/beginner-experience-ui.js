@@ -75,13 +75,15 @@
   const workouts=typeof data!=='undefined'?(data.workouts||[]):[];
   host.hidden=p.guide!=='active'||editing||(workouts.length>0&&p.entry===null);
   const obs=observations(),index=model.guideStage(obs);
+  const compact=document.body.classList.contains('training-execution-active')&&!obs.reviewOpen;
+  if(host.dataset.compact!==String(compact)){host.open=!compact;host.dataset.compact=String(compact);}
   const reviewTip=document.getElementById('beginner-review-tip');
   if(reviewTip)reviewTip.hidden=host.hidden||!obs.reviewOpen;
   if(host.hidden)return;
   if(host.dataset.guideStage===String(index))return;
   host.dataset.guideStage=String(index);
   const step=model.steps[index];
-  host.innerHTML='<p class="more-hint">First workout · '+(index+1)+' of 4</p>'+
+  host.innerHTML='<summary>Workout tips</summary><p class="more-hint">First workout · '+(index+1)+' of 4</p>'+
    '<h3>'+step.title+'</h3><p>'+step.body+'</p>'+
    '<div class="beginner-actions"><button type="button" class="btn-secondary" data-guide="skip">Hide tips</button></div>'+
    '<p class="more-hint">These tips follow your actions. Only Save workout records your session.</p>';
@@ -97,7 +99,7 @@
   host.querySelector('#profile-replay-guide')?.addEventListener('click',()=>{
    if(change({guide:'active',step:0,entry:load().entry||'log'})){
     const guide=document.getElementById('beginner-workout-guide');if(guide)delete guide.dataset.guideStage;
-    window.openFastStartLogger?.({compact:true});renderGuide();
+    window.openFastStartLogger?.({compact:true});renderGuide();if(guide)guide.open=true;
     guide?.scrollIntoView({block:'start'});
    }
   });

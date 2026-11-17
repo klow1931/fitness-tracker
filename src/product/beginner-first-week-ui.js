@@ -8,9 +8,10 @@
   const result=window.LoadnoteBeginnerFirstWeek.inspect(state,{...window.LoadnoteBeginnerProgramUI?.dateOptions?.(),asOf,entry,todayReport:report,continuity});
   host.querySelector('#beginner-first-week')?.remove();
   if(!result)return;
-  const section=document.createElement('section');section.id='beginner-first-week';
+  const compact=document.body.classList.contains('loadnote-simple-view');
+  const section=document.createElement(compact?'details':'section');section.id='beginner-first-week';
   section.className='beginner-first-week';section.setAttribute('aria-label',result.graduated?'Your plan':'Your first week');
-  section.innerHTML='<p class="more-hint"><b>'+(result.graduated?'Your plan':'Your first week')+'</b>'+(result.graduated?'':' · '+result.count+' saved workout'+(result.count===1?'':'s'))+'</p>'+
+  section.innerHTML=(compact?'<summary>'+(result.graduated?'Saved plan &amp; next steps':'Workout tips &amp; next steps')+'</summary>':'')+'<p class="more-hint"><b>'+(result.graduated?'Your plan':'Your first week')+'</b>'+(result.graduated?'':' · '+result.count+' saved workout'+(result.count===1?'':'s'))+'</p>'+
    '<h3>'+esc(result.title)+'</h3><p>'+esc(result.detail)+'</p>'+
    '<button type="button" class="btn-secondary" data-first-week-action>'+esc(result.label)+'</button>'+ 
    (result.action==='repeat'?'<button type="button" class="btn-secondary" data-first-week-new>Start a different workout</button>':'')+

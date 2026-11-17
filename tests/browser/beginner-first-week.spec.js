@@ -1,3 +1,4 @@
+const {openFirstWeek}=require('./helpers/first-week-tips');
 const {test,expect}=require('playwright/test');
 test.beforeEach(async({page})=>{
  await page.clock.install({time:new Date('2026-10-23T15:00:00.000Z')});
@@ -7,7 +8,7 @@ test('v3.94 first-week Home starts a real logger, preserves unknown RPE and reco
  await page.locator('[data-beginner-entry=log]').click();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  await expect(page.locator('#beginner-first-week')).toContainText('0 saved workouts');
- await page.locator('#beginner-first-week [data-first-week-action]').click();
+ await openFirstWeek(page);await page.locator('#beginner-first-week [data-first-week-action]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();
  await page.evaluate(()=>{fillWorkoutForm([{name:'Goblet Squat',type:'strength',trackBy:'reps',
   sets:[{weight:15,reps:8,rpe:''}]}],'',false);reviewWorkout();});
@@ -17,7 +18,7 @@ test('v3.94 first-week Home starts a real logger, preserves unknown RPE and reco
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  await expect(page.locator('#beginner-first-week')).toContainText('1 saved workout');
  await expect(page.locator('#beginner-first-week')).toContainText('No next session is scheduled');
- await page.locator('#beginner-first-week [data-first-week-action]').click();
+ await openFirstWeek(page);await page.locator('#beginner-first-week [data-first-week-action]').click();
  await expect(page.locator('#panel-workouts')).toBeVisible();
  expect(await page.evaluate(()=>!data.workouts[0].exercises[0].sets[0].rpe)).toBe(true);
 });
@@ -32,7 +33,7 @@ test('v3.94 first-week next scheduled session is shown as planned, with Calendar
  await expect(page.locator('#beginner-first-week')).toContainText('2026-10-26');
  await expect(page.locator('#beginner-first-week')).toContainText('plan, not a completed session');
  expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
- await page.locator('#beginner-first-week [data-first-week-action]').click();
+ await openFirstWeek(page);await page.locator('#beginner-first-week [data-first-week-action]').click();
  await expect(page.locator('#panel-calendar')).toBeVisible();
 });
 test('v3.94 no extra first-week panel for an athlete outside guided beginner route',async({page})=>{
@@ -49,11 +50,11 @@ test('v3.95 after a saved workout on an earlier day, the beginner can reach the 
  const card=page.locator('#beginner-first-week');
  await expect(card).toContainText('Repeat last workout');
  await expect(card).toContainText('No training day is assumed');
- await expect(card.locator('[data-first-week-history]')).toBeVisible();
- await card.locator('[data-first-week-history]').click();
+ await openFirstWeek(page);await expect(card.locator('[data-first-week-history]')).toBeVisible();
+ await openFirstWeek(page);await card.locator('[data-first-week-history]').click();
  await expect(page.locator('#panel-workouts')).toBeVisible();
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
- await card.locator('[data-first-week-action]').click();
+ await openFirstWeek(page);await card.locator('[data-first-week-action]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Goblet Squat');
  await expect(page.locator('#exercise-rows .set-rpe').first()).toHaveValue('');
@@ -73,9 +74,9 @@ test('v3.96 repeating workout two preserves historical data, leaves effort unkno
  await page.clock.setSystemTime(new Date('2026-10-24T15:00:00.000Z'));
  await page.evaluate(()=>{showTab('dashboard');renderDashboard();});
  const card=page.locator('#beginner-first-week');
- await expect(card.locator('[data-first-week-new]')).toBeVisible();
+ await openFirstWeek(page);await expect(card.locator('[data-first-week-new]')).toBeVisible();
  await expect(card).toContainText('mark only sets you complete');
- await card.locator('[data-first-week-action]').click();
+ await openFirstWeek(page);await card.locator('[data-first-week-action]').click();
  await expect(page.locator('#workout-log-card')).toBeVisible();
  await expect(page.locator('#exercise-rows .ex-name').first()).toHaveValue('Goblet Squat');
  await expect(page.locator('#exercise-rows .set-reps').first()).toHaveValue('8');

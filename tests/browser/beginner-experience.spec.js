@@ -53,7 +53,7 @@ test('guided first workout follows actual input, review never saves, and tips ca
  await expect(page.locator('#beginner-review-tip')).toContainText('has not saved');
  expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
  await page.locator('#back-to-workout').click();
- await guide.locator('[data-guide=skip]').click();await expect(guide).toBeHidden();
+ await guide.locator(':scope > summary').click();await guide.locator('[data-guide=skip]').click();await expect(guide).toBeHidden();
  await page.reload();await expect(page.locator('.ex-name')).toHaveCount(1);
  await page.evaluate(()=>showTab('profile'));await page.locator('#profile-replay-guide').click();
  await expect(guide).toBeVisible();

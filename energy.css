@@ -1167,3 +1167,52 @@ body.loadnote-guided-training #workout-recap.beginner-recap:not([hidden])~[data-
 .simple-home-links{display:flex;flex-wrap:wrap;gap:.6rem}
 #simple-home-summary button{min-height:44px;white-space:normal}
 @media(max-width:480px){.simple-home-heading{flex-direction:column}.simple-home-count{max-width:none}.simple-home-links>*{flex:1 1 8rem}#simple-show-all [data-home-action]{max-width:50%;text-align:right}}
+/* v7.10 — calmer hierarchy, shared goal and thumb-friendly set entry. */
+#simple-view-banner.home-view-bar{display:flex;justify-content:flex-end;padding:0;margin-bottom:.5rem;box-shadow:none;border:0;background:transparent}
+#simple-view-banner #simple-show-all.home-view-switch{width:auto;min-height:44px;max-width:100%;padding:.5rem .75rem;gap:1rem;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;background:transparent;color:inherit;font-size:.85rem}
+#simple-show-all [data-home-current]{font-weight:700}
+#simple-home-goal[hidden]{display:none!important}
+#simple-home-goal h2{font-size:1.15rem;margin:0 0 .75rem}
+.home-goal-picker{display:grid;gap:.35rem;font-size:.85rem}
+.home-goal-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:1rem 0}
+.home-goal-values div{display:grid;gap:.35rem;overflow-wrap:anywhere}
+.home-goal-values span{font-size:.8rem;color:var(--muted)}
+#simple-home-goal progress{width:100%;height:.65rem;accent-color:var(--brand,#4f46e5)}
+#simple-home-summary .simple-home-latest{padding-block:.5rem;margin-block:.5rem}
+#simple-home-summary .simple-home-latest h3{font-size:.9rem}
+#simple-home-summary .simple-home-heading{align-items:center}
+#simple-home-summary .simple-home-heading .eyebrow{display:none}
+#simple-home-summary .simple-home-count strong{font-size:1.6rem}
+#beginner-first-week>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:650}
+.pinned-exercises{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--line,#cbd5e1)}
+#exercise-explorer button,#simple-home-goal button{min-height:44px;margin:.5rem .5rem 0 0}
+.training-cockpit-current{gap:.6rem}
+.training-cockpit-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.training-cockpit-comparison>div{min-width:0;overflow-wrap:anywhere}
+.training-cockpit-comparison>.training-cockpit-verified{grid-column:1/-1}
+body.mobile-keyboard-open.logger-numeric-entry #coach-companion-launcher{display:none!important}
+@media(max-width:640px){
+ #workout-log-card :is(.set-weight,.set-reps,.set-rpe,.set-duration,.cardio-duration,.cardio-distance){font-size:max(16px,1rem);min-height:44px}
+ .training-cockpit-actions{gap:.4rem;flex-wrap:wrap}
+ .training-cockpit-title small{line-height:1.35}
+ .training-cockpit-current{padding:.6rem}
+ .training-cockpit-rest-actions button,.training-cockpit-link,.quick-done-button{min-height:44px}
+ #simple-home-summary .simple-home-heading{flex-direction:row;flex-wrap:wrap}
+ #simple-show-all [data-home-action]{max-width:none}
+}
+@media(max-width:360px){.training-cockpit-comparison{grid-template-columns:minmax(0,1fr)}.home-goal-values{gap:.35rem;font-size:.85rem}}
+
+#beginner-workout-guide>summary{min-height:44px;cursor:pointer;font-weight:650;padding:.5rem 0}
+#beginner-first-week>summary::after{content:"Show";margin-left:auto;text-decoration:underline;font-size:.8rem}
+#beginner-first-week[open]>summary::after{content:"Hide"}
+.home-goal-picker,.home-goal-picker select{min-width:0;max-width:100%}
+.pinned-exercises button{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+/* Secondary routes stay thumb-accessible without becoming competing tiles. */
+body.loadnote-simple-view #today-training .today-training-actions>.btn-secondary{flex:1 1 auto;min-width:0;min-height:44px;padding:.4rem .6rem;font-size:.85rem}
+#simple-home-summary .simple-home-links>button{flex:1 1 calc(50% - .3rem);min-width:0;padding:.4rem .6rem;font-size:.85rem}
+#simple-home-summary [data-simple-history]{font-size:.85rem;padding:.4rem .6rem}
+.simple-home-method>summary,.home-goal-choice>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:.85rem;text-decoration:underline}
+.home-goal-name{font-size:1rem;overflow-wrap:anywhere;margin:.25rem 0}
+#simple-home-goal .home-goal-choice{margin:.5rem 0}
+#simple-view-banner.home-view-bar{justify-content:space-between;align-items:center;gap:.5rem;overflow:visible}
+#coach-companion-launcher.coach-home-access{position:static;flex:0 0 auto;min-height:44px;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;background:transparent;color:inherit;box-shadow:none;margin:0;padding:.5rem .7rem;font-size:.85rem}
