@@ -46,3 +46,5 @@ for(const project of projects)assert(selected.some(test=>test.file==='v79-focuse
 assert(options.areas['Onboarding and first workout'].includes('v79-focused-home.spec.js'));
 
 for(const project of projects)assert(selected.some(test=>test.file==='v710-ui-flow.spec.js'&&test.project===project),'Discover flow, goals, pins and keyboard regressions in '+project);
+
+for(const project of projects)assert(selected.some(test=>test.file==='v711-program-designer.spec.js'&&test.project===project),'Discover equipment recovery, lb entry and beginner designer regressions in '+project);
