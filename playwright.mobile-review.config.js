@@ -4,7 +4,7 @@ process.env.LOADNOTE_WEBKIT = '1';
 const base = require('./playwright.config');
 
 const areas = {
-  'Onboarding and first workout': ['v710-ui-flow.spec.js','v79-focused-home.spec.js','v71-beginner-training.spec.js', 'v72-history-setup.spec.js'],
+  'Onboarding and first workout': ['v711-program-designer.spec.js','v710-ui-flow.spec.js','v79-focused-home.spec.js','v71-beginner-training.spec.js', 'v72-history-setup.spec.js'],
   'Navigation and History': ['mobile-navigation.spec.js', 'v73-history-return.spec.js'],
   'Verified history and adaptation evidence': ['v64-verified-history.spec.js', 'v4-adaptive-loop.spec.js', 'v41-evidence-integrity.spec.js', 'v42-next-session-context.spec.js'],
   'Exercise graphs and goal journeys': ['v78-exercise-goals.spec.js'],

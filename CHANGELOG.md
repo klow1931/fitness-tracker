@@ -1,3 +1,7 @@
+# v7.11.0 — Clearer program setup, equipment recovery and lb entry
+
+See [7.11.0](docs/releases-v7.11.md) for behavior and validation.
+
 # v7.10.0 — Clearer Home and workout flow
 
 See [7.10.0](docs/releases-v7.10.md) for behavior and validation.

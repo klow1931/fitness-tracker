@@ -96,9 +96,9 @@
    form.querySelector('button[type=submit]')?.before(recommendations);
   }
   help(form);
-  wizard(form,{titles:['Schedule & loading style','Lifts & chosen training maxes','Accessories & review'],enabled:guided,summary:h=>selectedSummary(form,h),validateStep:index=>{
-   if(index===0){const count=form.querySelectorAll('[data-phase-day]:checked').length;if(count<2||count>5){fieldError(form,'Choose 2–5 training days within your saved availability.','[data-phase-day]:not(:disabled)');return false;}}
-   if(index===1)for(const lift of ['squat','bench','deadlift']){const input=form.querySelector('#phase-'+lift+'-tm'),kg=Number(input.value)*(currentUnit()==='lb'?.45359237:1);if(!input.value.trim()||!Number.isFinite(kg)||kg<10||kg>1000){fieldError(form,'Choose an explicit '+lift+' training max between '+toDisplay(10)+' and '+toDisplay(1000)+' '+unitLabel()+'. Unknown maxes are not filled automatically.',input);return false;}}
+  wizard(form,{titles:['Schedule & equipment','Training maxes','Review your program'],enabled:guided,summary:h=>selectedSummary(form,h),validateStep:index=>{
+   if(index===0){try{form._designer?.guard();}catch(e){fieldError(form,e.message,form._designer.errorField());return false;}const count=form.querySelectorAll('[data-phase-day]:checked').length;if(count<2||count>5){fieldError(form,'Choose 2–5 training days within your saved availability.','[data-phase-day]:not(:disabled)');return false;}}
+   if(index===1)for(const lift of ['squat','bench','deadlift']){const input=form.querySelector('#phase-'+lift+'-tm'),entryUnit=form._designer?.unit()||currentUnit(),kg=input.value.trim()?form._designer?.kg(input)??Number(input.value)*(entryUnit==='lb'?.45359237:1):NaN;if(!input.value.trim()||!Number.isFinite(kg)||kg<10||kg>1000){fieldError(form,'Choose an explicit '+lift+' training max between '+LoadnoteProgramDesigner.display(10,entryUnit)+' and '+LoadnoteProgramDesigner.display(1000,entryUnit)+' '+entryUnit+'. Unknown maxes are not filled automatically.',input);return false;}}
   },group:el=>{
    if(el.matches('button,#phase-error'))return null;
    if(el.matches('.phase-lift,.phase-main-lifts')||el.querySelector('.phase-lift'))return 1;
@@ -106,6 +106,7 @@
    return 0;
   }});
   watchErrors(form,form.querySelector('#phase-error'),m=>{
+   if(window.LoadnoteProgramDesigner?.equipmentError(m))return form._designer?.errorField()||'[data-designer-equipment]';
    const lift=['squat','bench','deadlift'].find(l=>m.toLowerCase().includes(l));
    if(lift)return '#phase-'+lift+(/variation.*max/i.test(m)?'-variation-tm':/max/i.test(m)?'-tm':/set/i.test(m)?'-sets':/step/i.test(m)?'-step':'-tm');
    return /confirm|reviewed every/i.test(m)?'#phase-confirm':/minute|time budget/i.test(m)?'#phase-minutes':/days|frequency|availability/i.test(m)?'[data-phase-day]':/start|date/i.test(m)?'#phase-start':/name/i.test(m)?'#phase-name':null;

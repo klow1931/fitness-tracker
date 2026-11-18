@@ -1216,3 +1216,7 @@ body.loadnote-simple-view #today-training .today-training-actions>.btn-secondary
 #simple-home-goal .home-goal-choice{margin:.5rem 0}
 #simple-view-banner.home-view-bar{justify-content:space-between;align-items:center;gap:.5rem;overflow:visible}
 #coach-companion-launcher.coach-home-access{position:static;flex:0 0 auto;min-height:44px;border:1px solid var(--line,#cbd5e1);border-radius:.75rem;background:transparent;color:inherit;box-shadow:none;margin:0;padding:.5rem .7rem;font-size:.85rem}
+
+/* Program setup keeps entry units and actual equipment beside their controls. */
+.designer-unit-choice{display:block;margin:12px 0}.designer-unit-choice select,.designer-equipment button{min-height:44px}.designer-equipment fieldset label{display:flex;align-items:center;gap:10px;min-height:44px}.designer-equipment input{min-width:22px;min-height:22px}.designer-equipment summary{min-height:44px;display:flex;align-items:center}
+@media(max-width:640px){#phase-dialog input[type=number],#phase-dialog select{font-size:max(16px,1rem);min-height:44px}}
