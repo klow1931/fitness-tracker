@@ -18,6 +18,23 @@ This review-tooling update retains v7.7.1/build39701/schema34 and the unchanged 
 
 The review uses synthetic workouts and deterministic research fixtures. Offline Coach scenarios exercise local answers without downloading an LLM. Internet-enabled research paths use controlled responses. Physical keyboards, touch ergonomics, screen readers, installation, and real low-storage behavior remain separate device checks.
 
+The weekly/manual review also runs the existing required offline workout journey
+after the regular mobile review. It waits for real worker control and complete
+asset caching, recovers an exact lb/RPE draft after disconnect/reload, completes
+and saves another set offline, checks history and model-free Coach, then reconnects
+and verifies exactly one unchanged workout. Both existing mobile profiles run with
+retries disabled. Chromium uses browser-context network emulation; the pinned
+WebKit engine uses its documented dedicated loopback-server stop method, which is
+not live or physical-phone network-emulation evidence.
+
+This separate required step runs even if a regular journey fails (unless cancelled).
+Its HTML report and traces remain under `offline-release` inside the same retained
+artifact; they are separate from the grouped mobile-review counts. Each trace
+includes source/tested commit, version/build, target origin, network method and
+individual recovery stages. Running it last preserves both reports. This is a
+review-tooling change: the approved runtime version, native build, manifest and
+stored athlete data remain unchanged.
+
 To run locally with the repository's Playwright browsers installed:
 
 ```sh

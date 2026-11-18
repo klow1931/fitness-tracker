@@ -18,3 +18,15 @@ console.log('Offline integrity contract rejects unit/RPE/history corruption; bot
 const mobile=fs.readFileSync(path.join(root,'.github/workflows/mobile-review.yml'),'utf8');const liveGuard=mobile.split('name: Verify approved live release and offline assets')[1].split('run:')[0];assert(liveGuard.includes("github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"),'Pre-publication push gate must not require unpublished assets already live');
 
 assert(!require('../release.json').assets['./__loadnote_offline_network_probe__'],'Transport probe must never be an offline asset');
+
+// A fresh weekly demo must execute the existing durable offline journey too.
+const weeklyOffline='name: Real offline workout recovery';
+const weeklyAt=mobile.indexOf(weeklyOffline);
+assert(weeklyAt>mobile.indexOf('name: Run beginner mobile review'),'Run offline acceptance after the regular review, whose default output cleanup would erase it');
+const weeklyStep=mobile.slice(weeklyAt,mobile.indexOf('name: Check update and draft protection',weeklyAt));
+assert.match(weeklyStep,/if: \$\{\{ !cancelled\(\) \}\}/,'A regular journey failure must not suppress independent offline evidence');
+assert.match(weeklyStep,/npx playwright test --config=playwright.offline.config.js/,'Reuse the real-worker journey, not a weaker duplicate');
+assert.match(weeklyStep,/LOADNOTE_SOURCE_COMMIT:.*github.event.pull_request.head.sha \|\| github.sha/,'Preserve source versus tested merge provenance');
+assert.equal(config.outputDir,'test-results/offline-release');
+assert(config.reporter.some(([kind,options])=>kind==='html'&&options.outputFolder==='playwright-report/offline-release'),'Offline evidence must retain a separate report without replacing the regular review');
+assert(weeklyAt<mobile.indexOf('uses: actions/upload-artifact@v4'),'Retain both review and offline traces before uploading');
