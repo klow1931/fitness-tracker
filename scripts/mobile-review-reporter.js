@@ -1,6 +1,19 @@
 const { appendFileSync, mkdirSync, writeFileSync } = require('node:fs');
-const { basename } = require('node:path');
+const { basename, resolve } = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { version } = require('../package.json');
+const { buildNumber } = require('../release.json');
+
+function checkoutEvidence() {
+  const cwd = resolve(__dirname, '..');
+  try {
+    const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const changes = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    return { commit, changes: changes ? 'Tracked changes present; commit alone does not identify this run' : 'No tracked changes' };
+  } catch {
+    return { commit: 'Unavailable', changes: 'Unavailable' };
+  }
+}
 
 const labels = {
   'mobile-chromium': 'Android-style Chromium',
@@ -22,6 +35,10 @@ class MobileReviewReporter {
   onBegin(config, suite) {
     this.tests = suite.allTests();
     this.projects = config.projects.map(project => project.name);
+    this.checkout = checkoutEvidence();
+    const source = process.env.LOADNOTE_SOURCE_COMMIT;
+    this.source = source === undefined ? this.checkout.commit : /^[a-f0-9]{40}$/i.test(source) ? source : 'Unavailable';
+    this.targets = [...new Set(config.projects.map(project => project.use?.baseURL).filter(Boolean))];
   }
 
   onError(error) {
@@ -33,6 +50,21 @@ class MobileReviewReporter {
       '# Loadnote automated mobile review',
       '',
       `Version ${version} · Browser run **${result.status}**`,
+      '',
+      '## Provenance and coverage',
+      '',
+      '| Evidence | Value |',
+      '| --- | --- |',
+      `| Source commit | ${markdownText(this.source)} |`,
+      `| Tested checkout commit | ${markdownText(this.checkout.commit)} |`,
+      `| Checkout state | ${markdownText(this.checkout.changes)} |`,
+      `| Build | ${markdownText(buildNumber)} |`,
+      `| Target | ${markdownText(this.targets.join(', ') || 'Not reported')} |`,
+      '| Coverage | Served-build browser profiles with isolated synthetic data; not deployed-site or physical-phone acceptance |',
+      '',
+      'Target is the configured base origin; worker/update journeys use their own dedicated loopback origins. See individual test steps for those targets.',
+      '',
+      'Offline acceptance is not evaluated by this report, including when the regular browser run passes. The later separate step may be missing, failed or cancelled: inspect its workflow status, [offline HTML report](../playwright-report/offline-release/index.html) and `offline-release/` traces for exact source/tested commit, target, network method and stage results. These results are not included in the grouped counts below. Chromium uses context network emulation; pinned WebKit uses a dedicated loopback-server stop, not live-site network emulation.',
       '',
       '| Review area | ' + this.projects.map(name => labels[name] || name).join(' | ') + ' |',
       '| --- | ' + this.projects.map(() => '---').join(' | ') + ' |',

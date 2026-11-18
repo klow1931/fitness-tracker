@@ -4,6 +4,20 @@ Open **Actions → Loadnote mobile review → Summary** to compare the Android-s
 
 The summary groups existing beginner journeys by review area and flags failures and tests that passed on retry. The **loadnote-mobile-review** artifact includes the HTML report, a Markdown copy of the mobile comparison, screenshots where captured, and available failure traces. Update and draft-protection checks appear separately in the run summary because they test service worker and application logic rather than an installed phone.
 
+The Markdown comparison now records the source commit, actual tested checkout
+commit, tracked-change status, native build number and configured base target.
+For PR runs, source identifies the PR head while tested checkout identifies GitHub's
+synthetic merge; local runs fall back to the actual checkout. Missing or malformed
+provenance is shown as unavailable. A dirty checkout is explicitly flagged because
+the commit alone cannot reproduce its results. Worker/update scenarios use dedicated
+loopback origins recorded in their individual steps, rather than the base target.
+
+The grouped report covers served-build browser profiles. It does not certify the
+published site, physical phones or the separate offline step. Even a green regular
+review requires inspecting the later offline step and its retained report/traces;
+missing, failed or cancelled offline evidence is never inferred to pass. The
+Markdown links to the separate offline HTML report in the combined artifact.
+
 For a confirmed failure, record the version, browser profile, scenario, reproduction steps, and impact in the review backlog. Prioritize interrupted workout logging, draft loss, and inaccessible controls. Compare the same scenario after the fix.
 
 The offline/update area also runs a real waiting-worker upgrade with unfinished kg and lb entries, an offline reload, and a fresh live-version check with a deliberately stale cached manifest. These use a dedicated local origin. Pages separately checks the actual published release and every app/offline asset after deployment; see [v7.7 release preparation](releases-v7.7.md).
@@ -14,7 +28,12 @@ The verified-history/adaptation area selects the existing v64, v4, v41 and v42 j
 
 A Node coverage gate runs Playwright discovery without launching browsers to ensure those scenarios remain selected in both profiles. It also exercises the grouped reporter with synthetic pass/retry/failure/skipped results, so missing or flaky evidence is not presented as a clean pass. Browser execution remains a separate required gate. The workflow also repeats the existing update journeys three times in both profiles with retries disabled before the complete review.
 
-This review-tooling update retains v7.7.1/build39701/schema34 and the unchanged release manifest; it does not change runtime assets or training data. Rollback source baseline is merged main `2cdfd7b12bb2d79b816ca1e46166a16cfa2808bc`; reverting the selection/test change does not repair live hosting. Keep live/offline recovery and physical-device acceptance separate.
+This provenance update retains v7.11.0/build40100/schema34 and its unchanged
+328-asset manifest; it does not change runtime assets, native builds or training
+data. Rollback source baseline is approved main
+`9743c771698b79e45b96e4aea7632bbd211629d2`; reverting this reporting change
+does not repair live hosting. Keep live/offline recovery and physical-device
+acceptance separate.
 
 The review uses synthetic workouts and deterministic research fixtures. Offline Coach scenarios exercise local answers without downloading an LLM. Internet-enabled research paths use controlled responses. Physical keyboards, touch ergonomics, screen readers, installation, and real low-storage behavior remain separate device checks.
 
