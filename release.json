@@ -221,7 +221,7 @@
     "./src/product/program-builder.js": "69cd3c18949a8ba57dcf3a994f00de5f7a46a98c19376f52fb955792867f024e",
     "./src/product/program-cancellation-ui.js": "722e4dc94f4c8668d4e8c80490a8f37e7b8ccf4ded4304f6f3310e207487c2fc",
     "./src/product/program-cancellation.js": "5e4a397291ae0919b3c87431a9a91360152dd9dd09bc0063cdb19dc71cd75049",
-    "./src/product/program-designer-ui.js": "e62f06c0fe6084baa28377483192857c086b7b0c68fecd2dc21fb8d32b59b2bb",
+    "./src/product/program-designer-ui.js": "41eab469ce739460ef07e206eeb4fd7700229d5d038b36c49797fcb136173c21",
     "./src/product/program-designer.js": "66db9f130518cf49ce569a69bc5eceaeee5cd3885d4fbec124064d0f2473701c",
     "./src/product/program-edit-ui.js": "5f471de4d5d2b17c8f3414d281d096c0ae6d046dfead3705d6394a20c8a89197",
     "./src/product/program-edit.js": "6555e738d3721a59193ec881a954eda62d2e911e02677ca76be5ef5c633eeeb5",

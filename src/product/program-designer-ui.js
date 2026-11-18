@@ -34,7 +34,7 @@
   }
   button.onclick=async()=>{
    if(saving)return;saving=true;button.disabled=true;
-   try{const next=M.updateEquipment(data,profile.id,[...access.querySelectorAll(':checked')].map(e=>e.value));if(next!==data){clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();profile=LoadnoteProgrammingProfile.current(data.programmingProfiles);onProfileSaved(profile);invalidate();}renderEquipment();const error=form.querySelector('#phase-error');if(M.equipmentError(error.textContent))error.textContent='';status.textContent=M.missing(profile).length?'Access saved. This designer still needs: '+M.missing(profile).map(k=>labels[k]).join(', ')+'.':'Equipment access saved. Continue with your setup.';}
+   try{const next=M.updateEquipment(data,profile.id,[...access.querySelectorAll(':checked')].map(e=>e.value));if(next!==data){clearTimeout(saveTimer);await persistNow(next);data=next;invalidateViews();profile=LoadnoteProgrammingProfile.current(data.programmingProfiles);onProfileSaved(profile);invalidate();}renderEquipment();if(!access.open)access.querySelector('summary').focus({preventScroll:true});const error=form.querySelector('#phase-error');if(M.equipmentError(error.textContent))error.textContent='';status.textContent=M.missing(profile).length?'Access saved. This designer still needs: '+M.missing(profile).map(k=>labels[k]).join(', ')+'.':'Equipment access saved. Continue with your setup.';}
    catch(e){status.textContent='Could not save equipment access: '+e.message;}
    finally{saving=false;button.disabled=false;}
   };
