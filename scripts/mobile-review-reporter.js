@@ -7,8 +7,12 @@ const { buildNumber } = require('../release.json');
 function checkoutEvidence() {
   const cwd = resolve(__dirname, '..');
   try {
-    const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    const changes = execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    // Container checkout ownership can differ from the reporter's process.
+    // Trust only this known repository, for these read-only commands; never
+    // change global Git configuration or trust all directories.
+    const git = args => execFileSync('git', ['-c', `safe.directory=${cwd}`, ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const commit = git(['rev-parse', 'HEAD']);
+    const changes = git(['status', '--porcelain', '--untracked-files=no']);
     return { commit, changes: changes ? 'Tracked changes present; commit alone does not identify this run' : 'No tracked changes' };
   } catch {
     return { commit: 'Unavailable', changes: 'Unavailable' };

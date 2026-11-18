@@ -37,7 +37,9 @@ try{
  assert(markdown.includes('**Failed** · Android-style Chromium'));
  assert(markdown.includes('Synthetic evidence mismatch'));
  assert(markdown.includes('Source commit | '+ 'a'.repeat(40)));
- const head=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
+ const gitHead=spawnSync('git',['-c','safe.directory='+root,'rev-parse','HEAD'],{cwd:root,encoding:'utf8'});
+ assert.equal(gitHead.status,0,gitHead.stderr);
+ const head=gitHead.stdout.trim();assert.match(head,/^[a-f0-9]{40}$/);
  assert(markdown.includes('Tested checkout commit | '+head),'Report the actual checkout, not the PR source SHA');
  assert(markdown.includes('Tracked changes present; commit alone does not identify this run') || markdown.includes('No tracked changes'));
  assert(markdown.includes('Build | '+require('../release.json').buildNumber));
@@ -61,6 +63,18 @@ try{
  assert(localReport.includes('Source commit | '+head),'A local review falls back to the actual checkout');
  assert(localReport.includes('Browser run **interrupted**'));
  assert(localReport.includes('fixture=a\\|b'),'Provenance must not break the Markdown table');
+ // Reproduce Git's container ownership boundary without changing any file
+ // ownership or global configuration. Only the reporter's exact-root trust
+ // should allow metadata access; a missing Git executable remains unknown.
+ const childScript=`const Reporter=require(${JSON.stringify(path.join(root,'scripts/mobile-review-reporter.js'))});const r=new Reporter({areas:{}});r.onBegin({projects:[]},{allTests:()=>[]});r.onEnd({status:'passed'});`;
+ const ownership=spawnSync(process.execPath,['-e',childScript],{cwd:directory,encoding:'utf8',env:{...process.env,GIT_TEST_ASSUME_DIFFERENT_OWNER:'1',GIT_CONFIG_COUNT:'1',GIT_CONFIG_KEY_0:'safe.directory',GIT_CONFIG_VALUE_0:''}});
+ assert.equal(ownership.status,0,ownership.stderr);
+ assert(fs.readFileSync('test-results/mobile-review.md','utf8').includes('Tested checkout commit | '+head),'Container ownership must not erase actual checkout identity');
+ const noGit=spawnSync(process.execPath,['-e',childScript],{cwd:directory,encoding:'utf8',env:{...process.env,PATH:path.join(directory,'no-git')}});
+ assert.equal(noGit.status,0,noGit.stderr);
+ const unavailable=fs.readFileSync('test-results/mobile-review.md','utf8');
+ assert(unavailable.includes('Tested checkout commit | Unavailable'));
+ assert(unavailable.includes('Checkout state | Unavailable'));
 }finally{
  process.chdir(before);if(summary===undefined)delete process.env.GITHUB_STEP_SUMMARY;else process.env.GITHUB_STEP_SUMMARY=summary;
  if(source===undefined)delete process.env.LOADNOTE_SOURCE_COMMIT;else process.env.LOADNOTE_SOURCE_COMMIT=source;
