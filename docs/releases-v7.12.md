@@ -8,6 +8,8 @@ Architecture reuses the public research topic catalog/normalizer, secure Coach c
 
 Related hosting regression: the Node server now serves the public appearance stylesheet and uncached version manifest required by the complete app/update experience. Backend source and configuration remain excluded from static serving; root app-shell asset coverage is checked by the integration test.
 
+The required real-offline WebKit journey caught a lost Pause tap across a rest-timer repaint. Timer paints now preserve unchanged Pause/Resume text nodes in both the cockpit and legacy control, rather than replacing the active tap target every250ms. Deadline, pause/resume persistence and training data semantics stay unchanged. A held-pointer-across-ticks browser regression and legacy-control mutation test supplement the unchanged complete offline acceptance assertion; no retries or assertions were weakened.
+
 This is indexed training research, not autonomous general browsing, model training or full-text review. GitHub Pages cannot host the LLM backend. Public activation remains dependent on an HTTPS backend, identity-provider and model-provider credentials/configuration; no live LLM capability is claimed from fixtures. See [architecture and activation](hosted-coach-research.md).
 
 Validation covers auth/CSRF, privacy minimization, invalid topics/client sources, retraction/oversize/empty/failure, prompt isolation, authoritative source links, null training doses and no-weight-download browser interactions. All existing Node/static/release/Chromium/WebKit/native/emulator/security gates remain required. Actual local/CI evidence and remaining deployment/physical-device limitations are tracked in the PR and weekly issue.

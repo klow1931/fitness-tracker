@@ -288,7 +288,9 @@
    const display=window.LoadnoteTrainingExecution.restDisplay(snap);
    const label=current.querySelector('[data-rest-clock]');if(label&&label.textContent!==display.clock)label.textContent=display.clock;
    const state=current.querySelector('[data-rest-state]');if(state&&state.textContent!==display.state)state.textContent=display.state;
-   const pause=current.querySelector('[data-cockpit-rest-pause]');if(pause)pause.textContent=snap.paused?'Resume':'Pause';
+   // Keep the button's text node stable during a tap across a timer tick.
+   // WebKit can lose the click when an unchanged label is replaced mid-press.
+   const pause=current.querySelector('[data-cockpit-rest-pause]'),pauseLabel=snap.paused?'Resume':'Pause';if(pause&&pause.textContent!==pauseLabel)pause.textContent=pauseLabel;
    return;
   }
   host.insertAdjacentHTML('beforeend',restHtml());bindRest(host);

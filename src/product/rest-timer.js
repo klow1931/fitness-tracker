@@ -15,7 +15,7 @@ function paintRest(){
  const left=restRemaining(restState);setRestLabels(restState?(Math.ceil(left/1000)+'s'+(restState.paused?' · paused':'')):'—');
  const ring=document.getElementById('rest-ring');
  if(ring){ring.style.setProperty('--rest-progress',restState?String(Math.min(1,left/restState.total)):'0');ring.setAttribute('aria-valuenow',String(Math.ceil(left/1000)));ring.setAttribute('aria-valuemax',String(Math.ceil((restState?.total||1000)/1000)));}
- const pause=document.getElementById('rest-pause');if(pause){pause.disabled=!restState;pause.textContent=restState?.paused?'Resume':'Pause';}
+ const pause=document.getElementById('rest-pause');if(pause){pause.disabled=!restState;const label=restState?.paused?'Resume':'Pause';if(pause.textContent!==label)pause.textContent=label;}
  const add=document.getElementById('rest-add');if(add)add.disabled=!restState;
  if(typeof window!=='undefined')window.refreshTrainingCockpitRest?.();
 }
