@@ -10,7 +10,7 @@ test('a single Pause press crossing repaint ticks keeps its target and pauses on
  await complete(page);const before=await page.evaluate(()=>JSON.stringify(captureLoggerDraft().rows));
  const pause=page.locator('[data-cockpit-rest-pause]');
  await page.evaluate(()=>{window.pauseTextNode=document.querySelector('[data-cockpit-rest-pause]').firstChild;});
- const box=await pause.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();
+ await pause.scrollIntoViewIfNeeded();const box=await pause.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();
  await page.clock.runFor(600);
  expect(await page.evaluate(()=>document.querySelector('[data-cockpit-rest-pause]').firstChild===pauseTextNode)).toBe(true);
  await page.mouse.up();await expect(page.locator('[data-rest-state]')).toHaveText('Rest paused');await expect(pause).toHaveText('Resume');
