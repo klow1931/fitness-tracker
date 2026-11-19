@@ -22,6 +22,13 @@ const reply={summary:'This abstract alone cannot establish a personal training d
  const server=createServer({env,fetchImpl:upstream});await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const base='http://127.0.0.1:'+server.address().port;
  try{
+  // A hosted app must provide every public app-shell root asset. This caught
+  // appearance.css and release.json missing from the old backend allowlist.
+  const release=require('../release.json');
+  for(const asset of Object.keys(release.assets).filter(p=>p==='./'||!p.slice(2).includes('/'))){const res=await fetch(base+'/'+asset.slice(2));assert.equal(res.status,200,asset);await res.arrayBuffer();}
+  const manifest=await fetch(base+'/release.json');assert.equal(manifest.status,200);assert.equal(manifest.headers.get('cache-control'),'no-store');assert.equal((await manifest.json()).version,release.version);
+  assert.equal((await fetch(base+'/backend/coach-research.js')).status,404,'Server-only retrieval code must remain inaccessible');
+  assert.equal((await fetch(base+'/package.json')).status,404);
   const body={question:'private athlete question',context:{version:'test',unit:'lb',athlete:{name:'Synthetic private athlete'},training:{workouts30d:8}},history:[{role:'user',content:'private prior chat'}],researchTopic:'strength'};
   const ask=(headers={},data=body)=>fetch(base+'/api/coach',{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
   assert.equal((await ask()).status,401);assert.equal(calls.length,0);

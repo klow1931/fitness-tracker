@@ -39,6 +39,9 @@ terms, capacity and cost limits. Optional `LOADNOTE_RESEARCH_TIMEOUT_MS` is capp
 at 12 seconds. Public health reports configuration capability, never keys/models.
 No client API-key entry, arbitrary endpoint or consumer developer controls are
 introduced. Current native beta keeps its existing local-only online boundary.
+The backend also serves the app's public appearance stylesheet and uncached
+version manifest; both were absent from its earlier allowlist. Public-root
+asset tests retain denial of backend source and package/configuration files.
 
 GitHub Pages cannot execute this backend. Repository code and mocked integration
 checks do not prove a publicly deployed LLM works. Production activation requires

@@ -28,7 +28,7 @@ const VoiceGateway=require('./voice-gateway');
 const ROOT=path.resolve(__dirname,'..');
 const MAX_BODY=256*1024;
 const DEFAULT_MAX_SYNC_BODY=8*1024*1024;
-const STATIC_ROOT_FILES=new Set(['index.html','privacy.html','support.html','delete-account.html','styles.css','energy.css','app.js','manifest.webmanifest','sw.js','icon-192.png','icon-512.png','apple-touch-icon.png']);
+const STATIC_ROOT_FILES=new Set(['index.html','privacy.html','support.html','delete-account.html','styles.css','energy.css','appearance.css','release.json','app.js','manifest.webmanifest','sw.js','icon-192.png','icon-512.png','apple-touch-icon.png']);
 const STATIC_PREFIXES=['assets/','src/'];
 
 function contentType(file){
@@ -155,7 +155,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
  function staticFile(req,res,pathname){
   const file=resolveStaticFile(ROOT,pathname,{rootFiles:STATIC_ROOT_FILES,prefixes:STATIC_PREFIXES});
   if(!file)return send(req,res,404,{error:'Not found'});
-  const data=fs.readFileSync(file);res.writeHead(200,responseHeaders(req,{'Content-Type':contentType(file),'Cache-Control':file.endsWith('index.html')?'no-cache':'public, max-age=300'}));return res.end(data);
+  const data=fs.readFileSync(file);res.writeHead(200,responseHeaders(req,{'Content-Type':contentType(file),'Cache-Control':file.endsWith('release.json')?'no-store':file.endsWith('index.html')?'no-cache':'public, max-age=300'}));return res.end(data);
  }
 
  const server=http.createServer(async(req,res)=>{

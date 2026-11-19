@@ -6,6 +6,8 @@ Research source cards offer an explicit hosted explanation that requires no mode
 
 Architecture reuses the public research topic catalog/normalizer, secure Coach client, server authentication/CSRF/rate limits and model gateway. A focused backend retrieval module enforces fixed destinations/no redirects, public minimal context, source-data isolation and bounded failure. No schema/migration, logging/history, internal kg, RPE, e1RM/training max, progression/mesocycle or fatigue changes.
 
+Related hosting regression: the Node server now serves the public appearance stylesheet and uncached version manifest required by the complete app/update experience. Backend source and configuration remain excluded from static serving; root app-shell asset coverage is checked by the integration test.
+
 This is indexed training research, not autonomous general browsing, model training or full-text review. GitHub Pages cannot host the LLM backend. Public activation remains dependent on an HTTPS backend, identity-provider and model-provider credentials/configuration; no live LLM capability is claimed from fixtures. See [architecture and activation](hosted-coach-research.md).
 
 Validation covers auth/CSRF, privacy minimization, invalid topics/client sources, retraction/oversize/empty/failure, prompt isolation, authoritative source links, null training doses and no-weight-download browser interactions. All existing Node/static/release/Chromium/WebKit/native/emulator/security gates remain required. Actual local/CI evidence and remaining deployment/physical-device limitations are tracked in the PR and weekly issue.
