@@ -22,6 +22,7 @@ const {resolveStaticFile}=require('./static-files');
 const {createFileSyncStore}=require('./sync-store');
 const Sync=require('../src/product/sync-model');
 const CoachGateway=require('./coach-gateway');
+const CoachResearch=require('./coach-research');
 const VoiceGateway=require('./voice-gateway');
 
 const ROOT=path.resolve(__dirname,'..');
@@ -114,17 +115,24 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   const session=coachAuthRequired?authenticated(req,res,{csrf:true,required:true}):loadSession(req);
   if(coachAuthRequired&&!session)return;
   if(!apiKey)return send(req,res,503,{error:'Online Coach is not configured.',code:'coach_unavailable'});
-  const body=await parseBody(req),messages=CoachGateway.providerMessages(body);
+  const body=await parseBody(req);CoachGateway.normalizeRequest(body);
+  const researchTopic=Object.hasOwn(body,'researchTopic')?CoachResearch.validate(body.researchTopic):null;
+  if(researchTopic&&env.LOADNOTE_COACH_RESEARCH!=='1')return send(req,res,503,{error:'Hosted research explanations are not enabled here. Built-in Coach and source cards remain available.',code:'research_not_configured'});
   const lease=requestLimits.acquire(session?.account.id||'ip:'+req.socket.remoteAddress);
   if(!lease.ok)return send(req,res,429,{error:'AI request limit reached. Try again later.',code:'ai_rate_limit'},'application/json',{'Retry-After':String(lease.retryAfter)});
   let timeout;
   try {
+  const research=researchTopic?await CoachResearch.retrieve(researchTopic,{fetchImpl,timeoutMs:Math.min(Number(env.LOADNOTE_RESEARCH_TIMEOUT_MS)||8000,12000)}):null;
+  const input=research?CoachResearch.request(researchTopic):body;
+  const messages=CoachGateway.providerMessages(input);
+  if(research){messages[0].content+=' '+CoachResearch.POLICY;messages.splice(messages.length-1,0,CoachResearch.messages(research));}
   const controller=new AbortController();timeout=setTimeout(()=>controller.abort(),Number(env.LOADNOTE_AI_TIMEOUT_MS)||25000);let upstream;
   try{upstream=await fetchImpl(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model,messages,temperature:0.3}),signal:controller.signal});}
   catch(error){if(error?.name==='AbortError')return send(req,res,504,{error:'Online Coach timed out.',code:'coach_timeout'});return send(req,res,502,{error:'Online Coach provider is unavailable.',code:'coach_provider_unavailable'});}
   if(!upstream.ok)return send(req,res,502,{error:'Online Coach provider returned an error.',code:'coach_provider_error'});
   let payload;try{payload=await upstream.json();}catch{return send(req,res,502,{error:'Online Coach provider returned an invalid response.',code:'coach_provider_invalid_json'});}
-  return send(req,res,200,{coach:CoachGateway.parseProviderResponse(payload,CoachGateway.normalizeContext(body.context))});
+  const result=CoachGateway.parseProviderResponse(payload,CoachGateway.normalizeContext(input.context));
+  return send(req,res,200,{coach:research?{...result,research}:result});
   } finally {clearTimeout(timeout);lease.release();}
  }
  async function voiceSession(req,res){
@@ -155,7 +163,7 @@ function createServer({env=process.env,fetchImpl=globalThis.fetch}={}){
   if(req.method==='OPTIONS'){res.writeHead(204,responseHeaders(req,{'Access-Control-Allow-Headers':'Content-Type, Authorization, X-Loadnote-CSRF, X-Loadnote-Dev-Auth','Access-Control-Allow-Methods':'GET, POST, PUT, DELETE, OPTIONS','Access-Control-Max-Age':'600'}));return res.end();}
   try{
    const url=new URL(req.url||'/','http://loadnote.local'),pathname=url.pathname;
-   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,coach:{configured:!!apiKey,authRequired:coachAuthRequired},voice:{configured:!!voiceApiKey,authRequired:true,mode:'workout_scoped'},auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured},remoteTraining:{configured:!!syncStore,protocol:Sync.PROTOCOL,maxBytes:maxSyncBytes}});
+   if(req.method==='GET'&&pathname==='/api/health')return send(req,res,200,{ok:true,aiConfigured:!!apiKey,coach:{configured:!!apiKey,authRequired:coachAuthRequired,researchConfigured:!!apiKey&&env.LOADNOTE_COACH_RESEARCH==='1',modelDownloadRequired:false},voice:{configured:!!voiceApiKey,authRequired:true,mode:'workout_scoped'},auth:{configured:auth.configured,required:authRequired,devLogin:devAuthEnabled,oidc:oidc.configured},remoteTraining:{configured:!!syncStore,protocol:Sync.PROTOCOL,maxBytes:maxSyncBytes}});
    if(req.method==='GET'&&pathname==='/api/auth/providers')return send(req,res,200,{providers:oidc.configured?[{id:oidc.providerId,name:oidc.providerName,loginUrl:'/api/auth/login'}]:[]});
    if(req.method==='GET'&&pathname==='/api/auth/login'){
     if(!oidc.configured)return send(req,res,503,{error:'Account sign-in is not configured.'});const start=await oidc.begin(url.searchParams.get('returnTo')||'/');return redirect(req,res,start.url,[start.cookie]);

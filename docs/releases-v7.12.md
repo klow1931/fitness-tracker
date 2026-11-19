@@ -1,0 +1,11 @@
+# Loadnote v7.12.0 — Hosted research explanations without model downloads
+
+Version7.12.0 · unsigned native build40200 · schema34. Rollback approved source92386e0c1b437799c53715f0fd6a71cd9caeb606, runtime7.11.0/build40100. Candidate requires Keith's review/merge and all required gates before guarded publication. No native signing/distribution.
+
+Research source cards offer an explicit hosted explanation that requires no model weights on the phone. The existing authenticated server gateway retrieves fresh eligible training-topic abstracts, explains them through its configured LLM, and returns source-derived citations separately. Personal chat/history/workouts/intake are excluded from this public research path; server keys stay server-side. Failed retrieval does not invoke the model, and recommendations cannot modify programming or supply a personal dose. Source cards, saved references, built-in offline Coach and optional local-model functionality remain available.
+
+Architecture reuses the public research topic catalog/normalizer, secure Coach client, server authentication/CSRF/rate limits and model gateway. A focused backend retrieval module enforces fixed destinations/no redirects, public minimal context, source-data isolation and bounded failure. No schema/migration, logging/history, internal kg, RPE, e1RM/training max, progression/mesocycle or fatigue changes.
+
+This is indexed training research, not autonomous general browsing, model training or full-text review. GitHub Pages cannot host the LLM backend. Public activation remains dependent on an HTTPS backend, identity-provider and model-provider credentials/configuration; no live LLM capability is claimed from fixtures. See [architecture and activation](hosted-coach-research.md).
+
+Validation covers auth/CSRF, privacy minimization, invalid topics/client sources, retraction/oversize/empty/failure, prompt isolation, authoritative source links, null training doses and no-weight-download browser interactions. All existing Node/static/release/Chromium/WebKit/native/emulator/security gates remain required. Actual local/CI evidence and remaining deployment/physical-device limitations are tracked in the PR and weekly issue.

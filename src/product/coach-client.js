@@ -32,17 +32,17 @@
    const response=await request(HEALTH);
    if(!response.ok)throw Error('health '+response.status);
    const body=await response.json();
-   healthCache={online:!!(body.coach?.configured??body.aiConfigured),authRequired:body.coach?.authRequired!==false,voiceConfigured:!!body.voice?.configured,reason:null};
+   healthCache={online:!!(body.coach?.configured??body.aiConfigured),authRequired:body.coach?.authRequired!==false,voiceConfigured:!!body.voice?.configured,researchConfigured:body.coach?.researchConfigured===true,reason:null};
   }catch{healthCache={online:false,authRequired:true,voiceConfigured:false,reason:'unavailable'};}
   healthAt=now;return healthCache;
  }
- async function ask({question,context,history=[]}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
+ async function ask({question,context,history=[],researchTopic}={}, {request=globalThis.LoadnoteAccountSession?.request}={}){
   requireOnlineMode();
   if(globalThis.Capacitor?.isNativePlatform?.()){const error=new Error('Online Coach is unavailable in the native beta. Local workout guidance remains available.');error.code='native_beta_local_only';throw error;}
   if(!await ensureSignedIn()){const error=new Error('Sign in from Profile to use the online Coach.');error.code='coach_sign_in_required';throw error;}
   requireOnlineMode();
   if(typeof request!=='function'){const error=new Error('Secure Coach connection is unavailable.');error.code='coach_unavailable';throw error;}
-  const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:withoutIntake(context),history})});
+  const response=await request(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,context:withoutIntake(context),history,...(researchTopic===undefined?{}:{researchTopic})})});
   let body={};try{body=await response.json();}catch{}
   if(!response.ok){
    const error=new Error(body.error||('Online Coach request failed ('+response.status+').'));

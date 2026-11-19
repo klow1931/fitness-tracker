@@ -1,3 +1,7 @@
+# v7.12.0 — Hosted research explanations without a model download
+
+See [7.12.0](docs/releases-v7.12.md) for behavior and validation.
+
 # v7.11.0 — Clearer program setup, equipment recovery and lb entry
 
 See [7.11.0](docs/releases-v7.11.md) for behavior and validation.
