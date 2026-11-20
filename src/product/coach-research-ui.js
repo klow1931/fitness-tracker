@@ -19,8 +19,27 @@
   if(canSave){const status=element('p');status.setAttribute('role','status');const save=button('Save these references offline',()=>{try{R().save(result);save.textContent='Saved on this device';save.disabled=true;status.textContent='References saved on this device. Training records were not changed.';window.dispatchEvent(new Event('loadnote:research-saved'));}catch(e){status.textContent=e.message;}});host.append(save,status);}
  }
  function attachExplanation(host,result){
-   // Research is never sent to Online Coach. Optional on-device explanation is
-   // supplementary; source excerpts and exact citations remain authoritative.
+   // The explicit hosted path sends only a public topic. The server retrieves
+   // fresh sources itself; browser excerpts, chat and athlete records are omitted.
+   const online=button('Explain online · no download',async()=>{
+    const ticket=R().revision(),status=element('p','Requesting a hosted explanation of public research…');status.setAttribute('role','status');host.append(status);online.disabled=true;
+    try{
+     if(navigator.onLine===false||R().mode()==='off')throw Error('Online research is off or unavailable. Saved sources and built-in Coach remain available.');
+     const available=await window.LoadnoteCoachClient.availability({force:true});
+     if(ticket!==R().revision()||!host.isConnected)return;
+     if(!available.online||!available.researchConfigured)throw Error('Online explanations are unavailable here. Your source cards and built-in Coach still work.');
+     const value=await window.LoadnoteCoachClient.ask({question:'Explain public training research and its limitations.',context:{version:window.LoadnoteCore?.RELEASE_VERSION||'unknown',unit:'kg'},history:[],researchTopic:result.topic});
+     if(ticket!==R().revision()||!host.isConnected)return;
+     if(value.research?.topic!==result.topic||!Array.isArray(value.research.items)||!value.research.items.length)throw Error('A source-linked online explanation was not returned.');
+     showResult(host,value.research);
+     const answer=element('section');answer.append(element('h3','Hosted Coach explanation · no model downloaded'),element('p',value.summary));
+     for(const insight of value.insights||[])answer.append(element('p',insight.title+': '+insight.body));
+     answer.append(element('p','AI interpretation of the freshly retrieved abstract excerpts below. Check the sources and limits; this does not change your training plan.'));host.prepend(answer);
+    }catch(e){if(ticket===R().revision()&&host.isConnected)status.textContent=e.code==='research_unavailable'?'Fresh research could not be retrieved. No model explanation was requested; your source cards remain readable.':e.message||'Hosted explanation unavailable. Sources remain readable.';}
+    finally{online.disabled=false;}
+   });
+   host.append(element('p','Optional: explain this public topic using online Coach. Requires an available online service and sign-in. Only this topic and newly retrieved public excerpts are used; your chat, workouts and injury notes are excluded. No model download is required.'),online);
+   // Optional on-device explanations continue to work without network access.
    const ai=window.LoadnoteLocalCoachAI;
    if(ai?.snapshot().status==='ready'&&result.items.some(i=>i.excerpt)){
     const explain=button('Explain these sources on this device',async()=>{

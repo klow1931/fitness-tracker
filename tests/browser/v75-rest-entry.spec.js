@@ -6,6 +6,17 @@ test.beforeEach(async({page})=>{
  await page.getByRole('button',{name:'+ Same Set',exact:true}).click();await page.getByRole('button',{name:'Close options',exact:true}).click();await expect(page.locator('.set-weight')).toHaveCount(2);await page.locator('.set-weight').first().focus();
 });
 async function complete(page){await page.locator('[data-quick-complete]:visible').click();await expect(page.locator('[data-cockpit-rest]')).toBeVisible();}
+test('a single Pause press crossing repaint ticks keeps its target and pauses once',async({page})=>{
+ await complete(page);const before=await page.evaluate(()=>JSON.stringify(captureLoggerDraft().rows));
+ const pause=page.locator('[data-cockpit-rest-pause]');
+ await page.evaluate(()=>{window.pauseTextNode=document.querySelector('[data-cockpit-rest-pause]').firstChild;});
+ await pause.scrollIntoViewIfNeeded();const box=await pause.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();
+ await page.clock.runFor(600);
+ expect(await page.evaluate(()=>document.querySelector('[data-cockpit-rest-pause]').firstChild===pauseTextNode)).toBe(true);
+ await page.mouse.up();await expect(page.locator('[data-rest-state]')).toHaveText('Rest paused');await expect(pause).toHaveText('Resume');
+ const frozen=await page.locator('[data-rest-clock]').textContent();await page.clock.runFor(1000);await expect(page.locator('[data-rest-clock]')).toHaveText(frozen);
+ await pause.click();await expect(page.locator('[data-rest-state]')).toHaveText('Rest');expect(await page.evaluate(()=>JSON.stringify(captureLoggerDraft().rows))).toBe(before);expect(await page.evaluate(()=>data.workouts.length)).toBe(0);
+});
 test('rest clock, pause and extension preserve controls and do not change training',async({page})=>{
  await complete(page);const before=await page.evaluate(()=>JSON.stringify(captureLoggerDraft().rows));const pause=page.locator('[data-cockpit-rest-pause]');
  await expect(page.locator('[data-rest-clock]')).toHaveText('1:30');await pause.focus();await page.clock.setFixedTime(new Date('2026-11-06T16:00:01.100Z'));await page.clock.runFor(300);await expect(page.locator('[data-rest-clock]')).toHaveText('1:29');await expect(pause).toBeFocused();
