@@ -59,10 +59,14 @@ jobs:
       - name: Upload web app
         uses: actions/upload-pages-artifact@v3
         with:
+          # Retain prior attempts without making deploy-pages' lookup ambiguous.
+          name: github-pages-${{ github.run_attempt }}
           path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
       - name: Verify the live release and every offline asset
         env:
           DEPLOYED_URL: ${{ steps.deployment.outputs.page_url }}

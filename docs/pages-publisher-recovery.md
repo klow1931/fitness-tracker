@@ -32,3 +32,26 @@ unchanged. No new runtime release is published by this PR. The source rollback
 baseline is `758ff898c9d6efe8c8f92e2b12859c6f943f5625`; reverting this guard does
 not repair a missing-asset deployment. Keep main intact and use an approved,
 complete artifact to recover hosting.
+
+## Deployment retries
+
+The guarded publisher names each upload `github-pages-${{ github.run_attempt }}`
+and passes that exact name to `deploy-pages` using `artifact_name`. GitHub keeps
+artifacts across job retries within a run; the default shared `github-pages`
+name can therefore make deployment fail with multiple matching artifacts. The
+attempt-specific pair selects only the current upload and preserves earlier
+evidence. Both action versions support these inputs:
+[upload-pages-artifact v3](https://github.com/actions/upload-pages-artifact/blob/v3/action.yml)
+and [deploy-pages v5](https://github.com/actions/deploy-pages/blob/v5/action.yml).
+
+Rerun the deploy job from its beginning when a transient failure warrants a retry;
+it must rerun all exact-main and single-publisher guards and create a fresh upload.
+Never delete artifacts or weaken checks to force publication. Rerunning an older
+workflow run still uses its old workflow definition: the November19 failed run
+44406736977 must not be retried again. Use a fresh guarded run after this fix is
+approved and merged. Required post-deploy double asset scans and actual live
+Chromium offline recovery still determine verified-live status.
+
+This retry fix is tooling only: v7.12.0/build40200/schema34 and all328 runtime
+assets remain unchanged. Rollback source is approved main
+`db35c4ec1656e4e9d63edbc536f72ebc0a830d86`; no migration or native release is needed.
