@@ -1,8 +1,8 @@
 {
-  "version": "7.12.0",
-  "buildNumber": 40200,
+  "version": "7.12.1",
+  "buildNumber": 40201,
   "assets": {
-    "./": "517aca37acee569363dcd4eff85a3264d907dda55231007bd4c5d0811cb4f078",
+    "./": "f00e485e3e733734a5a73aa4017a450aef1800cd6c684862f4f955146acbb83f",
     "./app.js": "8241d0136f8e7eb8e0ff760c670868c941954db4013789ef43c313f1bb27edc2",
     "./appearance.css": "90b7a9f4e22a918070f5acff5877ccb0dc809438d7168de13f46b453789f63ba",
     "./apple-touch-icon.png": "31ef27e6dc357259c7830bc70c98f1d9e549463c282fede7b8a3a5e9cdac0298",
@@ -17,11 +17,11 @@
     "./energy.css": "272a968589ed2952c98a7fc3cc6ef2a2ee14eae495d2e94e5da9947fd77cd5e5",
     "./icon-192.png": "721422a6ac708c6a221fbac82a0ac591dc6f6b522367c363c591affa17710d85",
     "./icon-512.png": "c3b3beb18338028add264ba40fdc1b69dd98ebba521685378dde1d2394d4144b",
-    "./index.html": "517aca37acee569363dcd4eff85a3264d907dda55231007bd4c5d0811cb4f078",
+    "./index.html": "f00e485e3e733734a5a73aa4017a450aef1800cd6c684862f4f955146acbb83f",
     "./manifest.webmanifest": "9ce25a6a821c597fc4df12c4fe4cb5c3264dcdc57dc859f6494b294571385722",
     "./privacy.html": "baf7d27a0cf880ca8ed142d34650d085ee24096372ca8cc6daf119edf96c930f",
     "./src/coach/coach-engine.js": "8b9bc98dec09cfbf781801e68501118cb1c398c24ad6aedbd11e1626ca1de353",
-    "./src/core/loadnote-core.js": "affc7beef49377bb70769b1c8443fa8bb838821f0d65a1cb3cab6f6fe9b5cdec",
+    "./src/core/loadnote-core.js": "552d4adff38a19e5c793f877611da83dddee7404fd3aa891e9aa939fca8011ae",
     "./src/core/ui-utils.js": "268699808033eb3abea0cd3f1cdb60d06a5016280005dd631e7d274cf66990d7",
     "./src/local-ai/coach-worker.mjs": "052a05b460ee6d19f436671433f139b6341cee837e19e3f5d8b0f2c76a01eeb4",
     "./src/product/accessory-follow-up-ui.js": "ea29c8037e9e7f2929e3494f00e8305f154cbb6028f332948a3ae24bf5b1746a",
@@ -189,7 +189,7 @@
     "./src/product/muscle-workload-review-ui.js": "88e53f108e007a7e0b13c4ff22239da0eda2707a12fb5eadaba06319fcd4c506",
     "./src/product/muscle-workload-review.js": "1fc2cc5eee60ecaf237a17db330bb512e3698404cb14dd86f6932779df108e5f",
     "./src/product/native-backup.js": "6b1caf8f60adfc95238be3b80f4c003c79e48d78c1ce6d0f1ba27ec481738fcd",
-    "./src/product/navigation.js": "dce0357c7ec8e5bf6effaf2802f30e8083515ea9ea0790ffb656453956f7e221",
+    "./src/product/navigation.js": "ba68d828b0bf2d1af99a19f1a517f66a7a1982c1f1cec76dc73880548ab975bf",
     "./src/product/next-block-handoff-ui.js": "9ac18971082f69fde8df9c1080f2e38227af509d1c869e466867499cffa48599",
     "./src/product/next-block-handoff.js": "30b8a1ce851e297fd9884a44664d125e5772256b11037662b7e9ea12453d324f",
     "./src/product/nutrition-forms.js": "4ca8c5fa12fb6d0bfa6e4774206d98ba41d2db52831ddc98e855298db43fa42f",
@@ -321,14 +321,14 @@
     "./src/programming-adaptive.js": "04b77fe3d8ac098592ecf2318a072052d751bd0d0aa96d140e50255ea33dbd28",
     "./src/programming-athlete.js": "b45009db5f2ece531060a62b394617fc3f3472cfe22258dcf583ca30ee4209da",
     "./src/programming-mesocycle.js": "d1c056e1847388f29ccc98b260c9efe05cb35db61e4dc667ec4146a60fabeaf9",
-    "./src/release.js": "4c60bc198931220ac8631a727f365086726db5dbd01d64269092c5cd517d1ea0",
+    "./src/release.js": "a7550e72966ccd7926f7ae961ad2bc7d44e7321911262f0afa68a283deaf946c",
     "./src/training/adaptive.js": "31d9fafe56f1dea6fb13ccca789f07a84ad4066b3f4806464d4902ac2257ede8",
     "./src/training/analytics.js": "d54d971278c6b405ecaf039ba7c00f6c0a77d074cd46e8f090f3cf3ca5efad86",
     "./src/training/exercises.js": "f5f8ab5214ce2216491d58c953bfc2fc89bf0f0b34a193a27d26dff23963310d",
     "./src/training/fatigue.js": "465a865c6a433655e338c2fcfb60124416b93503b592ed5e714722c2385dd85f",
     "./src/training/progression.js": "d9a2f08bbfc2d4abc5f86fa48cf9c34b5f9a12660a7b2ab1be88326d02bec6c5",
-    "./styles.css": "4a8665c6c10a639078d45ed8f92367c5b4a87cdaf570ac1e500e1b7e48c8290d",
+    "./styles.css": "793c168ee7c2c0c91d520c88d2dfc736120e94c71fe2f04f5a85eef10dd5cbbf",
     "./support.html": "7cd702f02f103f1d1cbedbe86ed832c964ec3ee424c28bc86767b9de9b2dab14",
-    "./sw.js": "72c48ba5ceb0a688fe5dc25a5f7527797b9aaadd99af6c066fb40f35bbe359b0"
+    "./sw.js": "3c7e8d25a07479dc54a9c908bf6304cc1ffe03a6bb3c8f0c19b31651f83972e9"
   }
 }

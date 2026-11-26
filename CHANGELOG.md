@@ -1,3 +1,7 @@
+# v7.12.1 — Readable narrow workout inputs
+
+See [7.12.1](docs/releases-v7.12.1.md) for behavior and validation.
+
 # v7.12.0 — Hosted research explanations without a model download
 
 See [7.12.0](docs/releases-v7.12.md) for behavior and validation.
