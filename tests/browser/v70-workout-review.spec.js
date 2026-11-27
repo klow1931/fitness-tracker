@@ -1,4 +1,57 @@
 const {test,expect}=require('playwright/test');
+for (const unit of ['kg', 'lb']) {
+ for (const gymMode of [false, true]) {
+  test(`enlarged narrow ${unit} entry stays legible and saves exact work with gym mode ${gymMode}`, async ({page}, info) => {
+   await page.setViewportSize({width:320,height:568});
+   await page.goto('/');
+   await expect(page.locator('#coach-companion-launcher')).toBeVisible();
+   await page.evaluate(({unit,gymMode}) => {
+    document.documentElement.style.fontSize='20px';
+    setUnit(unit);
+    fillWorkoutForm([{name:'Synthetic narrow press',type:'strength',sets:[{weight:100,reps:5,rpe:''},{weight:100,reps:3,rpe:''}]}],'Synthetic readability',false);
+    openFastStartLogger({compact:true});
+    document.body.classList.toggle('gym-mode',gymMode);
+   },{unit,gymMode});
+   const rows=page.locator('#exercise-rows .logger-set');
+   for (let index=0;index<2;index++) {
+    await rows.nth(index).locator('.set-weight').fill(index===0?'225.5':'100.25');
+    await rows.nth(index).locator('.set-rpe').fill(index===0?'8.5':'7');
+   }
+   await rows.first().locator('.set-done-check').check();
+   // Exact input values alone missed the clipped digits in the weekly demo.
+   // Reserve native spin-control space as well as padding and rendered text.
+   for (const input of await rows.locator('.set-weight,.set-reps,.set-rpe').all()) {
+    const dimensions=await input.evaluate(element => {
+     const style=getComputedStyle(element);
+     const context=document.createElement('canvas').getContext('2d');
+     context.font=style.font;
+     return {available:element.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-24,
+      required:context.measureText(element.value).width,height:element.getBoundingClientRect().height};
+    });
+    expect(dimensions.available).toBeGreaterThanOrEqual(dimensions.required);
+    expect(dimensions.height).toBeGreaterThanOrEqual(44);
+   }
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+   await page.screenshot({path:info.outputPath(`numeric-${unit}-${gymMode}.png`),fullPage:true});
+   await page.evaluate(()=>reviewWorkout());
+   await expect(page.locator('.review-set-list li')).toHaveCount(2);
+   await page.locator('#confirm-workout-save').click();
+   await expect(page.locator('#workout-review')).toBeHidden();
+   await page.reload();
+   const saved=await page.evaluate(()=>({unit:currentUnit(),workouts:data.workouts}));
+   expect(saved.unit).toBe(unit);
+   expect(saved.workouts).toHaveLength(1);
+   const sets=saved.workouts[0].exercises[0].sets;
+   expect(sets).toHaveLength(2);
+   expect(sets.map(set=>set.reps)).toEqual([5,3]);
+   expect(sets.map(set=>set.rpe)).toEqual([8.5,7]);
+   for (let index=0;index<2;index++) {
+    const displayed=index===0?225.5:100.25;
+    expect(sets[index].weight).toBeCloseTo(unit==='kg'?displayed:displayed/2.2046226218,2);
+   }
+  });
+ }
+}
 async function boot(page){await page.goto('/');await expect(page.locator('#coach-companion-launcher')).toBeVisible();await page.evaluate(()=>{fillWorkoutForm([{name:'Competition Bench',type:'strength',sets:[{weight:100,reps:5,rpe:8},{weight:100,reps:4,rpe:''}]},{name:'Competition Squat',type:'strength',sets:[{weight:120,reps:3,rpe:9}]}],'Synthetic review',false);openFastStartLogger({compact:true});document.querySelectorAll('.set-rpe')[0].value='8';document.querySelectorAll('.set-rpe')[2].value='9';});}
 test('review lists actual sets, missing effort and returns to the exact existing exercise without saving',async({page})=>{
  await boot(page);await page.setViewportSize({width:320,height:568});await page.evaluate(()=>document.documentElement.style.fontSize='20px');
